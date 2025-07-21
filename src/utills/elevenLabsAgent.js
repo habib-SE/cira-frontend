@@ -1,15 +1,15 @@
-// utils/elevenLabsAgent.js
+// src/utils/elevenLabsAgent.js
 import axios from "axios";
 
-const ELEVENLABS_API_KEY = "your-api-key";
-const AGENT_ID = "your-agent-id";
+const ELEVENLABS_API_KEY = "your_elevenlabs_api_key"; // Replace with your actual API key
+const AGENT_ID = "agent_01jytk2qhke8nrwt3cs47bqdd4";
 
-export const talkToAgent = async (message) => {
+export const talkToAgent = async (userInput) => {
   try {
     const response = await axios.post(
       `https://api.elevenlabs.io/v1/agents/${AGENT_ID}/message`,
       {
-        text: message,
+        text: userInput,
       },
       {
         headers: {

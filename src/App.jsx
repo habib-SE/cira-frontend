@@ -1,17 +1,20 @@
-
-import './App.css'
-import CiraMobileBanner from './components/CiraMobileBanner'
-import CiraAssistant from './components/CiraAssistant'
+// App.jsx
+import React, { useState } from "react";
+import CiraMobileBanner from "./components/CiraMobileBanner";
+import CiraAssistant from "./components/CiraAssistant";
 
 function App() {
+  const [showAssistant, setShowAssistant] = useState(false);
+
   return (
     <>
-    <div>
-     {/* <CiraAssistant /> */}
-     <CiraMobileBanner/>
-    </div>
+      {showAssistant ? (
+        <CiraAssistant onClose={() => setShowAssistant(false)} />
+      ) : (
+        <CiraMobileBanner onAskCira={() => setShowAssistant(true)} />
+      )}
     </>
-  )
+  );
 }
 
-export default App
+export default App;
