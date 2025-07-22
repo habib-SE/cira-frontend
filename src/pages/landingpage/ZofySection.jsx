@@ -40,7 +40,7 @@ const ZofyCarousel = () => {
         >
           {data.map((item, index) => (
             <SwiperSlide key={index}>
-  <div className="bg-gray-100 rounded-xl shadow-md p-6 h-[200px] flex flex-col justify-start items-start transition-transform duration-500 hover:scale-105">
+  <div className=" rounded-xl  p-6 h-[200px] flex flex-col justify-start items-start transition-transform duration-500 hover:scale-105">
     <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
     <p className="text-gray-600 overflow-hidden text-ellipsis">{item.desc}</p>
   </div>

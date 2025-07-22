@@ -1,24 +1,23 @@
 // App.jsx
 import React, { useState } from "react";
-import CiraMobileBanner from "./components/CiraMobileBanner";
-import CiraAssistant from "./components/CiraAssistant";
-import ZofyIntro from "./pages/landingpage/ZofyIntro";
-import YoutubeBackground from "./pages/landingpage/YoutubeBackground";
-import ZofySection from "./pages/landingpage/ZofySection";
+import CiraMobileBanner from "./pages/landingpage/CiraMobileBanner";
+import CiraAssistant from "./pages/landingpage/CiraAssistant";
+import ZofyTalkSection from "./pages/landingpage/ZofyTalk";
+import IntegrationSection from "./pages/landingpage/Integration";
+import ExperienceSection from "./pages/landingpage/Experience";
+import InsightsSection from "./pages/landingpage/Insights";
+import BackgroundVideoCard from "./pages/landingpage/BGVedio";
+import Footer from "./pages/landingpage/Footer";
+import AdvanceTechDesgin from "./pages/landingpage/AdvanceTechDesign";
+import { PlaneLanding } from "lucide-react";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   const [showAssistant, setShowAssistant] = useState(false);
 
   return (
     <>
-      {/* {showAssistant ? (
-        <CiraAssistant onClose={() => setShowAssistant(false)} />
-      ) : (
-        <CiraMobileBanner onAskCira={() => setShowAssistant(true)} />
-      )} */}
-      <YoutubeBackground />
-      <ZofyIntro />
-      <ZofySection />
+     <LandingPage />
     </>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FaMicrophone, FaKeyboard } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
-import { talkToAgent } from "../utills/elevenLabsAgent"; // Make sure this file exists
+import { talkToAgent } from "../../utills/elevenLabsAgent"; // Make sure this file exists
 
 const CiraAssistant = () => {
   const [isListening, setIsListening] = useState(false);

@@ -38,8 +38,9 @@
 
 // export default CiraMobileBanner;
 import React, { useState } from "react";
-import doctorImage from "../assets/doctor.png";
-import { talkToAgent } from "../utills/elevenLabsAgent";
+// import doctorImage from "../assets/doctor.png";
+import doctorImage from "../../assets/doctor.png"; 
+import { talkToAgent } from "../../utills/elevenLabsAgent";
 
 const CiraMobileBanner = ({ onAskCira }) => {
   const [assistantReply, setAssistantReply] = useState("");
