@@ -20,7 +20,7 @@ const integrationCards = [
   },
 ];
 
-export default function IntegrationScrollSection() {
+export default function IntegrationSection() {
   return (
     <div className="relative w-full flex bg-white">
       {/* Sticky Left Section */}
@@ -44,9 +44,13 @@ export default function IntegrationScrollSection() {
             const isSideCard = index === 0 || index === 2;
 
             return (
-              <section
+                <motion.section
                 key={index}
-                className={`w-[80vh] h-screen bg-cover bg-center rounded-2xl shadow-lg relative ${
+                initial={{ rotateY: 80, opacity: 0 }}
+                whileInView={{ rotateY: 0, opacity: 1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                viewport={{ once: true, amount: 0.3 }}
+                className={`w-[80vh] h-screen bg-cover bg-center rounded-2xl shadow-lg relative transform-style-preserve-3d ${
                   isMiddle ? "ml-[-25vw]" : isSideCard ? "ml-[12vw]" : ""
                 } ${index !== 0 ? "mt-[1vh]" : ""}`}
                 style={{
@@ -58,32 +62,13 @@ export default function IntegrationScrollSection() {
                     isMiddle ? "justify-center" : "justify-end"
                   }`}
                 >
-                  <motion.p
-                    className="text-white text-xs bg-blue-300 rounded-md px-4 py-1 w-fit font-medium tracking-wide capitalize"
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    {item.label}
-                  </motion.p>
-
-                  <motion.h2
-                    className="text-white text-3xl md:text-5xl font-semibold leading-snug"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2, duration: 0.8 }}
-                  >
-                    {item.heading}
-                  </motion.h2>
                 </div>
-              </section>
+              </motion.section>
             );
           })}
         </div>
-        
-        {/* Next Section Placeholder - this will appear after last card scrolls up */}
+
+        {/* Next Section Placeholder */}
         <div className="h-[10vh] w-full bg-white"></div>
       </div>
     </div>

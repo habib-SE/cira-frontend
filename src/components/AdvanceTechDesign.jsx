@@ -1,14 +1,21 @@
 import { motion } from "framer-motion";
 
 const variants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { 
+    opacity: 0,
+    y: 40,
+    x: 0, // Start off to the left
+    rotate: -180 // Start rotated
+  },
   visible: (i) => ({
     opacity: 1,
     y: 0,
+    x: 0, // Move to final x position
+    rotate: 0, // Rotate to upright position
     transition: {
       delay: i * 0.3,
-      duration: 0.6,
-      ease: "easeOut",
+      duration: 0.8,
+      ease: "backOut",
     },
   }),
 };
@@ -30,7 +37,7 @@ const features = [
 
 export default function AdvanceTechDesgin() {
   return (
-    <div className="flex flex-col  gap-12 px-20 py-20  ">
+    <div className="flex flex-col gap-12 px-20 py-20">
       {/* Text Section */}
       <motion.div
         initial={{ opacity: 0, x: -50 }}
@@ -43,50 +50,43 @@ export default function AdvanceTechDesgin() {
           Designed to Support You
         </h2>
         <div className="flex gap-4 w-2xl">
-        <p className="text-gray-700 text-lg">
-          Zofy leverages advanced deep learning and large language models to
-          synthesize complex data, identifying success patterns with precision.
-        </p>
-        <p className="text-gray-700 text-lg">
-          Zofy delivers personalized, actionable strategies rooted in
-          psychology, behavioral science, and cutting-edge AI, guiding you
-          seamlessly toward your goals.
-        </p>
+          <p className="text-gray-700 text-[16px] font-normal leading-[150%]">
+            Zofy leverages advanced deep learning and large language models to
+            synthesize complex data, identifying success patterns with precision.
+          </p>
+          <p className="text-gray-700 text-lg">
+            Zofy delivers personalized, actionable strategies rooted in
+            psychology, behavioral science, and cutting-edge AI, guiding you
+            seamlessly toward your goals.
+          </p>
         </div>
       </motion.div>
 
-      {/* Images Grid */}
-<div className="flex justify-end gap-6">
-  {features.map((item, i) => (
-    <motion.div
-      key={i}
-      custom={i}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
-      variants={variants}
-      className="flex flex-col items-center text-left"
-    >
-      <div className="w-48 h-48 rounded-lg overflow-hidden">
-        {/* Optional label */}
-        {item.availableIn && (
-          <div className="bg-black bg-opacity-70 text-white text-xs font-semibold uppercase px-2 py-1 rounded">
-            {item.availableIn}
+      {/* Images Grid with Circular Animation */}
+      <div className="flex justify-end gap-6">
+        {features.map((item, i) => (
+          <div key={i} className="flex flex-col items-center text-left">
+            <motion.div
+              custom={i}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={variants}
+              className="w-48 h-48 rounded-lg overflow-hidden"
+            >
+              <img
+                src={item.img}
+                alt={item.title}
+                className="w-full h-full object-contain"
+              />
+            </motion.div>
+            {/* Stationary Text */}
+            <p className="mt-4 text-lg font-medium whitespace-pre-line text-gray-800">
+              {item.title}
+            </p>
           </div>
-        )}
-        <img
-          src={item.img}
-          alt={item.title}
-          className="w-full h-full object-contain"
-        />
+        ))}
       </div>
-      <p className="mt-4 text-lg font-medium whitespace-pre-line text-gray-800">
-        {item.title}
-      </p>
-    </motion.div>
-  ))}
-</div>
-
     </div>
   );
 }

@@ -3,20 +3,18 @@ import { motion } from "framer-motion";
 
 export default function ExperienceSection() {
   return (
-    <section className="w-full  px-4 py-20 flex justify-center items-center h-screen">
+    <section className="w-full px-4 py-20 flex justify-center items-center h-screen">
       <div className="w-full max-w-full h-full rounded-3xl overflow-hidden relative">
         {/* Background layer (blurred) */}
         <div
-          className="w-full h-full bg-cover bg-center blur-md scale-105"
+          className="w-full h-full bg-cover bg-center scale-105"
           style={{
             backgroundImage: `url('https://framerusercontent.com/images/XsMhAXmXhYfj9Yl5DCy1TmLzRk.webp')`,
             height: "100vh",
           }}
         />
         {/* Foreground content layer */}
-        <div
-          className="absolute top-0 left-0 w-full h-full bg-black/65 backdrop-blur-md rounded-3xl p-10 flex flex-col justify-center items-center space-y-10"
-        >
+        <div className="absolute top-0 left-0 w-full h-full bg-black/75 rounded-3xl p-10 flex flex-col justify-center items-center space-y-10">
           {/* Heading */}
           <motion.h2
             className="text-white text-center text-4xl font-semibold"
@@ -37,23 +35,43 @@ export default function ExperienceSection() {
             Join Beta Testing
           </motion.a>
           {/* Cards + Count */}
-          <div className="flex justify-center items-center flex-wrap">
-            {[
-              "https://framerusercontent.com/images/ogQiH9aNZVAabZoZUF7AxzDY2kc.png",
-              "https://framerusercontent.com/images/QTJxQZNRWkSqhw9lcGnMZtxOL10.png",
-              "https://framerusercontent.com/images/IwYGDkOmGG0pHDFv6guT58q4H9w.png",
-            ].map((src, index) => (
-              <div key={index} className="w-14 h-14 rounded-full overflow-hidden">
-                <img src={src} alt="" className="w-full h-full object-cover" />
-              </div>
-            ))}
-            <div className="w-14 h-14 rounded-full bg-[#594FEE] text-white text-sm font-medium">
-              <p className="mt-5 ml-2">+1000</p>
+          <div className="flex justify-center items-center relative">
+            <div className="flex">
+              {[
+                "https://framerusercontent.com/images/ogQiH9aNZVAabZoZUF7AxzDY2kc.png",
+                "https://framerusercontent.com/images/QTJxQZNRWkSqhw9lcGnMZtxOL10.png",
+                "https://framerusercontent.com/images/IwYGDkOmGG0pHDFv6guT58q4H9w.png",
+              ].map((src, index) => (
+                <motion.div 
+                  key={index} 
+                  className="w-14 h-14 rounded-full overflow-hidden border-2 border-white"
+                  style={{
+                    marginLeft: index > 0 ? '-12px' : '0',
+                    zIndex: 3 - index
+                  }}
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 * index, duration: 0.5 }}
+                >
+                  <img src={src} alt="" className="w-full h-full object-cover" />
+                </motion.div>
+              ))}
             </div>
+            <motion.div 
+              className="w-14 h-14 rounded-full bg-[#594FEE] text-white text-sm font-medium flex items-center justify-center border-2 border-white"
+              style={{
+                marginLeft: '-12px',
+                zIndex: 0
+              }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+            >
+              +1000
+            </motion.div>
           </div>
         </div>
       </div>
     </section>
   );
 }
-

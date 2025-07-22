@@ -1,1 +1,8 @@
 @import "tailwindcss";
+body {
+  font-family: 'Newsreader', serif;
+}
+
+p{
+    font-family: "Nunito Sans", "Nunito Sans Placeholder", sans-serif;
+}
