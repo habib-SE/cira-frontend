@@ -1,24 +1,19 @@
 // App.jsx
-import React, { useState } from "react";
-import CiraMobileBanner from "./pages/landingpage/CiraMobileBanner";
-import CiraAssistant from "./pages/landingpage/CiraAssistant";
-import ZofyTalkSection from "./pages/landingpage/ZofyTalk";
-import IntegrationSection from "./pages/landingpage/Integration";
-import ExperienceSection from "./pages/landingpage/Experience";
-import InsightsSection from "./pages/landingpage/Insights";
-import BackgroundVideoCard from "./pages/landingpage/BGVedio";
-import Footer from "./pages/landingpage/Footer";
-import AdvanceTechDesgin from "./pages/landingpage/AdvanceTechDesign";
-import { PlaneLanding } from "lucide-react";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";;
 import LandingPage from "./pages/LandingPage";
+import CiraMobileBanner from "./assistant/CiraMobileBanner";
+import CiraAssistant from "./assistant/CiraAssistant";
 
 function App() {
-  const [showAssistant, setShowAssistant] = useState(false);
-
   return (
-    <>
-     <LandingPage />
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<CiraMobileBanner />} />
+        <Route path="/assistant" element={<CiraAssistant />} />
+        <Route path="/landing-page" element={<LandingPage />} />
+      </Routes>
+    </Router>
   );
 }
 

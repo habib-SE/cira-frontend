@@ -7,7 +7,7 @@ const AGENT_ID = "agent_01jytk2qhke8nrwt3cs47bqdd4";
 export const talkToAgent = async (userInput) => {
   try {
     const response = await axios.post(
-      `https://api.elevenlabs.io/v1/agents/${AGENT_ID}/message`,
+      `https://api.elevenlabs.io/v1/agents/${AGENT_ID}`,
       {
         text: userInput,
       },
