@@ -1,9 +1,9 @@
 // App.jsx
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import CiraMobileBanner from "./pages/landingpage/CiraMobileBanner";
-import CiraAssistant from "./pages/landingpage/CiraAssistant";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";;
 import LandingPage from "./pages/LandingPage";
+import CiraMobileBanner from "./assistant/CiraMobileBanner";
+import CiraAssistant from "./assistant/CiraAssistant";
 
 function App() {
   return (

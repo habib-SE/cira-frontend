@@ -1,7 +1,7 @@
 // CiraMobileBanner.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import doctorImage from "../../assets/doctor.png";
+import doctorImage from "../assets/doctor.png";
 
 const CiraMobileBanner = () => {
   const navigate = useNavigate();
