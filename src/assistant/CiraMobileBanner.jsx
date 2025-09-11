@@ -1,6 +1,6 @@
-// CiraMobileBanner.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import doctorImage from "../assets/doctor.png";
 
 const CiraMobileBanner = () => {
@@ -25,14 +25,25 @@ const CiraMobileBanner = () => {
           Easier <span className="text-red-500 font-semibold">than</span> before
         </p>
 
-        {/* Ask Cira Button */}
+        {/* Ask Cira Button with text zoom effect */}
         <div className="mt-4">
-          <button
+          <motion.button
             onClick={handleAskCira}
-            className="inline-block bg-pink-600 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-md"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-block bg-pink-600 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-md overflow-hidden"
           >
-            Ask Cira
-          </button>
+            <motion.span
+              whileHover={{ scale: 1.2 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="inline-block"
+            >
+              Ask Cira
+            </motion.span>
+          </motion.button>
         </div>
       </div>
 
