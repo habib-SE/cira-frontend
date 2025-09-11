@@ -7,6 +7,14 @@ const CiraAssistant = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+const [hasLoaded, setHasLoaded] = useState(false);
+
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setHasLoaded(true);
+  }, 1000); // Match `dripIn` duration
+  return () => clearTimeout(timer);
+}, []);
 
   const conversation = useConversation({
     onConnect: () => {
@@ -73,13 +81,14 @@ const CiraAssistant = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-center p-6">
-      <div className={`orb-container ${status === "connected" ? (isSpeaking ? "fast" : "slow") : ""}`}>
-        <div className="green"></div>
-        <div className="pink"></div>
-      </div>
-
-
-
+<div
+  className={`orb-container ${!hasLoaded ? "orb-drip-in" : status === "connected"
+    ? isSpeaking
+      ? "orb-fast"
+      : "orb-slow"
+    : "orb-idle"
+    }`}
+/>
       {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
       {status === "connected" && (
         <p className="text-green-600 mb-2">
@@ -107,17 +116,20 @@ const CiraAssistant = () => {
             </button>
           </>
         ) : (
-          <button
-            onClick={handleStartConversation}
-            disabled={!hasPermission}
-            className={`p-3 mt-8 rounded-full text-pink-500 ${hasPermission
-              ? "bg-gradient-to-r from-pink-200 "
-              : "bg-gray-400 cursor-not-allowed"
-              }`}
-            title="Start Conversation"
-          >
-            <PhoneOff />
-          </button>
+        <button
+  onClick={handleStartConversation}
+  disabled={!hasPermission}
+  className={`p-3 mt-8 rounded-full text-pink-500 ${
+    hasPermission
+      ? "bg-gradient-to-r from-pink-200 jump-animation"
+      : "bg-gray-400 cursor-not-allowed"
+  }`}
+  title="Start Conversation"
+>
+  <PhoneOff />
+</button>
+
+
         )}
       </div>
     </div>

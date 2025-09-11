@@ -1,101 +1,107 @@
-/* styles.css */
-body {
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
-  background: #ffecf3;
-  min-height: 100vh;
-  align-items: center;
-  justify-content: center;
+/* Base shape and morphing */
+body{
+  background-color: #202020;
 }
-
 .orb-container {
-  position: relative;
   width: 200px;
   height: 200px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 0 15px #fbbee9, inset 6px 0 5px #de66e4;
-  animation: rotate-orb 3s linear infinite;
-  transform-style: preserve-3d;
-  perspective: 1000px;
+  background: linear-gradient(135deg, #a0e8ff, #6d80f4, #f980d4, #d15ab9);
+  background-size: 300% 300%;
+  border-radius: 60% 40% 50% 50% / 55% 45% 55% 45%;
+  box-shadow:
+    0 0 35px rgba(255, 153, 255, 0.4),
+    0 0 55px rgba(153, 204, 255, 0.4),
+    inset 0 0 25px rgba(255, 255, 255, 0.3);
+  filter: drop-shadow(0 0 25px rgba(255, 100, 255, 0.4));
+  position: relative;
+  transition: all 0.3s ease-in-out;
 }
 
-.orb-container > .green,
-.orb-container > .pink {
-  position: absolute;
-  top: 10%;
-  left: 10%;
-  width: 80%;
-  height: 80%;
-  border-radius: 50%;
-}
-
-.green {
-  background: linear-gradient(to right, transparent 60%, rgba(115,213,186,0.8));
-  animation: orb-green 6s linear infinite;
-}
-
-.pink {
-  background: linear-gradient(to right, transparent 50%, rgba(215,115,229,0.8));
-  animation: orb-pink 3s linear infinite;
-}
-
-@keyframes rotate-orb {
+/* Keyframes for shape and gradient */
+@keyframes eggMorph {
   0% {
-    transform: rotate(0deg);
-    box-shadow: 0 0 15px #2c116e, inset 6px 0 5px #de66e4;
+    border-radius: 60% 40% 50% 50% / 55% 45% 55% 45%;
+    transform: rotate(0deg) scale(1);
   }
   25% {
-    transform: rotate(90deg);
-    box-shadow: 0 0 15px #28126a, inset 6px 0 5px #34ceaa;
+    border-radius: 70% 30% 60% 40% / 65% 35% 60% 40%;
+    transform: rotate(2deg) scale(1.05, 0.95);
   }
   50% {
-    transform: rotate(180deg);
-    box-shadow: 0 0 15px #28126a, inset 6px 0 5px #19b3f5;
+    border-radius: 50% 50% 70% 30% / 45% 55% 35% 65%;
+    transform: rotate(-2deg) scale(0.98, 1.05);
   }
   75% {
-    transform: rotate(270deg);
-    box-shadow: 0 0 15px #28126a, inset 6px 0 5px #fbbee9;
+    border-radius: 65% 35% 45% 55% / 50% 60% 40% 50%;
+    transform: rotate(3deg) scale(1.07, 0.93);
   }
   100% {
-    transform: rotate(360deg);
-    box-shadow: 0 0 15px #28126a, inset 6px 0 5px #de66e4;
+    border-radius: 60% 40% 50% 50% / 55% 45% 55% 45%;
+    transform: rotate(0deg) scale(1);
+  }
+}
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 
-@keyframes orb-green {
-  0% { transform: rotateY(0deg) skew(14deg) rotate3d(1.1, 1, .9, 0deg); }
-  50% { transform: rotateY(0deg) skew(14deg) rotate3d(1.1, 1, .9, 180deg); }
-  100% { transform: rotateY(0deg) skew(14deg) rotate3d(1.1, 1, .9, 360deg); }
+/* Animation speed variants */
+.orb-idle {
+  animation: eggMorph 15s ease-in-out infinite, gradientShift 20s ease-in-out infinite;
+}
+.orb-slow {
+  animation: eggMorph 8s ease-in-out infinite, gradientShift 12s ease-in-out infinite;
+}
+.orb-fast {
+  animation: eggMorph 3s ease-in-out infinite, gradientShift 6s ease-in-out infinite;
 }
 
-@keyframes orb-pink {
-  0% { transform: rotateY(180deg) skew(14deg) rotate3d(1.1, 1, .9, 0deg); }
-  50% { transform: rotateY(180deg) skew(14deg) rotate3d(1.1, 1, .9, 180deg); }
-  100% { transform: rotateY(180deg) skew(14deg) rotate3d(1.1, 1, .9, 360deg); }
-}
-/* Dynamic animation speed modifiers */
-.orb-container.fast {
-  animation-duration: 1.5s; /* Faster rotation */
-}
-
-.orb-container.slow {
-  animation-duration: 6s; /* Slower rotation */
-}
-
-.orb-container.fast .green {
-  animation-duration: 2s;
-}
-
-.orb-container.slow .green {
-  animation-duration: 8s;
-}
-
-.orb-container.fast .pink {
-  animation-duration: 1.5s;
+/* Water drip down then morph into orb */
+@keyframes dripIn {
+  0% {
+    transform: translateY(-200px) scaleY(0.2) scaleX(0.2);
+    opacity: 0;
+  }
+  30% {
+    transform: translateY(0) scaleY(1.4) scaleX(0.6);
+    opacity: 1;
+  }
+  60% {
+    transform: scaleY(0.9) scaleX(1.1);
+  }
+  80% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
-.orb-container.slow .pink {
-  animation-duration: 5s;
+/* Apply once on page load */
+.orb-drip-in {
+  animation: dripIn 1s ease-out forwards;
+}
+
+
+
+/* Jumping mic button animation */
+
+@keyframes jump {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.jump-animation {
+  animation: jump 0.6s ease-in-out 1s;
 }
