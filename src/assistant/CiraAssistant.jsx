@@ -105,12 +105,13 @@ const CiraAssistant = () => {
   }, [status, isSpeaking, listeningInput, speakingInput]);
 
   return (
-    <div className="flex flex-col bg-white items-center justify-center min-h-screen text-center p-6">
+    <div style={{
+      background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)'}} className="flex flex-col items-center justify-center min-h-screen text-center p-6">
       {/* Orb + glowing background */}
       <div className="relative h-84 w-96 mb-6 flex items-center justify-center">
         <motion.div
           className="absolute inset-0 z-0 rounded-full blur-[20px]"
-          style={{ background: glowColor }}
+          // style={{ background: glowColor }}
           animate={{
             scale: [0.9, 0.9, 0.9],
             opacity: [0.3, 0.6, 0.3],
