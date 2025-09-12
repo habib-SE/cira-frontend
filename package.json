@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@11labs/react": "^0.1.4",
+    "@rive-app/react-canvas": "^4.23.3",
+    "@rive-app/react-webgl2": "^4.23.3",
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.10.0",
     "framer-motion": "^12.23.6",
