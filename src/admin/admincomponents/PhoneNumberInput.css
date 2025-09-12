@@ -1,0 +1,228 @@
+/* Phone Input Custom Styling - Remove all borders and make transparent */
+.phone-input-custom {
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Remove all borders from react-phone-number-input */
+.phone-input-custom * {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Override any default library styling */
+.phone-input-custom,
+.phone-input-custom > div,
+.phone-input-custom .PhoneInput,
+.phone-input-custom .PhoneInputCountry,
+.phone-input-custom .PhoneInputInput {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.phone-input-custom .PhoneInputInput {
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  font-size: 1rem !important;
+  color: #111827 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  line-height: normal !important;
+}
+
+.phone-input-custom .PhoneInputInput::placeholder {
+  color: #9ca3af !important;
+  font-size: 0.875rem !important;
+}
+
+.phone-input-custom .PhoneInputCountry {
+  margin-right: 0.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  background: transparent !important;
+}
+
+.phone-input-custom .PhoneInputCountryFlag {
+  width: 1.2em !important;
+  height: 1.2em !important;
+  border-radius: 2px !important;
+}
+
+.phone-input-custom .PhoneInputCountrySelect {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: #374151 !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+}
+
+.phone-input-custom .PhoneInputCountrySelect:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.phone-input-custom .PhoneInputCountrySelectArrow {
+  color: #6b7280 !important;
+  width: 0.75rem !important;
+  height: 0.75rem !important;
+  margin-left: 0.25rem !important;
+}
+
+/* Show the default country select dropdown arrow */
+.phone-input-custom .PhoneInputCountrySelectArrow {
+  display: block !important;
+  color: #2f2f31 !important;
+  width: 0.75rem !important;
+  height: 0.75rem !important;
+  margin-left: 0.25rem !important;
+  
+}
+
+/* Remove custom dropdown arrow since we're using the default one */
+.phone-input-custom .PhoneInputCountrySelect::after {
+  display: none !important;
+}
+
+/* Make the country select look like a button */
+.phone-input-custom .PhoneInputCountrySelect {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+}
+
+/* Ensure proper spacing */
+.phone-input-custom .PhoneInputCountry {
+  margin-right: 0.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  background: transparent !important;
+}
+
+/* Input field styling */
+.phone-input-custom .PhoneInputInput {
+  flex: 1 !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  font-size: 1rem !important;
+  color: #111827 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: auto !important;
+  line-height: normal !important;
+}
+
+.phone-input-custom .PhoneInputInput::placeholder {
+  color: #9ca3af !important;
+  font-size: 0.875rem !important;
+}
+
+/* Force remove any focus borders or outlines */
+.phone-input-custom:focus,
+.phone-input-custom:focus-within,
+.phone-input-custom .PhoneInput:focus,
+.phone-input-custom .PhoneInputInput:focus,
+.phone-input-custom .PhoneInputCountrySelect:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove any default library focus styles */
+.phone-input-custom .PhoneInput--focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Additional overrides to ensure no black borders */
+.phone-input-custom .PhoneInput--focus .PhoneInputInput {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.phone-input-custom .PhoneInput--focus .PhoneInputCountry {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Global overrides for react-phone-number-input library */
+.PhoneInput {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.PhoneInput input {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.PhoneInput select {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Force remove any borders from all possible selectors */
+[class*="PhoneInput"] {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+[class*="PhoneInput"] * {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Target any element that might have a border */
+.phone-input-custom,
+.phone-input-custom *,
+.PhoneInput,
+.PhoneInput *,
+[class*="PhoneInput"],
+[class*="PhoneInput"] * {
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}

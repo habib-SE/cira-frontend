@@ -1,19 +1,30 @@
 // App.jsx
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import MainRouter from "./routes/MainRouter";
 import Header from "./components/Header";
 import LandingPage from "./pages/Home";
 import CiraMobileBanner from "./assistant/CiraMobileBanner";
 import CiraAssistant from "./assistant/CiraAssistant";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 function App() {
   return (
     <Router>
-      <Header />
       <Routes>
-        {/* <Route path="/" element={<CiraMobileBanner />} /> */}
+        {/* Public routes */}
         <Route path="/assistant" element={<CiraAssistant />} />
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/home" element={
+          <>
+            <Header />
+            <LandingPage />
+          </>
+        } />
+        
+        {/* Admin routes - simple call to MainRouter */}
+        <Route path="/*" element={<MainRouter />} />
+        
+        {/* Default redirect to home */}
+        <Route path="/" element={<Navigate to="/home" replace />} />
       </Routes>
     </Router>
   );
