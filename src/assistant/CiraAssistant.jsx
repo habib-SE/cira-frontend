@@ -1,41 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { useConversation } from "@11labs/react";
 import { MicOff, PhoneOff, Volume2, VolumeX } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  useRive,
+  useStateMachineInput,
+  useViewModel,
+  useViewModelInstance,
+  useViewModelInstanceColor,
+} from "@rive-app/react-canvas";
+import orbFile from "../assets/orb.riv";
 
 const CiraAssistant = () => {
   const [hasPermission, setHasPermission] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-const [hasLoaded, setHasLoaded] = useState(false);
+  const [glowColor, setGlowColor] = useState("rgb(237, 90, 188)"); // 🌸 pink glow
 
-useEffect(() => {
-  const timer = setTimeout(() => {
-    setHasLoaded(true);
-  }, 1000); // Match `dripIn` duration
-  return () => clearTimeout(timer);
-}, []);
-
-  const conversation = useConversation({
-    onConnect: () => {
-      console.log("✅ Connected");
-    },
-    onDisconnect: () => {
-      console.log("🔌 Disconnected");
-    },
-    onSpeakStart: () => {
-      console.log("🗣 Speaking...");
-    },
-    onSpeakEnd: () => {
-      console.log("🔇 Done speaking");
-    },
-    onMessage: (message) => {
-      console.log("💬 Assistant:", message.message);
-    },
-  });
-
-  const { status, isSpeaking } = conversation;
-
+  // 🎙 ask mic permission
   useEffect(() => {
     const requestMicPermission = async () => {
       try {
@@ -47,6 +30,17 @@ useEffect(() => {
     };
     requestMicPermission();
   }, []);
+
+  // 💬 ElevenLabs conversation
+  const conversation = useConversation({
+    onConnect: () => console.log("✅ Connected"),
+    onDisconnect: () => console.log("🔌 Disconnected"),
+    onSpeakStart: () => console.log("🗣 Speaking..."),
+    onSpeakEnd: () => console.log("🔇 Done speaking"),
+    onMessage: (m) => console.log("💬 Assistant:", m.message),
+  });
+
+  const { status, isSpeaking } = conversation;
 
   const handleStartConversation = async () => {
     try {
@@ -79,16 +73,57 @@ useEffect(() => {
     }
   };
 
+  // 🟣 Rive orb setup
+  const stateMachine = "default";
+  const { rive, RiveComponent } = useRive({
+    src: orbFile,
+    stateMachines: stateMachine,
+    autoplay: true,
+  });
+
+  // 🟢 make orb fully pink (remove blue)
+  const viewModel = useViewModel(rive, { useDefault: true });
+  const viewModelInstance = useViewModelInstance(viewModel, {
+    rive,
+    useDefault: true,
+  });
+  const { setRgb } = useViewModelInstanceColor("color", viewModelInstance);
+
+  useEffect(() => {
+    if (setRgb) {
+      // 🌸 full pink
+      setRgb(237 / 255, 90 / 255, 188 / 255);
+    }
+  }, [setRgb]);
+
+  const listeningInput = useStateMachineInput(rive, stateMachine, "listening");
+  const speakingInput = useStateMachineInput(rive, stateMachine, "speaking");
+
+  useEffect(() => {
+    if (listeningInput) listeningInput.value = status === "connected" && !isSpeaking;
+    if (speakingInput) speakingInput.value = isSpeaking;
+  }, [status, isSpeaking, listeningInput, speakingInput]);
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-center p-6">
-<div
-  className={`orb-container ${!hasLoaded ? "orb-drip-in" : status === "connected"
-    ? isSpeaking
-      ? "orb-fast"
-      : "orb-slow"
-    : "orb-idle"
-    }`}
-/>
+    <div className="flex flex-col bg-[#edd8e3] items-center justify-center min-h-screen text-center p-6">
+      {/* Orb + glowing background */}
+      <div className="relative h-96 w-96 mb-6 flex items-center justify-center">
+        <motion.div
+          className="absolute inset-0 z-0 rounded-full blur-[20px]"
+          style={{ background: glowColor }}
+          animate={{
+            scale: [0.9, 0.9, 0.9],
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <RiveComponent className="h-full w-full" />
+      </div>
+
       {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
       {status === "connected" && (
         <p className="text-green-600 mb-2">
@@ -108,28 +143,27 @@ useEffect(() => {
             </button>
             <button
               onClick={toggleMute}
-              className={`p-3 rounded-full ${isMuted ? "bg-red-500" : "bg-green-500"
-                } text-white`}
+              className={`p-3 rounded-full ${
+                isMuted ? "bg-red-500" : "bg-green-500"
+              } text-white`}
               title={isMuted ? "Unmute" : "Mute"}
             >
               {isMuted ? <VolumeX /> : <Volume2 />}
             </button>
           </>
         ) : (
-        <button
-  onClick={handleStartConversation}
-  disabled={!hasPermission}
-  className={`p-3 mt-8 rounded-full text-pink-500 ${
-    hasPermission
-      ? "bg-gradient-to-r from-pink-200 jump-animation"
-      : "bg-gray-400 cursor-not-allowed"
-  }`}
-  title="Start Conversation"
->
-  <PhoneOff />
-</button>
-
-
+          <button
+            onClick={handleStartConversation}
+            disabled={!hasPermission}
+            className={`p-3 mt-8 rounded-full text-pink-500 ${
+              hasPermission
+                ? "bg-gradient-to-r from-pink-500 jump-animation"
+                : "bg-gray-400 cursor-not-allowed"
+            }`}
+            title="Start Conversation"
+          >
+            <PhoneOff />
+          </button>
         )}
       </div>
     </div>
