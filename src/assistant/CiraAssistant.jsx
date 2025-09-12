@@ -105,9 +105,9 @@ const CiraAssistant = () => {
   }, [status, isSpeaking, listeningInput, speakingInput]);
 
   return (
-    <div className="flex flex-col bg-[#edd8e3] items-center justify-center min-h-screen text-center p-6">
+    <div className="flex flex-col bg-white items-center justify-center min-h-screen text-center p-6">
       {/* Orb + glowing background */}
-      <div className="relative h-96 w-96 mb-6 flex items-center justify-center">
+      <div className="relative h-84 w-96 mb-6 flex items-center justify-center">
         <motion.div
           className="absolute inset-0 z-0 rounded-full blur-[20px]"
           style={{ background: glowColor }}
@@ -131,7 +131,7 @@ const CiraAssistant = () => {
         </p>
       )}
 
-      <div className="flex gap-4 mt-4">
+      <div className="flex gap-4 mt-2">
         {isConnected ? (
           <>
             <button
@@ -143,11 +143,11 @@ const CiraAssistant = () => {
             </button>
             <button
               onClick={toggleMute}
-              className={`p-3 rounded-full ${
-                isMuted ? "bg-red-500" : "bg-green-500"
-              } text-white`}
+              className={`p-3 rounded-full ${isMuted ? "bg-red-500" : "bg-green-500"
+                } text-white`}
               title={isMuted ? "Unmute" : "Mute"}
             >
+
               {isMuted ? <VolumeX /> : <Volume2 />}
             </button>
           </>
@@ -155,14 +155,15 @@ const CiraAssistant = () => {
           <button
             onClick={handleStartConversation}
             disabled={!hasPermission}
-            className={`p-3 mt-8 rounded-full text-pink-500 ${
-              hasPermission
-                ? "bg-gradient-to-r from-pink-500 jump-animation"
-                : "bg-gray-400 cursor-not-allowed"
-            }`}
             title="Start Conversation"
+            className={`mt-8 flex items-center gap-1 rounded-full px-3 py-3 text-white font-medium transition-all duration-300
+    ${hasPermission
+                ? "bg-gradient-to-r from-pink-500 to-pink-600 hover:scale-105 hover:shadow-lg active:scale-95"
+                : "bg-gray-400 cursor-not-allowed"
+              }`}
           >
-            <PhoneOff />
+            <PhoneOff className="w-5 h-5" />
+            <span className="text-xl">Start</span>
           </button>
         )}
       </div>
