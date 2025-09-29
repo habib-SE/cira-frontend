@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Check, X } from 'lucide-react';
 import LoginLogo from '../../assets/LoginLogo.png';
 import logo from '../../assets/Logo.png';
+import '../../styles/banner.css';
 
 const EmailConfirmPage = () => {
   const navigate = useNavigate();
@@ -10,6 +12,7 @@ const EmailConfirmPage = () => {
   const [canResend, setCanResend] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
   const inputRefs = useRef([]);
 
   // Countdown timer
@@ -24,7 +27,11 @@ const EmailConfirmPage = () => {
 
   // Auto-focus next input
   const handleInputChange = (index, value) => {
-    if (value.length > 1) return; // Prevent multiple characters
+    // Only allow single digits
+    if (value.length > 1) return;
+    
+    // Only allow numbers
+    if (value && !/^[0-9]$/.test(value)) return;
     
     const newCode = [...code];
     newCode[index] = value;
@@ -77,27 +84,14 @@ const EmailConfirmPage = () => {
       // Simulate API call to verify the code
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Strong validation - only accept specific valid codes
-      // In production, this should be validated against your backend/database
-      const validCodes = ['1234', '5678', '9999', '0000']; // Add your valid codes here
+      // Show alert in top-left corner
+      setShowAlert(true);
       
-      // TODO: Replace with real API call to verify code
-      // const response = await fetch('/api/verify-email-code', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email: userEmail, code: fullCode })
-      // });
-      // const result = await response.json();
+      // Wait a moment to show the alert, then navigate
+      setTimeout(() => {
+        navigate('/plus-unlocked');
+      }, 2000);
       
-      if (validCodes.includes(fullCode)) {
-        // Code is valid - proceed to next step
-        navigate('/enable-permission');
-      } else {
-        // Code is invalid - show error and clear fields
-        setError('Invalid verification code. Please check your email and try again.');
-        setCode(['', '', '', '']); // Clear the input fields
-        inputRefs.current[0]?.focus(); // Focus first input
-      }
     } catch {
       setError('Verification failed. Please try again.');
       setCode(['', '', '', '']); // Clear fields on error
@@ -130,6 +124,26 @@ const EmailConfirmPage = () => {
                 </div>
             </div>
 
+    {/* Success Banner */}
+    {showAlert && (
+      <div className="fixed top-4 right-4 z-50 animate-slide-in-right">
+        <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-sm">
+          <div className="flex-shrink-0">
+            <Check className="w-6 h-6" />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-sm">Email verified successfully!</p>
+          </div>
+          <button
+            onClick={() => setShowAlert(false)}
+            className="flex-shrink-0 text-white hover:text-green-200 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    )}
+
       {/* Main Content - Centered */}
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="w-full max-w-sm text-center">
@@ -158,7 +172,7 @@ const EmailConfirmPage = () => {
             <input
               key={index}
               ref={el => inputRefs.current[index] = el}
-              type="text"
+              type="tel"
               inputMode="numeric"
               pattern="[0-9]*"
               maxLength="1"
@@ -166,6 +180,7 @@ const EmailConfirmPage = () => {
               onChange={(e) => handleInputChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={index === 0 ? handlePaste : undefined}
+              autoComplete="one-time-code"
               className="w-14 h-14 text-center text-xl font-semibold border border-gray-200 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
             />
           ))}

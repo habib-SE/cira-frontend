@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeClosed } from 'lucide-react';
+import { Eye, EyeClosed, Check, X, AlertCircle } from 'lucide-react';
 import logo from '../../assets/Logo.png';
 import loginLogo from '../../assets/LoginLogo.png';
 
@@ -107,9 +107,7 @@ const LoginPage = () => {
         <div className="fixed top-4 right-4 z-50 animate-slide-in-right">
           <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-sm">
             <div className="flex-shrink-0">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              <Check className="w-6 h-6" />
             </div>
             <div className="flex-1">
               <p className="font-medium text-sm">{bannerMessage}</p>
@@ -118,9 +116,7 @@ const LoginPage = () => {
               onClick={() => setShowSuccessBanner(false)}
               className="flex-shrink-0 text-white hover:text-green-200 transition-colors"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -131,9 +127,7 @@ const LoginPage = () => {
         <div className="fixed top-4 right-4 z-50 animate-slide-in-right">
           <div className="bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-sm">
             <div className="flex-shrink-0">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <AlertCircle className="w-6 h-6" />
             </div>
             <div className="flex-1">
               <p className="font-medium text-sm">{bannerMessage}</p>
@@ -142,9 +136,7 @@ const LoginPage = () => {
               onClick={() => setShowErrorBanner(false)}
               className="flex-shrink-0 text-white hover:text-red-200 transition-colors"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>

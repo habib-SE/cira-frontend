@@ -29,14 +29,14 @@ const Navbar = ({ onMenuClick, isMobileMenuOpen }) => {
                     </button>
 
                     {/* Search bar */}
-                    <div className="relative hidden md:block">
+                    {/* <div className="relative hidden md:block">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
                             placeholder="Search patients, doctors, reports..."
                             className="pl-10 pr-4 py-2 w-80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
                         />
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Right side */}

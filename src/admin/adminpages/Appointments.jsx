@@ -1,50 +1,526 @@
-import React from 'react';
-import { Calendar, Plus, Search, Filter, Clock, User, Stethoscope } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Calendar, Plus, Search, Filter, Clock, User, Stethoscope, X, Save, Edit, Trash2, Eye, Phone, Mail, MapPin, AlertCircle, CheckCircle, FileText } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const Appointments = () => {
-    const appointments = [
+    const navigate = useNavigate();
+    const location = useLocation();
+    
+    // State management
+    const [appointments, setAppointments] = useState([
         {
             id: 1,
             patient: 'John Doe',
+            patientEmail: 'john.doe@email.com',
+            patientPhone: '+1 (555) 123-4567',
             doctor: 'Dr. Sarah Johnson',
             specialty: 'Cardiology',
-            date: '2024-01-20',
+            date: new Date().toISOString().split('T')[0], // Today
             time: '09:00 AM',
             status: 'Scheduled',
-            type: 'Follow-up'
+            type: 'Follow-up',
+            notes: 'Regular follow-up for heart condition',
+            priority: 'Normal',
+            duration: '30 minutes'
         },
         {
             id: 2,
             patient: 'Jane Smith',
+            patientEmail: 'jane.smith@email.com',
+            patientPhone: '+1 (555) 234-5678',
             doctor: 'Dr. Michael Chen',
             specialty: 'Neurology',
-            date: '2024-01-20',
+            date: new Date().toISOString().split('T')[0], // Today
             time: '10:30 AM',
             status: 'Confirmed',
-            type: 'Consultation'
+            type: 'Consultation',
+            notes: 'Initial consultation for migraines',
+            priority: 'High',
+            duration: '45 minutes'
         },
         {
             id: 3,
             patient: 'Mike Johnson',
+            patientEmail: 'mike.johnson@email.com',
+            patientPhone: '+1 (555) 345-6789',
             doctor: 'Dr. Emily Rodriguez',
             specialty: 'Dermatology',
-            date: '2024-01-20',
+            date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
             time: '02:00 PM',
             status: 'In Progress',
-            type: 'Check-up'
+            type: 'Check-up',
+            notes: 'Annual skin check-up',
+            priority: 'Normal',
+            duration: '20 minutes'
         },
         {
             id: 4,
             patient: 'Sarah Wilson',
+            patientEmail: 'sarah.wilson@email.com',
+            patientPhone: '+1 (555) 456-7890',
             doctor: 'Dr. David Kim',
             specialty: 'Orthopedics',
-            date: '2024-01-21',
+            date: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0], // Day after tomorrow
             time: '11:15 AM',
             status: 'Scheduled',
-            type: 'Consultation'
+            type: 'Consultation',
+            notes: 'Knee pain consultation',
+            priority: 'Low',
+            duration: '30 minutes'
+        },
+        {
+            id: 5,
+            patient: 'Robert Brown',
+            patientEmail: 'robert.brown@email.com',
+            patientPhone: '+1 (555) 567-8901',
+            doctor: 'Dr. Sarah Johnson',
+            specialty: 'Cardiology',
+            date: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0], // 3 days from now
+            time: '03:30 PM',
+            status: 'Completed',
+            type: 'Follow-up',
+            notes: 'Post-surgery follow-up',
+            priority: 'High',
+            duration: '30 minutes'
+        },
+        {
+            id: 6,
+            patient: 'Lisa Davis',
+            patientEmail: 'lisa.davis@email.com',
+            patientPhone: '+1 (555) 678-9012',
+            doctor: 'Dr. Michael Chen',
+            specialty: 'Neurology',
+            date: new Date(Date.now() - 86400000).toISOString().split('T')[0], // Yesterday
+            time: '01:00 PM',
+            status: 'Cancelled',
+            type: 'Consultation',
+            notes: 'Patient cancelled due to emergency',
+            priority: 'Normal',
+            duration: '45 minutes'
+        },
+    ]);
+
+    // Form state
+    const [showFormInLayout, setShowFormInLayout] = useState(false);
+    const [showEditFormInLayout, setShowEditFormInLayout] = useState(false);
+    const [showViewFormInLayout, setShowViewFormInLayout] = useState(false);
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [editingAppointment, setEditingAppointment] = useState(null);
+    const [viewingAppointment, setViewingAppointment] = useState(null);
+    const [formData, setFormData] = useState({
+        patientName: '',
+        patientEmail: '',
+        patientPhone: '',
+        doctor: '',
+        department: '',
+        appointmentDate: '',
+        appointmentTime: '',
+        appointmentType: '',
+        status: 'Scheduled',
+        notes: '',
+        priority: 'Normal',
+        duration: '30'
+    });
+    const [formErrors, setFormErrors] = useState({});
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
+    const [filterDoctor, setFilterDoctor] = useState('');
+    const [filterPriority, setFilterPriority] = useState('');
+    const [filterType, setFilterType] = useState('');
+
+    // Doctors data (matching the structure from Doctors.jsx)
+    const doctors = [
+        {
+            id: 1,
+            name: 'Dr. Sarah Johnson',
+            specialty: 'Cardiology',
+            experience: '8 years',
+            patients: 245,
+            rating: 4.9,
+            status: 'online',
+            avatar: 'SJ'
+        },
+        {
+            id: 2,
+            name: 'Dr. Michael Chen',
+            specialty: 'Neurology',
+            experience: '12 years',
+            patients: 189,
+            rating: 4.8,
+            status: 'busy',
+            avatar: 'MC'
+        },
+        {
+            id: 3,
+            name: 'Dr. Emily Rodriguez',
+            specialty: 'Dermatology',
+            experience: '6 years',
+            patients: 312,
+            rating: 4.9,
+            status: 'online',
+            avatar: 'ER'
+        },
+        {
+            id: 4,
+            name: 'Dr. David Kim',
+            specialty: 'Orthopedics',
+            experience: '15 years',
+            patients: 198,
+            rating: 4.7,
+            status: 'offline',
+            avatar: 'DK'
         },
     ];
+
+    // Appointment types
+    const appointmentTypes = ['Consultation', 'Check-up', 'Follow-up', 'Emergency', 'Surgery', 'Therapy', 'Vaccination'];
+    
+    // Status options
+    const statusOptions = ['Scheduled', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'];
+    
+    // Priority options
+    const priorityOptions = ['Low', 'Normal', 'High', 'Urgent'];
+    
+    // Duration options
+    const durationOptions = ['15', '30', '45', '60', '90', '120'];
+
+    // Route handling
+    useEffect(() => {
+        const pathSegments = location.pathname.split('/').filter(segment => segment !== '');
+        const lastSegment = pathSegments[pathSegments.length - 1];
+        const secondLastSegment = pathSegments[pathSegments.length - 2];
+        const thirdLastSegment = pathSegments[pathSegments.length - 3];
+        
+        // Reset form state
+        setShowFormInLayout(false);
+        setShowEditFormInLayout(false);
+        setShowViewFormInLayout(false);
+        
+        // Check if we're on the appointments add route
+        if (lastSegment === 'add' && secondLastSegment === 'appointments') {
+            setShowFormInLayout(true);
+            
+            // Check for doctor parameter in URL
+            const urlParams = new URLSearchParams(location.search);
+            const doctorParam = urlParams.get('doctor');
+            if (doctorParam) {
+                setFormData(prev => ({
+                    ...prev,
+                    doctor: doctorParam,
+                    department: doctors.find(d => d.name === doctorParam)?.specialty || ''
+                }));
+            }
+        }
+        
+        // Check if we're on the appointments edit route
+        if (lastSegment && secondLastSegment === 'edit' && thirdLastSegment === 'appointments') {
+            const appointmentId = parseInt(lastSegment);
+            const appointment = appointments.find(apt => apt.id === appointmentId);
+            if (appointment) {
+                setEditingAppointment(appointment);
+                setFormData({
+                    patientName: appointment.patient,
+                    patientEmail: appointment.patientEmail,
+                    patientPhone: appointment.patientPhone,
+                    doctor: appointment.doctor,
+                    department: appointment.specialty,
+                    appointmentDate: appointment.date,
+                    appointmentTime: appointment.time,
+                    appointmentType: appointment.type,
+                    status: appointment.status,
+                    notes: appointment.notes || '',
+                    priority: appointment.priority,
+                    duration: appointment.duration.replace(' minutes', '')
+                });
+                setShowEditFormInLayout(true);
+            }
+        }
+        
+        // Check if we're on the appointments view route
+        if (lastSegment && secondLastSegment === 'view' && thirdLastSegment === 'appointments') {
+            const appointmentId = parseInt(lastSegment);
+            const appointment = appointments.find(apt => apt.id === appointmentId);
+            if (appointment) {
+                setViewingAppointment(appointment);
+                setShowViewFormInLayout(true);
+            }
+        }
+        
+        // Check for doctor filter parameter
+        const urlParams = new URLSearchParams(location.search);
+        const doctorFilter = urlParams.get('doctor');
+        if (doctorFilter && lastSegment === 'appointments') {
+            setFilterDoctor(doctorFilter);
+        }
+    }, [location.pathname, location.search, appointments]);
+
+    // Form handling functions
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        
+        // Auto-fill department when doctor is selected
+        if (name === 'doctor') {
+            const selectedDoctor = doctors.find(d => d.name === value);
+            if (selectedDoctor) {
+                setFormData(prev => ({
+                    ...prev,
+                    doctor: value,
+                    department: selectedDoctor.specialty
+                }));
+            }
+        }
+        
+        // Clear error when user starts typing
+        if (formErrors[name]) {
+            setFormErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+
+    const validateForm = () => {
+        const errors = {};
+        
+        if (!formData.patientName.trim()) {
+            errors.patientName = 'Patient name is required';
+        }
+        if (!formData.patientEmail.trim()) {
+            errors.patientEmail = 'Patient email is required';
+        } else if (!/\S+@\S+\.\S+/.test(formData.patientEmail)) {
+            errors.patientEmail = 'Please enter a valid email address';
+        }
+        if (!formData.patientPhone.trim()) {
+            errors.patientPhone = 'Patient phone number is required';
+        } else if (!/^[\+]?[1-9][\d]{0,15}$/.test(formData.patientPhone.replace(/\D/g, ''))) {
+            errors.patientPhone = 'Please enter a valid phone number';
+        }
+        if (!formData.doctor) {
+            errors.doctor = 'Please select a doctor';
+        }
+        if (!formData.appointmentDate) {
+            errors.appointmentDate = 'Appointment date is required';
+        } else {
+            const selectedDate = new Date(formData.appointmentDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate < today) {
+                errors.appointmentDate = 'Appointment date must be today or in the future';
+            }
+        }
+        if (!formData.appointmentTime) {
+            errors.appointmentTime = 'Appointment time is required';
+        }
+        if (!formData.appointmentType) {
+            errors.appointmentType = 'Please select appointment type';
+        }
+        if (!formData.duration) {
+            errors.duration = 'Please select appointment duration';
+        }
+        
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (validateForm()) {
+            const newAppointment = {
+                id: appointments.length + 1,
+                patient: formData.patientName,
+                patientEmail: formData.patientEmail,
+                patientPhone: formData.patientPhone,
+                doctor: formData.doctor,
+                specialty: formData.department,
+                date: formData.appointmentDate,
+                time: formData.appointmentTime,
+                status: formData.status,
+                type: formData.appointmentType,
+                notes: formData.notes,
+                priority: formData.priority,
+                duration: formData.duration + ' minutes'
+            };
+            
+            setAppointments(prev => [...prev, newAppointment]);
+            
+            // Reset form and navigate back
+            setFormData({
+                patientName: '',
+                patientEmail: '',
+                patientPhone: '',
+                doctor: '',
+                department: '',
+                appointmentDate: '',
+                appointmentTime: '',
+                appointmentType: '',
+                status: 'Scheduled',
+                notes: '',
+                priority: 'Normal',
+                duration: '30'
+            });
+            setFormErrors({});
+            setShowFormInLayout(false);
+            setShowSuccessMessage(true);
+            navigate('/admin/appointments');
+            
+            setTimeout(() => {
+                setShowSuccessMessage(false);
+            }, 3000);
+        }
+    };
+
+    const closeForm = () => {
+        setShowFormInLayout(false);
+        setFormData({
+            patientName: '',
+            patientEmail: '',
+            patientPhone: '',
+            doctor: '',
+            department: '',
+            appointmentDate: '',
+            appointmentTime: '',
+            appointmentType: '',
+            status: 'Scheduled',
+            notes: '',
+            priority: 'Normal',
+            duration: '30'
+        });
+        setFormErrors({});
+        navigate('/admin/appointments');
+    };
+
+    // Appointment action handlers
+    const handleViewAppointment = (appointment) => {
+        navigate(`/admin/appointments/view/${appointment.id}`);
+    };
+
+    const handleEditAppointment = (appointment) => {
+        navigate(`/admin/appointments/edit/${appointment.id}`);
+    };
+
+    const handleDeleteAppointment = (appointment) => {
+        setSelectedAppointment(appointment);
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDelete = () => {
+        if (selectedAppointment) {
+            setAppointments(prev => prev.filter(apt => apt.id !== selectedAppointment.id));
+            setShowDeleteConfirm(false);
+            setSelectedAppointment(null);
+            setShowSuccessMessage(true);
+            setTimeout(() => {
+                setShowSuccessMessage(false);
+            }, 3000);
+        }
+    };
+
+    const handleUpdateAppointment = (e) => {
+        e.preventDefault();
+        if (validateForm() && editingAppointment) {
+            setAppointments(prev => prev.map(apt => 
+                apt.id === editingAppointment.id 
+                    ? {
+                        ...apt,
+                        patient: formData.patientName,
+                        patientEmail: formData.patientEmail,
+                        patientPhone: formData.patientPhone,
+                        doctor: formData.doctor,
+                        specialty: formData.department,
+                        date: formData.appointmentDate,
+                        time: formData.appointmentTime,
+                        status: formData.status,
+                        type: formData.appointmentType,
+                        notes: formData.notes,
+                        priority: formData.priority,
+                        duration: formData.duration + ' minutes'
+                    }
+                    : apt
+            ));
+            
+            setShowEditFormInLayout(false);
+            setEditingAppointment(null);
+            setFormData({
+                patientName: '',
+                patientEmail: '',
+                patientPhone: '',
+                doctor: '',
+                department: '',
+                appointmentDate: '',
+                appointmentTime: '',
+                appointmentType: '',
+                status: 'Scheduled',
+                notes: '',
+                priority: 'Normal',
+                duration: '30'
+            });
+            setFormErrors({});
+            setShowSuccessMessage(true);
+            navigate('/admin/appointments');
+            
+            setTimeout(() => {
+                setShowSuccessMessage(false);
+            }, 3000);
+        }
+    };
+
+    const closeViewForm = () => {
+        setShowViewFormInLayout(false);
+        setViewingAppointment(null);
+        navigate('/admin/appointments');
+    };
+
+    const closeEditForm = () => {
+        setShowEditFormInLayout(false);
+        setEditingAppointment(null);
+        setFormData({
+            patientName: '',
+            patientEmail: '',
+            patientPhone: '',
+            doctor: '',
+            department: '',
+            appointmentDate: '',
+            appointmentTime: '',
+            appointmentType: '',
+            status: 'Scheduled',
+            notes: '',
+            priority: 'Normal',
+            duration: '30'
+        });
+        setFormErrors({});
+        navigate('/admin/appointments');
+    };
+
+    // Filter appointments
+    const filteredAppointments = appointments.filter(appointment => {
+        const matchesSearch = searchTerm === '' || 
+            appointment.patient.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            appointment.doctor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            appointment.date.includes(searchTerm) ||
+            appointment.patientEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            appointment.notes.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const matchesStatus = filterStatus === '' || appointment.status === filterStatus;
+        const matchesDoctor = filterDoctor === '' || appointment.doctor === filterDoctor;
+        const matchesPriority = filterPriority === '' || appointment.priority === filterPriority;
+        const matchesType = filterType === '' || appointment.type === filterType;
+        
+        return matchesSearch && matchesStatus && matchesDoctor && matchesPriority && matchesType;
+    });
+
+    // Calculate statistics
+    const today = new Date().toISOString().split('T')[0];
+    const todaysAppointments = appointments.filter(apt => apt.date === today).length;
+    const completedAppointments = appointments.filter(apt => apt.status === 'Completed').length;
+    const pendingAppointments = appointments.filter(apt => ['Scheduled', 'Confirmed'].includes(apt.status)).length;
+    const cancelledAppointments = appointments.filter(apt => apt.status === 'Cancelled').length;
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -73,26 +549,745 @@ const Appointments = () => {
                 return 'bg-green-100 text-green-800';
             case 'Emergency':
                 return 'bg-red-100 text-red-800';
+            case 'Surgery':
+                return 'bg-orange-100 text-orange-800';
+            case 'Therapy':
+                return 'bg-blue-100 text-blue-800';
+            case 'Vaccination':
+                return 'bg-yellow-100 text-yellow-800';
             default:
                 return 'bg-gray-100 text-gray-800';
         }
     };
 
+    const getPriorityColor = (priority) => {
+        switch (priority) {
+            case 'Low':
+                return 'bg-gray-100 text-gray-800';
+            case 'Normal':
+                return 'bg-blue-100 text-blue-800';
+            case 'High':
+                return 'bg-orange-100 text-orange-800';
+            case 'Urgent':
+                return 'bg-red-100 text-red-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getPriorityIcon = (priority) => {
+        switch (priority) {
+            case 'Low':
+                return <Clock className="w-3 h-3" />;
+            case 'Normal':
+                return <CheckCircle className="w-3 h-3" />;
+            case 'High':
+                return <AlertCircle className="w-3 h-3" />;
+            case 'Urgent':
+                return <AlertCircle className="w-3 h-3" />;
+            default:
+                return <Clock className="w-3 h-3" />;
+        }
+    };
+
     return (
         <div className="p-6 space-y-6">
-            {/* Header */}
+            {/* Success Message */}
+            {showSuccessMessage && (
+                <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                    <span>Appointment scheduled successfully!</span>
+                </div>
+            )}
+
+            {/* Add Appointment Form in Layout - At the top when visible */}
+            {showFormInLayout && (
+                <Card className="p-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900">Schedule New Appointment</h2>
+                        <button
+                            onClick={closeForm}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                        >
+                            <X className="w-5 h-5 text-gray-500" />
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Patient Name */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Patient Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="patientName"
+                                    value={formData.patientName}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.patientName ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter patient name"
+                                />
+                                {formErrors.patientName && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.patientName}</p>
+                                )}
+                            </div>
+
+                            {/* Patient Email */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Patient Email *
+                                </label>
+                                <input
+                                    type="email"
+                                    name="patientEmail"
+                                    value={formData.patientEmail}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.patientEmail ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter patient email"
+                                />
+                                {formErrors.patientEmail && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.patientEmail}</p>
+                                )}
+                            </div>
+
+                            {/* Patient Phone */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Patient Phone *
+                                </label>
+                                <input
+                                    type="tel"
+                                    name="patientPhone"
+                                    value={formData.patientPhone}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.patientPhone ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter patient phone number"
+                                />
+                                {formErrors.patientPhone && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.patientPhone}</p>
+                                )}
+                            </div>
+
+                            {/* Doctor Selection */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Doctor *
+                                </label>
+                                <select
+                                    name="doctor"
+                                    value={formData.doctor}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.doctor ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                >
+                                    <option value="">Select a doctor</option>
+                                    {doctors.map(doctor => (
+                                        <option key={doctor.id} value={doctor.name}>
+                                            {doctor.name} - {doctor.specialty}
+                                        </option>
+                                    ))}
+                                </select>
+                                {formErrors.doctor && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.doctor}</p>
+                                )}
+                            </div>
+
+                            {/* Department (Auto-filled) */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Department
+                                </label>
+                                <input
+                                    type="text"
+                                    name="department"
+                                    value={formData.department}
+                                    readOnly
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600"
+                                    placeholder="Auto-filled when doctor is selected"
+                                />
+                            </div>
+
+                            {/* Appointment Date */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Appointment Date *
+                                </label>
+                                <input
+                                    type="date"
+                                    name="appointmentDate"
+                                    value={formData.appointmentDate}
+                                    onChange={handleInputChange}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.appointmentDate ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                />
+                                {formErrors.appointmentDate && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.appointmentDate}</p>
+                                )}
+                            </div>
+
+                            {/* Appointment Time */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Appointment Time *
+                                </label>
+                                <input
+                                    type="time"
+                                    name="appointmentTime"
+                                    value={formData.appointmentTime}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.appointmentTime ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                />
+                                {formErrors.appointmentTime && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.appointmentTime}</p>
+                                )}
+                            </div>
+
+                            {/* Appointment Type */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Appointment Type *
+                                </label>
+                                <select
+                                    name="appointmentType"
+                                    value={formData.appointmentType}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.appointmentType ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                >
+                                    <option value="">Select appointment type</option>
+                                    {appointmentTypes.map(type => (
+                                        <option key={type} value={type}>{type}</option>
+                                    ))}
+                                </select>
+                                {formErrors.appointmentType && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.appointmentType}</p>
+                                )}
+                            </div>
+
+                            {/* Priority */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Priority
+                                </label>
+                                <select
+                                    name="priority"
+                                    value={formData.priority}
+                                    onChange={handleInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    {priorityOptions.map(priority => (
+                                        <option key={priority} value={priority}>{priority}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Duration */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Duration (minutes) *
+                                </label>
+                                <select
+                                    name="duration"
+                                    value={formData.duration}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.duration ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                >
+                                    <option value="">Select duration</option>
+                                    {durationOptions.map(duration => (
+                                        <option key={duration} value={duration}>{duration} minutes</option>
+                                    ))}
+                                </select>
+                                {formErrors.duration && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.duration}</p>
+                                )}
+                            </div>
+
+                            {/* Status */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Status
+                                </label>
+                                <select
+                                    name="status"
+                                    value={formData.status}
+                                    onChange={handleInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    {statusOptions.map(status => (
+                                        <option key={status} value={status}>{status}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Notes */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Notes
+                            </label>
+                            <textarea
+                                name="notes"
+                                value={formData.notes}
+                                onChange={handleInputChange}
+                                rows={3}
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                placeholder="Enter any additional notes about the appointment..."
+                            />
+                        </div>
+
+                        {/* Form Actions */}
+                        <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                            <button
+                                type="button"
+                                onClick={closeForm}
+                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                            >
+                                <Save className="w-4 h-4" />
+                                <span>Schedule Appointment</span>
+                            </button>
+                        </div>
+                    </form>
+                </Card>
+            )}
+
+            {/* Edit Appointment Form in Layout - At the top when visible */}
+            {showEditFormInLayout && (
+                <Card className="p-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900">Edit Appointment</h2>
+                        <button
+                            onClick={closeEditForm}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                        >
+                            <X className="w-5 h-5 text-gray-500" />
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleUpdateAppointment} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Patient Name */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Patient Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="patientName"
+                                    value={formData.patientName}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.patientName ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter patient name"
+                                />
+                                {formErrors.patientName && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.patientName}</p>
+                                )}
+                            </div>
+
+                            {/* Patient Email */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Patient Email *
+                                </label>
+                                <input
+                                    type="email"
+                                    name="patientEmail"
+                                    value={formData.patientEmail}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.patientEmail ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter patient email"
+                                />
+                                {formErrors.patientEmail && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.patientEmail}</p>
+                                )}
+                            </div>
+
+                            {/* Patient Phone */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Patient Phone *
+                                </label>
+                                <input
+                                    type="tel"
+                                    name="patientPhone"
+                                    value={formData.patientPhone}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.patientPhone ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter patient phone number"
+                                />
+                                {formErrors.patientPhone && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.patientPhone}</p>
+                                )}
+                            </div>
+
+                            {/* Doctor Selection */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Doctor *
+                                </label>
+                                <select
+                                    name="doctor"
+                                    value={formData.doctor}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.doctor ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                >
+                                    <option value="">Select a doctor</option>
+                                    {doctors.map(doctor => (
+                                        <option key={doctor.id} value={doctor.name}>
+                                            {doctor.name} - {doctor.specialty}
+                                        </option>
+                                    ))}
+                                </select>
+                                {formErrors.doctor && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.doctor}</p>
+                                )}
+                            </div>
+
+                            {/* Department (Auto-filled) */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Department
+                                </label>
+                                <input
+                                    type="text"
+                                    name="department"
+                                    value={formData.department}
+                                    readOnly
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600"
+                                    placeholder="Auto-filled when doctor is selected"
+                                />
+                            </div>
+
+                            {/* Appointment Date */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Appointment Date *
+                                </label>
+                                <input
+                                    type="date"
+                                    name="appointmentDate"
+                                    value={formData.appointmentDate}
+                                    onChange={handleInputChange}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.appointmentDate ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                />
+                                {formErrors.appointmentDate && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.appointmentDate}</p>
+                                )}
+                            </div>
+
+                            {/* Appointment Time */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Appointment Time *
+                                </label>
+                                <input
+                                    type="time"
+                                    name="appointmentTime"
+                                    value={formData.appointmentTime}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.appointmentTime ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                />
+                                {formErrors.appointmentTime && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.appointmentTime}</p>
+                                )}
+                            </div>
+
+                            {/* Appointment Type */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Appointment Type *
+                                </label>
+                                <select
+                                    name="appointmentType"
+                                    value={formData.appointmentType}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.appointmentType ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                >
+                                    <option value="">Select appointment type</option>
+                                    {appointmentTypes.map(type => (
+                                        <option key={type} value={type}>{type}</option>
+                                    ))}
+                                </select>
+                                {formErrors.appointmentType && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.appointmentType}</p>
+                                )}
+                            </div>
+
+                            {/* Priority */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Priority
+                                </label>
+                                <select
+                                    name="priority"
+                                    value={formData.priority}
+                                    onChange={handleInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    {priorityOptions.map(priority => (
+                                        <option key={priority} value={priority}>{priority}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Duration */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Duration (minutes) *
+                                </label>
+                                <select
+                                    name="duration"
+                                    value={formData.duration}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.duration ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                >
+                                    <option value="">Select duration</option>
+                                    {durationOptions.map(duration => (
+                                        <option key={duration} value={duration}>{duration} minutes</option>
+                                    ))}
+                                </select>
+                                {formErrors.duration && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.duration}</p>
+                                )}
+                            </div>
+
+                            {/* Status */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Status
+                                </label>
+                                <select
+                                    name="status"
+                                    value={formData.status}
+                                    onChange={handleInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    {statusOptions.map(status => (
+                                        <option key={status} value={status}>{status}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Notes */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Notes
+                            </label>
+                            <textarea
+                                name="notes"
+                                value={formData.notes}
+                                onChange={handleInputChange}
+                                rows={3}
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                placeholder="Enter any additional notes about the appointment..."
+                            />
+                        </div>
+
+                        {/* Form Actions */}
+                        <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                            <button
+                                type="button"
+                                onClick={closeEditForm}
+                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="flex items-center space-x-2 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                            >
+                                <Save className="w-4 h-4" />
+                                <span>Update Appointment</span>
+                            </button>
+                        </div>
+                    </form>
+                </Card>
+            )}
+
+            {/* View Appointment Form in Layout - At the top when visible */}
+            {showViewFormInLayout && viewingAppointment && (
+                <Card className="p-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900">Appointment Details</h2>
+                        <button
+                            onClick={closeViewForm}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                        >
+                            <X className="w-5 h-5 text-gray-500" />
+                        </button>
+                    </div>
+
+                    <div className="space-y-6">
+                        {/* Patient Information */}
+                        <div className="bg-gray-50 rounded-xl p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center mr-3">
+                                    <User className="w-4 h-4 text-pink-600" />
+                                </div>
+                                Patient Information
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Name</label>
+                                    <p className="text-gray-900 font-medium">{viewingAppointment.patient}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Email</label>
+                                    <p className="text-gray-900">{viewingAppointment.patientEmail}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Phone</label>
+                                    <p className="text-gray-900">{viewingAppointment.patientPhone}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Appointment Information */}
+                        <div className="bg-gray-50 rounded-xl p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                    <Calendar className="w-4 h-4 text-blue-600" />
+                                </div>
+                                Appointment Information
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Doctor</label>
+                                    <p className="text-gray-900 font-medium">{viewingAppointment.doctor}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Department</label>
+                                    <p className="text-gray-900">{viewingAppointment.specialty}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Date</label>
+                                    <p className="text-gray-900">{viewingAppointment.date}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Time</label>
+                                    <p className="text-gray-900">{viewingAppointment.time}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Type</label>
+                                    <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getTypeColor(viewingAppointment.type)}`}>
+                                        {viewingAppointment.type}
+                                    </span>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Status</label>
+                                    <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(viewingAppointment.status)}`}>
+                                        {viewingAppointment.status}
+                                    </span>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Priority</label>
+                                    <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${getPriorityColor(viewingAppointment.priority)}`}>
+                                        {getPriorityIcon(viewingAppointment.priority)}
+                                        <span className="ml-2">{viewingAppointment.priority}</span>
+                                    </span>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Duration</label>
+                                    <p className="text-gray-900">{viewingAppointment.duration}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Notes */}
+                        {viewingAppointment.notes && (
+                            <div className="bg-gray-50 rounded-xl p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                    <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                                        <FileText className="w-4 h-4 text-yellow-600" />
+                                    </div>
+                                    Notes
+                                </h3>
+                                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                                    <p className="text-gray-700 italic">"{viewingAppointment.notes}"</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                            <button
+                                onClick={closeViewForm}
+                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                            >
+                                Close
+                            </button>
+                            <button
+                                onClick={() => {
+                                    closeViewForm();
+                                    handleEditAppointment(viewingAppointment);
+                                }}
+                                className="flex items-center space-x-2 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                            >
+                                <Edit className="w-4 h-4" />
+                                <span>Edit Appointment</span>
+                            </button>
+                        </div>
+                    </div>
+                </Card>
+            )}
+
+            {/* Header - Only show when form is not visible */}
+            {!showFormInLayout && !showEditFormInLayout && !showViewFormInLayout && (
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Appointments</h1>
                     <p className="text-gray-600">Manage patient appointments and schedules</p>
                 </div>
-                <button className="flex items-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200">
+                    <button 
+                        onClick={() => navigate('/admin/appointments/add')}
+                        className="flex items-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200"
+                    >
                     <Plus className="w-4 h-4" />
                     <span>Schedule Appointment</span>
                 </button>
             </div>
+            )}
 
-            {/* Stats Cards */}
+            {/* Stats Cards - Only show when form is not visible */}
+            {!showFormInLayout && !showEditFormInLayout && !showViewFormInLayout && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="p-4">
                     <div className="flex items-center space-x-3">
@@ -101,7 +1296,7 @@ const Appointments = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-600">Today's Appointments</p>
-                            <p className="text-xl font-bold text-gray-900">12</p>
+                                <p className="text-xl font-bold text-gray-900">{todaysAppointments}</p>
                         </div>
                     </div>
                 </Card>
@@ -112,7 +1307,7 @@ const Appointments = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-600">Completed</p>
-                            <p className="text-xl font-bold text-gray-900">8</p>
+                                <p className="text-xl font-bold text-gray-900">{completedAppointments}</p>
                         </div>
                     </div>
                 </Card>
@@ -123,7 +1318,7 @@ const Appointments = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-600">Pending</p>
-                            <p className="text-xl font-bold text-gray-900">4</p>
+                                <p className="text-xl font-bold text-gray-900">{pendingAppointments}</p>
                         </div>
                     </div>
                 </Card>
@@ -134,42 +1329,156 @@ const Appointments = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-600">Cancelled</p>
-                            <p className="text-xl font-bold text-gray-900">2</p>
+                                <p className="text-xl font-bold text-gray-900">{cancelledAppointments}</p>
                         </div>
                     </div>
                 </Card>
             </div>
+            )}
 
-            {/* Search and Filter */}
+            {/* Search and Filter - Only show when form is not visible */}
+            {!showFormInLayout && !showEditFormInLayout && !showViewFormInLayout && (
             <Card className="p-4">
-                <div className="flex items-center space-x-4">
-                    <div className="flex-1 relative">
+                    <div className="space-y-4">
+                        {/* Search Bar */}
+                        <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search appointments by patient, doctor, or date..."
+                                placeholder="Search appointments by patient, doctor, email, notes, or date..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                         />
                     </div>
-                    <button className="flex items-center space-x-2 px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200">
-                        <Filter className="w-4 h-4" />
-                        <span>Filter</span>
+                        
+                        {/* Filter Row */}
+                        <div className="flex flex-wrap items-center gap-3">
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                                className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                            >
+                                <option value="">All Status</option>
+                                {statusOptions.map(status => (
+                                    <option key={status} value={status}>{status}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={filterDoctor}
+                                onChange={(e) => setFilterDoctor(e.target.value)}
+                                className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                            >
+                                <option value="">All Doctors</option>
+                                {doctors.map(doctor => (
+                                    <option key={doctor.id} value={doctor.name}>{doctor.name}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={filterPriority}
+                                onChange={(e) => setFilterPriority(e.target.value)}
+                                className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                            >
+                                <option value="">All Priority</option>
+                                {priorityOptions.map(priority => (
+                                    <option key={priority} value={priority}>{priority}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={filterType}
+                                onChange={(e) => setFilterType(e.target.value)}
+                                className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                            >
+                                <option value="">All Types</option>
+                                {appointmentTypes.map(type => (
+                                    <option key={type} value={type}>{type}</option>
+                                ))}
+                            </select>
+                            
+                            {/* Clear Filters Button */}
+                            {(searchTerm || filterStatus || filterDoctor || filterPriority || filterType) && (
+                                <button
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        setFilterStatus('');
+                                        setFilterDoctor('');
+                                        setFilterPriority('');
+                                        setFilterType('');
+                                    }}
+                                    className="px-4 py-2 text-pink-600 hover:bg-pink-50 rounded-xl transition-all duration-300 flex items-center space-x-2 border border-pink-200 hover:border-pink-300 hover:shadow-lg font-medium text-sm"
+                                >
+                                    <X className="w-4 h-4" />
+                                    <span>Clear All</span>
                     </button>
+                            )}
+                        </div>
                 </div>
             </Card>
+            )}
 
-            {/* Appointments List */}
+            {/* Appointments List - Only show when form is not visible */}
+            {!showFormInLayout && !showEditFormInLayout && !showViewFormInLayout && (
             <div className="space-y-4">
-                {appointments.map((appointment) => (
+                    {filteredAppointments.length === 0 ? (
+                        <Card className="p-12 text-center">
+                            <div className="flex flex-col items-center space-y-4">
+                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                    <Calendar className="w-8 h-8 text-gray-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No appointments found</h3>
+                                    <p className="text-gray-600 mb-4">
+                                        {searchTerm || filterStatus || filterDoctor || filterPriority || filterType
+                                            ? 'No appointments match your current filters.'
+                                            : 'No appointments have been scheduled yet.'
+                                        }
+                                    </p>
+                                    {!searchTerm && !filterStatus && !filterDoctor && !filterPriority && !filterType && (
+                                        <button
+                                            onClick={() => navigate('/admin/appointments/add')}
+                                            className="inline-flex items-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200"
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            <span>Schedule First Appointment</span>
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </Card>
+                    ) : (
+                        filteredAppointments.map((appointment) => (
                     <Card key={appointment.id} hover className="p-6">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-start space-x-4 flex-1">
                                 <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold">
                                     {appointment.patient.split(' ').map(n => n[0]).join('')}
                                 </div>
-                                <div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center space-x-2 mb-2">
                                     <h3 className="font-semibold text-gray-900">{appointment.patient}</h3>
-                                    <p className="text-sm text-gray-600">{appointment.doctor} • {appointment.specialty}</p>
+                                                <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(appointment.priority)}`}>
+                                                    {getPriorityIcon(appointment.priority)}
+                                                    <span className="ml-1">{appointment.priority}</span>
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-600 mb-1">{appointment.doctor} • {appointment.specialty}</p>
+                                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                                                <div className="flex items-center space-x-1">
+                                                    <Mail className="w-3 h-3" />
+                                                    <span>{appointment.patientEmail}</span>
+                                                </div>
+                                                <div className="flex items-center space-x-1">
+                                                    <Phone className="w-3 h-3" />
+                                                    <span>{appointment.patientPhone}</span>
+                                                </div>
+                                                <div className="flex items-center space-x-1">
+                                                    <Clock className="w-3 h-3" />
+                                                    <span>{appointment.duration}</span>
+                                                </div>
+                                            </div>
+                                            {appointment.notes && (
+                                                <p className="text-xs text-gray-500 mt-2 italic">"{appointment.notes}"</p>
+                                            )}
                                 </div>
                             </div>
                             <div className="flex items-center space-x-4">
@@ -185,11 +1494,97 @@ const Appointments = () => {
                                         {appointment.type}
                                     </span>
                                 </div>
+                                        <div className="flex items-center space-x-1">
+                                            <button 
+                                                onClick={() => handleViewAppointment(appointment)}
+                                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200" 
+                                                title="View Details"
+                                            >
+                                                <Eye className="w-4 h-4 text-gray-500" />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleEditAppointment(appointment)}
+                                                className="p-2 hover:bg-blue-100 rounded-lg transition-colors duration-200" 
+                                                title="Edit Appointment"
+                                            >
+                                                <Edit className="w-4 h-4 text-blue-500" />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDeleteAppointment(appointment)}
+                                                className="p-2 hover:bg-red-100 rounded-lg transition-colors duration-200" 
+                                                title="Delete Appointment"
+                                            >
+                                                <Trash2 className="w-4 h-4 text-red-500" />
+                                            </button>
+                                </div>
                             </div>
                         </div>
                     </Card>
-                ))}
+                        ))
+                    )}
             </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && selectedAppointment && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-bold text-gray-900">Delete Appointment</h2>
+                                <button
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                                >
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
+                            </div>
+
+                            <div className="mb-6">
+                                <div className="flex items-center space-x-4 mb-4">
+                                    <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                        {selectedAppointment.patient.split(' ').map(n => n[0]).join('')}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-base font-semibold text-gray-900">{selectedAppointment.patient}</h4>
+                                        <p className="text-sm text-gray-600">{selectedAppointment.doctor} • {selectedAppointment.specialty}</p>
+                                        <p className="text-xs text-gray-500">{selectedAppointment.date} at {selectedAppointment.time}</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                                    <div className="flex items-start space-x-3">
+                                        <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <AlertCircle className="w-4 h-4 text-red-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-red-800 mb-1">Warning</p>
+                                            <p className="text-sm text-red-700">
+                                                Are you sure you want to delete this appointment? This action cannot be undone.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-end space-x-4">
+                                <button
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors duration-200"
+                                >
+                                    Delete Appointment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

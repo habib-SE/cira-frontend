@@ -27,13 +27,7 @@ SubscriptionPlansPage = () => {
             price: '$29.99/month',
             isPopular: false
         },
-        {
-            id: 'enterprise',
-            title: 'Enterprise Plan',
-            description: 'Built for teams and organizations, including team collaboration tools, analytics, priority support, and 1,000 monthly messages.',
-            price: '$49.99/month',
-            isPopular: false
-        }
+       
     ];
 
     return (
@@ -70,11 +64,11 @@ SubscriptionPlansPage = () => {
                     </p>
 
                                          {/* Subscription Plans */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
+                    <div className="flex justify-center items-start gap-4 mb-3">
                          {subscriptionPlans.map((plan) => (
                              <div
                                  key={plan.id}
-                                className={`bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg border-2 relative transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+                                className={`bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg border-2 relative transition-all duration-300 hover:shadow-xl hover:scale-[1.02] w-80 h-80 ${
                                     plan.isPopular 
                                         ? 'border-pink-300 ring-2 ring-pink-100' 
                                         : 'border-gray-200 hover:border-pink-200'
@@ -130,26 +124,7 @@ SubscriptionPlansPage = () => {
                                                 </div>
                                             </>
                                         )}
-                                        {plan.id === 'enterprise' && (
-                                            <>
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
-                                                    <span>1,000 messages/month</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
-                                                    <span>All AI features</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
-                                                    <span>Priority support</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
-                                                    <span>Custom integrations</span>
-                                                </div>
-                                            </>
-                                        )}
+                                      
                                     </div>
                                  </div>
                              </div>

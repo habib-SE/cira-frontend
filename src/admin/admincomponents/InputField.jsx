@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChevronDown } from 'lucide-react';
 
 const InputField = ({ 
   type = 'text', 
@@ -16,9 +17,7 @@ const InputField = ({
         <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center">
           <span className="text-gray-500 text-sm font-medium">{prefix}</span>
           {showDropdown && (
-            <svg className="w-4 h-4 ml-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            <ChevronDown className="w-4 h-4 ml-1 text-gray-400" />
           )}
         </div>
       )}
