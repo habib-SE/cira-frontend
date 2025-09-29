@@ -81,14 +81,14 @@ useEffect(() => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-center p-6">
-<div
-  className={`orb-container ${!hasLoaded ? "orb-drip-in" : status === "connected"
-    ? isSpeaking
-      ? "orb-fast"
-      : "orb-slow"
-    : "orb-idle"
-    }`}
-/>
+      <div
+        className={`orb-container ${!hasLoaded ? "orb-drip-in" : status === "connected"
+          ? isSpeaking
+            ? "orb-fast"
+            : "orb-slow"
+          : "orb-idle"
+          }`}
+      />
       {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
       {status === "connected" && (
         <p className="text-green-600 mb-2">
@@ -116,20 +116,18 @@ useEffect(() => {
             </button>
           </>
         ) : (
-        <button
-  onClick={handleStartConversation}
-  disabled={!hasPermission}
-  className={`p-3 mt-8 rounded-full text-pink-500 ${
-    hasPermission
-      ? "bg-gradient-to-r from-pink-200 jump-animation"
-      : "bg-gray-400 cursor-not-allowed"
-  }`}
-  title="Start Conversation"
->
-  <PhoneOff />
-</button>
-
-
+          <button
+            onClick={handleStartConversation}
+            disabled={!hasPermission}
+            className={`p-3 mt-8 rounded-full text-pink-500 ${
+              hasPermission
+                ? "bg-gradient-to-r from-pink-200 jump-animation"
+                : "bg-gray-400 cursor-not-allowed"
+            }`}
+            title="Start Conversation"
+          >
+            <PhoneOff />
+          </button>
         )}
       </div>
     </div>
