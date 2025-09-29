@@ -181,6 +181,7 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "three";
+import { motion } from "framer-motion";
 
 function NurseAvatar({ isSpeaking, isConnected }) {
   const avatar = useLoader(GLTFLoader, "/nurse6.glb");
@@ -418,33 +419,33 @@ export default function CiraAssistant() {
       }}
       className="flex flex-col items-center justify-center min-h-screen text-center p-6"
     >
-      {/* Avatar */}
-      <div className="relative h-[300px] w-[300px] mb-6 flex items-center justify-center rounded-full border-2 border-pink-400 bg-pink-50 overflow-hidden shadow-lg">
-        <Canvas camera={{ position: [0, 1.5, 3], fov: 20 }}>
-          {/* Key light from front-left */}
-          <directionalLight
-            position={[2, 5, 3]}
-            intensity={1.2}
-            castShadow
-            shadow-mapSize-width={1024}
-            shadow-mapSize-height={1024}
-          />
+     {/* Avatar with animated gradient border */}
+<div className="relative h-[290px] w-[290px] mb-6 flex items-center justify-center">
+  {/* Rotating gradient ring */}
+  <motion.div
+    className="absolute inset-0 rounded-full p-[4px]"
+    animate={{ rotate: 360 }}
+    transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
+    style={{
+      background: "conic-gradient(from 0deg, #ff69b4, #8a8af1, #f5cba7, #ff69b4)",
+    }}
+  >
+  
+  </motion.div>
 
-          {/* Fill light from right */}
-          <hemisphereLight skyColor={0xffffff} groundColor={0xffe0f0} intensity={0.6} />
+  {/* Static avatar container */}
+  <div className="relative h-[280px] w-[280px] rounded-full overflow-hidden bg-pink-50 shadow-lg">
+    <Canvas camera={{ position: [0, 1.5, 3], fov: 20 }}>
+      {/* Lights */}
+      <directionalLight position={[2, 5, 3]} intensity={1.2} castShadow />
+      <hemisphereLight skyColor={0xffffff} groundColor={0xffe0f0} intensity={0.6} />
+      <directionalLight position={[3, 5, 2]} intensity={1.2} color={0xfff1c2} />
 
-          {/* Warm sunlight on right side */}
-          <directionalLight
-            position={[3, 5, 2]}
-            intensity={1.2}
-            color={0xfff1c2}
-            castShadow
-          />
-
-          <OrbitControls enableZoom={false} />
-          <NurseAvatar isSpeaking={isSpeaking} isConnected={isConnected} />
-        </Canvas>
-      </div>
+      <OrbitControls enableZoom={false} />
+      <NurseAvatar isSpeaking={isSpeaking} isConnected={isConnected} />
+    </Canvas>
+  </div>
+</div>
 
       {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
       {status === "connected" && (
