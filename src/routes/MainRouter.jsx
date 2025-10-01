@@ -32,8 +32,7 @@ function MainRouter() {
       {/* Email confirmation page */}
       <Route path="/email-confirm" element={<EmailConfirmPage />} />
       
-      {/* Enable permission page */}
-      <Route path="/enable-permission" element={<EnablePermissionPage />} />
+     
       
       {/* Plus unlocked page */}
       <Route path="/plus-unlocked" element={<PlusUnlockedPage />} />
@@ -47,9 +46,9 @@ function MainRouter() {
       {/* Admin Panel Routes */}
       <Route path="/admin/*" element={<AdminLayout />}>
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="doctors" element={<Doctors />} />
+        <Route path="doctors/*" element={<Doctors />} />
         <Route path="patients" element={<Patients />} />
-        <Route path="appointments" element={<Appointments />} />
+        <Route path="appointments/*" element={<Appointments />} />
         <Route path="ai-reports" element={<AIReports />} />
         <Route path="reports" element={<Reports />} />
         <Route path="settings" element={<Settings />} />

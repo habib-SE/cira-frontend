@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ChevronDown, Search } from 'lucide-react';
 
 const PhoneNumberInput = ({ value, onChange, error, placeholder = "Phone Number" }) => {
   const [formattedValue, setFormattedValue] = useState(value);
@@ -373,9 +374,7 @@ const PhoneNumberInput = ({ value, onChange, error, placeholder = "Phone Number"
               className="w-5 h-5 object-cover rounded-full"
             />
             <span className="text-gray-700 text-sm font-medium">{selectedCountry.dialCode}</span>
-            <svg className="w-3 h-3 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />
           </button>
           
           {/* Phone Number Input */}
@@ -443,9 +442,7 @@ const PhoneNumberInput = ({ value, onChange, error, placeholder = "Phone Number"
             {/* Search Bar */}
             <div className="p-4 border-b border-gray-100">
               <div className="relative">
-                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search Country..."

@@ -37,17 +37,17 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     };
 
     return (
-        <div className={`bg-white border-r border-gray-200 transition-all duration-300 h-screen flex flex-col ${
-            isCollapsed ? 'w-16' : 'w-64'
+        <div className={`bg-white border-r-2 border-gray-200 transition-all duration-300 h-screen flex flex-col ${
+            isCollapsed ? 'w-18' : 'w-64'
         }`}>
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between px-5 border-b border-gray-200">
                 {!isCollapsed ? (
                     <div className="flex items-center">
                         <img 
                             src={logo} 
                             alt="Doctor AI Logo" 
-                            className="w-16 h-16 object-contain"
+                            className="w-20 h-19 object-contain"
                         />
                     </div>
                 ) : (
