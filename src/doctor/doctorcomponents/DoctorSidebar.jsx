@@ -2,32 +2,32 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { 
     Home, 
-    Users, 
     Calendar, 
-    Activity, 
+    Users,
+    Clipboard,
+    FileText,
+    BarChart3,
+    MessageSquare,
     Settings, 
     ChevronLeft, 
-    ChevronRight,
-    Stethoscope,
-    FileText,
-    CreditCard,
-    TrendingUp
+    ChevronRight
 } from 'lucide-react';
 import logo from '../../assets/Logo.png';
 
-const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
+const DoctorSidebar = ({ isCollapsed, setIsCollapsed }) => {
     const location = useLocation();
     const navigate = useNavigate();
 
     const menuItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/admin' },
-        { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
-        { id: 'doctors', label: 'Doctors', icon: Stethoscope, path: '/admin/doctors' },
-        { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/admin/appointments' },
-        { id: 'reports', label: 'Reports', icon: FileText, path: '/admin/reports' },
-        { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
-        { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
-        { id: 'referrals', label: 'Referrals', icon: TrendingUp, path: '/admin/referrals' },
+        { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/doctor' },
+        { id: 'schedule', label: 'Schedule', icon: Calendar, path: '/doctor/schedule' },
+        { id: 'patients', label: 'My Patients', icon: Users, path: '/doctor/patients' },
+        { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/doctor/appointments' },
+        { id: 'prescriptions', label: 'Prescriptions', icon: Clipboard, path: '/doctor/prescriptions' },
+        { id: 'records', label: 'Medical Records', icon: FileText, path: '/doctor/records' },
+        { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/doctor/analytics' },
+        { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/doctor/messages' },
+        { id: 'settings', label: 'Settings', icon: Settings, path: '/doctor/settings' },
     ];
 
     const handleNavigation = (path) => {
@@ -48,7 +48,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                     <div className="flex items-center">
                         <img 
                             src={logo} 
-                            alt="Doctor AI Logo" 
+                            alt="CIRA Logo" 
                             className="w-20 h-16 object-contain"
                         />
                     </div>
@@ -56,7 +56,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                     <div className="flex justify-center w-full">
                         <img 
                             src={logo} 
-                            alt="Doctor AI Logo" 
+                            alt="CIRA Logo" 
                             className="w-12 h-12 object-contain"
                         />
                     </div>
@@ -104,7 +104,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                     <div className="bg-pink-50 rounded-xl p-3 border border-pink-200">
                         <div className="flex items-center space-x-2 mb-1">
                             <div className="w-2 h-2 bg-pink-500 rounded-full animate-pulse"></div>
-                            <span className="text-sm font-medium text-pink-600">AI Status</span>
+                            <span className="text-sm font-medium text-pink-600">Practice Status</span>
                         </div>
                         <p className="text-xs text-gray-600">All systems operational</p>
                     </div>
@@ -114,4 +114,4 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     );
 };
 
-export default Sidebar;
+export default DoctorSidebar;

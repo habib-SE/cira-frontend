@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Calendar, Activity, Stethoscope, TrendingUp, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Users, Calendar, Activity, Stethoscope, TrendingUp, Clock, CheckCircle, AlertCircle, DollarSign } from 'lucide-react';
 import Card from '../admincomponents/Card';
 import Chart from '../admincomponents/Chart';
 
@@ -41,7 +41,7 @@ const Dashboard = () => {
 
     const statsCards = [
         {
-            title: 'Total Patients',
+            title: 'Total Users',
             value: '2,847',
             change: '+12%',
             changeType: 'positive',
@@ -50,31 +50,31 @@ const Dashboard = () => {
             bgColor: 'bg-blue-50',
         },
         {
-            title: 'Appointments Today',
+            title: 'Active Doctors',
             value: '47',
             change: '+8%',
             changeType: 'positive',
-            icon: Calendar,
+            icon: Stethoscope,
             color: 'text-green-600',
             bgColor: 'bg-green-50',
         },
         {
-            title: 'AI Reports Generated',
-            value: '1,234',
-            change: '+23%',
+            title: 'Appointments Today',
+            value: '23',
+            change: '+15%',
             changeType: 'positive',
-            icon: Activity,
-            color: 'text-pink-600',
-            bgColor: 'bg-pink-50',
-        },
-        {
-            title: 'Doctors on Duty',
-            value: '12',
-            change: '+2',
-            changeType: 'positive',
-            icon: Stethoscope,
+            icon: Calendar,
             color: 'text-purple-600',
             bgColor: 'bg-purple-50',
+        },
+        {
+            title: 'Revenue This Month',
+            value: '$45,230',
+            change: '+23%',
+            changeType: 'positive',
+            icon: DollarSign,
+            color: 'text-pink-600',
+            bgColor: 'bg-pink-50',
         },
     ];
 
@@ -96,7 +96,7 @@ const Dashboard = () => {
             {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-                <p className="text-gray-600">Welcome back! Here's what's happening with your healthcare system.</p>
+                <p className="text-gray-600">Welcome back! Here's what's happening with your platform.</p>
             </div>
 
             {/* Stats Cards */}
@@ -126,11 +126,11 @@ const Dashboard = () => {
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Patient Growth Chart */}
+                {/* User Growth Chart */}
                 <Card className="p-6">
                     <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Patient Growth</h3>
-                        <p className="text-sm text-gray-600">Monthly patient registration trends</p>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">User Growth</h3>
+                        <p className="text-sm text-gray-600">Monthly user registration trends</p>
                     </div>
                     <Chart type="line" data={patientData} height={300} />
                 </Card>
@@ -145,22 +145,22 @@ const Dashboard = () => {
                 </Card>
             </div>
 
-            {/* Diagnosis Distribution and AI Activity */}
+            {/* Doctor Specialties and Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Diagnosis Distribution */}
+                {/* Doctor Specialties Distribution */}
                 <Card className="p-6">
                     <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Diagnosis Distribution</h3>
-                        <p className="text-sm text-gray-600">AI diagnosis by medical specialty</p>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Doctor Specialties</h3>
+                        <p className="text-sm text-gray-600">Distribution by medical specialty</p>
                     </div>
                     <Chart type="pie" data={diagnosisData} height={300} />
                 </Card>
 
-                {/* AI Activity Logs */}
+                {/* Recent System Activity */}
                 <Card className="p-6">
                     <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">AI Activity Logs</h3>
-                        <p className="text-sm text-gray-600">Recent AI system activities</p>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Recent Activity</h3>
+                        <p className="text-sm text-gray-600">Latest platform activities</p>
                     </div>
                     <div className="space-y-3 max-h-80 overflow-y-auto">
                         {aiActivityLogs.map((log) => (

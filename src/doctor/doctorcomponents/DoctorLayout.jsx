@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import Navbar from './Navbar';
+import DoctorSidebar from './DoctorSidebar';
+import DoctorNavbar from './DoctorNavbar';
 
-const AdminLayout = () => {
+const DoctorLayout = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +18,7 @@ const AdminLayout = () => {
         setIsLoading(true);
         const timer = setTimeout(() => {
             setIsLoading(false);
-        }, 1000); // Show loader for 1 second
+        }, 1000);
 
         return () => clearTimeout(timer);
     }, [location.pathname]);
@@ -30,7 +30,7 @@ const AdminLayout = () => {
         >
             {/* Sidebar */}
             <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} lg:block fixed lg:relative z-50 lg:z-auto h-screen`}>
-                <Sidebar 
+                <DoctorSidebar 
                     isCollapsed={isSidebarCollapsed} 
                     setIsCollapsed={setIsSidebarCollapsed} 
                 />
@@ -47,7 +47,7 @@ const AdminLayout = () => {
             {/* Main content */}
             <div className="flex-1 flex flex-col h-screen">
                 {/* Navbar */}
-                <Navbar 
+                <DoctorNavbar 
                     onMenuClick={handleMenuClick} 
                     isMobileMenuOpen={isMobileMenuOpen}
                 />
@@ -70,4 +70,4 @@ const AdminLayout = () => {
     );
 };
 
-export default AdminLayout;
+export default DoctorLayout;
