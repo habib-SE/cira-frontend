@@ -4,7 +4,10 @@ import MainRouter from "./routes/MainRouter";
 import Header from "./components/Header";
 import LandingPage from "./pages/Home";
 import CiraAssistant from "./assistant/CiraAssistant";
+// import CiraAiAssistant from "./pages/CiraAiAssistant";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+// import VoiceAgent from "./agent/realtime/CiraRealtimeAssistant";
+import CiraRealtimeAssistant from "./agent/realtime/CiraRealtimeAssistant";
 
 function App() {
   return (
@@ -17,6 +20,15 @@ function App() {
             <>
               <Header />
               <CiraAssistant />
+            </>
+          }
+        />
+        <Route
+          path="/ai-assistant"
+          element={
+            <>
+              <Header />
+              <CiraRealtimeAssistant />
             </>
           }
         />
