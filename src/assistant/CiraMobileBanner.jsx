@@ -1,6 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import doctorImage from "../assets/doctor.png";
 
 const CiraMobileBanner = () => {

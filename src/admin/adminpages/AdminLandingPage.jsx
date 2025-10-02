@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Activity, Users, Calendar, Brain } from 'lucide-react';
-import { motion } from 'framer-motion';
 import logo from '../../assets/Logo.png';
 
 const AdminLandingPage = () => {

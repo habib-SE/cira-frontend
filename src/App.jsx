@@ -4,17 +4,17 @@ import MainRouter from "./routes/MainRouter";
 import Header from "./components/Header";
 import LandingPage from "./pages/Home";
 import CiraAssistant from "./assistant/CiraAssistant";
-// import CiraAiAssistant from "./pages/CiraAiAssistant";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-// import VoiceAgent from "./agent/realtime/CiraRealtimeAssistant";
 import CiraRealtimeAssistant from "./agent/realtime/CiraRealtimeAssistant";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
     <Router>
-      <Routes>
-        {/* Public routes */}
-        <Route
+      <AuthProvider>
+        <Routes>
+          {/* Public routes */}
+          <Route
           path="/assistant"
           element={
             <>
@@ -23,7 +23,7 @@ function App() {
             </>
           }
         />
-        <Route
+          <Route
           path="/ai-assistant"
           element={
             <>
@@ -35,19 +35,20 @@ function App() {
         <Route
           path="/home"
           element={
-            <>
-              <Header />
-              <LandingPage />
-            </>
-          }
+              <>
+                <Header />
+                <LandingPage />
+              </>
+            }
         />
-
-        {/* Admin routes */}
-        <Route path="/*" element={<MainRouter />} />
-
-        {/* Default redirect to home */}
-        <Route path="/" element={<Navigate to="/home" replace />} />
-      </Routes>
+  
+          {/* Admin routes */}
+          <Route path="/*" element={<MainRouter />} />
+  
+          {/* Default redirect to home */}
+          <Route path="/" element={<Navigate to="/home" replace />} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }

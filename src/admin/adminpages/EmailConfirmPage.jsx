@@ -109,7 +109,6 @@ const EmailConfirmPage = () => {
     inputRefs.current[0]?.focus();
     
     // Simulate resending code
-    console.log('Resending verification code...');
   };
 
   return (

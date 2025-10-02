@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
-import { Search, Bell, User, Settings, LogOut, Menu, X } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { Bell, User, Settings, LogOut, Menu, X } from 'lucide-react';
 
 const Navbar = ({ onMenuClick, isMobileMenuOpen }) => {
+    const { logout } = useAuth();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+    const handleSignOut = () => {
+        logout();
+    };
 
     const notifications = [
         { id: 1, title: 'New patient registered', time: '2 min ago', type: 'info' },
@@ -121,7 +127,10 @@ const Navbar = ({ onMenuClick, isMobileMenuOpen }) => {
                                         <span>Settings</span>
                                     </button>
                                     <hr className="my-2" />
-                                    <button className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200">
+                                    <button 
+                                        onClick={handleSignOut}
+                                        className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                                    >
                                         <LogOut className="w-4 h-4" />
                                         <span>Sign out</span>
                                     </button>

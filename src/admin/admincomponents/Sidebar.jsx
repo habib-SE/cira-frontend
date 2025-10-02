@@ -4,13 +4,14 @@ import {
     Home, 
     Users, 
     Calendar, 
-    Activity, 
     Settings, 
     ChevronLeft, 
     ChevronRight,
     Stethoscope,
-    Brain,
-    FileText
+    FileText,
+    CreditCard,
+    TrendingUp,
+    User
 } from 'lucide-react';
 import logo from '../../assets/Logo.png';
 
@@ -19,13 +20,15 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     const navigate = useNavigate();
 
     const menuItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/admin/dashboard' },
-        { id: 'doctors', label: 'Doctors', icon: Users, path: '/admin/doctors' },
-        { id: 'patients', label: 'Patients', icon: Stethoscope, path: '/admin/patients' },
+        { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/admin' },
+        { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
+        { id: 'doctors', label: 'Doctors', icon: Stethoscope, path: '/admin/doctors' },
+        { id: 'doctor-profile', label: 'Doctor Profile Detail', icon: User, path: '/admin/doctor-profile' },
         { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/admin/appointments' },
-        { id: 'ai-reports', label: 'AI Reports', icon: Brain, path: '/admin/ai-reports' },
         { id: 'reports', label: 'Reports', icon: FileText, path: '/admin/reports' },
+        { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
         { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
+        { id: 'referrals', label: 'Referrals', icon: TrendingUp, path: '/admin/referrals' },
     ];
 
     const handleNavigation = (path) => {
@@ -37,17 +40,17 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     };
 
     return (
-        <div className={`bg-white border-r-2 border-gray-200 transition-all duration-300 h-screen flex flex-col ${
+        <div className={`bg-white border-r-2 border-gray-200 transition-all duration-300 h-screen flex flex-col overflow-hidden ${
             isCollapsed ? 'w-18' : 'w-64'
         }`}>
             {/* Header */}
-            <div className="flex items-center justify-between px-5 border-b border-gray-200">
+            <div className="flex items-center justify-between px-5 py-[5px] border-b border-gray-200 flex-shrink-0">
                 {!isCollapsed ? (
                     <div className="flex items-center">
                         <img 
                             src={logo} 
                             alt="Doctor AI Logo" 
-                            className="w-20 h-19 object-contain"
+                            className="w-20 h-16 object-contain"
                         />
                     </div>
                 ) : (
@@ -55,7 +58,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                         <img 
                             src={logo} 
                             alt="Doctor AI Logo" 
-                            className="w-16 h-16 object-contain"
+                            className="w-12 h-12 object-contain"
                         />
                     </div>
                 )}
@@ -72,7 +75,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-2">
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                 {menuItems.map((item) => {
                     const isActive = location.pathname === item.path;
                     const Icon = item.icon;
@@ -98,10 +101,10 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
 
             {/* Footer */}
             {!isCollapsed && (
-                <div className="mt-auto p-4">
+                <div className="p-4 flex-shrink-0 bg-white">
                     <div className="bg-pink-50 rounded-xl p-3 border border-pink-200">
-                        <div className="flex items-center space-x-2 mb-2">
-                            <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+                        <div className="flex items-center space-x-2 mb-1">
+                            <div className="w-2 h-2 bg-pink-500 rounded-full animate-pulse"></div>
                             <span className="text-sm font-medium text-pink-600">AI Status</span>
                         </div>
                         <p className="text-xs text-gray-600">All systems operational</p>

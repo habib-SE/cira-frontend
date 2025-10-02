@@ -1,4 +1,3 @@
-import { div } from "framer-motion/m";
 import React from "react";
 
 export default function BackgroundVideoCard() {
