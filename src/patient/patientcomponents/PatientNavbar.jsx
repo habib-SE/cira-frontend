@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Bell, User, Settings, LogOut, Menu, X } from 'lucide-react';
+import { Search, Bell, User, Settings, LogOut, Menu, X } from 'lucide-react';
 
-const Navbar = ({ onMenuClick, isMobileMenuOpen }) => {
-    const { logout } = useAuth();
+const PatientNavbar = ({ onMenuClick, isMobileMenuOpen }) => {
+    const navigate = useNavigate();
+    const { logout, user } = useAuth();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
@@ -12,9 +14,9 @@ const Navbar = ({ onMenuClick, isMobileMenuOpen }) => {
     };
 
     const notifications = [
-        { id: 1, title: 'New patient registered', time: '2 min ago', type: 'info' },
-        { id: 2, title: 'AI report generated', time: '5 min ago', type: 'success' },
-        { id: 3, title: 'Appointment reminder', time: '10 min ago', type: 'warning' },
+        { id: 1, title: 'Appointment reminder', time: '2 hours', type: 'info' },
+        { id: 2, title: 'Lab results available', time: '1 day ago', type: 'success' },
+        { id: 3, title: 'Prescription ready', time: '2 days ago', type: 'warning' },
     ];
 
     return (
@@ -33,16 +35,6 @@ const Navbar = ({ onMenuClick, isMobileMenuOpen }) => {
                             <Menu className="w-5 h-5 text-gray-600" />
                         )}
                     </button>
-
-                    {/* Search bar */}
-                    {/* <div className="relative hidden md:block">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search patients, doctors, reports..."
-                            className="pl-10 pr-4 py-2 w-80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
-                        />
-                    </div> */}
                 </div>
 
                 {/* Right side */}
@@ -109,8 +101,8 @@ const Navbar = ({ onMenuClick, isMobileMenuOpen }) => {
                                 <User className="w-4 h-4 text-white" />
                             </div>
                             <div className="hidden md:block text-left">
-                                <p className="text-sm font-medium text-gray-900">Dr. Sarah Johnson</p>
-                                <p className="text-xs text-gray-500">Admin</p>
+                                <p className="text-sm font-medium text-gray-900">{user?.name || 'Patient User'}</p>
+                                <p className="text-xs text-gray-500">Patient</p>
                             </div>
                         </button>
 
@@ -118,11 +110,13 @@ const Navbar = ({ onMenuClick, isMobileMenuOpen }) => {
                         {isProfileOpen && (
                             <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
                                 <div className="p-2">
-                                    <button className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200">
-                                        <User className="w-4 h-4" />
-                                        <span>Profile</span>
-                                    </button>
-                                    <button className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                                    <button 
+                                        onClick={() => {
+                                            navigate('/patient/settings');
+                                            setIsProfileOpen(false);
+                                        }}
+                                        className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                                    >
                                         <Settings className="w-4 h-4" />
                                         <span>Settings</span>
                                     </button>
@@ -144,4 +138,5 @@ const Navbar = ({ onMenuClick, isMobileMenuOpen }) => {
     );
 };
 
-export default Navbar;
+export default PatientNavbar;
+

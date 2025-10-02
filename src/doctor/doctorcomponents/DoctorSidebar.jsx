@@ -3,14 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { 
     Home, 
     Calendar, 
-    Users,
-    Clipboard,
-    FileText,
-    BarChart3,
-    MessageSquare,
-    Settings, 
+    Settings,
+    User,
     ChevronLeft, 
-    ChevronRight
+    ChevronRight,
+    DollarSign
 } from 'lucide-react';
 import logo from '../../assets/Logo.png';
 
@@ -20,14 +17,11 @@ const DoctorSidebar = ({ isCollapsed, setIsCollapsed }) => {
 
     const menuItems = [
         { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/doctor' },
-        { id: 'schedule', label: 'Schedule', icon: Calendar, path: '/doctor/schedule' },
-        { id: 'patients', label: 'My Patients', icon: Users, path: '/doctor/patients' },
+        { id: 'profile', label: 'Profile Wizard', icon: User, path: '/doctor/profile' },
         { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/doctor/appointments' },
-        { id: 'prescriptions', label: 'Prescriptions', icon: Clipboard, path: '/doctor/prescriptions' },
-        { id: 'records', label: 'Medical Records', icon: FileText, path: '/doctor/records' },
-        { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/doctor/analytics' },
-        { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/doctor/messages' },
+        { id: 'earnings', label: 'Earnings', icon: DollarSign, path: '/doctor/earnings' },
         { id: 'settings', label: 'Settings', icon: Settings, path: '/doctor/settings' },
+        { id: 'my-profile', label: 'My Profile', icon: User, path: '/doctor/my-profile' },
     ];
 
     const handleNavigation = (path) => {
@@ -43,7 +37,7 @@ const DoctorSidebar = ({ isCollapsed, setIsCollapsed }) => {
             isCollapsed ? 'w-18' : 'w-64'
         }`}>
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 flex-shrink-0">
+            <div className="flex items-center justify-between px-5 py-[6px] border-b border-gray-200 flex-shrink-0">
                 {!isCollapsed ? (
                     <div className="flex items-center">
                         <img 

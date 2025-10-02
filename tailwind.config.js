@@ -1,4 +1,5 @@
 // tailwind.config.js
+/* eslint-env node */
 module.exports = {
   theme: {
     extend: {

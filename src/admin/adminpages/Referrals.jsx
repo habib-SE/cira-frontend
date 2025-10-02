@@ -186,7 +186,6 @@ const Referrals = () => {
     // Calculate statistics
     const totalReferrals = referralProviders.reduce((sum, provider) => sum + provider.totalReferrals, 0);
     const totalBookings = referralProviders.reduce((sum, provider) => sum + provider.successfulBookings, 0);
-    const totalRevenue = referralProviders.reduce((sum, provider) => sum + provider.totalRevenue, 0);
     const totalCommission = referralProviders.reduce((sum, provider) => sum + provider.commissionEarned, 0);
     const overallConversionRate = totalReferrals > 0 ? ((totalBookings / totalReferrals) * 100).toFixed(1) : 0;
 

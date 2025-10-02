@@ -89,7 +89,7 @@ const EnhancedLoginPage = () => {
       if (!result.success) {
         setLoginError(result.message);
       }
-    } catch (error) {
+    } catch {
       setLoginError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);

@@ -4,14 +4,14 @@ import {
     Home, 
     Users, 
     Calendar, 
-    Activity, 
     Settings, 
     ChevronLeft, 
     ChevronRight,
     Stethoscope,
     FileText,
     CreditCard,
-    TrendingUp
+    TrendingUp,
+    User
 } from 'lucide-react';
 import logo from '../../assets/Logo.png';
 
@@ -23,6 +23,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/admin' },
         { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
         { id: 'doctors', label: 'Doctors', icon: Stethoscope, path: '/admin/doctors' },
+        { id: 'doctor-profile', label: 'Doctor Profile Detail', icon: User, path: '/admin/doctor-profile' },
         { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/admin/appointments' },
         { id: 'reports', label: 'Reports', icon: FileText, path: '/admin/reports' },
         { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
@@ -43,7 +44,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
             isCollapsed ? 'w-18' : 'w-64'
         }`}>
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 flex-shrink-0">
+            <div className="flex items-center justify-between px-5 py-[5px] border-b border-gray-200 flex-shrink-0">
                 {!isCollapsed ? (
                     <div className="flex items-center">
                         <img 

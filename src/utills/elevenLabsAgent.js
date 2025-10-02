@@ -21,7 +21,6 @@ export const talkToAgent = async (userInput) => {
 
     return response.data;
   } catch (error) {
-    console.error("Error talking to agent:", error.response?.data || error.message);
     throw error;
   }
 };

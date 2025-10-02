@@ -18,19 +18,14 @@ useEffect(() => {
 
   const conversation = useConversation({
     onConnect: () => {
-      console.log("✅ Connected");
     },
     onDisconnect: () => {
-      console.log("🔌 Disconnected");
     },
     onSpeakStart: () => {
-      console.log("🗣 Speaking...");
     },
     onSpeakEnd: () => {
-      console.log("🔇 Done speaking");
     },
     onMessage: (message) => {
-      console.log("💬 Assistant:", message.message);
     },
   });
 
@@ -56,7 +51,6 @@ useEffect(() => {
       await conversation.setVolume({ volume: 1 });
       setIsConnected(true);
     } catch (err) {
-      console.error("Error starting conversation:", err);
       setErrorMessage("Failed to start conversation");
     }
   };

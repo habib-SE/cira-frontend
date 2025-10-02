@@ -146,12 +146,10 @@ const Payments = () => {
     const pendingPayouts = payments.filter(p => p.status === 'Pending Payout').reduce((sum, payment) => sum + payment.doctorPayout, 0);
 
     const handleProcessPayout = (payment) => {
-        console.log('Process payout for:', payment.transactionId);
         // Implement payout processing logic
     };
 
     const handleDownloadReport = () => {
-        console.log('Download payment report');
         // Implement report download logic
     };
 
@@ -362,7 +360,7 @@ const Payments = () => {
                                                 </button>
                                             )}
                                             <button
-                                                onClick={() => console.log('View details:', payment)}
+                                                onClick={() => {}}
                                                 className="text-blue-600 hover:text-blue-900 p-1"
                                                 title="View Details"
                                             >

@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
       } catch (error) {
-        console.error('Error parsing user data:', error);
         localStorage.removeItem('userToken');
         localStorage.removeItem('userData');
       }
@@ -80,7 +79,6 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: 'Invalid email or password' };
       }
     } catch (error) {
-      console.error('Login error:', error);
       return { success: false, message: 'An error occurred during login' };
     }
   };
@@ -105,6 +103,7 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

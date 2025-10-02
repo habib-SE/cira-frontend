@@ -217,12 +217,10 @@ const Reports = () => {
     const urgentReports = reports.filter(r => r.priority === 'Urgent').length;
 
     const handleViewReport = (report) => {
-        console.log('View report:', report);
         // Implement view report functionality
     };
 
     const handleDownloadReport = (report) => {
-        console.log('Download report:', report);
         // Implement download functionality
     };
 

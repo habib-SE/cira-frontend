@@ -124,22 +124,18 @@ const Users = () => {
     const pendingUsers = users.filter(u => u.status === 'Pending').length;
 
     const handleViewUser = (user) => {
-        console.log('View user:', user);
         // Navigate to user detail page
     };
 
     const handleSuspendUser = (user) => {
-        console.log('Suspend user:', user);
         // Implement suspend functionality
     };
 
     const handleDeleteUser = (user) => {
-        console.log('Delete user:', user);
         // Implement delete functionality
     };
 
     const handleActivateUser = (user) => {
-        console.log('Activate user:', user);
         // Implement activate functionality
     };
 

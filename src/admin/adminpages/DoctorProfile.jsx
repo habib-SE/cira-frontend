@@ -25,7 +25,7 @@ const DoctorProfile = () => {
     const [doctor, setDoctor] = useState(null);
 
     // Sample doctor data - in real app, this would be fetched from API
-    const doctorsData = [
+    const doctorsData = React.useMemo(() => [
         {
             id: 1,
             name: 'Dr. Sarah Johnson',
@@ -46,6 +46,12 @@ const DoctorProfile = () => {
             languages: ['English', 'Spanish'],
             location: 'New York, NY',
             bio: 'Dr. Sarah Johnson is a board-certified cardiologist with extensive experience in treating cardiovascular diseases. She specializes in preventive cardiology and interventional procedures.',
+            specialties: [
+                'Interventional Cardiology',
+                'Preventive Cardiology',
+                'Heart Failure Management',
+                'Cardiac Rehabilitation'
+            ],
             availability: {
                 monday: { start: '09:00', end: '17:00', available: true },
                 tuesday: { start: '09:00', end: '17:00', available: true },
@@ -116,29 +122,31 @@ const DoctorProfile = () => {
                 }
             ]
         }
-    ];
+    ], []);
 
     useEffect(() => {
         // In real app, fetch doctor data by ID
+        if (!id) {
+            // If no ID provided, redirect to doctors list
+            navigate('/admin/doctors');
+            return;
+        }
+        
         const foundDoctor = doctorsData.find(d => d.id === parseInt(id));
-        setDoctor(foundDoctor);
-    }, [id]);
+        if (foundDoctor) {
+            setDoctor(foundDoctor);
+        } else {
+            // If no doctor found, set a default doctor for demo purposes
+            setDoctor(doctorsData[0]);
+        }
+    }, [id, doctorsData, navigate]);
 
     if (!doctor) {
         return (
             <div className="p-6">
                 <Card className="p-12 text-center">
-                    <div className="flex flex-col items-center space-y-4">
-                        <AlertCircle className="w-16 h-16 text-gray-400" />
-                        <h3 className="text-lg font-semibold text-gray-900">Doctor not found</h3>
-                        <p className="text-gray-600">The requested doctor profile could not be found.</p>
-                        <button
-                            onClick={() => navigate('/admin/doctors')}
-                            className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200"
-                        >
-                            Back to Doctors
-                        </button>
-                    </div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-500 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading doctor profile...</p>
                 </Card>
             </div>
         );
@@ -173,17 +181,14 @@ const DoctorProfile = () => {
     };
 
     const handleApproveDoctor = () => {
-        console.log('Approve doctor:', doctor.id);
         // Implement approval logic
     };
 
     const handleRejectDoctor = () => {
-        console.log('Reject doctor:', doctor.id);
         // Implement rejection logic
     };
 
     const handleDownloadDocument = (document) => {
-        console.log('Download document:', document);
         // Implement download logic
     };
 
@@ -321,6 +326,21 @@ const DoctorProfile = () => {
                                 <label className="block text-sm font-medium text-gray-600 mb-2">Bio</label>
                                 <p className="text-gray-900">{doctor.bio}</p>
                             </div>
+                        </div>
+                    </Card>
+
+                    {/* Specialties */}
+                    <Card className="p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Specialties</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {doctor.specialties.map((specialty, index) => (
+                                <span
+                                    key={index}
+                                    className="inline-flex px-3 py-1 text-sm font-medium bg-pink-100 text-pink-800 rounded-full"
+                                >
+                                    {specialty}
+                                </span>
+                            ))}
                         </div>
                     </Card>
 

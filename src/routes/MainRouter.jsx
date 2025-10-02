@@ -15,7 +15,8 @@ import AdminLayout from '../admin/admincomponents/AdminLayout';
 import Dashboard from '../admin/adminpages/Dashboard';
 import Users from '../admin/adminpages/Users';
 import Doctors from '../admin/adminpages/Doctors';
-import DoctorProfile from '../admin/adminpages/DoctorProfile';
+import AdminDoctorProfile from '../admin/adminpages/DoctorProfile';
+import DoctorProfileDetail from '../admin/adminpages/DoctorProfileDetail';
 import Patients from '../admin/adminpages/Patients';
 import Appointments from '../admin/adminpages/Appointments';
 import Reports from '../admin/adminpages/Reports';
@@ -35,15 +36,14 @@ import PatientSettings from '../patient/patientpages/PatientSettings';
 
 // Doctor Portal Imports
 import DoctorLayout from '../doctor/doctorcomponents/DoctorLayout';
+import DoctorLogin from '../doctor/doctorpages/DoctorLogin';
 import DoctorDashboard from '../doctor/doctorpages/DoctorDashboard';
+import ProfileWizard from '../doctor/doctorpages/ProfileWizard';
 import DoctorSchedule from '../doctor/doctorpages/DoctorSchedule';
-import DoctorPatients from '../doctor/doctorpages/DoctorPatients';
-import DoctorAppointments from '../doctor/doctorpages/DoctorAppointments';
-import DoctorPrescriptions from '../doctor/doctorpages/DoctorPrescriptions';
-import DoctorRecords from '../doctor/doctorpages/DoctorRecords';
-import DoctorAnalytics from '../doctor/doctorpages/DoctorAnalytics';
-import DoctorMessages from '../doctor/doctorpages/DoctorMessages';
+import AppointmentDetail from '../doctor/doctorpages/AppointmentDetail';
+import Earnings from '../doctor/doctorpages/Earnings';
 import DoctorSettings from '../doctor/doctorpages/DoctorSettings';
+import DoctorProfile from '../doctor/doctorpages/DoctorProfile';
 
 function MainRouter() {
   return (
@@ -82,7 +82,8 @@ function MainRouter() {
         <Route path="" element={<Dashboard />} />
         <Route path="users" element={<Users />} />
         <Route path="doctors" element={<Doctors />} />
-        <Route path="doctors/:id" element={<DoctorProfile />} />
+        <Route path="doctors/:id" element={<AdminDoctorProfile />} />
+        <Route path="doctor-profile" element={<DoctorProfileDetail />} />
         <Route path="appointments" element={<Appointments />} />
         <Route path="reports" element={<Reports />} />
         <Route path="payments" element={<Payments />} />
@@ -108,6 +109,9 @@ function MainRouter() {
         <Route path="settings" element={<PatientSettings />} />
       </Route>
 
+      {/* Doctor Login/Registration - Public */}
+      <Route path="/doctor/login" element={<DoctorLogin />} />
+
       {/* Doctor Portal Routes - Protected */}
       <Route 
         path="/doctor" 
@@ -118,14 +122,12 @@ function MainRouter() {
         }
       >
         <Route path="" element={<DoctorDashboard />} />
-        <Route path="schedule" element={<DoctorSchedule />} />
-        <Route path="patients" element={<DoctorPatients />} />
-        <Route path="appointments" element={<DoctorAppointments />} />
-        <Route path="prescriptions" element={<DoctorPrescriptions />} />
-        <Route path="records" element={<DoctorRecords />} />
-        <Route path="analytics" element={<DoctorAnalytics />} />
-        <Route path="messages" element={<DoctorMessages />} />
+        <Route path="profile" element={<ProfileWizard />} />
+        <Route path="appointments" element={<DoctorSchedule />} />
+        <Route path="appointments/:id" element={<AppointmentDetail />} />
+        <Route path="earnings" element={<Earnings />} />
         <Route path="settings" element={<DoctorSettings />} />
+        <Route path="my-profile" element={<DoctorProfile />} />
       </Route>
     </Routes>
   );

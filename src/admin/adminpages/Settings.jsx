@@ -48,7 +48,6 @@ const Settings = () => {
 
     const handleSave = () => {
         // Save settings logic here
-        console.log('Settings saved:', settings);
     };
 
     return (

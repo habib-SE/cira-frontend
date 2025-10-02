@@ -259,77 +259,7 @@ const PhoneNumberInput = ({ value, onChange, error, placeholder = "Phone Number"
     country.dialCode.includes(searchTerm)
   );
 
-  // Format phone number based on country
-  const formatPhoneNumber = (phoneNumber, countryCode) => {
-    if (!phoneNumber || !countryCode) return phoneNumber;
-    
-    const countryInfo = getCountryInfo(countryCode);
-    const digits = phoneNumber.replace(/\D/g, '');
-    
-    if (digits.length > countryInfo.digits) {
-      return phoneNumber.slice(0, phoneNumber.length - 1); // Prevent extra digits
-    }
-    
-    // Apply formatting based on country
-    let formatted = digits;
-    if (countryCode === 'PK') {
-      // Pakistan: +92 XXX-XXXXXXX
-      if (digits.length > 3) {
-        formatted = digits.slice(0, 3) + '-' + digits.slice(3);
-      }
-    } else if (countryCode === 'US' || countryCode === 'CA') {
-      // US/Canada: XXX-XXX-XXXX
-      if (digits.length > 6) {
-        formatted = digits.slice(0, 3) + '-' + digits.slice(3, 6) + '-' + digits.slice(6);
-      } else if (digits.length > 3) {
-        formatted = digits.slice(0, 3) + '-' + digits.slice(3);
-      }
-    } else if (countryCode === 'GB') {
-      // UK: XXXX XXX XXX
-      if (digits.length > 4) {
-        formatted = digits.slice(0, 4) + ' ' + digits.slice(4, 7) + ' ' + digits.slice(7);
-      } else if (digits.length > 4) {
-        formatted = digits.slice(0, 4) + ' ' + digits.slice(4);
-      }
-    }
-    
-    return formatted;
-  };
 
-  // Handle phone number change with digit limiting
-  const handlePhoneChange = (phoneValue) => {
-    if (!phoneValue) {
-      setFormattedValue('');
-      onChange('');
-      return;
-    }
-
-    try {
-      const phoneNumber = parsePhoneNumber(phoneValue);
-      if (phoneNumber) {
-        const countryCode = phoneNumber.country;
-        const nationalNumber = phoneNumber.nationalNumber;
-        const countryInfo = getCountryInfo(countryCode);
-        
-        // Check if number exceeds country limit
-        if (nationalNumber.length > countryInfo.digits) {
-          return; // Don't update if exceeds limit
-        }
-        
-        // Format the number with dashes
-        const formatted = formatPhoneNumber(nationalNumber, countryCode);
-        
-        setFormattedValue(phoneValue);
-        onChange(phoneValue);
-      } else {
-        setFormattedValue(phoneValue);
-        onChange(phoneValue);
-      }
-    } catch (error) {
-      setFormattedValue(phoneValue);
-      onChange(phoneValue);
-    }
-  };
 
   // Handle country selection
   const handleCountrySelect = (country) => {
@@ -350,7 +280,7 @@ const PhoneNumberInput = ({ value, onChange, error, placeholder = "Phone Number"
     if (value !== formattedValue) {
       setFormattedValue(value);
     }
-  }, [value]);
+  }, [value, formattedValue]);
 
   return (
     <div className="relative">
@@ -407,7 +337,7 @@ const PhoneNumberInput = ({ value, onChange, error, placeholder = "Phone Number"
                 }
               } else if (selectedCountry.code === 'GB') {
                 // UK: XXXX XXX XXX
-                if (digitsOnly.length > 4) {
+                if (digitsOnly.length > 7) {
                   formatted = digitsOnly.slice(0, 4) + ' ' + digitsOnly.slice(4, 7) + ' ' + digitsOnly.slice(7);
                 } else if (digitsOnly.length > 4) {
                   formatted = digitsOnly.slice(0, 4) + ' ' + digitsOnly.slice(4);
