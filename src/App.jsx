@@ -5,13 +5,16 @@ import Header from "./components/Header";
 import LandingPage from "./pages/Home";
 import CiraAssistant from "./assistant/CiraAssistant";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import CiraRealtimeAssistant from "./agent/realtime/CiraRealtimeAssistant";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
     <Router>
-      <Routes>
-        {/* Public routes */}
-        <Route
+      <AuthProvider>
+        <Routes>
+          {/* Public routes */}
+          <Route
           path="/assistant"
           element={
             <>
@@ -20,22 +23,32 @@ function App() {
             </>
           }
         />
-        <Route
-          path="/home"
+          <Route
+          path="/ai-assistant"
           element={
             <>
               <Header />
-              <LandingPage />
+              <CiraRealtimeAssistant />
             </>
           }
         />
-
-        {/* Admin routes */}
-        <Route path="/*" element={<MainRouter />} />
-
-        {/* Default redirect to home */}
-        <Route path="/" element={<Navigate to="/home" replace />} />
-      </Routes>
+        <Route
+          path="/home"
+          element={
+              <>
+                <Header />
+                <LandingPage />
+              </>
+            }
+        />
+  
+          {/* Admin routes */}
+          <Route path="/*" element={<MainRouter />} />
+  
+          {/* Default redirect to home */}
+          <Route path="/" element={<Navigate to="/home" replace />} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }

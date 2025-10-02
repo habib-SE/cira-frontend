@@ -132,7 +132,7 @@ const Appointments = () => {
     const [filterType, setFilterType] = useState('');
 
     // Doctors data (matching the structure from Doctors.jsx)
-    const doctors = [
+    const doctors = React.useMemo(() => [
         {
             id: 1,
             name: 'Dr. Sarah Johnson',
@@ -173,7 +173,7 @@ const Appointments = () => {
             status: 'offline',
             avatar: 'DK'
         },
-    ];
+    ], []);
 
     // Appointment types
     const appointmentTypes = ['Consultation', 'Check-up', 'Follow-up', 'Emergency', 'Surgery', 'Therapy', 'Vaccination'];
@@ -255,7 +255,7 @@ const Appointments = () => {
         if (doctorFilter && lastSegment === 'appointments') {
             setFilterDoctor(doctorFilter);
         }
-    }, [location.pathname, location.search, appointments]);
+    }, [location.pathname, location.search, appointments, doctors]);
 
     // Form handling functions
     const handleInputChange = (e) => {
@@ -299,7 +299,7 @@ const Appointments = () => {
         }
         if (!formData.patientPhone.trim()) {
             errors.patientPhone = 'Patient phone number is required';
-        } else if (!/^[\+]?[1-9][\d]{0,15}$/.test(formData.patientPhone.replace(/\D/g, ''))) {
+        } else if (!/^[+]?[1-9][\d]{0,15}$/.test(formData.patientPhone.replace(/\D/g, ''))) {
             errors.patientPhone = 'Please enter a valid phone number';
         }
         if (!formData.doctor) {

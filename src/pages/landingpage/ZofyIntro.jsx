@@ -35,7 +35,6 @@
 
 
 import React from "react";
-import { motion, useAnimation } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 
 // import orb from "../../../../assets/orb.avif";
