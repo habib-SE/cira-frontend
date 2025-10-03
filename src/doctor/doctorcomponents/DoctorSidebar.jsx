@@ -7,7 +7,9 @@ import {
     User,
     ChevronLeft, 
     ChevronRight,
-    DollarSign
+    DollarSign,
+    FileText,
+    LogIn
 } from 'lucide-react';
 import logo from '../../assets/Logo.png';
 
@@ -16,9 +18,11 @@ const DoctorSidebar = ({ isCollapsed, setIsCollapsed }) => {
     const navigate = useNavigate();
 
     const menuItems = [
+        { id: 'login', label: 'Login/Registration', icon: LogIn, path: '/doctor/login' },
         { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/doctor' },
         { id: 'profile', label: 'Profile Wizard', icon: User, path: '/doctor/profile' },
         { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/doctor/appointments' },
+        { id: 'appointment-detail', label: 'Appointment Detail', icon: FileText, path: '/doctor/appointment-detail' },
         { id: 'earnings', label: 'Earnings', icon: DollarSign, path: '/doctor/earnings' },
         { id: 'settings', label: 'Settings', icon: Settings, path: '/doctor/settings' },
         { id: 'my-profile', label: 'My Profile', icon: User, path: '/doctor/my-profile' },

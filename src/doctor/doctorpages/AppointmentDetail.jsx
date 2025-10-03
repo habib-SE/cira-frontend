@@ -40,7 +40,7 @@ const AppointmentDetail = () => {
 
     // Sample appointment data - in real app, this would be fetched by ID
     const appointment = {
-        id: parseInt(id),
+        id: id ? parseInt(id) : 1, // Default to 1 if no ID provided
         patient: {
             name: 'John Doe',
             age: 45,
