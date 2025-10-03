@@ -121,9 +121,11 @@ function MainRouter() {
           </ProtectedRoute>
         }
       >
+        <Route path="login" element={<DoctorLogin />} />
         <Route path="" element={<DoctorDashboard />} />
         <Route path="profile" element={<ProfileWizard />} />
         <Route path="appointments" element={<DoctorSchedule />} />
+        <Route path="appointment-detail" element={<AppointmentDetail />} />
         <Route path="appointments/:id" element={<AppointmentDetail />} />
         <Route path="earnings" element={<Earnings />} />
         <Route path="settings" element={<DoctorSettings />} />
