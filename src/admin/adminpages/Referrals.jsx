@@ -10,8 +10,8 @@ import {
     Award,
     Target
 } from 'lucide-react';
-import Card from '../admincomponents/Card';
-import Chart from '../admincomponents/Chart';
+import Card from '../admin/admincomponents/Card';
+import Chart from '../admin/admincomponents/Chart';
 
 const Referrals = () => {
     const [searchTerm, setSearchTerm] = useState('');

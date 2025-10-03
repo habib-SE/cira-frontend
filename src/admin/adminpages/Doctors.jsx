@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Clock, Award, X, Star, Calendar } from 'lucide-react';
-import Card from '../admincomponents/Card';
+import Card from '../admin/admincomponents/Card';
 
 const Doctors = () => {
     const navigate = useNavigate();

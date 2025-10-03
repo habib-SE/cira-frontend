@@ -29,7 +29,7 @@ import {
     Stethoscope,
     Activity
 } from 'lucide-react';
-import Card from '../admincomponents/Card';
+import Card from '../admin/admincomponents/Card';
 
 const DoctorProfileDetail = () => {
     const { id } = useParams();

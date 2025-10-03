@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stethoscope, Plus, Search, Filter, Eye, Edit, Trash2 } from 'lucide-react';
-import Card from '../admincomponents/Card';
+import Card from '../admin/admincomponents/Card';
 
 const Patients = () => {
     const patients = [

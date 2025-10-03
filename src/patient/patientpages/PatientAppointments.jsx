@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, Plus, Video, RotateCcw, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, Plus, Video, RotateCcw, X, CalendarIcon, ClockIcon, MapPinIcon } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 
 const PatientAppointments = () => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Users as UsersIcon, Search, Filter, Eye, Ban, Trash2, MoreVertical, UserCheck, UserX } from 'lucide-react';
-import Card from '../admincomponents/Card';
+import Card from '../admin/admincomponents/Card';
 
 const Users = () => {
     const [searchTerm, setSearchTerm] = useState('');
