@@ -17,7 +17,7 @@ import {
     XCircle,
     AlertCircle
 } from 'lucide-react';
-import Card from '../admin/admincomponents/Card';
+import Card from '../admincomponents/Card';
 
 const DoctorProfile = () => {
     const { id } = useParams();

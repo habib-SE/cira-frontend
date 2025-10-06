@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, Plus, Search, Filter, Clock, User, Stethoscope, X, Save, Edit, Trash2, Eye, Phone, Mail, MapPin, AlertCircle, CheckCircle, FileText } from 'lucide-react';
-import Card from '../admin/admincomponents/Card';
+import Card from '../admincomponents/Card';
 
 const Appointments = () => {
     const navigate = useNavigate();

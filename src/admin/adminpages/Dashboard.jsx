@@ -1,7 +1,7 @@
 import React from 'react';
 import { Users, Calendar, Activity, Stethoscope, TrendingUp, Clock, CheckCircle, AlertCircle, DollarSign } from 'lucide-react';
-import Card from '../admin/admincomponents/Card';
-import Chart from '../admin/admincomponents/Chart';
+import Card from '../admincomponents/Card';
+import Chart from '../admincomponents/Chart';
 
 const Dashboard = () => {
     // Sample data for charts

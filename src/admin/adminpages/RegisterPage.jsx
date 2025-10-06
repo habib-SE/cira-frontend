@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeClosed, Check, X, AlertCircle } from 'lucide-react';
 import logo from '../../assets/Logo.png';
 import loginLogo from '../../assets/LoginLogo.png';
-import PhoneNumberInput from '../admin/admincomponents/PhoneNumberInput';
+import PhoneNumberInput from '../admincomponents/PhoneNumberInput';
 import '../../styles/banner.css';
 
 const RegisterPage = () => {

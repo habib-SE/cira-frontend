@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Settings as SettingsIcon, User, Bell, Shield, Database, Palette, Save, Users, FileText, CreditCard, Key, Globe, AlertTriangle, CheckCircle } from 'lucide-react';
-import Card from '../admin/admincomponents/Card';
+import Card from '../admincomponents/Card';
 
 const Settings = () => {
     const [settings, setSettings] = useState({
