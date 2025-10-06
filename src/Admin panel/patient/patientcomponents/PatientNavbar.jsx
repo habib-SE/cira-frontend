@@ -22,10 +22,10 @@ const PatientNavbar = ({ onMenuClick, isMobileMenuOpen }) => {
             <div className="flex items-center justify-between">
                 {/* Left side */}
                 <div className="flex items-center space-x-4">
-                    {/* Mobile menu button */}
+                    {/* Mobile menu button hidden (sidebar always visible on mobile) */}
                     <button
                         onClick={onMenuClick}
-                        className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                        className="hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                     >
                         {isMobileMenuOpen ? (
                             <X className="w-5 h-5 text-gray-600" />
