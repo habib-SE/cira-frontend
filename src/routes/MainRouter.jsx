@@ -1,49 +1,49 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute';
-import WelcomePage from '../admin/adminpages/WelcomePage';
-import RegisterPage from '../admin/adminpages/RegisterPage';
-import LoginPage from '../admin/adminpages/LoginPage';
-import EnhancedLoginPage from '../admin/adminpages/EnhancedLoginPage';
-import EmailConfirmPage from '../admin/adminpages/EmailConfirmPage';
-import EnablePermissionPage from '../admin/adminpages/EnablePermissionPage';
-import PlusUnlockedPage from '../admin/adminpages/PlusUnlockedPage';
-import SubscriptionPlansPage from '../admin/adminpages/SubscriptionPlansPage';
+import WelcomePage from '../Admin panel/admin/adminpages/WelcomePage';
+import RegisterPage from '../Admin panel/admin/adminpages/RegisterPage';
+import LoginPage from '../Admin panel/admin/adminpages/LoginPage';
+import EnhancedLoginPage from '../Admin panel/admin/adminpages/EnhancedLoginPage';
+import EmailConfirmPage from '../Admin panel/admin/adminpages/EmailConfirmPage';
+import EnablePermissionPage from '../Admin panel/admin/adminpages/EnablePermissionPage';
+import PlusUnlockedPage from '../Admin panel/admin/adminpages/PlusUnlockedPage';
+import SubscriptionPlansPage from '../Admin panel/admin/adminpages/SubscriptionPlansPage';
 
 // Admin Portal Imports
-import AdminLayout from '../admin/admincomponents/AdminLayout';
-import Dashboard from '../admin/adminpages/Dashboard';
-import Users from '../admin/adminpages/Users';
-import Doctors from '../admin/adminpages/Doctors';
-import AdminDoctorProfile from '../admin/adminpages/DoctorProfile';
-import DoctorProfileDetail from '../admin/adminpages/DoctorProfileDetail';
-import Patients from '../admin/adminpages/Patients';
-import Appointments from '../admin/adminpages/Appointments';
-import Reports from '../admin/adminpages/Reports';
-import Payments from '../admin/adminpages/Payments';
-import Settings from '../admin/adminpages/Settings';
-import Referrals from '../admin/adminpages/Referrals';
+import AdminLayout from '../Admin panel/admin/admincomponents/AdminLayout';
+import Dashboard from '../Admin panel/admin/adminpages/Dashboard';
+import Users from '../Admin panel/admin/adminpages/Users';
+import Doctors from '../Admin panel/admin/adminpages/Doctors';
+import AdminDoctorProfile from '../Admin panel/admin/adminpages/DoctorProfile';
+import DoctorProfileDetail from '../Admin panel/admin/adminpages/DoctorProfileDetail';
+import Patients from '../Admin panel/admin/adminpages/Patients';
+import Appointments from '../Admin panel/admin/adminpages/Appointments';
+import Reports from '../Admin panel/admin/adminpages/Reports';
+import Payments from '../Admin panel/admin/adminpages/Payments';
+import Settings from '../Admin panel/admin/adminpages/Settings';
+import Referrals from '../Admin panel/admin/adminpages/Referrals';
 
 // Patient Portal Imports
-import PatientLayout from '../patient/patientcomponents/PatientLayout';
-import PatientDashboard from '../patient/patientpages/PatientDashboard';
-import PatientAppointments from '../patient/patientpages/PatientAppointments';
-import MedicalRecords from '../patient/patientpages/MedicalRecords';
-import Prescriptions from '../patient/patientpages/Prescriptions';
-import MyDoctors from '../patient/patientpages/MyDoctors';
-import PatientMessages from '../patient/patientpages/PatientMessages';
-import PatientSettings from '../patient/patientpages/PatientSettings';
+import PatientLayout from '../Admin panel/patient/patientcomponents/PatientLayout';
+import PatientDashboard from '../Admin panel/patient/patientpages/PatientDashboard';
+import PatientAppointments from '../Admin panel/patient/patientpages/PatientAppointments';
+import MedicalRecords from '../Admin panel/patient/patientpages/MedicalRecords';
+import Prescriptions from '../Admin panel/patient/patientpages/Prescriptions';
+import MyDoctors from '../Admin panel/patient/patientpages/MyDoctors';
+import PatientMessages from '../Admin panel/patient/patientpages/PatientMessages';
+import PatientSettings from '../Admin panel/patient/patientpages/PatientSettings';
 
 // Doctor Portal Imports
-import DoctorLayout from '../doctor/doctorcomponents/DoctorLayout';
-import DoctorLogin from '../doctor/doctorpages/DoctorLogin';
-import DoctorDashboard from '../doctor/doctorpages/DoctorDashboard';
-import ProfileWizard from '../doctor/doctorpages/ProfileWizard';
-import DoctorSchedule from '../doctor/doctorpages/DoctorSchedule';
-import AppointmentDetail from '../doctor/doctorpages/AppointmentDetail';
-import Earnings from '../doctor/doctorpages/Earnings';
-import DoctorSettings from '../doctor/doctorpages/DoctorSettings';
-import DoctorProfile from '../doctor/doctorpages/DoctorProfile';
+import DoctorLayout from '../Admin panel/doctor/doctorcomponents/DoctorLayout';
+import DoctorLogin from '../Admin panel/doctor/doctorpages/DoctorLogin';
+import DoctorDashboard from '../Admin panel/doctor/doctorpages/DoctorDashboard';
+import ProfileWizard from '../Admin panel/doctor/doctorpages/ProfileWizard';
+import DoctorSchedule from '../Admin panel/doctor/doctorpages/DoctorSchedule';
+import AppointmentDetail from '../Admin panel/doctor/doctorpages/AppointmentDetail';
+import Earnings from '../Admin panel/doctor/doctorpages/Earnings';
+import DoctorSettings from '../Admin panel/doctor/doctorpages/DoctorSettings';
+import DoctorProfile from '../Admin panel/doctor/doctorpages/DoctorProfile';
 
 function MainRouter() {
   return (
