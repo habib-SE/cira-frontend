@@ -1,4 +1,4 @@
-chromeimport React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, Plus, Search, Filter, Clock, User, Stethoscope, X, Save, Edit, Trash2, Eye, Phone, Mail, MapPin, AlertCircle, CheckCircle, FileText, TrendingUp, BarChart3, PieChart, Activity, Bell, Star, Award, Target, Zap, Users, Calendar as CalendarIcon, Clock as ClockIcon, DollarSign, MessageSquare, Video, MapPin as LocationIcon } from 'lucide-react';
 import Card from '../admincomponents/Card';
