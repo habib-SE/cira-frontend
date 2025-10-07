@@ -12,12 +12,12 @@ const PatientMessages = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="lg:flex block items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Messages</h1>
           <p className="text-gray-600">Communicate with your healthcare providers</p>
         </div>
-        <button className="flex items-center space-x-2 bg-pink-600 text-white px-6 py-3 rounded-xl hover:bg-pink-700 transition-colors font-medium">
+        <button className="flex items-center space-x-2 bg-pink-600 text-white px-6 py-3 rounded-xl hover:bg-pink-700 transition-colors font-medium mt-8 lg:mt-0">
           <Plus className="w-5 h-5" />
           <span>New Message</span>
         </button>
@@ -33,7 +33,7 @@ const PatientMessages = () => {
           {conversations.map((conversation) => (
             <div key={conversation.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200 cursor-pointer">
               <div className="flex items-center space-x-4">
-                <div className="bg-blue-100 p-3 rounded-xl">
+                <div className="bg-blue-100 p-3 rounded-xl hidden sm:block">
                   <MessageSquare className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>

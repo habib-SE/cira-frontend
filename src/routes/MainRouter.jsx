@@ -26,10 +26,15 @@ import Referrals from '../Admin panel/admin/adminpages/Referrals';
 
 // Patient Portal Imports
 import PatientLayout from '../Admin panel/patient/patientcomponents/PatientLayout';
+import AI_Nurse from '../Admin panel/patient/patientpages/AI_Nurse';
 import PatientDashboard from '../Admin panel/patient/patientpages/PatientDashboard';
-import PatientAppointments from '../Admin panel/patient/patientpages/PatientAppointments';
-import MedicalRecords from '../Admin panel/patient/patientpages/MedicalRecords';
-import Prescriptions from '../Admin panel/patient/patientpages/Prescriptions';
+import PatientReports from '../Admin panel/patient/patientpages/PatientReports';
+import PatientSubscriptions from '../Admin panel/patient/patientpages/PatientSubscriptions';
+import Messages from '../Admin panel/patient/patientpages/Messages';
+import History from '../Admin panel/patient/patientpages/History';
+import ReferralCheckout from '../Admin panel/patient/patientpages/ReferralCheckout';
+import PatientProfile from '../Admin panel/patient/patientpages/PatientProfile';
+import PatientReportDetails from '../Admin panel/patient/patientpages/PatientReportDetails';
 import MyDoctors from '../Admin panel/patient/patientpages/MyDoctors';
 import PatientMessages from '../Admin panel/patient/patientpages/PatientMessages';
 import PatientSettings from '../Admin panel/patient/patientpages/PatientSettings';
@@ -101,10 +106,14 @@ function MainRouter() {
         }
       >
         <Route path="" element={<PatientDashboard />} />
-        <Route path="appointments" element={<PatientAppointments />} />
-        <Route path="records" element={<MedicalRecords />} />
-        <Route path="prescriptions" element={<Prescriptions />} />
-        <Route path="doctors" element={<MyDoctors />} />
+        <Route path="ai-nurse" element={<AI_Nurse />} />
+        <Route path="reports" element={<PatientReports />} />
+         <Route path="reportsId" element={<PatientReportDetails />} />
+        <Route path="book-doctor" element={<MyDoctors/>} />
+        <Route path="book-doctor/checkout" element={<ReferralCheckout/>} />
+        <Route path="profile" element={<PatientProfile/>} />
+        <Route path="history" element={<History />} />
+        <Route path="subscriptions" element={<PatientSubscriptions />} />
         <Route path="messages" element={<PatientMessages />} />
         <Route path="settings" element={<PatientSettings />} />
       </Route>

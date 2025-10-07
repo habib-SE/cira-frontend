@@ -268,10 +268,7 @@ const History = () => {
                     <div className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4 flex-1">
-                          {/* Mobile Icon */}
-                          <div className={`w-12 h-12 rounded-full ${activityType.bgColor} ${activityType.borderColor} border flex items-center justify-center sm:hidden`}>
-                            <IconComponent className={`h-6 w-6 ${activityType.iconColor}`} />
-                          </div>
+                      
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2 mb-2">

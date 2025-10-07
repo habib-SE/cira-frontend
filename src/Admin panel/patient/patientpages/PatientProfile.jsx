@@ -180,14 +180,14 @@ const PatientProfile = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="lg:flex block items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile & Health Information</h1>
               <p className="text-gray-600">Manage your personal details and medical information</p>
             </div>
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mt-8 lg:mt-0"
             >
               <Edit3 className="h-4 w-4" />
               <span>{isEditing ? 'Cancel' : 'Edit Profile'}</span>
