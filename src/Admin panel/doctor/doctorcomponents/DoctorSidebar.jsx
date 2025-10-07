@@ -11,8 +11,8 @@ import {
     FileText,
     LogIn
 } from 'lucide-react';
-import logo from '../../../assets/Logo.png';
-import loginLogo from '../../../assets/LoginLogo.png';
+import logo from '../../../assets/logo.png';
+import loginLogo from '../../../assets/loginlogo.png';
 
 const DoctorSidebar = ({ isCollapsed, setIsCollapsed }) => {
     const location = useLocation();
@@ -38,11 +38,11 @@ const DoctorSidebar = ({ isCollapsed, setIsCollapsed }) => {
     };
 
     return (
-        <div className={`bg-white border-r border-gray-200 transition-all duration-300 h-screen flex flex-col overflow-hidden ${
+        <div className={`bg-white border-r border-gray-200 transition-all duration-300 h-screen flex flex-col  ${
             isCollapsed ? 'w-20' : 'w-64'
         }`}>
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 flex-shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 flex-shrink-0 relative">
                 {!isCollapsed ? (
                     <div className="flex items-center">
                         <img 
@@ -63,14 +63,18 @@ const DoctorSidebar = ({ isCollapsed, setIsCollapsed }) => {
                         />
                     </button>
                 )}
-                {!isCollapsed && (
-                    <button
-                        onClick={toggleCollapse}
-                        className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                    >
-                        <ChevronLeft className="w-5 h-5 text-gray-600" />
-                    </button>
-                )}
+                {/* Floating edge toggle button */}
+                <button
+                    onClick={toggleCollapse}
+                    className={`flex absolute top-1/2 -translate-y-1/2  w-6 h-6 rounded-full bg-pink-600 text-white shadow-lg items-center justify-center hover:bg-pink-700 transition-colors duration-200 z-50 ${isCollapsed ? 'right-[-12px]' : 'right-[-12px]'}`}
+                    aria-label={isCollapsed ? 'Open sidebar' : 'Close sidebar '}
+                >
+                    {isCollapsed ? (
+                        <ChevronRight className="w-4 h-4" />
+                    ) : (
+                        <ChevronLeft className="w-4 h-4" />
+                    )}
+                </button>
             </div>
 
             {/* Navigation */}
@@ -87,7 +91,7 @@ const DoctorSidebar = ({ isCollapsed, setIsCollapsed }) => {
                                 isActive
                                     ? 'bg-pink-50 text-pink-600 border border-pink-200'
                                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                            }`}
+                            } ${!isCollapsed ? 'justify-left' : 'justify-center'}`}
                         >
                             <Icon className="w-5 h-5 flex-shrink-0" />
                             {!isCollapsed && (
@@ -104,7 +108,7 @@ const DoctorSidebar = ({ isCollapsed, setIsCollapsed }) => {
                     <div className="bg-pink-50 rounded-xl p-3 border border-pink-200">
                         <div className="flex items-center space-x-2 mb-1">
                             <div className="w-2 h-2 bg-pink-500 rounded-full animate-pulse"></div>
-                            <span className="text-sm font-medium text-pink-600">Practice Status</span>
+                            <span className="text-sm font-medium text-pink-600">Doctor Status</span>
                         </div>
                         <p className="text-xs text-gray-600">All systems operational</p>
                     </div>

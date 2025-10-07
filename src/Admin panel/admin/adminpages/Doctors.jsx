@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Clock, Award, X, Star, Calendar } from 'lucide-react';
 import Card from '../admincomponents/Card';
@@ -6,22 +6,21 @@ import Card from '../admincomponents/Card';
 const Doctors = () => {
     const navigate = useNavigate();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-    const [isContentLoading, setIsContentLoading] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
+    
+    const [isContentLoading, setIsContentLoading] = useState(false);
+    
     const handleRefreshContent = () => {
+        setIsRefreshing(true);
         setIsContentLoading(true);
         setTimeout(() => {
+            setIsRefreshing(false);
             setIsContentLoading(false);
         }, 1500);
     };
 
-    // Auto-trigger loader on component mount
-    useEffect(() => {
-        setIsContentLoading(true);
-        setTimeout(() => {
-            setIsContentLoading(false);
-        }, 2000);
-    }, []);
+    
 
     // Sample doctors data with new status system
     const [doctors, setDoctors] = useState([
@@ -174,33 +173,46 @@ const Doctors = () => {
     const specialties = [...new Set(doctors.map(doctor => doctor.specialty))];
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
             {/* Success Message */}
             {showSuccessMessage && (
-                <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center space-x-2">
+                <div className="fixed top-2 right-2 sm:top-4 sm:right-4 bg-green-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg z-50 flex items-center space-x-2 text-xs sm:text-sm">
                     <div className="w-2 h-2 bg-white rounded-full"></div>
-                    <span>Doctor status updated successfully!</span>
+                    <span className="hidden sm:inline">Doctor status updated successfully!</span>
+                    <span className="sm:hidden">Updated!</span>
                 </div>
             )}
 
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Doctors</h1>
-                    <p className="text-gray-600">Manage doctor verification and platform access</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Doctors</h1>
+                    <p className="text-sm sm:text-base text-gray-600">Manage doctor verification and platform access</p>
                 </div>
                 <button
                     onClick={handleRefreshContent}
-                    className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200"
+                    disabled={isRefreshing}
+                    className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
                 >
-                    Refresh
+                    {isRefreshing ? (
+                        <div className="flex items-center space-x-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            <span className="hidden sm:inline">Refreshing...</span>
+                            <span className="sm:hidden">...</span>
+                        </div>
+                    ) : (
+                        <>
+                            <span className="hidden sm:inline">Refresh</span>
+                            <span className="sm:hidden">↻</span>
+                        </>
+                    )}
                 </button>
             </div>
 
             {/* Main Content Area with Loader */}
             <div className="relative min-h-[600px]">
                 {/* Content Loader */}
-                {isContentLoading && (
+                {isRefreshing && (
                     <div className="absolute inset-0 flex items-start justify-center z-50 pt-32">
                         <div className="flex flex-col items-center justify-center space-y-4">
                             <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-500"></div>
@@ -209,7 +221,7 @@ const Doctors = () => {
                     </div>
                 )}
                 
-                <div className={`space-y-6 transition-opacity duration-300 ${isContentLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                <div className={`space-y-6 transition-opacity duration-300 ${isRefreshing ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="p-4">
@@ -523,10 +535,10 @@ const Doctors = () => {
                         )}
                     </>
                 )}
-                    </div>
-                </div>
             </div>
         </div>
+    </div>
+    </div>
     );
 };
 

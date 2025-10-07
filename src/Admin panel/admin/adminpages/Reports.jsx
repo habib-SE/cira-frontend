@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
     FileText, 
     Search, 
@@ -20,22 +20,21 @@ const Reports = () => {
     const [filterDoctor, setFilterDoctor] = useState('');
     const [filterDate, setFilterDate] = useState('');
     const [filterType, setFilterType] = useState('');
-    const [isContentLoading, setIsContentLoading] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
+    
+    const [_isContentLoading, _setIsContentLoading] = useState(false);
+    
     const handleRefreshContent = () => {
-        setIsContentLoading(true);
+        setIsRefreshing(true);
+        _setIsContentLoading(true);
         setTimeout(() => {
-            setIsContentLoading(false);
+            setIsRefreshing(false);
+            _setIsContentLoading(false);
         }, 1500);
     };
 
-    // Auto-trigger loader on component mount
-    useEffect(() => {
-        setIsContentLoading(true);
-        setTimeout(() => {
-            setIsContentLoading(false);
-        }, 2000);
-    }, []);
+    
 
     // Sample AI Nurse reports data
     const reports = [
@@ -241,23 +240,36 @@ const Reports = () => {
     };
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">AI Nurse Reports</h1>
-                    <p className="text-gray-600">Central archive of AI-generated healthcare reports</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">AI Nurse Reports</h1>
+                    <p className="text-sm sm:text-base text-gray-600">Central archive of AI-generated healthcare reports</p>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 sm:space-x-3">
                     <button
-                        onClick={handleRefreshContent}
-                        className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200"
-                    >
-                        Refresh
-                    </button>
-                    <button className="flex items-center space-x-2 px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200">
+                    onClick={handleRefreshContent}
+                    disabled={isRefreshing}
+                        className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
+                >
+                    {isRefreshing ? (
+                        <div className="flex items-center space-x-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                <span className="hidden sm:inline">Refreshing...</span>
+                                <span className="sm:hidden">...</span>
+                        </div>
+                    ) : (
+                            <>
+                                <span className="hidden sm:inline">Refresh</span>
+                                <span className="sm:hidden">↻</span>
+                            </>
+                    )}
+                </button>
+                    <button className="flex items-center space-x-2 px-3 sm:px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 text-sm sm:text-base whitespace-nowrap">
                         <Download className="w-4 h-4" />
-                        <span>Export All</span>
+                        <span className="hidden sm:inline">Export All</span>
+                        <span className="sm:hidden">Export</span>
                     </button>
                 </div>
             </div>
@@ -265,7 +277,7 @@ const Reports = () => {
             {/* Main Content Area with Loader */}
             <div className="relative min-h-[600px]">
                 {/* Content Loader */}
-                {isContentLoading && (
+                {isRefreshing && (
                     <div className="absolute inset-0 flex items-start justify-center z-50 pt-32">
                         <div className="flex flex-col items-center justify-center space-y-4">
                             <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-500"></div>
@@ -274,7 +286,7 @@ const Reports = () => {
                     </div>
                 )}
                 
-                <div className={`space-y-6 transition-opacity duration-300 ${isContentLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                <div className={`space-y-6 transition-opacity duration-300 ${isRefreshing ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="p-4">
@@ -325,7 +337,7 @@ const Reports = () => {
 
             {/* Search and Filter */}
             <Card className="p-4">
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                     {/* Search Bar */}
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -334,16 +346,16 @@ const Reports = () => {
                             placeholder="Search reports by patient, doctor, type, or content..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                         />
                     </div>
                     
                     {/* Filter Row */}
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3">
                         <select
                             value={filterDoctor}
                             onChange={(e) => setFilterDoctor(e.target.value)}
-                            className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                            className="w-full sm:w-auto px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
                         >
                             <option value="">All Doctors</option>
                             <option value="Dr. Sarah Johnson">Dr. Sarah Johnson</option>
@@ -354,7 +366,7 @@ const Reports = () => {
                         <select
                             value={filterType}
                             onChange={(e) => setFilterType(e.target.value)}
-                            className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                            className="w-full sm:w-auto px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
                         >
                             <option value="">All Types</option>
                             <option value="Health Assessment">Health Assessment</option>
@@ -367,7 +379,7 @@ const Reports = () => {
                             type="date"
                             value={filterDate}
                             onChange={(e) => setFilterDate(e.target.value)}
-                            className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                            className="w-full sm:w-auto px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
                             placeholder="Filter by date"
                         />
                         
@@ -380,7 +392,7 @@ const Reports = () => {
                                     setFilterType('');
                                     setFilterDate('');
                                 }}
-                                className="px-4 py-2 text-pink-600 hover:bg-pink-50 rounded-xl transition-all duration-300 flex items-center space-x-2 border border-pink-200 hover:border-pink-300 hover:shadow-lg font-medium text-sm"
+                                className="w-full sm:w-auto px-3 py-2 text-pink-600 hover:bg-pink-50 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 border border-pink-200 hover:border-pink-300 hover:shadow-lg font-medium text-sm whitespace-nowrap"
                             >
                                 <Filter className="w-4 h-4" />
                                 <span>Clear All</span>
@@ -391,16 +403,17 @@ const Reports = () => {
             </Card>
 
             {/* Reports List */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
                 {filteredReports.map((report) => (
-                    <Card key={report.id} className="p-6 hover:shadow-lg transition-shadow duration-200">
-                        <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                                <div className="flex items-center space-x-3 mb-3">
-                                    <div className="flex items-center space-x-2">
-                                        <File className="w-5 h-5 text-gray-400" />
-                                        <h3 className="text-lg font-semibold text-gray-900">{report.reportType}</h3>
+                    <Card key={report.id} className="p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                                    <div className="flex items-center space-x-2 min-w-0">
+                                        <File className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
+                                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{report.reportType}</h3>
                                     </div>
+                                    <div className="flex items-center gap-2 flex-wrap">
                                     <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(report.priority)}`}>
                                         {getPriorityIcon(report.priority)}
                                         <span className="ml-1">{report.priority}</span>
@@ -408,89 +421,90 @@ const Reports = () => {
                                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(report.status)}`}>
                                         {report.status}
                                     </span>
+                                    </div>
                                 </div>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                                     <div>
-                                        <p className="text-sm text-gray-600 mb-1">Patient</p>
+                                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Patient</p>
                                         <div className="flex items-center space-x-2">
-                                            <User className="w-4 h-4 text-gray-400" />
-                                            <span className="font-medium text-gray-900">{report.patient}</span>
+                                            <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                            <span className="font-medium text-gray-900 text-sm sm:text-base truncate">{report.patient}</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-600 mb-1">Doctor</p>
+                                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Doctor</p>
                                         <div className="flex items-center space-x-2">
-                                            <Stethoscope className="w-4 h-4 text-gray-400" />
-                                            <span className="font-medium text-gray-900">{report.doctor}</span>
+                                            <Stethoscope className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                            <span className="font-medium text-gray-900 text-sm sm:text-base truncate">{report.doctor}</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-600 mb-1">Generated</p>
+                                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Generated</p>
                                         <div className="flex items-center space-x-2">
-                                            <Calendar className="w-4 h-4 text-gray-400" />
-                                            <span className="text-gray-900">{report.generatedDate}</span>
+                                            <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                            <span className="text-gray-900 text-sm sm:text-base">{report.generatedDate}</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-600 mb-1">Appointment</p>
+                                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Appointment</p>
                                         <div className="flex items-center space-x-2">
-                                            <Clock className="w-4 h-4 text-gray-400" />
-                                            <span className="text-gray-900">{report.appointmentDate}</span>
+                                            <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                            <span className="text-gray-900 text-sm sm:text-base">{report.appointmentDate}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="mb-4">
-                                    <p className="text-sm text-gray-600 mb-2">Summary</p>
-                                    <p className="text-gray-900">{report.summary}</p>
+                                    <p className="text-xs sm:text-sm text-gray-600 mb-2">Summary</p>
+                                    <p className="text-sm sm:text-base text-gray-900">{report.summary}</p>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                                     <div>
-                                        <p className="text-sm text-gray-600 mb-2">Key Findings</p>
-                                        <ul className="text-sm text-gray-700 space-y-1">
+                                        <p className="text-xs sm:text-sm text-gray-600 mb-2">Key Findings</p>
+                                        <ul className="text-xs sm:text-sm text-gray-700 space-y-1">
                                             {report.findings.slice(0, 2).map((finding, index) => (
                                                 <li key={index} className="flex items-start space-x-2">
-                                                    <span className="text-blue-500 mt-1">•</span>
-                                                    <span>{finding}</span>
+                                                    <span className="text-blue-500 mt-1 flex-shrink-0">•</span>
+                                                    <span className="break-words">{finding}</span>
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-600 mb-2">Recommendations</p>
-                                        <ul className="text-sm text-gray-700 space-y-1">
+                                        <p className="text-xs sm:text-sm text-gray-600 mb-2">Recommendations</p>
+                                        <ul className="text-xs sm:text-sm text-gray-700 space-y-1">
                                             {report.recommendations.slice(0, 2).map((rec, index) => (
                                                 <li key={index} className="flex items-start space-x-2">
-                                                    <span className="text-green-500 mt-1">•</span>
-                                                    <span>{rec}</span>
+                                                    <span className="text-green-500 mt-1 flex-shrink-0">•</span>
+                                                    <span className="break-words">{rec}</span>
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
                                     <span>File Size: {report.fileSize}</span>
                                     <span>Downloads: {report.downloadCount}</span>
                                 </div>
                             </div>
                             
-                            <div className="flex items-center space-x-2 ml-4">
+                            <div className="flex items-center justify-end sm:justify-start space-x-2 mt-3 sm:mt-0">
                                 <button
                                     onClick={() => handleViewReport(report)}
                                     className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200"
                                     title="View Report"
                                 >
-                                    <Eye className="w-5 h-5" />
+                                    <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </button>
                                 <button
                                     onClick={() => handleDownloadReport(report)}
                                     className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors duration-200"
                                     title="Download Report"
                                 >
-                                    <Download className="w-5 h-5" />
+                                    <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </button>
                             </div>
                         </div>

@@ -20,7 +20,7 @@ const DoctorNavbar = ({ onMenuClick, isMobileMenuOpen }) => {
     ];
 
     return (
-        <div className="bg-white border-b border-gray-200 px-4 py-3">
+        <div className="bg-white border-b border-gray-200 px-3 sm:px-4 py-2 sm:py-3">
             <div className="flex items-center justify-between">
                 {/* Left side */}
                 <div className="flex items-center space-x-4">
@@ -55,23 +55,23 @@ const DoctorNavbar = ({ onMenuClick, isMobileMenuOpen }) => {
 
                         {/* Notification dropdown */}
                         {isNotificationOpen && (
-                            <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
-                                <div className="p-4 border-b border-gray-200">
-                                    <h3 className="font-semibold text-gray-900">Notifications</h3>
+                            <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
+                                <div className="p-3 sm:p-4 border-b border-gray-200">
+                                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Notifications</h3>
                                 </div>
-                                <div className="max-h-64 overflow-y-auto">
+                                <div className="max-h-48 sm:max-h-64 overflow-y-auto">
                                     {notifications.map((notification) => (
                                         <div
                                             key={notification.id}
-                                            className="p-4 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100 last:border-b-0"
+                                            className="p-3 sm:p-4 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-100 last:border-b-0"
                                         >
-                                            <div className="flex items-start space-x-3">
-                                                <div className={`w-2 h-2 rounded-full mt-2 ${
+                                            <div className="flex items-start space-x-2 sm:space-x-3">
+                                                <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
                                                     notification.type === 'success' ? 'bg-green-500' :
                                                     notification.type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
                                                 }`}></div>
-                                                <div className="flex-1">
-                                                    <p className="text-sm font-medium text-gray-900">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                                                         {notification.title}
                                                     </p>
                                                     <p className="text-xs text-gray-500 mt-1">
@@ -108,24 +108,24 @@ const DoctorNavbar = ({ onMenuClick, isMobileMenuOpen }) => {
 
                         {/* Profile dropdown menu */}
                         {isProfileOpen && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
+                            <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
                                 <div className="p-2">
                                     <button 
                                         onClick={() => {
                                             navigate('/doctor/settings');
                                             setIsProfileOpen(false);
                                         }}
-                                        className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                                        className="w-full flex items-center space-x-2 px-2 sm:px-3 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
                                     >
-                                        <Settings className="w-4 h-4" />
+                                        <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
                                         <span>Settings</span>
                                     </button>
                                     <hr className="my-2" />
                                     <button 
                                         onClick={handleSignOut}
-                                        className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                                        className="w-full flex items-center space-x-2 px-2 sm:px-3 py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
                                     >
-                                        <LogOut className="w-4 h-4" />
+                                        <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
                                         <span>Sign out</span>
                                     </button>
                                 </div>

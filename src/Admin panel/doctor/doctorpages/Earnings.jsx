@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
     DollarSign, 
     TrendingUp, 
@@ -20,22 +20,14 @@ import Card from '../../admin/admincomponents/Card';
 const Earnings = () => {
     const [selectedPeriod, setSelectedPeriod] = useState('month');
     const [selectedView, setSelectedView] = useState('overview');
-    const [isContentLoading, setIsContentLoading] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     const handleRefreshContent = () => {
-        setIsContentLoading(true);
+        setIsRefreshing(true);
         setTimeout(() => {
-            setIsContentLoading(false);
+            setIsRefreshing(false);
         }, 1500);
     };
-
-    // Auto-trigger loader on component mount
-    useEffect(() => {
-        setIsContentLoading(true);
-        setTimeout(() => {
-            setIsContentLoading(false);
-        }, 2000);
-    }, []);
 
     // Earnings data
     const earningsData = {
@@ -207,24 +199,37 @@ const Earnings = () => {
     ];
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Earnings</h1>
-                    <p className="text-gray-600">Track your earnings, commissions, and payouts</p>
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Earnings</h1>
+                        <p className="text-sm sm:text-base text-gray-600">Track your earnings, commissions, and payouts</p>
                 </div>
-                <div className="flex items-center space-x-4">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                     <button
                         onClick={handleRefreshContent}
-                        className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200"
+                        disabled={isRefreshing}
+                            className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
                     >
-                        Refresh
+                        {isRefreshing ? (
+                            <div className="flex items-center space-x-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                    <span className="hidden sm:inline">Refreshing...</span>
+                                    <span className="sm:hidden">...</span>
+                            </div>
+                        ) : (
+                                <>
+                                    <span className="hidden sm:inline">Refresh</span>
+                                    <span className="sm:hidden">↻</span>
+                                </>
+                        )}
                     </button>
                     <select
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                            className="px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                     >
                         {periods.map(period => (
                             <option key={period.value} value={period.value}>
@@ -232,47 +237,38 @@ const Earnings = () => {
                             </option>
                         ))}
                     </select>
-                    <button className="flex items-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors">
+                        <button className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors text-sm sm:text-base whitespace-nowrap">
                         <Download className="w-4 h-4" />
-                        <span>Export</span>
+                            <span className="hidden sm:inline">Export</span>
+                            <span className="sm:hidden">↓</span>
                     </button>
+                    </div>
                 </div>
             </div>
 
             {/* View Tabs */}
-            <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl">
+            <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl overflow-x-auto">
                 {views.map((view) => {
                     const Icon = view.icon;
                     return (
                         <button
                             key={view.value}
                             onClick={() => setSelectedView(view.value)}
-                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                            className={`flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-lg transition-colors whitespace-nowrap flex-shrink-0 ${
                                 selectedView === view.value
                                     ? 'bg-white text-pink-600 shadow-sm'
                                     : 'text-gray-600 hover:text-gray-900'
                             }`}
                         >
                             <Icon className="w-4 h-4" />
-                            <span>{view.label}</span>
+                            <span className="text-sm sm:text-base">{view.label}</span>
                         </button>
                     );
                 })}
             </div>
 
-            {/* Main Content Area with Loader */}
-            <div className="relative min-h-[600px]">
-                {/* Content Loader */}
-                {isContentLoading && (
-                    <div className="absolute inset-0 flex items-start justify-center z-50 pt-32">
-                        <div className="flex flex-col items-center justify-center space-y-4">
-                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-500"></div>
-                            <p className="text-gray-600 font-medium">Loading content...</p>
-                        </div>
-                    </div>
-                )}
-                
-                <div className={`space-y-6 transition-opacity duration-300 ${isContentLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            {/* Main Content Area */}
+            <div className="space-y-4 sm:space-y-6">
             {selectedView === 'overview' && (
                 <>
                     {/* Wallet Cards */}
@@ -491,7 +487,6 @@ const Earnings = () => {
                     </div>
                 </Card>
             )}
-                </div>
             </div>
         </div>
     );
