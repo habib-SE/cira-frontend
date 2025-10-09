@@ -10,7 +10,7 @@ const PatientMessages = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-pink-50 min-h-screen">
       {/* Header */}
       <div className="lg:flex block items-center justify-between">
         <div>
