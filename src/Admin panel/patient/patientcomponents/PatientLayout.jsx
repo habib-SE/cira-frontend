@@ -16,7 +16,7 @@ const PatientLayout = () => {
             }}
             sidebarBehavior="persistent"
             showMobileOverlay={false}
-            mainContentClass="lg:ml-0 ml-20"
+            mainContentClass="lg:ml-0 ml-15"
             pageBackground="pink-50"
         />
     );

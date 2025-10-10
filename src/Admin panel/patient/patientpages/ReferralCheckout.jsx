@@ -109,7 +109,7 @@ const ReferralCheckout = () => {
   // Loading State
   if (checkoutState === 'loading') {
     return (
-      <div className="min-h-screen bg-pink-50 flex items-center justify-center">
+      <div className="h-screen bg-pink-50 flex items-center justify-center">
         <Card className="p-8 max-w-md w-full mx-4">
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -301,7 +301,7 @@ const ReferralCheckout = () => {
   // Error State
   if (checkoutState === 'error') {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className=" bg-pink-50 flex items-center justify-center">
         <Card className="p-8 max-w-2xl w-full mx-4">
           <div className="text-center">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">

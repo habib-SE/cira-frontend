@@ -46,7 +46,7 @@ const BaseLayout = ({
 
   const getMainContentClasses = () => {
     if (sidebarBehavior === "persistent") {
-      return `flex-1 flex flex-col h-screen lg:ml-0 ml-20 ${mainContentClass}`;
+      return `flex-1 flex flex-col h-screen ${mainContentClass}`;
     }
     return `flex-1 flex flex-col h-screen min-w-0 ${mainContentClass}`;
   };
@@ -83,7 +83,7 @@ const BaseLayout = ({
         />
 
         {/* Page content */}
-        <main className={`flex-1 overflow-y-auto overflow-x-hidden relative min-h-0 bg-${pageBackground}`}>
+        <main className={`flex-1 overflow-y-auto items-center overflow-x-hidden relative min-h-0 bg-${pageBackground}`}>
           <PageLoader isLoading={isLoading}>
             <Outlet />
           </PageLoader>

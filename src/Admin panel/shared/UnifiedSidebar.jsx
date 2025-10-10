@@ -66,7 +66,7 @@ const UnifiedSidebar = ({
           { id: 'reports', label: 'Reports', icon: FileText, path: '/patient/reports' },
           { id: 'report-detail', label: 'Report Detail', icon: Clipboard, path: '/patient/reportsId' },
           { id: 'book-doctor', label: 'Book Doctor', icon: Stethoscope, path: '/patient/book-doctor' },
-          { id: 'referral-checkout', label: 'Referral Checkout', icon: LogOut, path: '/patient/book-doctor/checkout' },
+          { id: 'referral-checkout', label: 'Referral Checkout', icon: LogOut, path: '/patient/Referralcheckout' },
           { id: 'profile', label: 'Profile', icon: UserPen, path: '/patient/profile' },
           { id: 'history', label: 'History', icon: History, path: '/patient/history' },
           { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, path: '/patient/subscriptions' },
@@ -159,7 +159,8 @@ const UnifiedSidebar = ({
 
       {/* Expand button - Shows when collapsed - Outside header */}
       <div 
-        className="absolute top-5 right-[-15px] z-[99999]"
+        className="absolute top-5
+         right-[-15px] z-[99999]"
         style={{
           zIndex: '99999 !important',
           position: 'absolute',
