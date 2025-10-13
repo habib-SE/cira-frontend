@@ -90,7 +90,7 @@ const DoctorProfile = () => {
 
     useEffect(() => {
         setDoctor(doctorData);
-    }, [doctorData]);
+    }, []);
 
     const handleEdit = () => {
         setIsEditing(true);

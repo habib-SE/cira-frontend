@@ -201,7 +201,7 @@ const History = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-pink-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -249,7 +249,7 @@ const History = () => {
         {/* Timeline */}
         <div className="relative">
           {/* Timeline Line */}
-          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200 hidden sm:block"></div>
+          <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200 hidden sm:block"></div>
 
           <div className="space-y-6">
             {filteredActivities.map((activity, index) => {
@@ -259,12 +259,12 @@ const History = () => {
               return (
                 <div key={activity.id} className="relative">
                   {/* Timeline Dot */}
-                  <div className={`absolute left-6 top-6 w-4 h-4 rounded-full border-4 border-white shadow-lg z-10 hidden sm:block ${activityType.bgColor} ${activityType.borderColor}`}>
-                    <IconComponent className={`h-2.5 w-2.5 ${activityType.iconColor} absolute top-0.5 left-0.5`} />
+                  <div className="absolute left-4 top-6 w-8 h-8 rounded-full border-4 border-white shadow-lg z-10 hidden sm:flex items-center justify-center" style={{backgroundColor: activityType.color === 'blue' ? '#dbeafe' : activityType.color === 'green' ? '#dcfce7' : activityType.color === 'purple' ? '#f3e8ff' : '#fed7aa'}}>
+                    <IconComponent className={`h-4 w-4 ${activityType.iconColor}`} />
                   </div>
 
                   {/* Activity Card */}
-                  <div className={`ml-0 sm:ml-16 ${activityType.bgColor} ${activityType.borderColor} border rounded-xl shadow-sm hover:shadow-md transition-shadow`}>
+                  <div className={`ml-0 sm:ml-20 ${activityType.bgColor} ${activityType.borderColor} border rounded-xl shadow-sm hover:shadow-md transition-shadow`}>
                     <div className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4 flex-1">

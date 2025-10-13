@@ -109,7 +109,7 @@ const ReferralCheckout = () => {
   // Loading State
   if (checkoutState === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="h-screen bg-pink-50 flex items-center justify-center">
         <Card className="p-8 max-w-md w-full mx-4">
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -131,7 +131,7 @@ const ReferralCheckout = () => {
   // Checkout State
   if (checkoutState === 'checkout') {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-pink-50">
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
@@ -234,7 +234,7 @@ const ReferralCheckout = () => {
   // Success State
   if (checkoutState === 'success') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-pink-50 flex items-center justify-center">
         <Card className="p-8 max-w-2xl w-full mx-4">
           <div className="text-center">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -247,7 +247,7 @@ const ReferralCheckout = () => {
             </p>
 
             {orderDetails && (
-              <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">
+              <div className="bg-pink-50 rounded-lg p-6 mb-8 text-left">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Details</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
@@ -287,7 +287,7 @@ const ReferralCheckout = () => {
               </button>
               <button
                 onClick={() => window.print()}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-pink-50 transition-colors"
               >
                 Print Receipt
               </button>
@@ -301,7 +301,7 @@ const ReferralCheckout = () => {
   // Error State
   if (checkoutState === 'error') {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className=" bg-pink-50 flex items-center justify-center">
         <Card className="p-8 max-w-2xl w-full mx-4">
           <div className="text-center">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">

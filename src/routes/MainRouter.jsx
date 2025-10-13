@@ -110,7 +110,7 @@ function MainRouter() {
         <Route path="reports" element={<PatientReports />} />
          <Route path="reportsId" element={<PatientReportDetails />} />
         <Route path="book-doctor" element={<MyDoctors/>} />
-        <Route path="book-doctor/checkout" element={<ReferralCheckout/>} />
+        <Route path="Referralcheckout" element={<ReferralCheckout/>} />
         <Route path="profile" element={<PatientProfile/>} />
         <Route path="history" element={<History />} />
         <Route path="subscriptions" element={<PatientSubscriptions />} />

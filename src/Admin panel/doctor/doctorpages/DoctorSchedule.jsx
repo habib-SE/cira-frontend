@@ -263,43 +263,44 @@ const DoctorSchedule = () => {
     };
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Appointments</h1>
-                    <p className="text-gray-600">Manage your appointments and view AI reports</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-0">Appointments</h1>
+                    <p className="text-sm sm:text-base text-gray-600">Manage your appointments and view AI reports</p>
                 </div>
-                <div className="flex items-center space-x-4">
-                    <button className="flex items-center space-x-2 bg-pink-600 text-white px-6 py-3 rounded-xl hover:bg-pink-700 transition-colors font-medium">
-                        <Plus className="w-5 h-5" />
-                        <span>Add Appointment</span>
+                <div className="flex items-center space-x-2 sm:space-x-4">
+                    <button className="flex items-center justify-center space-x-2 bg-pink-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-pink-700 transition-colors font-medium text-sm sm:text-base whitespace-nowrap">
+                        <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <span className="hidden sm:inline">Add Appointment</span>
+                        <span className="sm:hidden">Add</span>
                     </button>
                 </div>
             </div>
 
             {/* Filters and Search */}
-            <Card className="p-4">
-                <div className="flex flex-wrap items-center gap-4">
+            <Card className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
                     {/* Search */}
-                    <div className="relative flex-1 min-w-64">
+                    <div className="relative flex-1 min-w-full sm:min-w-64">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
                             placeholder="Search appointments..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                         />
                     </div>
 
                     {/* View Mode */}
-                    <div className="flex items-center space-x-1 bg-gray-100 p-1 rounded-xl">
+                    <div className="flex items-center space-x-1 bg-gray-100 p-1 rounded-xl w-full sm:w-auto">
                         {viewModes.map((mode) => (
                             <button
                                 key={mode.value}
                                 onClick={() => setViewMode(mode.value)}
-                                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                                className={`flex-1 sm:flex-initial px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                                     viewMode === mode.value
                                         ? 'bg-white text-pink-600 shadow-sm'
                                         : 'text-gray-600 hover:text-gray-900'
@@ -314,7 +315,7 @@ const DoctorSchedule = () => {
                     <select
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                        className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                     >
                         {statusOptions.map(option => (
                             <option key={option.value} value={option.value}>
@@ -327,7 +328,7 @@ const DoctorSchedule = () => {
                     <select
                         value={filterType}
                         onChange={(e) => setFilterType(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                        className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                     >
                         {typeOptions.map(option => (
                             <option key={option.value} value={option.value}>

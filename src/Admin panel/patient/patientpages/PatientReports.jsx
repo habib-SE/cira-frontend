@@ -106,7 +106,7 @@ const PatientReports = () => {
   });
 
   return (
-    <div className="p-4 lg:p-6 space-y-6 overflow-x-hidden">
+    <div className="p-4 lg:p-6 space-y-6 overflow-x-hidden bg-pink-50 min-h-screen">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
         <div className="text-center lg:text-left w-full lg:w-1/2">

@@ -66,22 +66,21 @@ const DoctorProfileDetail = () => {
     const [doctor, setDoctor] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
     const [isEditing, setIsEditing] = useState(false);
-    const [isContentLoading, setIsContentLoading] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
+    
+    const [isContentLoading, setIsContentLoading] = useState(false);
+    
     const handleRefreshContent = () => {
+        setIsRefreshing(true);
         setIsContentLoading(true);
         setTimeout(() => {
+            setIsRefreshing(false);
             setIsContentLoading(false);
         }, 1500);
     };
 
-    // Auto-trigger loader on component mount
-    useEffect(() => {
-        setIsContentLoading(true);
-        setTimeout(() => {
-            setIsContentLoading(false);
-        }, 2000);
-    }, []);
+    
 
     // Sample doctor data - in real app, this would be fetched from API
     const doctorsData = React.useMemo(() => [
@@ -370,95 +369,110 @@ const DoctorProfileDetail = () => {
     }
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
             {/* Header */}
+            <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
                     <button
                         onClick={handleBack}
-                        className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
+                        className="flex items-center space-x-2 px-2 sm:px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors text-sm sm:text-base"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        <span>Back to Doctors</span>
+                        <span className="hidden sm:inline">Back to Doctors</span>
+                        <span className="sm:hidden">Back</span>
                     </button>
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">{doctor.name}</h1>
-                        <p className="text-gray-600">{doctor.specialty} • {doctor.experience} experience</p>
                     </div>
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{doctor.name}</h1>
+                        <p className="text-sm sm:text-base text-gray-600">{doctor.specialty} • {doctor.experience} experience</p>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     <button
-                        onClick={handleRefreshContent}
-                        className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200"
-                    >
-                        Refresh
-                    </button>
-                    <span className={`inline-flex items-center space-x-1 px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(doctor.status)}`}>
+                    onClick={handleRefreshContent}
+                    disabled={isRefreshing}
+                        className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
+                >
+                    {isRefreshing ? (
+                        <div className="flex items-center space-x-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                <span className="hidden sm:inline">Refreshing...</span>
+                                <span className="sm:hidden">...</span>
+                        </div>
+                    ) : (
+                            <>
+                                <span className="hidden sm:inline">Refresh</span>
+                                <span className="sm:hidden">↻</span>
+                            </>
+                    )}
+                </button>
+                    <span className={`inline-flex items-center space-x-1 px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold rounded-full ${getStatusColor(doctor.status)}`}>
                         {getStatusIcon(doctor.status)}
                         <span>{doctor.status}</span>
                     </span>
                     {doctor.status === 'Pending' && (
-                        <div className="flex items-center space-x-2">
+                        <>
                             <button
                                 onClick={handleApproveDoctor}
-                                className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors duration-200"
+                                className="px-3 sm:px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors duration-200 text-sm sm:text-base whitespace-nowrap"
                             >
                                 Approve
                             </button>
                             <button
                                 onClick={handleRejectDoctor}
-                                className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors duration-200"
+                                className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors duration-200 text-sm sm:text-base whitespace-nowrap"
                             >
                                 Reject
                             </button>
-                        </div>
+                        </>
                     )}
+                </div>
                 </div>
             </div>
 
             {/* Overview Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <Card className="p-3 sm:p-4">
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                            <Star className="w-5 h-5 text-blue-600" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Star className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                         </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Rating</p>
-                            <p className="text-xl font-bold text-gray-900">{doctor.rating}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs sm:text-sm text-gray-600 truncate">Rating</p>
+                            <p className="text-lg sm:text-xl font-bold text-gray-900">{doctor.rating}</p>
                         </div>
                     </div>
                 </Card>
-                <Card className="p-4">
+                <Card className="p-3 sm:p-4">
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-green-600" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                         </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Total Patients</p>
-                            <p className="text-xl font-bold text-gray-900">{doctor.totalPatients}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs sm:text-sm text-gray-600 truncate">Total Patients</p>
+                            <p className="text-lg sm:text-xl font-bold text-gray-900">{doctor.totalPatients}</p>
                         </div>
                     </div>
                 </Card>
-                <Card className="p-4">
+                <Card className="p-3 sm:p-4">
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-                            <Activity className="w-5 h-5 text-purple-600" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
                         </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Appointments</p>
-                            <p className="text-xl font-bold text-gray-900">{doctor.totalAppointments}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs sm:text-sm text-gray-600 truncate">Appointments</p>
+                            <p className="text-lg sm:text-xl font-bold text-gray-900">{doctor.totalAppointments}</p>
                         </div>
                     </div>
                 </Card>
-                <Card className="p-4">
+                <Card className="p-3 sm:p-4">
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-pink-50 rounded-lg flex items-center justify-center">
-                            <DollarSign className="w-5 h-5 text-pink-600" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-pink-600" />
                         </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Consultation Fee</p>
-                            <p className="text-xl font-bold text-gray-900">${doctor.consultationFee}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs sm:text-sm text-gray-600 truncate">Consultation Fee</p>
+                            <p className="text-lg sm:text-xl font-bold text-gray-900">${doctor.consultationFee}</p>
                         </div>
                     </div>
                 </Card>
@@ -467,7 +481,7 @@ const DoctorProfileDetail = () => {
             {/* Main Content Area with Loader */}
             <div className="relative min-h-[600px]">
                 {/* Content Loader */}
-                {isContentLoading && (
+                {isRefreshing && (
                     <div className="absolute inset-0 flex items-start justify-center z-50 pt-32">
                         <div className="flex flex-col items-center justify-center space-y-4">
                             <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-500"></div>
@@ -476,112 +490,114 @@ const DoctorProfileDetail = () => {
                     </div>
                 )}
 
-                <div className={`grid grid-cols-1 lg:grid-cols-4 gap-6 transition-opacity duration-300 ${isContentLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                <div className={`grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 transition-opacity duration-300 ${isRefreshing ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                     {/* Profile Sidebar */}
-                    <Card className="p-0">
-                    <div className="p-6 text-center border-b border-gray-200">
+                    <Card className="p-0 lg:col-span-1">
+                    <div className="p-4 sm:p-6 text-center border-b border-gray-200">
                         <div className="relative inline-block">
-                            <div className="w-24 h-24 bg-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-pink-500 rounded-full flex items-center justify-center text-white text-lg sm:text-xl lg:text-2xl font-bold mx-auto mb-3 sm:mb-4">
                                 {doctor.name.split(' ').map(n => n[0]).join('')}
                             </div>
                         </div>
-                        <h2 className="text-xl font-bold text-gray-900 mb-1">{doctor.name}</h2>
-                        <p className="text-gray-600 mb-2">{doctor.specialty}</p>
+                        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 truncate">{doctor.name}</h2>
+                        <p className="text-sm sm:text-base text-gray-600 mb-2 truncate">{doctor.specialty}</p>
                         <div className="flex items-center justify-center space-x-1 mb-2">
-                            <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                            <span className="text-sm font-medium text-gray-900">{doctor.rating}</span>
+                            <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500 fill-current" />
+                            <span className="text-xs sm:text-sm font-medium text-gray-900">{doctor.rating}</span>
                         </div>
                         <span className={`inline-flex items-center space-x-1 px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(doctor.status)}`}>
                             {getStatusIcon(doctor.status)}
-                            <span>{doctor.status}</span>
+                            <span className="truncate">{doctor.status}</span>
                         </span>
                     </div>
                     
                     <nav className="p-2">
+                        <div className="grid grid-cols-2 lg:grid-cols-1 gap-1">
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
                             return (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+                                        className={`flex items-center space-x-2 lg:space-x-3 px-2 lg:px-3 py-2 lg:py-2.5 rounded-xl transition-all duration-200 ${
                                         activeTab === tab.id
                                             ? 'bg-pink-50 text-pink-600 border border-pink-200'
                                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                     }`}
                                 >
-                                    <Icon className="w-5 h-5" />
-                                    <span className="font-medium">{tab.label}</span>
+                                        <Icon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
+                                        <span className="font-medium text-xs lg:text-sm truncate">{tab.label}</span>
                                 </button>
                             );
                         })}
+                        </div>
                     </nav>
                 </Card>
 
                 {/* Main Content */}
-                <div className="lg:col-span-3">
+                <div className="lg:col-span-3 space-y-4 sm:space-y-6">
                     {activeTab === 'overview' && (
                         <div className="space-y-6">
                             {/* Basic Information */}
-                            <Card className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Card className="p-4 sm:p-6">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                                        <p className="text-gray-900">{doctor.name}</p>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Full Name</label>
+                                        <p className="text-sm sm:text-base text-gray-900 truncate">{doctor.name}</p>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                                        <p className="text-gray-900">{doctor.email}</p>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Email</label>
+                                        <p className="text-sm sm:text-base text-gray-900 truncate">{doctor.email}</p>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                                        <p className="text-gray-900">{doctor.phone}</p>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Phone</label>
+                                        <p className="text-sm sm:text-base text-gray-900">{doctor.phone}</p>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                                        <p className="text-gray-900">{doctor.location}</p>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Location</label>
+                                        <p className="text-sm sm:text-base text-gray-900 truncate">{doctor.location}</p>
                                     </div>
                                 </div>
                             </Card>
 
                             {/* Professional Information */}
-                            <Card className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Professional Information</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Card className="p-4 sm:p-6">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Professional Information</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Specialty</label>
-                                        <p className="text-gray-900">{doctor.specialty}</p>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Specialty</label>
+                                        <p className="text-sm sm:text-base text-gray-900 truncate">{doctor.specialty}</p>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Experience</label>
-                                        <p className="text-gray-900">{doctor.experience}</p>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Experience</label>
+                                        <p className="text-sm sm:text-base text-gray-900">{doctor.experience}</p>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Education</label>
-                                        <p className="text-gray-900">{doctor.education}</p>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Education</label>
+                                        <p className="text-sm sm:text-base text-gray-900 truncate">{doctor.education}</p>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">License Number</label>
-                                        <p className="text-gray-900">{doctor.licenseNumber}</p>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">License Number</label>
+                                        <p className="text-sm sm:text-base text-gray-900 font-mono">{doctor.licenseNumber}</p>
                                     </div>
                                 </div>
                             </Card>
 
                             {/* Bio */}
-                            <Card className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Biography</h3>
-                                <p className="text-gray-700 leading-relaxed">{doctor.bio}</p>
+                            <Card className="p-4 sm:p-6">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Biography</h3>
+                                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{doctor.bio}</p>
                             </Card>
 
                             {/* Specialties */}
-                            <Card className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Specialties</h3>
+                            <Card className="p-4 sm:p-6">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Specialties</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {doctor.specialties.map((specialty, index) => (
                                         <span
                                             key={index}
-                                            className="inline-flex px-3 py-1 text-sm font-medium bg-pink-100 text-pink-800 rounded-full"
+                                            className="inline-flex px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium bg-pink-100 text-pink-800 rounded-full"
                                         >
                                             {specialty}
                                         </span>
@@ -590,13 +606,13 @@ const DoctorProfileDetail = () => {
                             </Card>
 
                             {/* Languages */}
-                            <Card className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Languages</h3>
+                            <Card className="p-4 sm:p-6">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Languages</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {doctor.languages.map((language, index) => (
                                         <span
                                             key={index}
-                                            className="inline-flex px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full"
+                                            className="inline-flex px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium bg-blue-100 text-blue-800 rounded-full"
                                         >
                                             {language}
                                         </span>
@@ -1159,7 +1175,7 @@ const DoctorProfileDetail = () => {
                         </Card>
                     )}
                 </div>
-            </div>
+                </div>
             </div>
         </div>
     );

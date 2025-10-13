@@ -6,7 +6,17 @@ const Users = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [filterRole, setFilterRole] = useState('');
-    const [isContentLoading, setIsContentLoading] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [_isContentLoading, _setIsContentLoading] = useState(false);
+
+    const handleRefreshContent = () => {
+        setIsRefreshing(true);
+        _setIsContentLoading(true);
+        setTimeout(() => {
+            setIsRefreshing(false);
+            _setIsContentLoading(false);
+        }, 1500);
+    };
 
     // Sample users data
     const users = [
@@ -140,19 +150,12 @@ const Users = () => {
         // Implement activate functionality
     };
 
-    const handleRefreshContent = () => {
-        setIsContentLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsContentLoading(false);
-        }, 1500);
-    };
 
     // Auto-trigger loader on component mount
     useEffect(() => {
-        setIsContentLoading(true);
+        _setIsContentLoading(true);
         setTimeout(() => {
-            setIsContentLoading(false);
+            _setIsContentLoading(false);
         }, 2000);
     }, []);
 
@@ -166,25 +169,22 @@ const Users = () => {
                 </div>
                 <button
                     onClick={handleRefreshContent}
-                    className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200"
+                    disabled={isRefreshing}
+                    className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Refresh
+                    {isRefreshing ? (
+                        <div className="flex items-center space-x-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            <span>Refreshing...</span>
+                        </div>
+                    ) : (
+                        'Refresh'
+                    )}
                 </button>
             </div>
 
-            {/* Main Content Area with Loader */}
-            <div className="relative min-h-[600px]">
-                {/* Content Loader */}
-                {isContentLoading && (
-                    <div className="absolute inset-0 flex items-start justify-center z-50 pt-32">
-                        <div className="flex flex-col items-center justify-center space-y-4">
-                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-500"></div>
-                            <p className="text-gray-600 font-medium">Loading content...</p>
-                        </div>
-                    </div>
-                )}
-                
-                <div className={`space-y-6 transition-opacity duration-300 ${isContentLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            {/* Main Content Area */}
+            <div className="space-y-6">
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="p-4">
@@ -413,7 +413,6 @@ const Users = () => {
                     </div>
                 </Card>
             )}
-                </div>
             </div>
         </div>
     );

@@ -1,40 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
     Calendar, 
     Clock, 
     Users, 
     DollarSign, 
     TrendingUp,
-    CheckCircle,
-    AlertCircle,
-    Eye,
-    MessageCircle,
-    FileText,
-    Star,
+    TrendingDown,
     Phone,
     Video,
-    MapPin
+    MapPin,
+    CheckCircle,
+    AlertCircle,
+    Clock as ClockIcon
 } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 
 const DoctorDashboard = () => {
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-    const [isContentLoading, setIsContentLoading] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     const handleRefreshContent = () => {
-        setIsContentLoading(true);
+        setIsRefreshing(true);
         setTimeout(() => {
-            setIsContentLoading(false);
+            setIsRefreshing(false);
         }, 1500);
     };
-
-    // Auto-trigger loader on component mount
-    useEffect(() => {
-        setIsContentLoading(true);
-        setTimeout(() => {
-            setIsContentLoading(false);
-        }, 2000);
-    }, []);
 
     // Today's appointments data
     const todaysAppointments = [
@@ -42,169 +32,84 @@ const DoctorDashboard = () => {
             id: 1,
             patient: 'John Doe',
             time: '09:00 AM',
-            type: 'Consultation',
-            status: 'confirmed',
             mode: 'clinic',
-            duration: '30 min',
-            condition: 'Hypertension',
-            priority: 'normal',
-            notes: 'Follow-up for blood pressure medication'
+            status: 'confirmed',
+            type: 'Follow-up',
+            duration: '30 min'
         },
         {
             id: 2,
             patient: 'Jane Smith',
             time: '10:30 AM',
-            type: 'Follow-up',
-            status: 'confirmed',
             mode: 'teleconsultation',
-            duration: '20 min',
-            condition: 'Diabetes',
-            priority: 'high',
-            notes: 'Review blood sugar levels'
+            status: 'confirmed',
+            type: 'Initial Consultation',
+            duration: '45 min'
         },
         {
             id: 3,
             patient: 'Mike Johnson',
             time: '02:00 PM',
-            type: 'Emergency',
-            status: 'in-progress',
             mode: 'clinic',
-            duration: '45 min',
-            condition: 'Chest Pain',
-            priority: 'urgent',
-            notes: 'Acute chest pain - immediate attention needed'
+            status: 'pending',
+            type: 'Check-up',
+            duration: '20 min'
         },
         {
             id: 4,
             patient: 'Sarah Williams',
             time: '03:30 PM',
-            type: 'Consultation',
-            status: 'waiting',
-            mode: 'clinic',
-            duration: '30 min',
-            condition: 'General Check-up',
-            priority: 'normal',
-            notes: 'Annual health check-up'
-        }
-    ];
-
-    // Upcoming appointments for quick cards
-    const upcomingAppointments = [
-        {
-            id: 5,
-            patient: 'Emily Davis',
-            date: 'Tomorrow',
-            time: '09:00 AM',
-            type: 'Consultation',
-            mode: 'teleconsultation'
-        },
-        {
-            id: 6,
-            patient: 'Robert Brown',
-            date: 'Tomorrow',
-            time: '11:00 AM',
+            mode: 'teleconsultation',
+            status: 'confirmed',
             type: 'Follow-up',
-            mode: 'clinic'
-        },
-        {
-            id: 7,
-            patient: 'Lisa Wilson',
-            date: 'Dec 2, 2024',
-            time: '10:00 AM',
-            type: 'Check-up',
-            mode: 'clinic'
+            duration: '30 min'
         }
     ];
 
-    // Quick stats
+    // Stats data
     const stats = [
         {
-            title: "Today's Appointments",
-            value: todaysAppointments.length.toString(),
-            change: '+2 from yesterday',
-            icon: Calendar,
-            color: 'text-blue-600',
-            bgColor: 'bg-blue-50'
-        },
-        {
-            title: 'Total Patients',
-            value: '248',
-            change: '+12 this month',
             icon: Users,
-            color: 'text-green-600',
-            bgColor: 'bg-green-50'
+            title: 'Total Patients',
+            value: '1,234',
+            change: '+12% from last month',
+            bgColor: 'bg-blue-50',
+            color: 'text-blue-600'
         },
         {
-            title: 'Pending Reviews',
-            value: '5',
-            change: '2 urgent',
-            icon: Clock,
-            color: 'text-yellow-600',
-            bgColor: 'bg-yellow-50'
+            icon: Calendar,
+            title: 'Today\'s Appointments',
+            value: todaysAppointments.length.toString(),
+            change: '4 scheduled',
+            bgColor: 'bg-green-50',
+            color: 'text-green-600'
         },
         {
-            title: 'Completed Today',
-            value: '8',
-            change: '67% completion',
-            icon: CheckCircle,
-            color: 'text-purple-600',
-            bgColor: 'bg-purple-50'
+            icon: DollarSign,
+            title: 'Today\'s Earnings',
+            value: '$1,250',
+            change: '+8% from yesterday',
+            bgColor: 'bg-purple-50',
+            color: 'text-purple-600'
+        },
+        {
+            icon: TrendingUp,
+            title: 'Growth Rate',
+            value: '+15%',
+            change: 'This month',
+            bgColor: 'bg-orange-50',
+            color: 'text-orange-600'
         }
     ];
 
-    // Recent AI reports
-    const recentAIReports = [
-        {
-            id: 1,
-            patient: 'John Doe',
-            type: 'Health Assessment',
-            status: 'completed',
-            date: '2 hours ago',
-            summary: 'Blood pressure readings show improvement with current medication'
-        },
-        {
-            id: 2,
-            patient: 'Jane Smith',
-            type: 'Diagnostic Report',
-            status: 'pending',
-            date: '4 hours ago',
-            summary: 'Blood sugar analysis indicates need for medication adjustment'
-        },
-        {
-            id: 3,
-            patient: 'Mike Johnson',
-            type: 'Emergency Assessment',
-            status: 'urgent',
-            date: '1 hour ago',
-            summary: 'Chest pain analysis suggests possible cardiac event - immediate attention required'
-        }
-    ];
-
-    const getStatusColor = (status) => {
+    const getStatusIcon = (status) => {
         switch (status) {
             case 'confirmed':
-                return 'bg-green-100 text-green-800';
-            case 'in-progress':
-                return 'bg-blue-100 text-blue-800';
-            case 'waiting':
-                return 'bg-yellow-100 text-yellow-800';
-            case 'completed':
-                return 'bg-green-100 text-green-800';
+                return <CheckCircle className="w-4 h-4 text-green-500" />;
             case 'pending':
-                return 'bg-yellow-100 text-yellow-800';
-            case 'urgent':
-                return 'bg-red-100 text-red-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
-        }
-    };
-
-    const getPriorityIcon = (priority) => {
-        switch (priority) {
-            case 'urgent':
+                return <ClockIcon className="w-4 h-4 text-yellow-500" />;
+            case 'cancelled':
                 return <AlertCircle className="w-4 h-4 text-red-500" />;
-            case 'high':
-                return <AlertCircle className="w-4 h-4 text-orange-500" />;
             default:
                 return <CheckCircle className="w-4 h-4 text-green-500" />;
         }
@@ -222,56 +127,57 @@ const DoctorDashboard = () => {
     };
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                    <p className="text-gray-600">Welcome back, Dr. Smith! Here's your overview for today.</p>
-                </div>
-                <div className="flex items-center space-x-4">
-                    <button
-                        onClick={handleRefreshContent}
-                        className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200"
-                    >
-                        Refresh
-                    </button>
-                    <input
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    />
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Dashboard</h1>
+                        <p className="text-sm sm:text-base text-gray-600 break-words">Welcome back, Dr. Smith! Here's your overview for today.</p>
+                    </div>
+                    <div className="flex items-center space-x-2 sm:space-x-4">
+                        <button
+                            onClick={handleRefreshContent}
+                            disabled={isRefreshing}
+                            className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
+                        >
+                            {isRefreshing ? (
+                                <div className="flex items-center space-x-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                    <span className="hidden sm:inline">Refreshing...</span>
+                                    <span className="sm:hidden">...</span>
+                                </div>
+                            ) : (
+                                <>
+                                    <span className="hidden sm:inline">Refresh</span>
+                                    <span className="sm:hidden">↻</span>
+                                </>
+                            )}
+                        </button>
+                        <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            className="px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent w-auto"
+                        />
+                    </div>
                 </div>
             </div>
 
-            {/* Main Content Area with Loader */}
-            <div className="relative min-h-[600px]">
-                {/* Content Loader */}
-                {isContentLoading && (
-                    <div className="absolute inset-0 flex items-start justify-center z-50 pt-32">
-                        <div className="flex flex-col items-center justify-center space-y-4">
-                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-500"></div>
-                            <p className="text-gray-600 font-medium">Loading content...</p>
-                        </div>
-                    </div>
-                )}
-                
-                <div className={`space-y-6 transition-opacity duration-300 ${isContentLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {stats.map((stat, index) => {
                     const Icon = stat.icon;
                     return (
-                        <Card key={index} className="p-4">
+                        <Card key={index} className="p-3 sm:p-4">
                             <div className="flex items-center space-x-3">
-                                <div className={`w-10 h-10 ${stat.bgColor} rounded-lg flex items-center justify-center`}>
-                                    <Icon className={`w-5 h-5 ${stat.color}`} />
+                                <div className={`w-10 h-10 sm:w-12 sm:h-12 ${stat.bgColor} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                                    <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color}`} />
                                 </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">{stat.title}</p>
-                                    <p className="text-xl font-bold text-gray-900">{stat.value}</p>
-                                    <p className="text-xs text-gray-500">{stat.change}</p>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-xs sm:text-sm text-gray-600 truncate">{stat.title}</p>
+                                    <p className="text-lg sm:text-xl font-bold text-gray-900">{stat.value}</p>
+                                    <p className="text-xs text-gray-500 truncate">{stat.change}</p>
                                 </div>
                             </div>
                         </Card>
@@ -279,71 +185,60 @@ const DoctorDashboard = () => {
                         })}
                     </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                 {/* Today's Appointments */}
-                <div className="lg:col-span-2">
-                    <Card className="p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold text-gray-900">Today's Appointments</h2>
-                            <span className="text-sm text-gray-500">{todaysAppointments.length} appointments</span>
+                <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+                    <Card className="p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
+                            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Today's Appointments</h2>
+                            <span className="text-xs sm:text-sm text-gray-500">{todaysAppointments.length} appointments</span>
                         </div>
                         
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                             {todaysAppointments.map((appointment) => (
-                                <div key={appointment.id} className="border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition-colors">
-                                    <div className="flex items-center justify-between mb-3">
+                                <div key={appointment.id} className="border border-gray-200 rounded-xl p-3 sm:p-4 hover:bg-gray-50 transition-colors">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2">
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
-                                                <span className="text-pink-600 font-semibold text-sm">
+                                            <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <span className="text-pink-600 font-semibold text-xs sm:text-sm">
                                                     {appointment.patient.split(' ').map(n => n[0]).join('')}
                                                 </span>
                                             </div>
-                                            <div>
-                                                <h3 className="font-semibold text-gray-900">{appointment.patient}</h3>
-                                                <p className="text-sm text-gray-600">{appointment.condition}</p>
+                                            <div className="min-w-0 flex-1">
+                                                <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">{appointment.patient}</h3>
+                                                <p className="text-xs sm:text-sm text-gray-600 truncate">{appointment.type}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center space-x-2">
-                                            {getPriorityIcon(appointment.priority)}
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(appointment.status)}`}>
+                                        <div className="flex items-center space-x-2 flex-shrink-0">
+                                            {getStatusIcon(appointment.status)}
+                                            <span className={`text-xs px-2 py-1 rounded-full ${
+                                                appointment.status === 'confirmed' 
+                                                    ? 'bg-green-100 text-green-800' 
+                                                    : 'bg-yellow-100 text-yellow-800'
+                                            }`}>
                                                 {appointment.status}
                                             </span>
                                         </div>
                                     </div>
                                     
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                        <div className="flex items-center space-x-2">
-                                            <Clock className="w-4 h-4 text-gray-400" />
-                                            <span className="text-gray-600">{appointment.time}</span>
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs sm:text-sm text-gray-600 gap-2">
+                                        <div className="flex items-center flex-wrap gap-3 sm:gap-4">
+                                            <div className="flex items-center space-x-1">
+                                                <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                                                <span>{appointment.time}</span>
                                         </div>
-                                        <div className="flex items-center space-x-2">
+                                            <div className="flex items-center space-x-1">
                                             {getModeIcon(appointment.mode)}
-                                            <span className="text-gray-600 capitalize">{appointment.mode}</span>
+                                                <span className="capitalize truncate">{appointment.mode}</span>
                                         </div>
-                                        <div className="flex items-center space-x-2">
-                                            <Calendar className="w-4 h-4 text-gray-400" />
-                                            <span className="text-gray-600">{appointment.duration}</span>
+                                            <div className="flex items-center space-x-1">
+                                                <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                                                <span>{appointment.duration}</span>
                                         </div>
-                                        <div className="flex items-center space-x-2">
-                                            <FileText className="w-4 h-4 text-gray-400" />
-                                            <span className="text-gray-600">{appointment.type}</span>
                                         </div>
-                                    </div>
-                                    
-                                    {appointment.notes && (
-                                        <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                                            <p className="text-sm text-gray-700">{appointment.notes}</p>
-                                        </div>
-                                    )}
-                                    
-                                    <div className="flex items-center justify-end space-x-2 mt-3">
-                                        <button className="flex items-center space-x-1 px-3 py-1 text-sm text-blue-600 hover:text-blue-800">
-                                            <Eye className="w-4 h-4" />
-                                            <span>View Details</span>
-                                        </button>
-                                        <button className="flex items-center space-x-1 px-3 py-1 text-sm text-green-600 hover:text-green-800">
-                                            <MessageCircle className="w-4 h-4" />
-                                            <span>Start Consultation</span>
+                                        <button className="text-pink-600 hover:text-pink-700 font-medium text-xs sm:text-sm whitespace-nowrap">
+                                            View Details
                                         </button>
                                     </div>
                                 </div>
@@ -352,57 +247,18 @@ const DoctorDashboard = () => {
                     </Card>
                 </div>
 
-                {/* Quick Cards - Upcoming Appointments */}
+                {/* Quick Actions */}
                 <div className="space-y-6">
                     <Card className="p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Appointments</h3>
-                        <div className="space-y-3">
-                            {upcomingAppointments.map((appointment) => (
-                                <div key={appointment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                    <div>
-                                        <p className="font-medium text-gray-900">{appointment.patient}</p>
-                                        <p className="text-sm text-gray-600">{appointment.date} at {appointment.time}</p>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        {getModeIcon(appointment.mode)}
-                                        <span className="text-xs text-gray-500">{appointment.type}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
-
-                    {/* Recent AI Reports */}
-                    <Card className="p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent AI Reports</h3>
-                        <div className="space-y-3">
-                            {recentAIReports.map((report) => (
-                                <div key={report.id} className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h4 className="font-medium text-gray-900">{report.patient}</h4>
-                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(report.status)}`}>
-                                            {report.status}
-                                        </span>
-                                    </div>
-                                    <p className="text-sm text-gray-600 mb-1">{report.type}</p>
-                                    <p className="text-xs text-gray-500">{report.date}</p>
-                                    <p className="text-sm text-gray-700 mt-2">{report.summary}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
-
-                    {/* Quick Actions */}
-                    <Card className="p-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                             <button className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
                                 <Calendar className="w-5 h-5 text-blue-500" />
-                                <span>View Full Calendar</span>
+                                <span>Schedule Appointment</span>
                             </button>
                             <button className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                                <FileText className="w-5 h-5 text-green-500" />
-                                <span>Review AI Reports</span>
+                                <Users className="w-5 h-5 text-green-500" />
+                                <span>View Patients</span>
                             </button>
                             <button className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
                                 <DollarSign className="w-5 h-5 text-purple-500" />
@@ -414,8 +270,6 @@ const DoctorDashboard = () => {
                             </button>
                         </div>
                     </Card>
-                </div>
-                    </div>
                 </div>
             </div>
         </div>
