@@ -17,6 +17,7 @@
     "@react-three/fiber": "^9.3.0",
     "@rive-app/react-canvas": "^4.23.3",
     "@rive-app/react-webgl2": "^4.23.3",
+    "@shelacek/formica": "^2.0.2",
     "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.10.0",
     "framer-motion": "^12.23.12",
