@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Bell, User, Settings, LogOut, Menu, X, Search } from 'lucide-react';
 
@@ -10,11 +11,91 @@ const UnifiedNavbar = ({
   className = ""
 }) => {
   const { logout, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleSignOut = () => {
     logout();
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!searchTerm.trim()) return;
+
+    // Store the search term for the target page to use
+    localStorage.setItem('globalSearchTerm', searchTerm);
+
+    // For admin portal, search across different sections
+    if (portalType === 'admin') {
+      // Try to find matches in different sections
+      const searchLower = searchTerm.toLowerCase();
+      
+      // Check if it looks like an email
+      if (searchLower.includes('@')) {
+        navigate('/admin/users');
+        return;
+      }
+      
+      // Check if it's a status
+      if (['active', 'suspended', 'pending', 'inactive'].includes(searchLower)) {
+        navigate('/admin/users');
+        return;
+      }
+      
+      // Check if it contains doctor-related terms or looks like a doctor name
+      if (searchLower.includes('dr.') || searchLower.includes('doctor') || searchLower.includes('physician') || 
+          searchLower.includes('sarah') || searchLower.includes('michael') || searchLower.includes('johnson') ||
+          searchLower.includes('chen') || searchLower.includes('cardiology') || searchLower.includes('neurology') ||
+          searchLower.includes('surgery') || searchLower.includes('dermatology') || searchLower.includes('pediatrics')) {
+        navigate('/admin/doctors');
+        return;
+      }
+      
+      // Check if it contains patient-related terms
+      if (searchLower.includes('patient') || searchLower.includes('john doe') || searchLower.includes('jane smith') ||
+          searchLower.includes('mike johnson') || searchLower.includes('hypertension') || searchLower.includes('diabetes') ||
+          searchLower.includes('condition') || searchLower.includes('medical history')) {
+        navigate('/admin/patients');
+        return;
+      }
+      
+      // Check if it contains appointment-related terms
+      if (searchLower.includes('appointment') || searchLower.includes('schedule') || searchLower.includes('booking')) {
+        navigate('/admin/appointments');
+        return;
+      }
+      
+      // Check if it contains report-related terms
+      if (searchLower.includes('report') || searchLower.includes('health') || searchLower.includes('assessment')) {
+        navigate('/admin/reports');
+        return;
+      }
+      
+      // Check if it contains payment-related terms
+      if (searchLower.includes('payment') || searchLower.includes('billing') || searchLower.includes('invoice')) {
+        navigate('/admin/payments');
+        return;
+      }
+      
+      // Default to users page for general search
+      navigate('/admin/users');
+    } else if (portalType === 'doctor') {
+      // For doctor portal
+      navigate('/doctor/appointments');
+    } else if (portalType === 'patient') {
+      // For patient portal
+      navigate('/patient/my-doctors');
+    }
+    
+    // Clear the search term after navigation
+    setSearchTerm('');
+  };
+
+  const handleSearchInputChange = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   // Portal-specific configurations
@@ -112,14 +193,16 @@ const UnifiedNavbar = ({
 
           {/* Search bar (if enabled) */}
           {showSearch && (
-            <div className="hidden md:flex items-center space-x-2 bg-gray-100 rounded-lg px-3 py-2">
+            <form onSubmit={handleSearch} className="hidden md:flex items-center space-x-2 bg-gray-100 rounded-lg px-3 py-2">
               <Search className="h-4 w-4 text-gray-400" />
               <input
                 type="text"
+                value={searchTerm}
+                onChange={handleSearchInputChange}
                 placeholder={`Search ${portalType === 'admin' ? 'patients, doctors, reports...' : portalType === 'doctor' ? 'patients, appointments...' : 'doctors, appointments...'}`}
-                className="bg-transparent border-none outline-none text-sm text-gray-700 placeholder-gray-400"
+                className="bg-transparent border-none outline-none text-sm text-gray-700 placeholder-gray-400 w-64"
               />
-            </div>
+            </form>
           )}
         </div>
 

@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Stethoscope, Plus, Search, Filter, Eye, Edit, Trash2 } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const Patients = () => {
+    const location = useLocation();
+    const [searchTerm, setSearchTerm] = useState('');
+    
     const patients = [
         {
             id: 1,
@@ -72,6 +76,25 @@ const Patients = () => {
         }
     };
 
+    // Check for global search term from navbar
+    useEffect(() => {
+        const globalSearchTerm = localStorage.getItem('globalSearchTerm');
+        if (globalSearchTerm) {
+            setSearchTerm(globalSearchTerm);
+            localStorage.removeItem('globalSearchTerm'); // Clear after using
+        }
+    }, [location.pathname]);
+
+    // Filter patients based on search term
+    const filteredPatients = patients.filter(patient => {
+        const matchesSearch = searchTerm === '' || 
+            patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            patient.condition.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            patient.status.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        return matchesSearch;
+    });
+
     return (
         <div className="p-6 space-y-6">
             {/* Header */}
@@ -94,6 +117,8 @@ const Patients = () => {
                         <input
                             type="text"
                             placeholder="Search patients by name, condition, or ID..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                         />
                     </div>
@@ -131,7 +156,7 @@ const Patients = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {patients.map((patient) => (
+                            {filteredPatients.map((patient) => (
                                 <tr key={patient.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">

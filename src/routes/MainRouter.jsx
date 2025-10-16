@@ -16,7 +16,6 @@ import Dashboard from '../Admin panel/admin/adminpages/Dashboard';
 import Users from '../Admin panel/admin/adminpages/Users';
 import Doctors from '../Admin panel/admin/adminpages/Doctors';
 import AdminDoctorProfile from '../Admin panel/admin/adminpages/DoctorProfile';
-import DoctorProfileDetail from '../Admin panel/admin/adminpages/DoctorProfileDetail';
 import Patients from '../Admin panel/admin/adminpages/Patients';
 import Appointments from '../Admin panel/admin/adminpages/Appointments';
 import Reports from '../Admin panel/admin/adminpages/Reports';
@@ -86,10 +85,16 @@ function MainRouter() {
       >
         <Route path="" element={<Dashboard />} />
         <Route path="users" element={<Users />} />
+        <Route path="users/add" element={<Users />} />
+        <Route path="users/edit/:id" element={<Users />} />
+        <Route path="users/view/:id" element={<Users />} />
         <Route path="doctors" element={<Doctors />} />
         <Route path="doctors/:id" element={<AdminDoctorProfile />} />
-        <Route path="doctor-profile" element={<DoctorProfileDetail />} />
+        <Route path="patients" element={<Patients />} />
         <Route path="appointments" element={<Appointments />} />
+        <Route path="appointments/add" element={<Appointments />} />
+        <Route path="appointments/edit/:id" element={<Appointments />} />
+        <Route path="appointments/view/:id" element={<Appointments />} />
         <Route path="reports" element={<Reports />} />
         <Route path="payments" element={<Payments />} />
         <Route path="settings" element={<Settings />} />
