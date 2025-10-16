@@ -14,13 +14,191 @@
 .form-input,
 .form-textarea,
 .form-select {
-  @apply w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 transition-colors duration-200;
+  @apply w-full px-4 py-3 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-2 transition-all duration-300 text-base;
 }
 
 .form-input:focus,
 .form-textarea:focus,
 .form-select:focus {
-  @apply ring-2;
+  @apply ring-2 ring-blue-500 border-blue-500 shadow-lg transform scale-[1.02];
+}
+
+/* Form input with icons */
+.form-input.pl-10 {
+  @apply pl-10;
+}
+
+.form-input.pr-12 {
+  @apply pr-12;
+}
+
+/* Email and password input with icons inside */
+.form-input-with-icon {
+  position: relative;
+}
+
+.form-input-with-icon .form-input {
+  @apply pl-10 pr-10;
+}
+
+.form-input-with-icon .icon-left {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #9ca3af;
+  z-index: 10;
+}
+
+.form-input-with-icon .icon-right {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: auto;
+  color: #9ca3af;
+  z-index: 10;
+  cursor: pointer;
+}
+
+/* Ensure password field has enough space for eye icon */
+.form-input[type="password"] {
+  @apply pr-12;
+}
+
+/* Password field with eye icon positioning */
+.password-field-container {
+  position: relative;
+}
+
+.password-field-container .form-input {
+  padding-right: 2.5rem; /* 40px for eye icon space */
+}
+
+.password-field-container .password-toggle-btn {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.password-field-container .password-toggle-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure eye icon is completely inside the field */
+.password-field-container {
+  position: relative;
+  overflow: visible;
+}
+
+.password-field-container .form-input {
+  padding-right: 2.5rem !important;
+  box-sizing: border-box;
+}
+
+.password-field-container .password-toggle-btn {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+/* Enhanced input field styling */
+.form-input {
+  @apply bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500;
+}
+
+.form-input:hover {
+  @apply border-gray-300 bg-white;
+}
+
+.form-input:focus {
+  @apply bg-white border-blue-500;
+}
+
+.form-input.error {
+  @apply border-red-400 bg-red-50 text-red-900 placeholder-red-400;
+}
+
+.form-input.error:focus {
+  @apply border-red-500 ring-red-500 bg-white;
+}
+
+/* Enhanced input field animations */
+.form-input {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-input:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 0 0 1px rgba(59, 130, 246, 0.2);
+}
+
+/* Icon hover effects - removed group classes */
+
+/* Password toggle button enhancement */
+.password-toggle-btn {
+  @apply transition-all duration-200 hover:bg-gray-100 rounded-r-xl z-10;
+  width: 40px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.password-toggle-btn:hover {
+  @apply bg-gray-100;
+}
+
+.password-toggle-btn:focus {
+  @apply outline-none ring-2 ring-blue-500/50;
+}
+
+/* Ensure the button is perfectly inside the field */
+.password-toggle-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Input field container */
+.input-field-container {
+  @apply relative;
+}
+
+.input-field-container:focus-within {
+  @apply transform scale-[1.01];
 }
 
 .form-checkbox {

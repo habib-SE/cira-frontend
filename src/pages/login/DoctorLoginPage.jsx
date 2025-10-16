@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
+import logo from '../../assets/Logo.png';
 import { 
     Stethoscope, 
     Mail, 
@@ -20,19 +21,15 @@ import {
     X,
     Star
 } from 'lucide-react';
+import { 
+  FormicaValidatedForm, 
+  FormicaFormField, 
+  FormicaFormSelect 
+} from '../../components/forms';
+import { authFormicaSchemas, doctorFormicaSchemas } from '../../utils/validation/formicaSchemas';
 
 const DoctorLogin = () => {
     const [isLogin, setIsLogin] = useState(true);
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-        confirmPassword: '',
-        firstName: '',
-        lastName: '',
-        specialty: '',
-        licenseNumber: '',
-        phone: ''
-    });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -45,24 +42,12 @@ const DoctorLogin = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-        setError('');
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleLoginSubmit = async (data) => {
         setLoading(true);
         setError('');
 
         try {
-            if (isLogin) {
-                // Login logic with doctor branding
-                await login(formData.email, formData.password, 'doctor');
+            await login(data.email, data.password, 'doctor');
                 setLoginSuccess(true);
                 
                 // Simulate profile completion check
@@ -79,14 +64,18 @@ const DoctorLogin = () => {
                         navigate('/doctor');
                     }, 1500);
                 }
-            } else {
-                // Registration logic
-                if (formData.password !== formData.confirmPassword) {
-                    setError('Passwords do not match');
+        } catch (err) {
+            setError(err.message || 'An error occurred. Please try again.');
+        } finally {
                     setLoading(false);
-                    return;
                 }
+    };
 
+    const handleRegistrationSubmit = async (data) => {
+        setLoading(true);
+        setError('');
+
+        try {
                 // Simulate registration API call
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 
@@ -94,12 +83,15 @@ const DoctorLogin = () => {
                 setTimeout(() => {
                     navigate('/doctor/profile');
                 }, 2000);
-            }
         } catch (err) {
             setError(err.message || 'An error occurred. Please try again.');
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleFormError = (error) => {
+        console.error('Formica validation error:', error);
     };
 
     const specialties = [
@@ -162,95 +154,208 @@ const DoctorLogin = () => {
 
                 {/* Form */}
                 <div className="bg-white py-8 px-6 shadow-xl rounded-2xl">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {!isLogin && (
-                            <>
-                                {/* Name Fields */}
-                                <div className="grid grid-cols-2 gap-4">
+                    {isLogin ? (
+                        <FormicaValidatedForm
+                            schema={authFormicaSchemas.login}
+                            onSubmit={handleLoginSubmit}
+                            onError={handleFormError}
+                            defaultValues={{
+                                email: '',
+                                password: '',
+                                role: 'doctor'
+                            }}
+                        >
+                            {({ 
+                                register, 
+                                errors, 
+                                isSubmitting, 
+                                isValid, 
+                                getFieldProps, 
+                                getFieldError, 
+                                hasFieldError 
+                            }) => (
+                                <div>
+                                    {/* Email */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            First Name
+                                            Email Address
                                         </label>
-                                        <input
-                                            type="text"
+                                        <div className="relative">
+                                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                            <FormicaFormField
+                                                label=""
+                                                name="email"
+                                                type="email"
+                                                register={register}
+                                                errors={errors}
+                                                getFieldProps={getFieldProps}
+                                                getFieldError={getFieldError}
+                                                hasFieldError={hasFieldError}
+                                                placeholder="doctor@example.com"
+                                                required
+                                                className="pl-10"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Password */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Password
+                                        </label>
+                                        <div className="relative">
+                                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                            <FormicaFormField
+                                                label=""
+                                                name="password"
+                                                type={showPassword ? 'text' : 'password'}
+                                                register={register}
+                                                errors={errors}
+                                                getFieldProps={getFieldProps}
+                                                getFieldError={getFieldError}
+                                                hasFieldError={hasFieldError}
+                                                placeholder="Enter your password"
+                                                required
+                                                className="pl-10 pr-10"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            >
+                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Error/Success Messages */}
+                                    {error && (
+                                        <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-3 rounded-xl">
+                                            <AlertCircle className="h-5 w-5" />
+                                            <span className="text-sm">{error}</span>
+                                        </div>
+                                    )}
+
+                                    {success && (
+                                        <div className="flex items-center space-x-2 text-green-600 bg-green-50 p-3 rounded-xl">
+                                            <CheckCircle className="h-5 w-5" />
+                                            <span className="text-sm">{success}</span>
+                                        </div>
+                                    )}
+
+                                    {/* Submit Button */}
+                                    <button
+                                        type="submit"
+                                        disabled={loading || isSubmitting || !isValid}
+                                        className="w-full flex items-center justify-center space-x-2 bg-pink-500 text-white py-3 px-4 rounded-xl hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                    >
+                                        {loading || isSubmitting ? (
+                                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                                        ) : (
+                                            <>
+                                                <span>Sign In</span>
+                                                <ArrowRight className="h-5 w-5" />
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            )}
+                        </FormicaValidatedForm>
+                    ) : (
+                        <FormicaValidatedForm
+                            schema={doctorFormicaSchemas.doctorRegistration}
+                            onSubmit={handleRegistrationSubmit}
+                            onError={handleFormError}
+                            defaultValues={{
+                                firstName: '',
+                                lastName: '',
+                                email: '',
+                                password: '',
+                                confirmPassword: '',
+                                specialty: '',
+                                licenseNumber: '',
+                                phone: ''
+                            }}
+                        >
+                            {({ 
+                                register, 
+                                errors, 
+                                isSubmitting, 
+                                isValid, 
+                                getFieldProps, 
+                                getFieldError, 
+                                hasFieldError 
+                            }) => (
+                                <div className="space-y-6">
+                                    {/* Name Fields */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormicaFormField
+                                            label="First Name"
                                             name="firstName"
-                                            value={formData.firstName}
-                                            onChange={handleInputChange}
-                                            required={!isLogin}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                            placeholder="John"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Last Name
-                                        </label>
-                                        <input
                                             type="text"
-                                            name="lastName"
-                                            value={formData.lastName}
-                                            onChange={handleInputChange}
-                                            required={!isLogin}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                            placeholder="Doe"
+                                            register={register}
+                                            errors={errors}
+                                            getFieldProps={getFieldProps}
+                                            getFieldError={getFieldError}
+                                            hasFieldError={hasFieldError}
+                                            placeholder="John"
+                                            required
                                         />
-                                    </div>
+                                        <FormicaFormField
+                                            label="Last Name"
+                                            name="lastName"
+                                            type="text"
+                                            register={register}
+                                            errors={errors}
+                                            getFieldProps={getFieldProps}
+                                            getFieldError={getFieldError}
+                                            hasFieldError={hasFieldError}
+                                            placeholder="Doe"
+                                            required
+                                        />
                                 </div>
 
                                 {/* Specialty */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Medical Specialty
-                                    </label>
-                                    <select
+                                    <FormicaFormSelect
+                                        label="Medical Specialty"
                                         name="specialty"
-                                        value={formData.specialty}
-                                        onChange={handleInputChange}
-                                        required={!isLogin}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                    >
-                                        <option value="">Select your specialty</option>
-                                        {specialties.map(specialty => (
-                                            <option key={specialty} value={specialty}>
-                                                {specialty}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                        register={register}
+                                        errors={errors}
+                                        getFieldProps={getFieldProps}
+                                        getFieldError={getFieldError}
+                                        hasFieldError={hasFieldError}
+                                        options={specialties.map(s => ({ value: s, label: s }))}
+                                        placeholder="Select your specialty"
+                                        required
+                                    />
 
                                 {/* License Number */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        License Number
-                                    </label>
-                                    <input
-                                        type="text"
+                                    <FormicaFormField
+                                        label="License Number"
                                         name="licenseNumber"
-                                        value={formData.licenseNumber}
-                                        onChange={handleInputChange}
-                                        required={!isLogin}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                        type="text"
+                                        register={register}
+                                        errors={errors}
+                                        getFieldProps={getFieldProps}
+                                        getFieldError={getFieldError}
+                                        hasFieldError={hasFieldError}
                                         placeholder="MD12345"
+                                        required
                                     />
-                                </div>
 
                                 {/* Phone */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Phone Number
-                                    </label>
-                                    <input
-                                        type="tel"
+                                    <FormicaFormField
+                                        label="Phone Number"
                                         name="phone"
-                                        value={formData.phone}
-                                        onChange={handleInputChange}
-                                        required={!isLogin}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                        type="tel"
+                                        register={register}
+                                        errors={errors}
+                                        getFieldProps={getFieldProps}
+                                        getFieldError={getFieldError}
+                                        hasFieldError={hasFieldError}
                                         placeholder="+1 (555) 123-4567"
+                                        required
                                     />
-                                </div>
-                            </>
-                        )}
 
                         {/* Email */}
                         <div>
@@ -259,14 +364,18 @@ const DoctorLogin = () => {
                             </label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                <input
+                                            <FormicaFormField
+                                                label=""
+                                                name="email"
                                     type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleInputChange}
+                                                register={register}
+                                                errors={errors}
+                                                getFieldProps={getFieldProps}
+                                                getFieldError={getFieldError}
+                                                hasFieldError={hasFieldError}
+                                                placeholder="doctor@example.com"
                                     required
-                                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                    placeholder="doctor@example.com"
+                                                className="pl-10"
                                 />
                             </div>
                         </div>
@@ -278,14 +387,18 @@ const DoctorLogin = () => {
                             </label>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                <input
+                                            <FormicaFormField
+                                                label=""
+                                                name="password"
                                     type={showPassword ? 'text' : 'password'}
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleInputChange}
+                                                register={register}
+                                                errors={errors}
+                                                getFieldProps={getFieldProps}
+                                                getFieldError={getFieldError}
+                                                hasFieldError={hasFieldError}
+                                                placeholder="Enter your password"
                                     required
-                                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                    placeholder="Enter your password"
+                                                className="pl-10 pr-10"
                                 />
                                 <button
                                     type="button"
@@ -297,22 +410,25 @@ const DoctorLogin = () => {
                             </div>
                         </div>
 
-                        {/* Confirm Password (Registration only) */}
-                        {!isLogin && (
+                                    {/* Confirm Password */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Confirm Password
                                 </label>
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                    <input
+                                            <FormicaFormField
+                                                label=""
+                                                name="confirmPassword"
                                         type={showConfirmPassword ? 'text' : 'password'}
-                                        name="confirmPassword"
-                                        value={formData.confirmPassword}
-                                        onChange={handleInputChange}
-                                        required={!isLogin}
-                                        className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                                register={register}
+                                                errors={errors}
+                                                getFieldProps={getFieldProps}
+                                                getFieldError={getFieldError}
+                                                hasFieldError={hasFieldError}
                                         placeholder="Confirm your password"
+                                                required
+                                                className="pl-10 pr-10"
                                     />
                                     <button
                                         type="button"
@@ -323,7 +439,6 @@ const DoctorLogin = () => {
                                     </button>
                                 </div>
                             </div>
-                        )}
 
                         {/* Error/Success Messages */}
                         {error && (
@@ -343,19 +458,22 @@ const DoctorLogin = () => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            disabled={loading}
+                                        disabled={loading || isSubmitting || !isValid}
                             className="w-full flex items-center justify-center space-x-2 bg-pink-500 text-white py-3 px-4 rounded-xl hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                         >
-                            {loading ? (
+                                        {loading || isSubmitting ? (
                                 <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
                             ) : (
                                 <>
-                                    <span>{isLogin ? 'Sign In' : 'Create Account'}</span>
+                                                <span>Create Account</span>
                                     <ArrowRight className="h-5 w-5" />
                                 </>
                             )}
                         </button>
-                    </form>
+                                </div>
+                            )}
+                        </FormicaValidatedForm>
+                    )}
 
                     {/* Toggle Login/Registration */}
                     <div className="mt-6 text-center">

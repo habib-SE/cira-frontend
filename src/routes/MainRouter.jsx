@@ -2,13 +2,14 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute';
 import WelcomePage from '../Admin panel/admin/adminpages/WelcomePage';
-import RegisterPage from '../Admin panel/admin/adminpages/RegisterPage';
-import LoginPage from '../Admin panel/admin/adminpages/LoginPage';
-import EnhancedLoginPage from '../Admin panel/admin/adminpages/EnhancedLoginPage';
+import { MainLoginPage, DoctorLoginPage } from '../pages/login';
 import EmailConfirmPage from '../Admin panel/admin/adminpages/EmailConfirmPage';
 import EnablePermissionPage from '../Admin panel/admin/adminpages/EnablePermissionPage';
 import PlusUnlockedPage from '../Admin panel/admin/adminpages/PlusUnlockedPage';
 import SubscriptionPlansPage from '../Admin panel/admin/adminpages/SubscriptionPlansPage';
+
+// Authentication Module Imports
+import { RegisterPage } from '../modules/auth';
 
 // Admin Portal Imports
 import AdminLayout from '../Admin panel/admin/admincomponents/AdminLayout';
@@ -40,7 +41,6 @@ import PatientSettings from '../Admin panel/patient/patientpages/PatientSettings
 
 // Doctor Portal Imports
 import DoctorLayout from '../Admin panel/doctor/doctorcomponents/DoctorLayout';
-import DoctorLogin from '../Admin panel/doctor/doctorpages/DoctorLogin';
 import DoctorDashboard from '../Admin panel/doctor/doctorpages/DoctorDashboard';
 import ProfileWizard from '../Admin panel/doctor/doctorpages/ProfileWizard';
 import DoctorSchedule from '../Admin panel/doctor/doctorpages/DoctorSchedule';
@@ -56,12 +56,11 @@ function MainRouter() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/welcome" element={<WelcomePage />} />
       
-      {/* Login pages - Enhanced with role-based authentication */}
-      <Route path="/login" element={<EnhancedLoginPage />} />
-      <Route path="/login-old" element={<LoginPage />} />
-      
-      {/* Register page */}
+      {/* Authentication Routes - Using centralized login pages */}
+      <Route path="/login" element={<MainLoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/doctor/login" element={<DoctorLoginPage />} />
+      
       
       {/* Email confirmation page */}
       <Route path="/email-confirm" element={<EmailConfirmPage />} />
@@ -123,9 +122,6 @@ function MainRouter() {
         <Route path="settings" element={<PatientSettings />} />
       </Route>
 
-      {/* Doctor Login/Registration - Public */}
-      <Route path="/doctor/login" element={<DoctorLogin />} />
-
       {/* Doctor Portal Routes - Protected */}
       <Route 
         path="/doctor" 
@@ -135,7 +131,6 @@ function MainRouter() {
           </ProtectedRoute>
         }
       >
-        <Route path="login" element={<DoctorLogin />} />
         <Route path="" element={<DoctorDashboard />} />
         <Route path="profile" element={<ProfileWizard />} />
         <Route path="appointments" element={<DoctorSchedule />} />
