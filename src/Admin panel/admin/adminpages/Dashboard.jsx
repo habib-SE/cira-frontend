@@ -107,24 +107,6 @@ const Dashboard = () => {
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
                     <p className="text-sm sm:text-base text-gray-600">Welcome back! Here's what's happening with your platform.</p>
                 </div>
-                <button
-                    onClick={handleRefreshContent}
-                    disabled={isRefreshing}
-                    className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
-                >
-                    {isRefreshing ? (
-                        <div className="flex items-center space-x-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                            <span className="hidden sm:inline">Refreshing...</span>
-                            <span className="sm:hidden">...</span>
-                        </div>
-                    ) : (
-                        <>
-                            <span className="hidden sm:inline">Refresh</span>
-                            <span className="sm:hidden">↻</span>
-                        </>
-                    )}
-                </button>
             </div>
 
             {/* Main Content Area */}

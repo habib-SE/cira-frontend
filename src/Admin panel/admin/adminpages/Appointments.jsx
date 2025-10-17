@@ -9,8 +9,7 @@ const Appointments = () => {
     
     // State management
     const [isRefreshing, setIsRefreshing] = useState(false);
-
-    
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const [_isContentLoading, _setIsContentLoading] = useState(false);
     
     const handleRefreshContent = () => {
@@ -21,6 +20,15 @@ const Appointments = () => {
             _setIsContentLoading(false);
         }, 1500);
     };
+
+    // Check for global search term from navbar
+    useEffect(() => {
+        const globalSearchTerm = localStorage.getItem('globalSearchTerm');
+        if (globalSearchTerm) {
+            setSearchTerm(globalSearchTerm);
+            localStorage.removeItem('globalSearchTerm'); // Clear after using
+        }
+    }, [location.pathname]);
 
     
 
@@ -134,7 +142,8 @@ const Appointments = () => {
         }
     ];
 
-    const [appointments, setAppointments] = useState([
+    // Default appointments data
+    const defaultAppointments = [
         {
             id: 1,
             patient: 'John Doe',
@@ -225,13 +234,31 @@ const Appointments = () => {
             priority: 'Normal',
             duration: '45 minutes'
         },
-    ]);
+    ];
+
+    // Initialize appointments from localStorage or use default
+    const [appointments, setAppointments] = useState(() => {
+        const savedAppointments = localStorage.getItem('appointments');
+        return savedAppointments ? JSON.parse(savedAppointments) : defaultAppointments;
+    });
+
+    // Helper function to save appointments to localStorage
+    const saveAppointmentsToStorage = (appointmentsList) => {
+        localStorage.setItem('appointments', JSON.stringify(appointmentsList));
+    };
+
+    // Toast notification helper
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => {
+            setToast({ show: false, message: '', type: '' });
+        }, 3000);
+    };
 
     // Form state
     const [showFormInLayout, setShowFormInLayout] = useState(false);
     const [showEditFormInLayout, setShowEditFormInLayout] = useState(false);
     const [showViewFormInLayout, setShowViewFormInLayout] = useState(false);
-    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [editingAppointment, setEditingAppointment] = useState(null);
@@ -425,7 +452,7 @@ const Appointments = () => {
         }
         if (!formData.patientPhone.trim()) {
             errors.patientPhone = 'Patient phone number is required';
-        } else if (!/^[+]?[1-9][\d]{0,15}$/.test(formData.patientPhone.replace(/\D/g, ''))) {
+        } else if (!/^[+]?[0-9][\d]{7,15}$/.test(formData.patientPhone.replace(/\D/g, ''))) {
             errors.patientPhone = 'Please enter a valid phone number';
         }
         if (!formData.doctor) {
@@ -474,7 +501,9 @@ const Appointments = () => {
                 duration: formData.duration + ' minutes'
             };
             
-            setAppointments(prev => [...prev, newAppointment]);
+            const updatedAppointments = [...appointments, newAppointment];
+            setAppointments(updatedAppointments);
+            saveAppointmentsToStorage(updatedAppointments);
             
             // Reset form and navigate back
             setFormData({
@@ -493,12 +522,8 @@ const Appointments = () => {
             });
             setFormErrors({});
             setShowFormInLayout(false);
-            setShowSuccessMessage(true);
+            showToast('Appointment scheduled successfully!', 'success');
             navigate('/admin/appointments');
-            
-            setTimeout(() => {
-                setShowSuccessMessage(false);
-            }, 3000);
         }
     };
 
@@ -536,22 +561,40 @@ const Appointments = () => {
         setShowDeleteConfirm(true);
     };
 
+    const handleSendReminders = () => {
+        // Get upcoming appointments (next 24 hours)
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const upcomingAppointments = appointments.filter(apt => {
+            const aptDate = new Date(apt.date);
+            return aptDate <= tomorrow && ['Scheduled', 'Confirmed'].includes(apt.status);
+        });
+
+        if (upcomingAppointments.length === 0) {
+            showToast('No upcoming appointments to send reminders for', 'error');
+            return;
+        }
+
+        // Simulate sending reminders
+        const reminderCount = upcomingAppointments.length;
+        showToast(`Reminders sent to ${reminderCount} patients for upcoming appointments`, 'success');
+    };
+
     const confirmDelete = () => {
         if (selectedAppointment) {
-            setAppointments(prev => prev.filter(apt => apt.id !== selectedAppointment.id));
+            const updatedAppointments = appointments.filter(apt => apt.id !== selectedAppointment.id);
+            setAppointments(updatedAppointments);
+            saveAppointmentsToStorage(updatedAppointments);
             setShowDeleteConfirm(false);
             setSelectedAppointment(null);
-            setShowSuccessMessage(true);
-            setTimeout(() => {
-                setShowSuccessMessage(false);
-            }, 3000);
+            showToast('Appointment deleted successfully!', 'success');
         }
     };
 
     const handleUpdateAppointment = (e) => {
         e.preventDefault();
         if (validateForm() && editingAppointment) {
-            setAppointments(prev => prev.map(apt => 
+            const updatedAppointments = appointments.map(apt => 
                 apt.id === editingAppointment.id 
                     ? {
                         ...apt,
@@ -569,7 +612,10 @@ const Appointments = () => {
                         duration: formData.duration + ' minutes'
                     }
                     : apt
-            ));
+            );
+            
+            setAppointments(updatedAppointments);
+            saveAppointmentsToStorage(updatedAppointments);
             
             setShowEditFormInLayout(false);
             setEditingAppointment(null);
@@ -588,12 +634,8 @@ const Appointments = () => {
                 duration: '30'
             });
             setFormErrors({});
-            setShowSuccessMessage(true);
+            showToast('Appointment updated successfully!', 'success');
             navigate('/admin/appointments');
-            
-            setTimeout(() => {
-                setShowSuccessMessage(false);
-            }, 3000);
         }
     };
 
@@ -718,11 +760,33 @@ const Appointments = () => {
 
     return (
         <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
-            {/* Success Message */}
-            {showSuccessMessage && (
-                <div className="fixed top-2 right-2 sm:top-4 sm:right-4 bg-green-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg z-50 flex items-center space-x-2 text-xs sm:text-sm max-w-xs sm:max-w-md">
-                    <div className="w-2 h-2 bg-white rounded-full flex-shrink-0"></div>
-                    <span className="truncate">Appointment scheduled successfully!</span>
+            {/* Toast Notification */}
+            {toast.show && (
+                <div className="fixed top-4 right-4 z-50 animate-slide-in">
+                    <div className={`flex items-center space-x-3 px-4 py-3 rounded-xl shadow-lg border max-w-sm ${
+                        toast.type === 'success' 
+                            ? 'bg-pink-50 border-pink-500 text-pink-800' 
+                            : 'bg-red-50 border-red-500 text-red-800'
+                    }`}>
+                        <div className={`w-5 h-5 flex-shrink-0 ${
+                            toast.type === 'success' ? 'text-pink-600' : 'text-red-600'
+                        }`}>
+                            {toast.type === 'success' ? (
+                                <CheckCircle className="w-5 h-5" />
+                            ) : (
+                                <AlertCircle className="w-5 h-5" />
+                            )}
+                        </div>
+                        <span className="text-sm font-medium">{toast.message}</span>
+                        <button
+                            onClick={() => setToast({ show: false, message: '', type: '' })}
+                            className={`ml-2 text-sm ${
+                                toast.type === 'success' ? 'text-pink-600' : 'text-red-600'
+                            } hover:opacity-70`}
+                        >
+                            ×
+                        </button>
+                    </div>
                 </div>
             )}
 
@@ -1403,24 +1467,6 @@ const Appointments = () => {
                     <p className="text-sm sm:text-base text-gray-600">Manage patient appointments and schedules</p>
                 </div>
                 <div className="flex items-center flex-wrap gap-2 sm:gap-3">
-                    <button
-                    onClick={handleRefreshContent}
-                    disabled={isRefreshing}
-                        className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
-                >
-                    {isRefreshing ? (
-                        <div className="flex items-center space-x-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                <span className="hidden sm:inline">Refreshing...</span>
-                                <span className="sm:hidden">...</span>
-                        </div>
-                    ) : (
-                            <>
-                                <span className="hidden sm:inline">Refresh</span>
-                                <span className="sm:hidden">↻</span>
-                            </>
-                    )}
-                </button>
                     <button 
                         onClick={() => navigate('/admin/appointments/add')}
                         className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 text-sm sm:text-base whitespace-nowrap"
@@ -1605,19 +1651,31 @@ const Appointments = () => {
                                 <Zap className="w-5 h-5 text-pink-600" />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
-                                <button className="flex flex-col items-center p-4 bg-pink-50 rounded-lg hover:bg-pink-100 transition-colors">
+                                <button 
+                                    onClick={() => navigate('/admin/appointments/add')}
+                                    className="flex flex-col items-center p-4 bg-pink-50 rounded-lg hover:bg-pink-100 transition-colors"
+                                >
                                     <Plus className="w-6 h-6 text-pink-600 mb-2" />
                                     <span className="text-sm font-medium text-gray-900">New Appointment</span>
                                 </button>
-                                <button className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                                <button 
+                                    onClick={handleSendReminders}
+                                    className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                                >
                                     <Bell className="w-6 h-6 text-blue-600 mb-2" />
                                     <span className="text-sm font-medium text-gray-900">Send Reminders</span>
                                 </button>
-                                <button className="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                                <button 
+                                    onClick={() => navigate('/admin/reports')}
+                                    className="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                                >
                                     <BarChart3 className="w-6 h-6 text-green-600 mb-2" />
                                     <span className="text-sm font-medium text-gray-900">View Reports</span>
                                 </button>
-                                <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                                <button 
+                                    onClick={() => navigate('/admin/users')}
+                                    className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                                >
                                     <Users className="w-6 h-6 text-purple-600 mb-2" />
                                     <span className="text-sm font-medium text-gray-900">Manage Patients</span>
                                 </button>

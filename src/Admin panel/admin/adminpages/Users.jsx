@@ -1,25 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { Users as UsersIcon, Search, Filter, Eye, Ban, Trash2, MoreVertical, UserCheck, UserX } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Users as UsersIcon, Search, Filter, Eye, Ban, Trash2, MoreVertical, UserCheck, UserX, UserPlus, X, CheckCircle, AlertCircle, EyeOff, Edit, ArrowLeft } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const Users = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [filterRole, setFilterRole] = useState('');
-    const [isRefreshing, setIsRefreshing] = useState(false);
     const [_isContentLoading, _setIsContentLoading] = useState(false);
-
-    const handleRefreshContent = () => {
-        setIsRefreshing(true);
-        _setIsContentLoading(true);
-        setTimeout(() => {
-            setIsRefreshing(false);
-            _setIsContentLoading(false);
-        }, 1500);
-    };
-
-    // Sample users data
-    const users = [
+    const [showCreateForm, setShowCreateForm] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editingUserId, setEditingUserId] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        role: 'Patient',
+        status: 'Active',
+        password: '',
+        confirmPassword: ''
+    });
+    const [formErrors, setFormErrors] = useState({});
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [userToEdit, setUserToEdit] = useState(null);
+    const [editFormData, setEditFormData] = useState({});
+    const [editFormErrors, setEditFormErrors] = useState({});
+    
+    // Default users data
+    const defaultUsers = [
         {
             id: 1,
             name: 'John Doe',
@@ -88,6 +105,171 @@ const Users = () => {
         }
     ];
 
+    // Initialize users from localStorage or use default users
+    const [users, setUsers] = useState(() => {
+        try {
+            const savedUsers = localStorage.getItem('users');
+            return savedUsers ? JSON.parse(savedUsers) : defaultUsers;
+        } catch (error) {
+            console.error('Error loading users from localStorage:', error);
+            return defaultUsers;
+        }
+    });
+
+    const handleCreateUser = () => {
+        navigate('/admin/users/add');
+    };
+
+    const handleCloseForm = () => {
+        navigate('/admin/users');
+        setFormData({
+            name: '',
+            email: '',
+            role: 'Patient',
+            status: 'Active',
+            password: '',
+            confirmPassword: ''
+        });
+        setFormErrors({});
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+    };
+
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => {
+            setToast({ show: false, message: '', type: 'success' });
+        }, 4000);
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        // Clear error when user starts typing
+        if (formErrors[name]) {
+            setFormErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+
+    const validateForm = () => {
+        const errors = {};
+        
+        if (!formData.name.trim()) {
+            errors.name = 'Name is required';
+        }
+        
+        if (!formData.email.trim()) {
+            errors.email = 'Email is required';
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            errors.email = 'Email is invalid';
+        }
+        
+        // Password validation - only required for new users
+        if (!isEditMode) {
+            if (!formData.password) {
+                errors.password = 'Password is required';
+            } else if (formData.password.length < 6) {
+                errors.password = 'Password must be at least 6 characters';
+            }
+            
+            if (formData.password !== formData.confirmPassword) {
+                errors.confirmPassword = 'Passwords do not match';
+            }
+        } else {
+            // For edit mode, only validate if password is provided
+            if (formData.password && formData.password.length < 6) {
+                errors.password = 'Password must be at least 6 characters';
+            }
+            
+            if (formData.password && formData.password !== formData.confirmPassword) {
+                errors.confirmPassword = 'Passwords do not match';
+            }
+        }
+        
+        return errors;
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        const errors = validateForm();
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
+            return;
+        }
+        
+        setIsSubmitting(true);
+        
+        try {
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            let updatedUsers;
+            
+            if (isEditMode) {
+                // Update existing user
+                updatedUsers = users.map(u => {
+                    if (u.id === editingUserId) {
+                        return {
+                            ...u,
+                            name: formData.name,
+                            email: formData.email,
+                            role: formData.role,
+                            status: formData.status,
+                            avatar: formData.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                        };
+                    }
+                    return u;
+                });
+                
+                showToast('User updated successfully!', 'success');
+            } else {
+            // Create new user object
+            const newUser = {
+                id: Math.max(...users.map(u => u.id)) + 1, // Generate new ID
+                name: formData.name,
+                email: formData.email,
+                role: formData.role,
+                status: formData.status,
+                joinDate: new Date().toISOString().split('T')[0], // Today's date
+                lastActive: 'Just now',
+                totalAppointments: 0,
+                avatar: formData.name.split(' ').map(n => n[0]).join('').toUpperCase() // Generate avatar initials
+            };
+            
+            // Add new user to the users array
+                updatedUsers = [...users, newUser];
+                
+                showToast('User created successfully!', 'success');
+            }
+            
+            setUsers(updatedUsers);
+            
+            // Save to localStorage
+            try {
+                localStorage.setItem('users', JSON.stringify(updatedUsers));
+            } catch (error) {
+                console.error('Error saving users to localStorage:', error);
+            }
+            
+            // Reset form and navigate back
+            handleCloseForm();
+            
+        } catch (error) {
+            console.error(`Error ${isEditMode ? 'updating' : 'creating'} user:`, error);
+            showToast(`Error ${isEditMode ? 'updating' : 'creating'} user. Please try again.`, 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'Active':
@@ -120,7 +302,8 @@ const Users = () => {
     const filteredUsers = users.filter(user => {
         const matchesSearch = searchTerm === '' || 
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase());
+            user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.status.toLowerCase().includes(searchTerm.toLowerCase());
         
         const matchesStatus = filterStatus === '' || user.status === filterStatus;
         const matchesRole = filterRole === '' || user.role === filterRole;
@@ -134,20 +317,148 @@ const Users = () => {
     const suspendedUsers = users.filter(u => u.status === 'Suspended').length;
     const pendingUsers = users.filter(u => u.status === 'Pending').length;
 
+    // Helper function to save users to localStorage
+    const saveUsersToStorage = (updatedUsers) => {
+        try {
+            localStorage.setItem('users', JSON.stringify(updatedUsers));
+        } catch (error) {
+            console.error('Error saving users to localStorage:', error);
+        }
+    };
+
     const handleViewUser = (user) => {
-        // Navigate to user detail page
+        setSelectedUser(user);
+        setIsViewModalOpen(true);
+    };
+
+    const handleCloseViewModal = () => {
+        setIsViewModalOpen(false);
+        setSelectedUser(null);
     };
 
     const handleSuspendUser = (user) => {
-        // Implement suspend functionality
+        const updatedUsers = users.map(u => 
+            u.id === user.id ? { ...u, status: 'Suspended' } : u
+        );
+        setUsers(updatedUsers);
+        saveUsersToStorage(updatedUsers);
+        showToast(`${user.name} has been suspended`, 'success');
     };
 
     const handleDeleteUser = (user) => {
-        // Implement delete functionality
+        setUserToDelete(user);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDeleteUser = () => {
+        if (userToDelete) {
+            const updatedUsers = users.filter(u => u.id !== userToDelete.id);
+            setUsers(updatedUsers);
+            saveUsersToStorage(updatedUsers);
+            showToast(`${userToDelete.name} has been deleted`, 'success');
+            setIsDeleteModalOpen(false);
+            setUserToDelete(null);
+        }
+    };
+
+    const cancelDeleteUser = () => {
+        setIsDeleteModalOpen(false);
+        setUserToDelete(null);
+    };
+
+    const handleEditUser = (user) => {
+        setUserToEdit(user);
+        setEditFormData({
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            status: user.status,
+            totalAppointments: user.totalAppointments
+        });
+        setEditFormErrors({});
+        setIsEditModalOpen(true);
+    };
+
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        setUserToEdit(null);
+        setEditFormData({});
+        setEditFormErrors({});
+    };
+
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        // Clear error when user starts typing
+        if (editFormErrors[name]) {
+            setEditFormErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+
+    const validateEditForm = () => {
+        const errors = {};
+        
+        if (!editFormData.name.trim()) {
+            errors.name = 'Name is required';
+        }
+        
+        if (!editFormData.email.trim()) {
+            errors.email = 'Email is required';
+        } else if (!/\S+@\S+\.\S+/.test(editFormData.email)) {
+            errors.email = 'Email is invalid';
+        }
+        
+        return errors;
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        
+        const errors = validateEditForm();
+        if (Object.keys(errors).length > 0) {
+            setEditFormErrors(errors);
+            return;
+        }
+        
+        try {
+            // Update user in the users array
+            const updatedUsers = users.map(u => 
+                u.id === userToEdit.id ? {
+                    ...u,
+                    name: editFormData.name,
+                    email: editFormData.email,
+                    role: editFormData.role,
+                    status: editFormData.status,
+                    totalAppointments: parseInt(editFormData.totalAppointments)
+                } : u
+            );
+            
+            setUsers(updatedUsers);
+            saveUsersToStorage(updatedUsers);
+            
+            // Close modal and show success message
+            handleCloseEditModal();
+            showToast(`${editFormData.name} has been updated successfully!`, 'success');
+            
+        } catch (error) {
+            console.error('Error updating user:', error);
+            showToast('Error updating user. Please try again.', 'error');
+        }
     };
 
     const handleActivateUser = (user) => {
-        // Implement activate functionality
+        const updatedUsers = users.map(u => 
+            u.id === user.id ? { ...u, status: 'Active' } : u
+        );
+        setUsers(updatedUsers);
+        saveUsersToStorage(updatedUsers);
+        showToast(`${user.name} has been activated`, 'success');
     };
 
 
@@ -159,8 +470,277 @@ const Users = () => {
         }, 2000);
     }, []);
 
+    // Check if we're on the add or edit route
+    useEffect(() => {
+        if (location.pathname === '/admin/users/add') {
+            setShowCreateForm(true);
+            setIsEditMode(false);
+            setEditingUserId(null);
+            setFormData({
+                name: '',
+                email: '',
+                role: 'Patient',
+                status: 'Active',
+                password: '',
+                confirmPassword: ''
+            });
+            setFormErrors({});
+        } else if (location.pathname.startsWith('/admin/users/edit/')) {
+            const userId = parseInt(location.pathname.split('/').pop());
+            const userToEdit = users.find(u => u.id === userId);
+            
+            if (userToEdit) {
+                setShowCreateForm(true);
+                setIsEditMode(true);
+                setEditingUserId(userId);
+                setFormData({
+                    name: userToEdit.name,
+                    email: userToEdit.email,
+                    role: userToEdit.role,
+                    status: userToEdit.status,
+                    password: '',
+                    confirmPassword: ''
+                });
+                setFormErrors({});
+            } else {
+                // User not found, redirect to users list
+                navigate('/admin/users');
+            }
+        } else {
+            setShowCreateForm(false);
+            setIsEditMode(false);
+            setEditingUserId(null);
+        }
+    }, [location.pathname, users, navigate]);
+
+    // Check for global search term from navbar
+    useEffect(() => {
+        const globalSearchTerm = localStorage.getItem('globalSearchTerm');
+        if (globalSearchTerm) {
+            setSearchTerm(globalSearchTerm);
+            localStorage.removeItem('globalSearchTerm'); // Clear after using
+        }
+    }, [location.pathname]);
+
     return (
         <div className="p-6 space-y-6">
+            <style jsx>{`
+                @keyframes slide-in {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                .animate-slide-in {
+                    animation: slide-in 0.3s ease-out;
+                }
+            `}</style>
+
+            {showCreateForm ? (
+                /* Create User Form */
+                <Card className="max-w-4xl mx-auto">
+                    {/* Form Header */}
+                    <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                        <div className="flex items-center space-x-4">
+                            <button
+                                onClick={handleCloseForm}
+                                className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                            >
+                                <ArrowLeft className="w-5 h-5" />
+                            </button>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">{isEditMode ? 'Edit User' : 'Create New User'}</h2>
+                                <p className="text-sm text-gray-600">{isEditMode ? 'Update user information' : 'Add a new user to the platform'}</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleCloseForm}
+                            className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
+
+                    {/* Form Body */}
+                    <form onSubmit={handleSubmit} className="p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Name Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Full Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.name ? 'border-red-300' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter full name"
+                                />
+                                {formErrors.name && (
+                                    <p className="mt-1 text-sm text-red-600">{formErrors.name}</p>
+                                )}
+                            </div>
+
+                            {/* Email Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Email Address *
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.email ? 'border-red-300' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter email address"
+                                />
+                                {formErrors.email && (
+                                    <p className="mt-1 text-sm text-red-600">{formErrors.email}</p>
+                                )}
+                            </div>
+
+                            {/* Role Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Role *
+                                </label>
+                                <select
+                                    name="role"
+                                    value={formData.role}
+                                    onChange={handleInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    <option value="Patient">Patient</option>
+                                    <option value="Doctor">Doctor</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                            </div>
+
+                            {/* Status Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Status *
+                                </label>
+                                <select
+                                    name="status"
+                                    value={formData.status}
+                                    onChange={handleInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    <option value="Active">Active</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Suspended">Suspended</option>
+                                </select>
+                            </div>
+
+                            {/* Password Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Password {isEditMode ? '(Optional)' : '*'}
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                        className={`w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                            formErrors.password ? 'border-red-300' : 'border-gray-200'
+                                        }`}
+                                        placeholder="Enter password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+                                    >
+                                        {showPassword ? (
+                                            <EyeOff className="w-5 h-5" />
+                                        ) : (
+                                            <Eye className="w-5 h-5" />
+                                        )}
+                                    </button>
+                                </div>
+                                {formErrors.password && (
+                                    <p className="mt-1 text-sm text-red-600">{formErrors.password}</p>
+                                )}
+                            </div>
+
+                            {/* Confirm Password Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Confirm Password {isEditMode ? '(Optional)' : '*'}
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        name="confirmPassword"
+                                        value={formData.confirmPassword}
+                                        onChange={handleInputChange}
+                                        className={`w-full px-4 py-3 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                            formErrors.confirmPassword ? 'border-red-300' : 'border-gray-200'
+                                        }`}
+                                        placeholder="Confirm password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+                                    >
+                                        {showConfirmPassword ? (
+                                            <EyeOff className="w-5 h-5" />
+                                        ) : (
+                                            <Eye className="w-5 h-5" />
+                                        )}
+                                    </button>
+                                </div>
+                                {formErrors.confirmPassword && (
+                                    <p className="mt-1 text-sm text-red-600">{formErrors.confirmPassword}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Form Footer */}
+                        <div className="flex items-center justify-end space-x-4 pt-8 border-t border-gray-200 mt-8">
+                            <button
+                                type="button"
+                                onClick={handleCloseForm}
+                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                        <span>{isEditMode ? 'Updating...' : 'Creating...'}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <UserPlus className="w-4 h-4" />
+                                        <span>{isEditMode ? 'Update User' : 'Create User'}</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </Card>
+            ) : (
+                <>
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
@@ -168,18 +748,11 @@ const Users = () => {
                     <p className="text-gray-600">Manage all platform users and their access</p>
                 </div>
                 <button
-                    onClick={handleRefreshContent}
-                    disabled={isRefreshing}
-                    className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleCreateUser}
+                    className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 flex items-center space-x-2"
                 >
-                    {isRefreshing ? (
-                        <div className="flex items-center space-x-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                            <span>Refreshing...</span>
-                        </div>
-                    ) : (
-                        'Refresh'
-                    )}
+                    <UserPlus className="w-4 h-4" />
+                    <span>Create User</span>
                 </button>
             </div>
 
@@ -241,7 +814,7 @@ const Users = () => {
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search users by name or email..."
+                            placeholder="Search users by name, email, or status..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
@@ -361,6 +934,13 @@ const Users = () => {
                                             >
                                                 <Eye className="w-4 h-4" />
                                             </button>
+                                            <button 
+                                                onClick={() => navigate(`/admin/users/edit/${user.id}`)}
+                                                className="text-purple-600 hover:text-purple-900 p-1"
+                                                title="Edit User"
+                                            >
+                                                <Edit className="w-4 h-4" />
+                                            </button>
                                             {user.status === 'Active' ? (
                                                 <button 
                                                     onClick={() => handleSuspendUser(user)}
@@ -414,6 +994,303 @@ const Users = () => {
                 </Card>
             )}
             </div>
+                </>
+            )}
+
+
+            {/* Toast Notification */}
+            {toast.show && (
+                <div className="fixed top-4 right-4 z-50 animate-slide-in">
+                    <div className={`flex items-center space-x-3 px-6 py-4 rounded-xl shadow-lg border-l-4 ${
+                        toast.type === 'success' 
+                            ? 'bg-pink-50 border-pink-500 text-pink-800' 
+                            : 'bg-pink-50 border-pink-500 text-pink-800'
+                    }`}>
+                        {toast.type === 'success' ? (
+                            <CheckCircle className="w-5 h-5 text-pink-600" />
+                        ) : (
+                            <AlertCircle className="w-5 h-5 text-pink-600" />
+                        )}
+                        <span className="font-medium">{toast.message}</span>
+                        <button
+                            onClick={() => setToast({ show: false, message: '', type: 'success' })}
+                            className="ml-2 text-pink-600 hover:text-pink-800"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* View User Modal */}
+            {isViewModalOpen && selectedUser && (
+                <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                                    {selectedUser.avatar}
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-900">{selectedUser.name}</h2>
+                                    <p className="text-sm text-gray-600">User Details</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleCloseViewModal}
+                                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 space-y-6">
+                            {/* User Info Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                                    <p className="text-sm text-gray-900">{selectedUser.name}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Email</label>
+                                    <p className="text-sm text-gray-900">{selectedUser.email}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Role</label>
+                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(selectedUser.role)}`}>
+                                        {selectedUser.role}
+                                    </span>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Status</label>
+                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedUser.status)}`}>
+                                        {selectedUser.status}
+                                    </span>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Join Date</label>
+                                    <p className="text-sm text-gray-900">{selectedUser.joinDate}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Last Active</label>
+                                    <p className="text-sm text-gray-900">{selectedUser.lastActive}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Total Appointments</label>
+                                    <p className="text-sm text-gray-900">{selectedUser.totalAppointments}</p>
+                                </div>
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+                                <button
+                                    onClick={handleCloseViewModal}
+                                    className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {isDeleteModalOpen && userToDelete && (
+                <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <AlertCircle className="w-5 h-5 text-red-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-900">Delete User</h2>
+                                    <p className="text-sm text-gray-600">This action cannot be undone</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6">
+                            <p className="text-gray-700 mb-4">
+                                Are you sure you want to delete <span className="font-semibold">{userToDelete.name}</span>? 
+                                This will permanently remove the user and all associated data.
+                            </p>
+                            
+                            {/* User Info Preview */}
+                            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                        {userToDelete.avatar}
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-gray-900">{userToDelete.name}</p>
+                                        <p className="text-sm text-gray-600">{userToDelete.email}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+                            <button
+                                onClick={cancelDeleteUser}
+                                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDeleteUser}
+                                className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors duration-200"
+                            >
+                                Delete User
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit User Modal */}
+            {isEditModalOpen && userToEdit && (
+                <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <Edit className="w-5 h-5 text-purple-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-900">Edit User</h2>
+                                    <p className="text-sm text-gray-600">Update user information</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleCloseEditModal}
+                                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+                            {/* Name Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Full Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={editFormData.name || ''}
+                                    onChange={handleEditInputChange}
+                                    className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        editFormErrors.name ? 'border-red-300' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter full name"
+                                />
+                                {editFormErrors.name && (
+                                    <p className="mt-1 text-sm text-red-600">{editFormErrors.name}</p>
+                                )}
+                            </div>
+
+                            {/* Email Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Email Address *
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={editFormData.email || ''}
+                                    onChange={handleEditInputChange}
+                                    className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        editFormErrors.email ? 'border-red-300' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter email address"
+                                />
+                                {editFormErrors.email && (
+                                    <p className="mt-1 text-sm text-red-600">{editFormErrors.email}</p>
+                                )}
+                            </div>
+
+
+                            {/* Role Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Role
+                                </label>
+                                <select
+                                    name="role"
+                                    value={editFormData.role || ''}
+                                    onChange={handleEditInputChange}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    <option value="Patient">Patient</option>
+                                    <option value="Doctor">Doctor</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                            </div>
+
+                            {/* Status Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Status
+                                </label>
+                                <select
+                                    name="status"
+                                    value={editFormData.status || ''}
+                                    onChange={handleEditInputChange}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    <option value="Active">Active</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Suspended">Suspended</option>
+                                </select>
+                            </div>
+
+                            {/* Total Appointments Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Total Appointments
+                                </label>
+                                <input
+                                    type="number"
+                                    name="totalAppointments"
+                                    value={editFormData.totalAppointments || ''}
+                                    onChange={handleEditInputChange}
+                                    min="0"
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                    placeholder="Enter total appointments"
+                                />
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+                                <button
+                                    type="button"
+                                    onClick={handleCloseEditModal}
+                                    className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-6 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors duration-200 flex items-center space-x-2"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                    <span>Update User</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

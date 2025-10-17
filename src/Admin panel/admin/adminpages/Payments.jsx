@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
     CreditCard, 
     Search, 
@@ -17,24 +18,19 @@ import Card from '../admincomponents/Card';
 import ResponsiveTable from '../../../components/ResponsiveTable';
 
 const Payments = () => {
+    const location = useLocation();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [filterType, setFilterType] = useState('');
-    const [isRefreshing, setIsRefreshing] = useState(false);
 
-    
-    const [_isContentLoading, _setIsContentLoading] = useState(false);
-    
-    const handleRefreshContent = () => {
-        setIsRefreshing(true);
-        _setIsContentLoading(true);
-        setTimeout(() => {
-            setIsRefreshing(false);
-            _setIsContentLoading(false);
-        }, 1500);
-    };
-
-    
+    // Check for global search term from navbar
+    useEffect(() => {
+        const globalSearchTerm = localStorage.getItem('globalSearchTerm');
+        if (globalSearchTerm) {
+            setSearchTerm(globalSearchTerm);
+            localStorage.removeItem('globalSearchTerm'); // Clear after using
+        }
+    }, [location.pathname]);
 
     // Sample payments data
     const payments = [
@@ -166,7 +162,224 @@ const Payments = () => {
     };
 
     const handleDownloadReport = () => {
-        // Implement report download logic
+        try {
+            // Create HTML content for PDF
+            const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Transactions Report - ${new Date().toLocaleDateString()}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #ffffff;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #ec4899;
+        }
+        .header h1 {
+            color: #ec4899;
+            font-size: 28px;
+            margin: 0;
+        }
+        .header p {
+            color: #666;
+            font-size: 14px;
+            margin: 5px 0 0 0;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        .summary-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .summary-card .amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .transactions-table th {
+            background-color: #f1f5f9;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .transactions-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #334155;
+        }
+        .transactions-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        .transactions-table tr:hover {
+            background-color: #f1f5f9;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-completed { background-color: #dcfce7; color: #16a34a; }
+        .status-pending { background-color: #fef3c7; color: #d97706; }
+        .status-processing { background-color: #dbeafe; color: #2563eb; }
+        .status-failed { background-color: #fee2e2; color: #dc2626; }
+        .status-cancelled { background-color: #f3f4f6; color: #6b7280; }
+        .amount {
+            font-weight: 600;
+            color: #059669;
+        }
+        .commission {
+            color: #7c3aed;
+        }
+        .payout {
+            color: #dc2626;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #64748b;
+        }
+        @media print {
+            body { margin: 0; padding: 15px; }
+            .summary-cards { page-break-inside: avoid; }
+            .transactions-table { page-break-inside: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CIRA AI Healthcare Platform</h1>
+        <p>Payment Transactions Report</p>
+        <p>Generated on ${new Date().toLocaleDateString()}</p>
+        <p>Total Transactions: ${filteredPayments.length}</p>
+    </div>
+
+    <div class="summary-cards">
+        <div class="summary-card">
+            <h3>Total Revenue</h3>
+            <div class="amount">$${totalRevenue.toFixed(2)}</div>
+        </div>
+        <div class="summary-card">
+            <h3>Platform Commission</h3>
+            <div class="amount">$${totalCommission.toFixed(2)}</div>
+        </div>
+        <div class="summary-card">
+            <h3>Total Payouts</h3>
+            <div class="amount">$${totalPayouts.toFixed(2)}</div>
+        </div>
+        <div class="summary-card">
+            <h3>Pending Payouts</h3>
+            <div class="amount">$${pendingPayouts.toFixed(2)}</div>
+        </div>
+    </div>
+
+    <table class="transactions-table">
+        <thead>
+            <tr>
+                <th>Transaction ID</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Commission</th>
+                <th>Doctor Payout</th>
+                <th>Payment Date</th>
+                <th>Payout Date</th>
+                <th>Status</th>
+                <th>Payment Method</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${filteredPayments.map(payment => `
+                <tr>
+                    <td>${payment.transactionId}</td>
+                    <td>${payment.patient}</td>
+                    <td>${payment.doctor}</td>
+                    <td>${payment.type}</td>
+                    <td class="amount">$${payment.amount.toFixed(2)}</td>
+                    <td class="commission">$${payment.platformCommission.toFixed(2)}</td>
+                    <td class="payout">$${payment.doctorPayout.toFixed(2)}</td>
+                    <td>${payment.paymentDate}</td>
+                    <td>${payment.payoutDate || 'Pending'}</td>
+                    <td>
+                        <span class="status-badge status-${payment.status.toLowerCase().replace(' ', '')}">
+                            ${payment.status}
+                        </span>
+                    </td>
+                    <td>${payment.paymentMethod}</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>© 2024 CIRA AI Healthcare Platform - Confidential Financial Report</p>
+        <p>This report was generated automatically by our system</p>
+        <p>Report includes ${filteredPayments.length} payment transactions</p>
+    </div>
+</body>
+</html>`;
+
+            // Create and download HTML file (can be printed as PDF)
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `payment-transactions-report-${new Date().toISOString().split('T')[0]}.html`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Export completed successfully
+            console.log(`Successfully exported ${filteredPayments.length} payment transactions as PDF-ready HTML`);
+        } catch (error) {
+            console.error('Export failed:', error);
+        }
     };
 
     return (
@@ -179,24 +392,6 @@ const Payments = () => {
                 </div>
                 <div className="flex items-center space-x-2 sm:space-x-3">
                     <button
-                        onClick={handleRefreshContent}
-                        disabled={isRefreshing}
-                        className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
-                    >
-                        {isRefreshing ? (
-                            <div className="flex items-center space-x-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                <span className="hidden sm:inline">Refreshing...</span>
-                                <span className="sm:hidden">...</span>
-                            </div>
-                        ) : (
-                            <>
-                                <span className="hidden sm:inline">Refresh</span>
-                                <span className="sm:hidden">↻</span>
-                            </>
-                        )}
-                    </button>
-                    <button
                         onClick={handleDownloadReport}
                         className="flex items-center space-x-2 px-3 sm:px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 text-sm sm:text-base whitespace-nowrap"
                     >
@@ -207,19 +402,8 @@ const Payments = () => {
                 </div>
             </div>
 
-            {/* Main Content Area with Loader */}
-            <div className="relative min-h-[600px]">
-                {/* Content Loader */}
-                {isRefreshing && (
-                    <div className="absolute inset-0 flex items-start justify-center z-50 pt-32">
-                        <div className="flex flex-col items-center justify-center space-y-4">
-                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-500"></div>
-                            <p className="text-gray-600 font-medium">Loading content...</p>
-                        </div>
-                    </div>
-                )}
-                
-                <div className={`space-y-6 transition-opacity duration-300 ${isRefreshing ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            {/* Main Content Area */}
+            <div className="space-y-6">
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <Card className="p-3 sm:p-4">
@@ -446,7 +630,6 @@ const Payments = () => {
                     </div>
                 </Card>
             )}
-                </div>
             </div>
         </div>
     );

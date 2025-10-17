@@ -41,7 +41,7 @@ const UnifiedSidebar = ({
           { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/admin' },
           { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
           { id: 'doctors', label: 'Doctors', icon: Stethoscope, path: '/admin/doctors' },
-          { id: 'doctor-profile', label: 'Doctor Profile Detail', icon: User, path: '/admin/doctor-profile' },
+          { id: 'patients', label: 'Patients', icon: User, path: '/admin/patients' },
           { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/admin/appointments' },
           { id: 'reports', label: 'Reports', icon: FileText, path: '/admin/reports' },
           { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },

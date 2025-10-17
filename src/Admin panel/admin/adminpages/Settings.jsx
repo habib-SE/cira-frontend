@@ -3,19 +3,6 @@ import { Settings as SettingsIcon, User, Bell, Shield, Database, Palette, Save, 
 import Card from '../admincomponents/Card';
 
 const Settings = () => {
-    const [isRefreshing, setIsRefreshing] = useState(false);
-
-    
-    const [_isContentLoading, _setIsContentLoading] = useState(false);
-    
-    const handleRefreshContent = () => {
-        setIsRefreshing(true);
-        _setIsContentLoading(true);
-        setTimeout(() => {
-            setIsRefreshing(false);
-            _setIsContentLoading(false);
-        }, 1500);
-    };
 
     
 
@@ -75,24 +62,6 @@ const Settings = () => {
                     <p className="text-sm sm:text-base text-gray-600">Manage platform-level settings and configurations</p>
                 </div>
                 <div className="flex items-center space-x-2 sm:space-x-3">
-                    <button
-                        onClick={handleRefreshContent}
-                        disabled={isRefreshing}
-                        className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
-                    >
-                        {isRefreshing ? (
-                            <div className="flex items-center space-x-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                <span className="hidden sm:inline">Refreshing...</span>
-                                <span className="sm:hidden">...</span>
-                            </div>
-                        ) : (
-                            <>
-                                <span className="hidden sm:inline">Refresh</span>
-                                <span className="sm:hidden">↻</span>
-                            </>
-                        )}
-                    </button>
                     <button 
                         onClick={handleSave}
                         className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 text-sm sm:text-base whitespace-nowrap"
@@ -104,19 +73,8 @@ const Settings = () => {
                 </div>
             </div>
 
-            {/* Main Content Area with Loader */}
-            <div className="relative min-h-[600px]">
-                {/* Content Loader */}
-                {isRefreshing && (
-                    <div className="absolute inset-0 flex items-start justify-center z-50 pt-32">
-                        <div className="flex flex-col items-center justify-center space-y-4">
-                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-500"></div>
-                            <p className="text-gray-600 font-medium">Loading content...</p>
-                        </div>
-                    </div>
-                )}
-                
-                <div className={`space-y-6 transition-opacity duration-300 ${isRefreshing ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            {/* Main Content Area */}
+            <div className="space-y-6">
                     {/* Settings Sections */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 {/* Roles & Permissions */}
@@ -356,7 +314,6 @@ const Settings = () => {
                     </div>
                 </Card>
                     </div>
-                </div>
             </div>
         </div>
     );
