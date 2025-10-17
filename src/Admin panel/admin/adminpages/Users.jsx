@@ -11,8 +11,6 @@ const Users = () => {
     const [filterRole, setFilterRole] = useState('');
     const [_isContentLoading, _setIsContentLoading] = useState(false);
     const [showCreateForm, setShowCreateForm] = useState(false);
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [editingUserId, setEditingUserId] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -34,6 +32,52 @@ const Users = () => {
     const [userToEdit, setUserToEdit] = useState(null);
     const [editFormData, setEditFormData] = useState({});
     const [editFormErrors, setEditFormErrors] = useState({});
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    // Function to calculate relative time
+    const getRelativeTime = (timestamp) => {
+        if (!timestamp) return 'Never';
+        
+        const now = currentTime;
+        const time = new Date(timestamp);
+        const diffInSeconds = Math.floor((now - time) / 1000);
+        
+        if (diffInSeconds < 60) {
+            return 'Just now';
+        }
+        
+        const diffInMinutes = Math.floor(diffInSeconds / 60);
+        if (diffInMinutes < 60) {
+            return `${diffInMinutes} ${diffInMinutes === 1 ? 'min' : 'mins'} ago`;
+        }
+        
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) {
+            return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+        }
+        
+        const diffInDays = Math.floor(diffInHours / 24);
+        if (diffInDays < 30) {
+            return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+        }
+        
+        const diffInMonths = Math.floor(diffInDays / 30);
+        if (diffInMonths < 12) {
+            return `${diffInMonths} ${diffInMonths === 1 ? 'month' : 'months'} ago`;
+        }
+        
+        const diffInYears = Math.floor(diffInDays / 365);
+        return `${diffInYears} ${diffInYears === 1 ? 'year' : 'years'} ago`;
+    };
+
+    // Update current time every minute
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000); // Update every minute
+
+        return () => clearInterval(interval);
+    }, []);
     
     // Default users data
     const defaultUsers = [
@@ -44,7 +88,7 @@ const Users = () => {
             role: 'Patient',
             status: 'Active',
             joinDate: '2024-01-15',
-            lastActive: '2 hours ago',
+            lastActiveTimestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
             totalAppointments: 5,
             avatar: 'JD'
         },
@@ -55,7 +99,7 @@ const Users = () => {
             role: 'Patient',
             status: 'Active',
             joinDate: '2024-01-14',
-            lastActive: '1 day ago',
+            lastActiveTimestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
             totalAppointments: 3,
             avatar: 'JS'
         },
@@ -66,7 +110,7 @@ const Users = () => {
             role: 'Doctor',
             status: 'Active',
             joinDate: '2023-12-01',
-            lastActive: '30 min ago',
+            lastActiveTimestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 mins ago
             totalAppointments: 45,
             avatar: 'SJ'
         },
@@ -77,7 +121,7 @@ const Users = () => {
             role: 'Patient',
             status: 'Suspended',
             joinDate: '2024-01-10',
-            lastActive: '5 days ago',
+            lastActiveTimestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
             totalAppointments: 2,
             avatar: 'MJ'
         },
@@ -88,7 +132,7 @@ const Users = () => {
             role: 'Doctor',
             status: 'Pending',
             joinDate: '2024-01-20',
-            lastActive: '1 hour ago',
+            lastActiveTimestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1 hour ago
             totalAppointments: 12,
             avatar: 'MC'
         },
@@ -99,7 +143,7 @@ const Users = () => {
             role: 'Patient',
             status: 'Active',
             joinDate: '2024-01-12',
-            lastActive: '3 hours ago',
+            lastActiveTimestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
             totalAppointments: 7,
             avatar: 'SW'
         }
@@ -109,7 +153,36 @@ const Users = () => {
     const [users, setUsers] = useState(() => {
         try {
             const savedUsers = localStorage.getItem('users');
-            return savedUsers ? JSON.parse(savedUsers) : defaultUsers;
+            if (savedUsers) {
+                const parsedUsers = JSON.parse(savedUsers);
+                // Migrate old data format (lastActive) to new format (lastActiveTimestamp)
+                const migratedUsers = parsedUsers.map(user => {
+                    if (user.lastActive && !user.lastActiveTimestamp) {
+                        // Convert old format to new format
+                        // For "Just now", use current time
+                        // For "X ago" format, calculate approximate timestamp
+                        let timestamp = new Date().toISOString();
+                        if (user.lastActive !== 'Just now') {
+                            const match = user.lastActive.match(/(\d+)\s*(min|mins|hour|hours|day|days|month|months|year|years)\s*ago/);
+                            if (match) {
+                                const value = parseInt(match[1]);
+                                const unit = match[2];
+                                let milliseconds = 0;
+                                if (unit.includes('min')) milliseconds = value * 60 * 1000;
+                                else if (unit.includes('hour')) milliseconds = value * 60 * 60 * 1000;
+                                else if (unit.includes('day')) milliseconds = value * 24 * 60 * 60 * 1000;
+                                else if (unit.includes('month')) milliseconds = value * 30 * 24 * 60 * 60 * 1000;
+                                else if (unit.includes('year')) milliseconds = value * 365 * 24 * 60 * 60 * 1000;
+                                timestamp = new Date(Date.now() - milliseconds).toISOString();
+                            }
+                        }
+                        return { ...user, lastActiveTimestamp: timestamp };
+                    }
+                    return user;
+                });
+                return migratedUsers;
+            }
+            return defaultUsers;
         } catch (error) {
             console.error('Error loading users from localStorage:', error);
             return defaultUsers;
@@ -170,26 +243,14 @@ const Users = () => {
             errors.email = 'Email is invalid';
         }
         
-        // Password validation - only required for new users
-        if (!isEditMode) {
-            if (!formData.password) {
-                errors.password = 'Password is required';
-            } else if (formData.password.length < 6) {
-                errors.password = 'Password must be at least 6 characters';
-            }
-            
-            if (formData.password !== formData.confirmPassword) {
-                errors.confirmPassword = 'Passwords do not match';
-            }
-        } else {
-            // For edit mode, only validate if password is provided
-            if (formData.password && formData.password.length < 6) {
-                errors.password = 'Password must be at least 6 characters';
-            }
-            
-            if (formData.password && formData.password !== formData.confirmPassword) {
-                errors.confirmPassword = 'Passwords do not match';
-            }
+        if (!formData.password) {
+            errors.password = 'Password is required';
+        } else if (formData.password.length < 6) {
+            errors.password = 'Password must be at least 6 characters';
+        }
+        
+        if (formData.password !== formData.confirmPassword) {
+            errors.confirmPassword = 'Passwords do not match';
         }
         
         return errors;
@@ -210,26 +271,6 @@ const Users = () => {
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            let updatedUsers;
-            
-            if (isEditMode) {
-                // Update existing user
-                updatedUsers = users.map(u => {
-                    if (u.id === editingUserId) {
-                        return {
-                            ...u,
-                            name: formData.name,
-                            email: formData.email,
-                            role: formData.role,
-                            status: formData.status,
-                            avatar: formData.name.split(' ').map(n => n[0]).join('').toUpperCase()
-                        };
-                    }
-                    return u;
-                });
-                
-                showToast('User updated successfully!', 'success');
-            } else {
             // Create new user object
             const newUser = {
                 id: Math.max(...users.map(u => u.id)) + 1, // Generate new ID
@@ -238,17 +279,13 @@ const Users = () => {
                 role: formData.role,
                 status: formData.status,
                 joinDate: new Date().toISOString().split('T')[0], // Today's date
-                lastActive: 'Just now',
+                lastActiveTimestamp: new Date().toISOString(), // Current timestamp
                 totalAppointments: 0,
                 avatar: formData.name.split(' ').map(n => n[0]).join('').toUpperCase() // Generate avatar initials
             };
             
             // Add new user to the users array
-                updatedUsers = [...users, newUser];
-                
-                showToast('User created successfully!', 'success');
-            }
-            
+            const updatedUsers = [...users, newUser];
             setUsers(updatedUsers);
             
             // Save to localStorage
@@ -261,9 +298,12 @@ const Users = () => {
             // Reset form and navigate back
             handleCloseForm();
             
+            // Show success toast
+            showToast('User created successfully!', 'success');
+            
         } catch (error) {
-            console.error(`Error ${isEditMode ? 'updating' : 'creating'} user:`, error);
-            showToast(`Error ${isEditMode ? 'updating' : 'creating'} user. Please try again.`, 'error');
+            console.error('Error creating user:', error);
+            showToast('Error creating user. Please try again.', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -470,12 +510,10 @@ const Users = () => {
         }, 2000);
     }, []);
 
-    // Check if we're on the add or edit route
+    // Check if we're on the add route
     useEffect(() => {
         if (location.pathname === '/admin/users/add') {
             setShowCreateForm(true);
-            setIsEditMode(false);
-            setEditingUserId(null);
             setFormData({
                 name: '',
                 email: '',
@@ -485,42 +523,19 @@ const Users = () => {
                 confirmPassword: ''
             });
             setFormErrors({});
-        } else if (location.pathname.startsWith('/admin/users/edit/')) {
-            const userId = parseInt(location.pathname.split('/').pop());
-            const userToEdit = users.find(u => u.id === userId);
-            
-            if (userToEdit) {
-                setShowCreateForm(true);
-                setIsEditMode(true);
-                setEditingUserId(userId);
-                setFormData({
-                    name: userToEdit.name,
-                    email: userToEdit.email,
-                    role: userToEdit.role,
-                    status: userToEdit.status,
-                    password: '',
-                    confirmPassword: ''
-                });
-                setFormErrors({});
-            } else {
-                // User not found, redirect to users list
-                navigate('/admin/users');
-            }
         } else {
             setShowCreateForm(false);
-            setIsEditMode(false);
-            setEditingUserId(null);
-        }
-    }, [location.pathname, users, navigate]);
-
-    // Check for global search term from navbar
-    useEffect(() => {
-        const globalSearchTerm = localStorage.getItem('globalSearchTerm');
-        if (globalSearchTerm) {
-            setSearchTerm(globalSearchTerm);
-            localStorage.removeItem('globalSearchTerm'); // Clear after using
         }
     }, [location.pathname]);
+
+    // Check for search term from URL query parameters
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const searchParam = params.get('search');
+        if (searchParam) {
+            setSearchTerm(searchParam);
+        }
+    }, [location.search]);
 
     return (
         <div className="p-6 space-y-6">
@@ -553,8 +568,8 @@ const Users = () => {
                                 <ArrowLeft className="w-5 h-5" />
                             </button>
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900">{isEditMode ? 'Edit User' : 'Create New User'}</h2>
-                                <p className="text-sm text-gray-600">{isEditMode ? 'Update user information' : 'Add a new user to the platform'}</p>
+                                <h2 className="text-2xl font-bold text-gray-900">Create New User</h2>
+                                <p className="text-sm text-gray-600">Add a new user to the platform</p>
                             </div>
                         </div>
                         <button
@@ -645,7 +660,7 @@ const Users = () => {
                             {/* Password Field */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Password {isEditMode ? '(Optional)' : '*'}
+                                    Password *
                                 </label>
                                 <div className="relative">
                                     <input
@@ -678,7 +693,7 @@ const Users = () => {
                             {/* Confirm Password Field */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Confirm Password {isEditMode ? '(Optional)' : '*'}
+                                    Confirm Password *
                                 </label>
                                 <div className="relative">
                                     <input
@@ -727,12 +742,12 @@ const Users = () => {
                                 {isSubmitting ? (
                                     <>
                                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                        <span>{isEditMode ? 'Updating...' : 'Creating...'}</span>
+                                        <span>Creating...</span>
                                     </>
                                 ) : (
                                     <>
                                         <UserPlus className="w-4 h-4" />
-                                        <span>{isEditMode ? 'Update User' : 'Create User'}</span>
+                                        <span>Create User</span>
                                     </>
                                 )}
                             </button>
@@ -920,7 +935,11 @@ const Users = () => {
                                         <div className="text-sm text-gray-900">{user.joinDate}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{user.lastActive}</div>
+                                        <div className="text-sm text-gray-900">
+                                            {user.lastActiveTimestamp 
+                                                ? getRelativeTime(user.lastActiveTimestamp)
+                                                : (user.lastActive || 'Never')}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">{user.totalAppointments}</div>
@@ -935,7 +954,7 @@ const Users = () => {
                                                 <Eye className="w-4 h-4" />
                                             </button>
                                             <button 
-                                                onClick={() => navigate(`/admin/users/edit/${user.id}`)}
+                                                onClick={() => handleEditUser(user)}
                                                 className="text-purple-600 hover:text-purple-900 p-1"
                                                 title="Edit User"
                                             >
@@ -1075,7 +1094,11 @@ const Users = () => {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-gray-700">Last Active</label>
-                                    <p className="text-sm text-gray-900">{selectedUser.lastActive}</p>
+                                    <p className="text-sm text-gray-900">
+                                        {selectedUser.lastActiveTimestamp 
+                                            ? getRelativeTime(selectedUser.lastActiveTimestamp)
+                                            : (selectedUser.lastActive || 'Never')}
+                                    </p>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-gray-700">Total Appointments</label>

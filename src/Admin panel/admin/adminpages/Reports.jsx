@@ -35,14 +35,14 @@ const Reports = () => {
         }, 3000);
     };
 
-    // Check for global search term from navbar
+    // Check for search term from URL query parameters
     useEffect(() => {
-        const globalSearchTerm = localStorage.getItem('globalSearchTerm');
-        if (globalSearchTerm) {
-            setSearchTerm(globalSearchTerm);
-            localStorage.removeItem('globalSearchTerm'); // Clear after using
+        const params = new URLSearchParams(location.search);
+        const searchParam = params.get('search');
+        if (searchParam) {
+            setSearchTerm(searchParam);
         }
-    }, [location.pathname]);
+    }, [location.search]);
 
     // Export all reports functionality
     const handleExportAll = () => {

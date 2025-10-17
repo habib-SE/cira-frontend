@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Users, Clock, Award, X, Star, Calendar, Search, Filter } from 'lucide-react';
+import { Users, Clock, Award, X, Star, Calendar } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const Doctors = () => {
@@ -20,16 +20,6 @@ const Doctors = () => {
             setIsContentLoading(false);
         }, 1500);
     };
-
-    // Check for global search term from navbar
-    useEffect(() => {
-        const globalSearchTerm = localStorage.getItem('globalSearchTerm');
-        if (globalSearchTerm) {
-            setSearchTerm(globalSearchTerm);
-            localStorage.removeItem('globalSearchTerm'); // Clear after using
-        }
-    }, [location.pathname]);
-
 
     
 
@@ -106,6 +96,15 @@ const Doctors = () => {
     const [filterSpecialty, setFilterSpecialty] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
 
+    // Read search term from URL query parameters
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const searchParam = params.get('search');
+        if (searchParam) {
+            setSearchTerm(searchParam);
+        }
+    }, [location.search]);
+
     // Helper functions for status colors
     const getStatusColor = (status) => {
         switch (status) {
@@ -135,9 +134,22 @@ const Doctors = () => {
 
     // Filter doctors
     const filteredDoctors = doctors.filter(doctor => {
-        const matchesSearch = searchTerm === '' || 
-            doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            doctor.specialty.toLowerCase().includes(searchTerm.toLowerCase());
+        const searchLower = searchTerm.toLowerCase();
+        const doctorNameLower = doctor.name.toLowerCase();
+        const specialtyLower = doctor.specialty.toLowerCase();
+        
+        // Normal search match
+        let matchesSearch = searchTerm === '' || 
+            doctorNameLower.includes(searchLower) ||
+            specialtyLower.includes(searchLower);
+        
+        // Handle "Michael" vs "Micheal" typo variation
+        if (!matchesSearch && searchLower.includes('micheal')) {
+            matchesSearch = doctorNameLower.includes('michael');
+        }
+        if (!matchesSearch && searchLower.includes('michael')) {
+            matchesSearch = doctorNameLower.includes('micheal');
+        }
         
         const matchesSpecialty = filterSpecialty === '' || doctor.specialty === filterSpecialty;
         const matchesStatus = filterStatus === '' || doctor.status === filterStatus;
@@ -268,7 +280,6 @@ const Doctors = () => {
                 <div className="space-y-4">
                     {/* Search Bar */}
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
                             placeholder="Search doctors by name or specialty..."

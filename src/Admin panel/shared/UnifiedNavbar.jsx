@@ -25,9 +25,6 @@ const UnifiedNavbar = ({
     e.preventDefault();
     if (!searchTerm.trim()) return;
 
-    // Store the search term for the target page to use
-    localStorage.setItem('globalSearchTerm', searchTerm);
-
     // For admin portal, search across different sections
     if (portalType === 'admin') {
       // Try to find matches in different sections
@@ -35,63 +32,91 @@ const UnifiedNavbar = ({
       
       // Check if it looks like an email
       if (searchLower.includes('@')) {
-        navigate('/admin/users');
+        navigate(`/admin/users?search=${encodeURIComponent(searchTerm)}`);
+        setSearchTerm('');
         return;
       }
       
       // Check if it's a status
       if (['active', 'suspended', 'pending', 'inactive'].includes(searchLower)) {
-        navigate('/admin/users');
+        navigate(`/admin/users?search=${encodeURIComponent(searchTerm)}`);
+        setSearchTerm('');
         return;
       }
       
-      // Check if it contains doctor-related terms or looks like a doctor name
-      if (searchLower.includes('dr.') || searchLower.includes('doctor') || searchLower.includes('physician') || 
-          searchLower.includes('sarah') || searchLower.includes('michael') || searchLower.includes('johnson') ||
-          searchLower.includes('chen') || searchLower.includes('cardiology') || searchLower.includes('neurology') ||
-          searchLower.includes('surgery') || searchLower.includes('dermatology') || searchLower.includes('pediatrics')) {
-        navigate('/admin/doctors');
+      // Check if it contains doctor-related terms or starts with "dr."
+      if (searchLower.includes('dr.') || 
+          searchLower.includes('doctor') || 
+          searchLower.includes('physician') ||
+          searchLower.startsWith('dr ')) {
+        navigate(`/admin/doctors?search=${encodeURIComponent(searchTerm)}`);
+        setSearchTerm('');
         return;
       }
       
-      // Check if it contains patient-related terms
-      if (searchLower.includes('patient') || searchLower.includes('john doe') || searchLower.includes('jane smith') ||
-          searchLower.includes('mike johnson') || searchLower.includes('hypertension') || searchLower.includes('diabetes') ||
-          searchLower.includes('condition') || searchLower.includes('medical history')) {
-        navigate('/admin/patients');
+      // Check for medical specialties (likely doctors)
+      const specialties = ['cardiology', 'neurology', 'dermatology', 'orthopedics', 'pediatrics', 'gynecology', 'psychiatry', 'radiology', 'anesthesiology', 'emergency'];
+      if (specialties.some(specialty => searchLower.includes(specialty))) {
+        navigate(`/admin/doctors?search=${encodeURIComponent(searchTerm)}`);
+        setSearchTerm('');
+        return;
+      }
+      
+      // Check for actual doctor names from the system
+      const doctorNames = ['sarah', 'michael', 'micheal', 'emily', 'david', 'lisa', 'johnson', 'chen', 'rodriguez', 'kim', 'wang'];
+      if (doctorNames.some(name => searchLower.includes(name))) {
+        navigate(`/admin/doctors?search=${encodeURIComponent(searchTerm)}`);
+        setSearchTerm('');
         return;
       }
       
       // Check if it contains appointment-related terms
       if (searchLower.includes('appointment') || searchLower.includes('schedule') || searchLower.includes('booking')) {
-        navigate('/admin/appointments');
+        navigate(`/admin/appointments?search=${encodeURIComponent(searchTerm)}`);
+        setSearchTerm('');
         return;
       }
       
       // Check if it contains report-related terms
       if (searchLower.includes('report') || searchLower.includes('health') || searchLower.includes('assessment')) {
-        navigate('/admin/reports');
+        navigate(`/admin/reports?search=${encodeURIComponent(searchTerm)}`);
+        setSearchTerm('');
         return;
       }
       
       // Check if it contains payment-related terms
       if (searchLower.includes('payment') || searchLower.includes('billing') || searchLower.includes('invoice')) {
-        navigate('/admin/payments');
+        navigate(`/admin/payments?search=${encodeURIComponent(searchTerm)}`);
+        setSearchTerm('');
         return;
       }
       
-      // Default to users page for general search
-      navigate('/admin/users');
+      // Check if user explicitly wants to search doctors
+      if (searchLower.includes('find doctor') || searchLower.includes('search doctor') || searchLower.includes('doctor search')) {
+        navigate(`/admin/doctors?search=${encodeURIComponent(searchTerm)}`);
+        setSearchTerm('');
+        return;
+      }
+      
+      // Check if user explicitly wants to search patients
+      if (searchLower.includes('find patient') || searchLower.includes('search patient') || searchLower.includes('patient search')) {
+        navigate(`/admin/users?search=${encodeURIComponent(searchTerm)}`);
+        setSearchTerm('');
+        return;
+      }
+      
+      // Default to users page for general search (patients)
+      navigate(`/admin/users?search=${encodeURIComponent(searchTerm)}`);
+      setSearchTerm('');
     } else if (portalType === 'doctor') {
       // For doctor portal
       navigate('/doctor/appointments');
+      setSearchTerm('');
     } else if (portalType === 'patient') {
       // For patient portal
       navigate('/patient/my-doctors');
+      setSearchTerm('');
     }
-    
-    // Clear the search term after navigation
-    setSearchTerm('');
   };
 
   const handleSearchInputChange = (e) => {
@@ -199,7 +224,7 @@ const UnifiedNavbar = ({
                 type="text"
                 value={searchTerm}
                 onChange={handleSearchInputChange}
-                placeholder={`Search ${portalType === 'admin' ? 'patients, doctors, reports...' : portalType === 'doctor' ? 'patients, appointments...' : 'doctors, appointments...'}`}
+                placeholder={`Search ${portalType === 'admin' ? 'patients, "sarah", "dr. michael", "lisa", reports...' : portalType === 'doctor' ? 'patients, appointments...' : 'doctors, appointments...'}`}
                 className="bg-transparent border-none outline-none text-sm text-gray-700 placeholder-gray-400 w-64"
               />
             </form>
