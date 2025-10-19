@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeClosed } from 'lucide-react';
-import { FormicaForm } from '../../../components/forms';
+import { FormicaForm } from '../../forms';
 import { authFormicaSchemas } from '../../../utils/validation/formicaSchemas';
 
 /**
