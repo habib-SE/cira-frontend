@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Users, Clock, Award, X, Star, Calendar, Search, Filter } from 'lucide-react';
+import { Users, Clock, Award, X, Star, Calendar, Edit } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const Doctors = () => {
@@ -20,16 +20,6 @@ const Doctors = () => {
             setIsContentLoading(false);
         }, 1500);
     };
-
-    // Check for global search term from navbar
-    useEffect(() => {
-        const globalSearchTerm = localStorage.getItem('globalSearchTerm');
-        if (globalSearchTerm) {
-            setSearchTerm(globalSearchTerm);
-            localStorage.removeItem('globalSearchTerm'); // Clear after using
-        }
-    }, [location.pathname]);
-
 
     
 
@@ -105,6 +95,20 @@ const Doctors = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterSpecialty, setFilterSpecialty] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
+    const [showEditFormInLayout, setShowEditFormInLayout] = useState(false);
+    const [doctorToEdit, setDoctorToEdit] = useState(null);
+    const [editFormData, setEditFormData] = useState({});
+    const [editFormErrors, setEditFormErrors] = useState({});
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+    // Read search term from URL query parameters
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const searchParam = params.get('search');
+        if (searchParam) {
+            setSearchTerm(searchParam);
+        }
+    }, [location.search]);
 
     // Helper functions for status colors
     const getStatusColor = (status) => {
@@ -135,9 +139,22 @@ const Doctors = () => {
 
     // Filter doctors
     const filteredDoctors = doctors.filter(doctor => {
-        const matchesSearch = searchTerm === '' || 
-            doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            doctor.specialty.toLowerCase().includes(searchTerm.toLowerCase());
+        const searchLower = searchTerm.toLowerCase();
+        const doctorNameLower = doctor.name.toLowerCase();
+        const specialtyLower = doctor.specialty.toLowerCase();
+        
+        // Normal search match
+        let matchesSearch = searchTerm === '' || 
+            doctorNameLower.includes(searchLower) ||
+            specialtyLower.includes(searchLower);
+        
+        // Handle "Michael" vs "Micheal" typo variation
+        if (!matchesSearch && searchLower.includes('micheal')) {
+            matchesSearch = doctorNameLower.includes('michael');
+        }
+        if (!matchesSearch && searchLower.includes('michael')) {
+            matchesSearch = doctorNameLower.includes('micheal');
+        }
         
         const matchesSpecialty = filterSpecialty === '' || doctor.specialty === filterSpecialty;
         const matchesStatus = filterStatus === '' || doctor.status === filterStatus;
@@ -180,6 +197,105 @@ const Doctors = () => {
         navigate(`/admin/doctors/${doctor.id}`);
     };
 
+    const handleEditDoctor = (doctor) => {
+        navigate(`/admin/doctors/edit/${doctor.id}`);
+    };
+
+    const handleCloseEditModal = () => {
+        navigate('/admin/doctors');
+        setShowEditFormInLayout(false);
+        setDoctorToEdit(null);
+        setEditFormData({});
+        setEditFormErrors({});
+    };
+
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        if (editFormErrors[name]) {
+            setEditFormErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+
+    const validateEditForm = () => {
+        const errors = {};
+        if (!editFormData.name?.trim()) {
+            errors.name = 'Name is required';
+        }
+        if (!editFormData.specialty?.trim()) {
+            errors.specialty = 'Specialty is required';
+        }
+        if (!editFormData.experience?.trim()) {
+            errors.experience = 'Experience is required';
+        }
+        return errors;
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        const errors = validateEditForm();
+        if (Object.keys(errors).length > 0) {
+            setEditFormErrors(errors);
+            return;
+        }
+        
+        try {
+            const updatedDoctors = doctors.map(d => 
+                d.id === doctorToEdit.id ? {
+                    ...d,
+                    name: editFormData.name,
+                    specialty: editFormData.specialty,
+                    experience: editFormData.experience,
+                    patients: parseInt(editFormData.patients),
+                    rating: parseFloat(editFormData.rating),
+                    status: editFormData.status,
+                    joinDate: editFormData.joinDate
+                } : d
+            );
+            setDoctors(updatedDoctors);
+            navigate('/admin/doctors');
+            setToast({ show: true, message: `${editFormData.name} has been updated successfully!`, type: 'success' });
+            setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+        } catch (error) {
+            console.error('Error updating doctor:', error);
+            setToast({ show: true, message: 'Error updating doctor. Please try again.', type: 'error' });
+            setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+        }
+    };
+
+    // Check if we're on the edit route
+    useEffect(() => {
+        const pathMatch = location.pathname.match(/^\/admin\/doctors\/edit\/(\d+)$/);
+        if (pathMatch) {
+            const doctorId = parseInt(pathMatch[1]);
+            const doctor = doctors.find(d => d.id === doctorId);
+            if (doctor) {
+                setDoctorToEdit(doctor);
+                setEditFormData({
+                    name: doctor.name,
+                    specialty: doctor.specialty,
+                    experience: doctor.experience,
+                    patients: doctor.patients,
+                    rating: doctor.rating,
+                    status: doctor.status,
+                    joinDate: doctor.joinDate
+                });
+                setEditFormErrors({});
+                setShowEditFormInLayout(true);
+            } else {
+                navigate('/admin/doctors');
+            }
+        } else {
+            setShowEditFormInLayout(false);
+        }
+    }, [location.pathname, doctors]);
+
     // Get unique specialties for filter dropdown
     const specialties = [...new Set(doctors.map(doctor => doctor.specialty))];
 
@@ -194,6 +310,187 @@ const Doctors = () => {
                 </div>
             )}
 
+            {/* Toast Notification */}
+            {toast.show && (
+                <div className="fixed top-4 right-4 z-50 animate-slide-in">
+                    <div className={`flex items-center space-x-3 px-6 py-4 rounded-xl shadow-lg border-l-4 ${
+                        toast.type === 'success' 
+                            ? 'bg-pink-50 border-pink-500 text-pink-800' 
+                            : 'bg-red-50 border-red-500 text-red-800'
+                    }`}>
+                        <span className="font-medium">{toast.message}</span>
+                        <button
+                            onClick={() => setToast({ show: false, message: '', type: 'success' })}
+                            className="ml-2 text-pink-600 hover:text-pink-800"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Doctor Form - Separate Page */}
+            {showEditFormInLayout && doctorToEdit ? (
+                <Card className="p-4 sm:p-6 lg:p-8">
+                    <div className="flex items-center justify-between mb-4 sm:mb-6">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Edit Doctor</h2>
+                        <button
+                            onClick={handleCloseEditModal}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                        >
+                            <X className="w-5 h-5 text-gray-500" />
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleEditSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Name Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Doctor Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={editFormData.name || ''}
+                                    onChange={handleEditInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        editFormErrors.name ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter doctor name"
+                                />
+                                {editFormErrors.name && (
+                                    <p className="text-red-500 text-sm mt-1">{editFormErrors.name}</p>
+                                )}
+                            </div>
+
+                            {/* Specialty Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Specialty *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="specialty"
+                                    value={editFormData.specialty || ''}
+                                    onChange={handleEditInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        editFormErrors.specialty ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter specialty"
+                                />
+                                {editFormErrors.specialty && (
+                                    <p className="text-red-500 text-sm mt-1">{editFormErrors.specialty}</p>
+                                )}
+                            </div>
+
+                            {/* Experience Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Experience *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="experience"
+                                    value={editFormData.experience || ''}
+                                    onChange={handleEditInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        editFormErrors.experience ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter experience (e.g., 8 years)"
+                                />
+                                {editFormErrors.experience && (
+                                    <p className="text-red-500 text-sm mt-1">{editFormErrors.experience}</p>
+                                )}
+                            </div>
+
+                            {/* Patients Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Total Patients
+                                </label>
+                                <input
+                                    type="number"
+                                    name="patients"
+                                    value={editFormData.patients || ''}
+                                    onChange={handleEditInputChange}
+                                    min="0"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                    placeholder="Enter total patients"
+                                />
+                            </div>
+
+                            {/* Rating Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Rating
+                                </label>
+                                <input
+                                    type="number"
+                                    name="rating"
+                                    value={editFormData.rating || ''}
+                                    onChange={handleEditInputChange}
+                                    min="0"
+                                    max="5"
+                                    step="0.1"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                    placeholder="Enter rating (0-5)"
+                                />
+                            </div>
+
+                            {/* Status Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Status
+                                </label>
+                                <select
+                                    name="status"
+                                    value={editFormData.status || ''}
+                                    onChange={handleEditInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    <option value="Approved">Approved</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                            </div>
+
+                            {/* Join Date Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Join Date
+                                </label>
+                                <input
+                                    type="date"
+                                    name="joinDate"
+                                    value={editFormData.joinDate || ''}
+                                    onChange={handleEditInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Form Actions */}
+                        <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                            <button
+                                type="button"
+                                onClick={handleCloseEditModal}
+                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                            >
+                                <Edit className="w-4 h-4" />
+                                <span>Update Doctor</span>
+                            </button>
+                        </div>
+                    </form>
+                </Card>
+            ) : (
+                <>
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -268,7 +565,6 @@ const Doctors = () => {
                 <div className="space-y-4">
                     {/* Search Bar */}
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
                             placeholder="Search doctors by name or specialty..."
@@ -360,6 +656,13 @@ const Doctors = () => {
                                                         <p className="text-sm text-gray-600">{doctor.specialty}</p>
                                                     </div>
                                                 </div>
+                                                <button
+                                                    onClick={() => handleEditDoctor(doctor)}
+                                                    className="text-purple-600 hover:text-purple-800 p-1 hover:bg-purple-50 rounded transition-colors"
+                                                    title="Edit Doctor"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
                                             </div>
                                             
                                             <div className="space-y-2 mb-4">
@@ -425,6 +728,13 @@ const Doctors = () => {
                                                         <p className="text-sm text-gray-600">{doctor.specialty}</p>
                                                     </div>
                                                 </div>
+                                                <button
+                                                    onClick={() => handleEditDoctor(doctor)}
+                                                    className="text-purple-600 hover:text-purple-800 p-1 hover:bg-purple-50 rounded transition-colors"
+                                                    title="Edit Doctor"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
                                             </div>
                                             
                                             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -483,6 +793,13 @@ const Doctors = () => {
                                                         <p className="text-sm text-gray-600">{doctor.specialty}</p>
                                                     </div>
                                                 </div>
+                                                <button
+                                                    onClick={() => handleEditDoctor(doctor)}
+                                                    className="text-purple-600 hover:text-purple-800 p-1 hover:bg-purple-50 rounded transition-colors"
+                                                    title="Edit Doctor"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
                                             </div>
                                             
                                             <div className="space-y-2 mb-4">
@@ -501,16 +818,13 @@ const Doctors = () => {
                                             </div>
                                             
                                             <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(doctor.status)}`}>
-                                                    {doctor.status}
-                                                </span>
+                                                <button
+                                                    onClick={() => handleViewDoctorProfile(doctor)}
+                                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                                >
+                                                    Review
+                                                </button>
                                                 <div className="flex items-center space-x-2">
-                                                    <button
-                                                        onClick={() => handleViewDoctorProfile(doctor)}
-                                                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                                    >
-                                                        Review
-                                                    </button>
                                                     <button
                                                         onClick={() => handleApproveDoctor(doctor)}
                                                         className="px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors"
@@ -529,7 +843,9 @@ const Doctors = () => {
             </div>
         </div>
     </div>
-    </div>
+    </>
+            )}
+        </div>
     );
 };
 

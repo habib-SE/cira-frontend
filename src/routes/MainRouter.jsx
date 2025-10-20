@@ -17,6 +17,7 @@ import Dashboard from '../Admin panel/admin/adminpages/Dashboard';
 import Users from '../Admin panel/admin/adminpages/Users';
 import Doctors from '../Admin panel/admin/adminpages/Doctors';
 import AdminDoctorProfile from '../Admin panel/admin/adminpages/DoctorProfile';
+import DoctorProfileDetail from '../Admin panel/admin/adminpages/DoctorProfileDetail';
 import Patients from '../Admin panel/admin/adminpages/Patients';
 import Appointments from '../Admin panel/admin/adminpages/Appointments';
 import Reports from '../Admin panel/admin/adminpages/Reports';
@@ -56,6 +57,7 @@ function MainRouter() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/welcome" element={<WelcomePage />} />
       
+
       {/* Authentication Routes - Using centralized login pages */}
       <Route path="/login" element={<MainLoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
@@ -88,8 +90,8 @@ function MainRouter() {
         <Route path="users/edit/:id" element={<Users />} />
         <Route path="users/view/:id" element={<Users />} />
         <Route path="doctors" element={<Doctors />} />
+        <Route path="doctors/edit/:id" element={<Doctors />} />
         <Route path="doctors/:id" element={<AdminDoctorProfile />} />
-        <Route path="patients" element={<Patients />} />
         <Route path="appointments" element={<Appointments />} />
         <Route path="appointments/add" element={<Appointments />} />
         <Route path="appointments/edit/:id" element={<Appointments />} />
@@ -98,6 +100,7 @@ function MainRouter() {
         <Route path="payments" element={<Payments />} />
         <Route path="settings" element={<Settings />} />
         <Route path="referrals" element={<Referrals />} />
+        <Route path="doctor-profile" element={<DoctorProfileDetail />} />
       </Route>
 
       {/* Patient Portal Routes - Protected */}
@@ -121,6 +124,7 @@ function MainRouter() {
         <Route path="messages" element={<PatientMessages />} />
         <Route path="settings" element={<PatientSettings />} />
       </Route>
+
 
       {/* Doctor Portal Routes - Protected */}
       <Route 
