@@ -495,12 +495,17 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useConversation } from "@11labs/react";
-import { MicOff, PhoneOff, Volume2, VolumeX, Scan, X, Heart, Activity, Thermometer, Eye } from "lucide-react";
+import { MicOff, PhoneOff, Volume2, VolumeX } from "lucide-react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "three";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Import extracted components and hooks
+import WelcomeScanModal from "./modal/WelcomeScanModal";
+import VitalSignsDisplay from "./modal/VitalSignsDisplay";
+import { useModalLogic } from "./modal/modalHooks";
 
 /**
  * Nurse Avatar with lip sync + blinking
@@ -636,139 +641,6 @@ function NurseAvatar({ isSpeaking, isConnected, phoneme }) {
 }
 
 /**
- * Vital Signs Display Component
- */
-function VitalSignsDisplay({ vitals, onClose, onStartConversation }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.4 }}
-      className="fixed inset-0 flex items-center justify-center z-50 p-4"
-    >
-      <motion.div
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 50, opacity: 0 }}
-        className="relative bg-white/40 backdrop-blur-md rounded-2xl p-6 max-w-md w-full border border-white/30 shadow-2xl"
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-pink-500">Vital Signs Scan</h3>
-          <button
-            onClick={onClose}
-            className="text-pink-600 hover:text-pink-700 transition-colors"
-          >
-            <X size={24} />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-white/20 backdrop-blur-sm p-4 rounded-lg text-center shadow">
-            <Heart className="w-8 h-8 text-red-500 mx-auto mb-2" />
-            <p className="text-sm text-gray-600">Heart Rate</p>
-            <p className="text-2xl font-bold text-gray-800">{vitals.heartRate} BPM</p>
-          </div>
-          <div className="bg-white/20 backdrop-blur-sm p-4 rounded-lg text-center shadow">
-            <Activity className="w-8 h-8 text-green-500 mx-auto mb-2" />
-            <p className="text-sm text-gray-620">Oxygen</p>
-            <p className="text-2xl font-bold text-gray-800">{vitals.oxygen}%</p>
-          </div>
-          <div className="bg-white/20 backdrop-blur-sm p-4 rounded-lg text-center shadow">
-            <Thermometer className="w-8 h-8 text-orange-500 mx-auto mb-2" />
-            <p className="text-sm text-gray-600">Temperature</p>
-            <p className="text-2xl font-bold text-gray-800">{vitals.temperature}°F</p>
-          </div>
-          <div className="bg-white/20 backdrop-blur-sm p-4 rounded-lg text-center shadow">
-            <Eye className="w-8 h-8 text-pink-500 mx-auto mb-2" />
-            <p className="text-sm text-gray-600">Stress Level</p>
-            <p className="text-2xl font-bold text-gray-800">{vitals.stressLevel}</p>
-          </div>
-        </div>
-
-        <button
-          onClick={onStartConversation}
-          className="w-full bg-pink-400 text-white py-3 rounded-lg font-semibold hover:bg-pink-500 transition-colors shadow-md"
-        >
-          Start Conversation
-        </button>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-/**
- * Welcome Scan Modal - Shows immediately when route loads
- */
-function WelcomeScanModal({ onAccept, onDecline, isScanning }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 flex items-center justify-center z-50 p-4"
-    >
-      {/* Glassmorphism Modal */}
-      <motion.div
-        initial={{ scale: 0.9, y: 20, opacity: 0 }}
-        animate={{ scale: 1, y: 0, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="relative bg-white/40 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/30 shadow-2xl"
-      >
-        <div className="text-center mb-6">
-          <div className="w-20 h-20 bg-purple-200/60 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Scan className="w-10 h-10 text-pink-700" />
-          </div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-3 drop-shadow-sm">
-            {isScanning ? "Health Scan in Progress" : "Welcome to Cira Health Assistant"}
-          </h3>
-          <p className="text-gray-700 text-lg">
-            {isScanning
-              ? "Please remain still while we analyze your vital signs through facial recognition..."
-              : "I can perform a quick facial scan to check your vital signs and provide personalized recommendations. Would you like to proceed?"}
-          </p>
-        </div>
-
-        {!isScanning && (
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={onAccept}
-              className="bg-pink-400 text-white py-4 rounded-xl font-semibold hover:bg-pink-500 transition-colors flex items-center justify-center gap-3 text-lg shadow-md"
-            >
-              <Scan size={24} />
-              Yes, Scan My Vitals
-            </button>
-            <button
-              onClick={onDecline}
-              className="bg-white/40 backdrop-blur-sm text-gray-800 py-4 rounded-xl font-semibold hover:bg-white/90 border border-gray-300 transition-colors text-lg"
-            >
-              Skip Scan & Start Conversation
-            </button>
-          </div>
-        )}
-
-        {isScanning && (
-          <div className="text-center py-4">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              className="w-16 h-16 border-4 border-pink-600 border-t-transparent rounded-full mx-auto mb-4"
-            />
-            <p className="text-pink-700 font-medium text-lg">
-              Analyzing health data...
-            </p>
-            <p className="text-gray-600 text-sm mt-2">
-              This will take just a few seconds
-            </p>
-          </div>
-        )}
-      </motion.div>
-    </motion.div>
-  );
-}
-
-/**
  * Main Cira Assistant UI
  */
 export default function CiraAssistant() {
@@ -777,14 +649,19 @@ export default function CiraAssistant() {
   const [isConnected, setIsConnected] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [phoneme, setPhoneme] = useState(null);
-  
-  // Binah-like feature states
-  const [showWelcomeModal, setShowWelcomeModal] = useState(true); // Show immediately on first load
-  const [isScanning, setIsScanning] = useState(false);
-  const [showVitals, setShowVitals] = useState(false);
-  const [vitalsData, setVitalsData] = useState(null);
-  const [scanCompleted, setScanCompleted] = useState(false);
   const [conversationEnded, setConversationEnded] = useState(false);
+
+  // Use modal logic hook
+  const {
+    showWelcomeModal,
+    isScanning,
+    showVitals,
+    vitalsData,
+    handleScanAccept,
+    handleScanDecline,
+    handleCloseVitals,
+    handleStartFromVitals
+  } = useModalLogic();
 
   // Initialize conversation hook
   const conversation = useConversation({
@@ -830,24 +707,10 @@ export default function CiraAssistant() {
     })();
   }, []);
 
-  // Generate dummy vital data
-  const generateDummyVitals = () => ({
-    heartRate: Math.floor(Math.random() * 40) + 60, // 60-100 BPM
-    oxygen: Math.floor(Math.random() * 6) + 95, // 95-100%
-    temperature: (Math.random() * 2 + 97.5).toFixed(1), // 97.5-99.5°F
-    stressLevel: ["Low", "Normal", "Moderate"][Math.floor(Math.random() * 3)],
-    respiratoryRate: Math.floor(Math.random() * 8) + 12, // 12-20
-    bloodPressure: `${Math.floor(Math.random() * 30) + 110}/${Math.floor(Math.random() * 20) + 70}`
-  });
-
   const handleStartConversation = async () => {
     try {
       console.log("Starting conversation...");
-      setShowWelcomeModal(true); // Show modal again when starting conversation
-      setShowVitals(false);
-      setConversationEnded(false);
-      
-      // Don't start conversation immediately - wait for modal choice
+      // Show modal again when starting conversation
       console.log("Welcome modal shown - waiting for user choice");
     } catch (err) {
       console.error("Failed to start conversation:", err);
@@ -858,8 +721,6 @@ export default function CiraAssistant() {
   const handleStartConversationDirectly = async () => {
     try {
       console.log("Starting conversation directly...");
-      setShowWelcomeModal(false);
-      setShowVitals(false);
       
       await conversation.startSession({
         agentId: import.meta.env.VITE_ELEVENLABS_AGENT_ID,
@@ -893,44 +754,6 @@ export default function CiraAssistant() {
       console.error("Failed to change volume:", err);
       setErrorMessage("Failed to change volume");
     }
-  };
-
-  const handleScanAccept = () => {
-    console.log("Scan accepted, starting scan...");
-    setIsScanning(true);
-    
-    // Simulate scanning process
-    setTimeout(() => {
-      console.log("Scan completed, generating vitals...");
-      const dummyVitals = generateDummyVitals();
-      setVitalsData(dummyVitals);
-      setIsScanning(false);
-      setShowWelcomeModal(false);
-      setShowVitals(true);
-      setScanCompleted(true);
-      
-      console.log("Vitals data available:", dummyVitals);
-    }, 3000);
-  };
-
-  const handleScanDecline = () => {
-    console.log("Scan declined, starting conversation...");
-    setShowWelcomeModal(false);
-    setScanCompleted(true);
-    // Start conversation immediately after declining scan
-    handleStartConversationDirectly();
-  };
-
-  const handleCloseVitals = () => {
-    console.log("Closing vitals display");
-    setShowVitals(false);
-    // Don't start conversation here - wait for button click
-  };
-
-  const handleStartFromVitals = () => {
-    console.log("Starting conversation from vitals modal");
-    setShowVitals(false);
-    handleStartConversationDirectly();
   };
 
   return (
@@ -990,7 +813,6 @@ export default function CiraAssistant() {
 
       {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
       
-      
       {status === "connected" && (
         <p className="text-green-600 mb-2">
           {isSpeaking ? "Speaking..." : "Listening..."}
@@ -1040,8 +862,8 @@ export default function CiraAssistant() {
       <AnimatePresence>
         {showWelcomeModal && (
           <WelcomeScanModal
-            onAccept={handleScanAccept}
-            onDecline={handleScanDecline}
+            onAccept={() => handleScanAccept()}
+            onDecline={() => handleScanDecline(handleStartConversationDirectly)}
             isScanning={isScanning}
           />
         )}
@@ -1050,7 +872,7 @@ export default function CiraAssistant() {
           <VitalSignsDisplay
             vitals={vitalsData}
             onClose={handleCloseVitals}
-            onStartConversation={handleStartFromVitals}
+            onStartConversation={() => handleStartFromVitals(handleStartConversationDirectly)}
           />
         )}
       </AnimatePresence>
