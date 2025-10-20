@@ -98,6 +98,7 @@ function MainRouter() {
         <Route path="users/edit/:id" element={<Users />} />
         <Route path="users/view/:id" element={<Users />} />
         <Route path="doctors" element={<Doctors />} />
+        <Route path="doctors/edit/:id" element={<Doctors />} />
         <Route path="doctors/:id" element={<AdminDoctorProfile />} />
         <Route path="appointments" element={<Appointments />} />
         <Route path="appointments/add" element={<Appointments />} />
