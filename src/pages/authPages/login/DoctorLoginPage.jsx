@@ -1,34 +1,70 @@
+// import React, { useState } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// // import { useAuth } from '../../context/AuthContext';
+// import { useAuth } from '../../../context/AuthContext';
+// // import logo from '../../../assets/Logo.png';
+// import { 
+//     Stethoscope, 
+//     Mail, 
+//     Lock, 
+//     Eye, 
+//     EyeOff, 
+//     UserPlus,
+//     ArrowRight,
+//     CheckCircle,
+//     AlertCircle,
+//     Shield,
+//     Award,
+//     Clock,
+//     Heart,
+//     User,
+//     FileText,
+//     X,
+//     Star
+// } from 'lucide-react';
+// import { 
+//   FormicaValidatedForm, 
+//   FormicaFormField, 
+//   FormicaFormSelect 
+// } from '../../components/forms';
+// import { authFormicaSchemas, doctorFormicaSchemas } from '../../utils/validation/formicaSchemas';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import logo from '../../assets/Logo.png';
-import { 
-    Stethoscope, 
-    Mail, 
-    Lock, 
-    Eye, 
-    EyeOff, 
-    UserPlus,
-    ArrowRight,
-    CheckCircle,
-    AlertCircle,
-    Shield,
-    Award,
-    Clock,
-    Heart,
-    User,
-    FileText,
-    X,
-    Star
-} from 'lucide-react';
-import { 
-  FormicaValidatedForm, 
-  FormicaFormField, 
-  FormicaFormSelect 
-} from '../../components/forms';
-import { authFormicaSchemas, doctorFormicaSchemas } from '../../utils/validation/formicaSchemas';
+import { useAuth } from '../../../context/AuthContext';
+// import logo from '../../../assets/Logo.png';
 
-const DoctorLogin = () => {
+import {
+  Stethoscope,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  UserPlus,
+  ArrowRight,
+  CheckCircle,
+  AlertCircle,
+  Shield,
+  Award,
+  Clock,
+  Heart,
+  User,
+  FileText,
+  X,
+  Star,
+} from 'lucide-react';
+
+import {
+  FormicaValidatedForm,
+  FormicaFormField,
+  FormicaFormSelect,
+} from '../../../components/forms';
+
+import {
+  authFormicaSchemas,
+  doctorFormicaSchemas,
+} from '../../../utils/validation/formicaSchemas';
+
+const DoctorLoginPage = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -584,5 +620,5 @@ const DoctorLogin = () => {
     );
 };
 
-export default DoctorLogin;
+export default DoctorLoginPage;
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../../assets/Logo.png';
-import AuthLayout from '../components/AuthLayout';
-import RegisterForm from '../forms/RegisterForm';
+// import AuthLayout from '../components/AuthLayout';
+import AuthLayout from '../../../components/auth/AuthLayout';
+// import RegisterForm from '../forms/RegisterForm';
+import RegisterForm from '../../../components/auth/authForms/RegisterForm';
 
 /**
  * Unified Registration Page

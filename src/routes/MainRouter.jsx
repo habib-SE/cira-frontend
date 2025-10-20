@@ -2,14 +2,17 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute';
 import WelcomePage from '../Admin panel/admin/adminpages/WelcomePage';
-import { MainLoginPage, DoctorLoginPage } from '../pages/login';
+// import { MainLoginPage, DoctorLoginPage } from '../pages/login';
+import MainLoginPage from '../pages/authPages/login/MainLoginPage';
+import DoctorLoginPage from '../pages/authPages/login/DoctorLoginPage';
 import EmailConfirmPage from '../Admin panel/admin/adminpages/EmailConfirmPage';
 import EnablePermissionPage from '../Admin panel/admin/adminpages/EnablePermissionPage';
 import PlusUnlockedPage from '../Admin panel/admin/adminpages/PlusUnlockedPage';
 import SubscriptionPlansPage from '../Admin panel/admin/adminpages/SubscriptionPlansPage';
 
 // Authentication Module Imports
-import { RegisterPage } from '../modules/auth';
+// import { RegisterPage } from '../modules/auth';
+import RegisterPage from '../pages/authPages/Register/RegisterPage'
 
 // Admin Portal Imports
 import AdminLayout from '../Admin panel/admin/admincomponents/AdminLayout';

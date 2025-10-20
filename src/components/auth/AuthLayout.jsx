@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, X, AlertCircle } from 'lucide-react';
-import '../styles/auth.css';
+import './styles/auth.css';
 
 /**
  * Authentication Layout Component
