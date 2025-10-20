@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Users as UsersIcon, Search, Filter, Eye, Ban, Trash2, MoreVertical, UserCheck, UserX, UserPlus, X, CheckCircle, AlertCircle, EyeOff, Edit, ArrowLeft } from 'lucide-react';
+import { Users as UsersIcon, Search, Filter, Eye, Ban, Trash2, MoreVertical, UserCheck, UserX, UserPlus, X, CheckCircle, AlertCircle, EyeOff, Edit } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const Users = () => {
@@ -28,7 +28,7 @@ const Users = () => {
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [showEditFormInLayout, setShowEditFormInLayout] = useState(false);
     const [userToEdit, setUserToEdit] = useState(null);
     const [editFormData, setEditFormData] = useState({});
     const [editFormErrors, setEditFormErrors] = useState({});
@@ -340,10 +340,21 @@ const Users = () => {
 
     // Filter users
     const filteredUsers = users.filter(user => {
+        const searchLower = searchTerm.toLowerCase();
+        
+        // Check if search term starts with "dr" or "dr."
+        const isDoctorSearch = searchLower.startsWith('dr') || searchLower.startsWith('dr.');
+        
+        // If searching for doctor, only show Doctor role users
+        // If not searching for doctor, only show non-Doctor role users
+        const roleMatchesSearch = searchTerm === '' || !isDoctorSearch || user.role === 'Doctor';
+        const nonDoctorMatchesSearch = searchTerm === '' || isDoctorSearch || user.role !== 'Doctor';
+        
         const matchesSearch = searchTerm === '' || 
-            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.status.toLowerCase().includes(searchTerm.toLowerCase());
+            user.status.toLowerCase().includes(searchTerm.toLowerCase())) &&
+            roleMatchesSearch && nonDoctorMatchesSearch;
         
         const matchesStatus = filterStatus === '' || user.status === filterStatus;
         const matchesRole = filterRole === '' || user.role === filterRole;
@@ -407,20 +418,12 @@ const Users = () => {
     };
 
     const handleEditUser = (user) => {
-        setUserToEdit(user);
-        setEditFormData({
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            status: user.status,
-            totalAppointments: user.totalAppointments
-        });
-        setEditFormErrors({});
-        setIsEditModalOpen(true);
+        navigate(`/admin/users/edit/${user.id}`);
     };
 
     const handleCloseEditModal = () => {
-        setIsEditModalOpen(false);
+        navigate('/admin/users');
+        setShowEditFormInLayout(false);
         setUserToEdit(null);
         setEditFormData({});
         setEditFormErrors({});
@@ -482,8 +485,8 @@ const Users = () => {
             setUsers(updatedUsers);
             saveUsersToStorage(updatedUsers);
             
-            // Close modal and show success message
-            handleCloseEditModal();
+            // Navigate back and show success message
+            navigate('/admin/users');
             showToast(`${editFormData.name} has been updated successfully!`, 'success');
             
         } catch (error) {
@@ -528,6 +531,31 @@ const Users = () => {
         }
     }, [location.pathname]);
 
+    // Check if we're on the edit route
+    useEffect(() => {
+        const pathMatch = location.pathname.match(/^\/admin\/users\/edit\/(\d+)$/);
+        if (pathMatch) {
+            const userId = parseInt(pathMatch[1]);
+            const user = users.find(u => u.id === userId);
+            if (user) {
+                setUserToEdit(user);
+                setEditFormData({
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    status: user.status,
+                    totalAppointments: user.totalAppointments
+                });
+                setEditFormErrors({});
+                setShowEditFormInLayout(true);
+            } else {
+                navigate('/admin/users');
+            }
+        } else {
+            setShowEditFormInLayout(false);
+        }
+    }, [location.pathname, users]);
+
     // Check for search term from URL query parameters
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -555,33 +583,147 @@ const Users = () => {
                 }
             `}</style>
 
-            {showCreateForm ? (
-                /* Create User Form */
-                <Card className="max-w-4xl mx-auto">
-                    {/* Form Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                        <div className="flex items-center space-x-4">
-                            <button
-                                onClick={handleCloseForm}
-                                className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                            >
-                                <ArrowLeft className="w-5 h-5" />
-                            </button>
+            {showEditFormInLayout && userToEdit ? (
+                /* Edit User Form */
+                <Card className="p-4 sm:p-6 lg:p-8">
+                    <div className="flex items-center justify-between mb-4 sm:mb-6">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Edit User</h2>
+                        <button
+                            onClick={handleCloseEditModal}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                        >
+                            <X className="w-5 h-5 text-gray-500" />
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleEditSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Name Field */}
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900">Create New User</h2>
-                                <p className="text-sm text-gray-600">Add a new user to the platform</p>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Full Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={editFormData.name || ''}
+                                    onChange={handleEditInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        editFormErrors.name ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter full name"
+                                />
+                                {editFormErrors.name && (
+                                    <p className="text-red-500 text-sm mt-1">{editFormErrors.name}</p>
+                                )}
+                            </div>
+
+                            {/* Email Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Email Address *
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={editFormData.email || ''}
+                                    onChange={handleEditInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        editFormErrors.email ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter email address"
+                                />
+                                {editFormErrors.email && (
+                                    <p className="text-red-500 text-sm mt-1">{editFormErrors.email}</p>
+                                )}
+                            </div>
+
+                            {/* Role Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Role
+                                </label>
+                                <select
+                                    name="role"
+                                    value={editFormData.role || ''}
+                                    onChange={handleEditInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    <option value="Patient">Patient</option>
+                                    <option value="Doctor">Doctor</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                            </div>
+
+                            {/* Status Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Status
+                                </label>
+                                <select
+                                    name="status"
+                                    value={editFormData.status || ''}
+                                    onChange={handleEditInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    <option value="Active">Active</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Suspended">Suspended</option>
+                                </select>
+                            </div>
+
+                            {/* Total Appointments Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Total Appointments
+                                </label>
+                                <input
+                                    type="number"
+                                    name="totalAppointments"
+                                    value={editFormData.totalAppointments || ''}
+                                    onChange={handleEditInputChange}
+                                    min="0"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                    placeholder="Enter total appointments"
+                                />
                             </div>
                         </div>
+
+                        {/* Form Actions */}
+                        <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                            <button
+                                type="button"
+                                onClick={handleCloseEditModal}
+                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                            >
+                                <Edit className="w-4 h-4" />
+                                <span>Update User</span>
+                            </button>
+                        </div>
+                    </form>
+                </Card>
+            ) : showCreateForm ? (
+                /* Create User Form */
+                <Card className="p-4 sm:p-6 lg:p-8">
+                    {/* Form Header */}
+                    <div className="flex items-center justify-between mb-4 sm:mb-6">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Create New User</h2>
                         <button
                             onClick={handleCloseForm}
-                            className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
                         >
-                            <X className="w-6 h-6" />
+                            <X className="w-5 h-5 text-gray-500" />
                         </button>
                     </div>
 
                     {/* Form Body */}
-                    <form onSubmit={handleSubmit} className="p-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Name Field */}
                             <div>
@@ -724,8 +866,8 @@ const Users = () => {
                             </div>
                         </div>
 
-                        {/* Form Footer */}
-                        <div className="flex items-center justify-end space-x-4 pt-8 border-t border-gray-200 mt-8">
+                        {/* Form Actions */}
+                        <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
                             <button
                                 type="button"
                                 onClick={handleCloseForm}
@@ -1177,143 +1319,6 @@ const Users = () => {
                 </div>
             )}
 
-            {/* Edit User Modal */}
-            {isEditModalOpen && userToEdit && (
-                <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-                        {/* Modal Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                                    <Edit className="w-5 h-5 text-purple-600" />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-900">Edit User</h2>
-                                    <p className="text-sm text-gray-600">Update user information</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={handleCloseEditModal}
-                                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
-                        </div>
-
-                        {/* Modal Body */}
-                        <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
-                            {/* Name Field */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Full Name *
-                                </label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={editFormData.name || ''}
-                                    onChange={handleEditInputChange}
-                                    className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
-                                        editFormErrors.name ? 'border-red-300' : 'border-gray-200'
-                                    }`}
-                                    placeholder="Enter full name"
-                                />
-                                {editFormErrors.name && (
-                                    <p className="mt-1 text-sm text-red-600">{editFormErrors.name}</p>
-                                )}
-                            </div>
-
-                            {/* Email Field */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Email Address *
-                                </label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={editFormData.email || ''}
-                                    onChange={handleEditInputChange}
-                                    className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
-                                        editFormErrors.email ? 'border-red-300' : 'border-gray-200'
-                                    }`}
-                                    placeholder="Enter email address"
-                                />
-                                {editFormErrors.email && (
-                                    <p className="mt-1 text-sm text-red-600">{editFormErrors.email}</p>
-                                )}
-                            </div>
-
-
-                            {/* Role Field */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Role
-                                </label>
-                                <select
-                                    name="role"
-                                    value={editFormData.role || ''}
-                                    onChange={handleEditInputChange}
-                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                >
-                                    <option value="Patient">Patient</option>
-                                    <option value="Doctor">Doctor</option>
-                                    <option value="Admin">Admin</option>
-                                </select>
-                            </div>
-
-                            {/* Status Field */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Status
-                                </label>
-                                <select
-                                    name="status"
-                                    value={editFormData.status || ''}
-                                    onChange={handleEditInputChange}
-                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                >
-                                    <option value="Active">Active</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Suspended">Suspended</option>
-                                </select>
-                            </div>
-
-                            {/* Total Appointments Field */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Total Appointments
-                                </label>
-                                <input
-                                    type="number"
-                                    name="totalAppointments"
-                                    value={editFormData.totalAppointments || ''}
-                                    onChange={handleEditInputChange}
-                                    min="0"
-                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                    placeholder="Enter total appointments"
-                                />
-                            </div>
-
-                            {/* Modal Footer */}
-                            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
-                                <button
-                                    type="button"
-                                    onClick={handleCloseEditModal}
-                                    className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-6 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors duration-200 flex items-center space-x-2"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                    <span>Update User</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

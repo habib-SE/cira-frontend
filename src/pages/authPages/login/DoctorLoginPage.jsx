@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import logo from '../../assets/Logo.png';
+import { useAuth } from '../../../context/AuthContext';
+import logo from '../../../assets/Logo.png';
 import { 
     Stethoscope, 
     Mail, 
@@ -25,8 +25,8 @@ import {
   FormicaValidatedForm, 
   FormicaFormField, 
   FormicaFormSelect 
-} from '../../components/forms';
-import { authFormicaSchemas, doctorFormicaSchemas } from '../../utils/validation/formicaSchemas';
+} from '../../../components/forms';
+import { authFormicaSchemas, doctorFormicaSchemas } from '../../../utils/validation/formicaSchemas';
 
 const DoctorLogin = () => {
     const [isLogin, setIsLogin] = useState(true);

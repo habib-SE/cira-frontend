@@ -1322,10 +1322,10 @@ const Appointments = () => {
                             </button>
                             <button
                                 type="submit"
-                                className="flex items-center space-x-2 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
                             >
                                 <Save className="w-4 h-4" />
-                                <span>Update Appointment</span>
+                                <span>Save</span>
                             </button>
                         </div>
                     </form>

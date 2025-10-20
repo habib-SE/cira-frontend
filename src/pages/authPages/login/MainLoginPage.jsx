@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { EyeIcon, EyeSlashIcon, UserIcon, LockClosedIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
-import logo from '../../assets/Logo.png';
+import logo from '../../../assets/Logo.png';
 import { 
   FormicaValidatedForm, 
   FormicaFormField 

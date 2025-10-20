@@ -125,3 +125,28 @@ p {
   box-shadow: none !important;
   background: transparent !important;
 }
+
+/* ================================
+   6. Toast Animation
+   ================================ */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
