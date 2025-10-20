@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { 
-  User, 
-  Bell, 
-  Lock, 
-  Shield, 
-  Edit3, 
-  Plus, 
-  X, 
-  Calendar, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Heart, 
-  Pill, 
-  AlertTriangle, 
+import {
+  User,
+  Bell,
+  Lock,
+  Shield,
+  Edit3,
+  Plus,
+  X,
+  Calendar,
+  Phone,
+  Mail,
+  MapPin,
+  Heart,
+  Pill,
+  AlertTriangle,
   CheckCircle,
   Save,
   Trash2
@@ -58,6 +58,8 @@ const PatientProfile = () => {
       { id: 3, allergen: 'Latex', reaction: 'Skin irritation', severity: 'Mild' }
     ]
   });
+  const getInitials = (first, last) =>
+    [first?.[0], last?.[0]].filter(Boolean).join("").toUpperCase();
 
   // Consent Preferences State
   const [consentPreferences, setConsentPreferences] = useState({
@@ -112,14 +114,14 @@ const PatientProfile = () => {
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     setIsSaving(false);
     setIsEditing(false);
     setShowAlert(true);
-    
+
     // Hide alert after 3 seconds
     setTimeout(() => {
       setShowAlert(false);
@@ -187,7 +189,7 @@ const PatientProfile = () => {
             </div>
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mt-8 lg:mt-0"
+              className="flex items-center space-x-2 px-4 py-2 bg-[#f6339a] text-white rounded-lg cursor-pointer transition-colors mt-8 lg:mt-0"
             >
               <Edit3 className="h-4 w-4" />
               <span>{isEditing ? 'Cancel' : 'Edit Profile'}</span>
@@ -195,136 +197,197 @@ const PatientProfile = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
           {/* Personal Details Panel */}
-          <Card className="p-6">
+          <Card className="p-6 h-[110vh] max-h-[110vh] flex flex-col">
             <div className="flex items-center space-x-2 mb-6">
-              <User className="h-5 w-5 text-blue-600" />
+              <User className="h-5 w-5 text-pink-600" />
               <h2 className="text-xl font-semibold text-gray-900">Personal Details</h2>
             </div>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {isEditing ? (
+              /* ---------- EDIT MODE (your same form) ---------- */
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                    <input
+                      type="text"
+                      value={personalDetails.firstName}
+                      onChange={(e) => handlePersonalDetailsChange('firstName', e.target.value)}
+                      disabled={!isEditing}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                    <input
+                      type="text"
+                      value={personalDetails.lastName}
+                      onChange={(e) => handlePersonalDetailsChange('lastName', e.target.value)}
+                      disabled={!isEditing}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        type="email"
+                        value={personalDetails.email}
+                        onChange={(e) => handlePersonalDetailsChange('email', e.target.value)}
+                        disabled={!isEditing}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        type="tel"
+                        value={personalDetails.phone}
+                        onChange={(e) => handlePersonalDetailsChange('phone', e.target.value)}
+                        disabled={!isEditing}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        type="date"
+                        value={personalDetails.dateOfBirth}
+                        onChange={(e) => handlePersonalDetailsChange('dateOfBirth', e.target.value)}
+                        disabled={!isEditing}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                    <input
+                      type="text"
+                      value={`${calculateAge(personalDetails.dateOfBirth)} years old`}
+                      disabled
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                  <select
+                    value={personalDetails.gender}
+                    onChange={(e) => handlePersonalDetailsChange('gender', e.target.value)}
+                    disabled={!isEditing}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <textarea
+                      value={personalDetails.address}
+                      onChange={(e) => handlePersonalDetailsChange('address', e.target.value)}
+                      disabled={!isEditing}
+                      rows={2}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Contact</label>
                   <input
                     type="text"
-                    value={personalDetails.firstName}
-                    onChange={(e) => handlePersonalDetailsChange('firstName', e.target.value)}
+                    value={personalDetails.emergencyContact}
+                    onChange={(e) => handlePersonalDetailsChange('emergencyContact', e.target.value)}
                     disabled={!isEditing}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                  <input
-                    type="text"
-                    value={personalDetails.lastName}
-                    onChange={(e) => handlePersonalDetailsChange('lastName', e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                  />
-                </div>
               </div>
+            ) : (
+              /* ---------- VIEW MODE (no form; styled summary) ---------- */
+              <div className="space-y-6">
+                {/* Top identity row */}
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold">
+                    {getInitials(personalDetails.firstName, personalDetails.lastName)}
+                  </div>
+                  <div>
+                    <div className="text-lg font-semibold text-gray-900">
+                      {personalDetails.firstName} {personalDetails.lastName}
+                    </div>
+                    <div className="text-sm text-gray-600 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        {personalDetails.dateOfBirth} • {calculateAge(personalDetails.dateOfBirth)} yrs
+                      </span>
+                    </div>
+                  </div>
+                  <span className="ml-auto inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
+                    {personalDetails.gender}
+                  </span>
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="email"
-                      value={personalDetails.email}
-                      onChange={(e) => handlePersonalDetailsChange('email', e.target.value)}
-                      disabled={!isEditing}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                    />
+                {/* Two-column facts */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <div className="text-xs uppercase tracking-wide text-gray-500 mb-1">Email</div>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <Mail className="h-4 w-4 text-gray-400" />
+                      <span>{personalDetails.email}</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <div className="text-xs uppercase tracking-wide text-gray-500 mb-1">Phone</div>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <Phone className="h-4 w-4 text-gray-400" />
+                      <span>{personalDetails.phone}</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-gray-200 bg-white p-4 md:col-span-2">
+                    <div className="text-xs uppercase tracking-wide text-gray-500 mb-1">Address</div>
+                    <div className="flex items-start gap-2 text-gray-900">
+                      <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
+                      <span>{personalDetails.address}</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-gray-200 bg-white p-4 md:col-span-2">
+                    <div className="text-xs uppercase tracking-wide text-gray-500 mb-1">Emergency Contact</div>
+                    <div className="text-gray-900">{personalDetails.emergencyContact}</div>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="tel"
-                      value={personalDetails.phone}
-                      onChange={(e) => handlePersonalDetailsChange('phone', e.target.value)}
-                      disabled={!isEditing}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                    />
-                  </div>
-                </div>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="date"
-                      value={personalDetails.dateOfBirth}
-                      onChange={(e) => handlePersonalDetailsChange('dateOfBirth', e.target.value)}
-                      disabled={!isEditing}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
-                  <input
-                    type="text"
-                    value={`${calculateAge(personalDetails.dateOfBirth)} years old`}
-                    disabled
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                <select
-                  value={personalDetails.gender}
-                  onChange={(e) => handlePersonalDetailsChange('gender', e.target.value)}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                  <option value="Prefer not to say">Prefer not to say</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <textarea
-                    value={personalDetails.address}
-                    onChange={(e) => handlePersonalDetailsChange('address', e.target.value)}
-                    disabled={!isEditing}
-                    rows={2}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Contact</label>
-                <input
-                  type="text"
-                  value={personalDetails.emergencyContact}
-                  onChange={(e) => handlePersonalDetailsChange('emergencyContact', e.target.value)}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                />
-              </div>
-            </div>
+            )}
           </Card>
 
+
           {/* Medical History Panel */}
-          <Card className="p-6">
+          <Card className="p-6 mt-28 md:mt-0">
             <div className="flex items-center space-x-2 mb-6">
               <Heart className="h-5 w-5 text-red-600" />
               <h2 className="text-xl font-semibold text-gray-900">Medical History</h2>
@@ -351,7 +414,7 @@ const PatientProfile = () => {
                       <div className="flex-1">
                         <div className="font-medium text-gray-900">{condition.name}</div>
                         <div className="text-sm text-gray-600">
-                          Diagnosed: {condition.diagnosed} • 
+                          Diagnosed: {condition.diagnosed} •
                           <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(condition.status)}`}>
                             {condition.status}
                           </span>
@@ -426,7 +489,7 @@ const PatientProfile = () => {
                       <div className="flex-1">
                         <div className="font-medium text-gray-900">{allergy.allergen}</div>
                         <div className="text-sm text-gray-600">
-                          {allergy.reaction} • 
+                          {allergy.reaction} •
                           <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getSeverityColor(allergy.severity)}`}>
                             {allergy.severity}
                           </span>
@@ -604,7 +667,7 @@ const PatientProfile = () => {
         {/* Save Button */}
         {isEditing && (
           <div className="mt-8 flex justify-end">
-            <button 
+            <button
               onClick={handleSaveProfile}
               disabled={isSaving}
               className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
