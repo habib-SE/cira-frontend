@@ -113,9 +113,9 @@ function MainRouter() {
         }
       >
         <Route path="" element={<PatientDashboard />} />
-        <Route path="ai-nurse" element={<AI_Nurse />} />
+        <Route path="ai" element={<AI_Nurse />} />
         <Route path="reports" element={<PatientReports />} />
-         <Route path="reportsId" element={<PatientReportDetails />} />
+        <Route path="reports/:reportId" element={<PatientReportDetails />} />
         <Route path="book-doctor" element={<MyDoctors/>} />
         <Route path="Referralcheckout" element={<ReferralCheckout/>} />
         <Route path="profile" element={<PatientProfile/>} />
