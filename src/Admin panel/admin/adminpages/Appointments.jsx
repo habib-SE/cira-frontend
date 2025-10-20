@@ -259,8 +259,6 @@ const Appointments = () => {
     const [showFormInLayout, setShowFormInLayout] = useState(false);
     const [showEditFormInLayout, setShowEditFormInLayout] = useState(false);
     const [showViewFormInLayout, setShowViewFormInLayout] = useState(false);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [editingAppointment, setEditingAppointment] = useState(null);
     const [viewingAppointment, setViewingAppointment] = useState(null);
     const [formData, setFormData] = useState({
@@ -557,8 +555,17 @@ const Appointments = () => {
     };
 
     const handleDeleteAppointment = (appointment) => {
-        setSelectedAppointment(appointment);
-        setShowDeleteConfirm(true);
+        // Delete immediately and show pink toast
+        const updatedAppointments = appointments.filter(apt => apt.id !== appointment.id);
+        setAppointments(updatedAppointments);
+        saveAppointmentsToStorage(updatedAppointments);
+        
+        // Show pink toast notification
+        setToast({
+            show: true,
+            message: 'Appointment deleted successfully!',
+            type: 'warning'
+        });
     };
 
     const handleSendReminders = () => {
@@ -580,16 +587,6 @@ const Appointments = () => {
         showToast(`Reminders sent to ${reminderCount} patients for upcoming appointments`, 'success');
     };
 
-    const confirmDelete = () => {
-        if (selectedAppointment) {
-            const updatedAppointments = appointments.filter(apt => apt.id !== selectedAppointment.id);
-            setAppointments(updatedAppointments);
-            saveAppointmentsToStorage(updatedAppointments);
-            setShowDeleteConfirm(false);
-            setSelectedAppointment(null);
-            showToast('Appointment deleted successfully!', 'success');
-        }
-    };
 
     const handleUpdateAppointment = (e) => {
         e.preventDefault();
@@ -643,6 +640,23 @@ const Appointments = () => {
         setShowViewFormInLayout(false);
         setViewingAppointment(null);
         navigate('/admin/appointments');
+    };
+
+    const handleSaveViewForm = () => {
+        // In a real app, this would save the appointment data
+        console.log('Saving appointment:', viewingAppointment);
+        
+        // Show success toast
+        setToast({
+            show: true,
+            message: 'Appointment saved successfully!',
+            type: 'success'
+        });
+        
+        // Close the form after a short delay
+        setTimeout(() => {
+            closeViewForm();
+        }, 1500);
     };
 
     const closeEditForm = () => {
@@ -1322,10 +1336,10 @@ const Appointments = () => {
                             </button>
                             <button
                                 type="submit"
-                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                                className="flex items-center space-x-2 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl"
                             >
                                 <Save className="w-4 h-4" />
-                                <span>Save</span>
+                                <span>Update Appointment</span>
                             </button>
                         </div>
                     </form>
@@ -1439,20 +1453,11 @@ const Appointments = () => {
                         {/* Action Buttons */}
                         <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
                             <button
-                                onClick={closeViewForm}
-                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                                onClick={handleSaveViewForm}
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
                             >
-                                Close
-                            </button>
-                            <button
-                                onClick={() => {
-                                    closeViewForm();
-                                    handleEditAppointment(viewingAppointment);
-                                }}
-                                className="flex items-center space-x-2 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl"
-                            >
-                                <Edit className="w-4 h-4" />
-                                <span>Edit Appointment</span>
+                                <Save className="w-4 h-4" />
+                                <span>Save</span>
                             </button>
                         </div>
                     </div>
@@ -1960,66 +1965,6 @@ const Appointments = () => {
             </div>
             )}
 
-            {/* Delete Confirmation Modal */}
-            {showDeleteConfirm && selectedAppointment && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl max-w-md w-full">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-bold text-gray-900">Delete Appointment</h2>
-                                <button
-                                    onClick={() => setShowDeleteConfirm(false)}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
-                                >
-                                    <X className="w-5 h-5 text-gray-500" />
-                                </button>
-                            </div>
-
-                            <div className="mb-6">
-                                <div className="flex items-center space-x-4 mb-4">
-                                    <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                        {selectedAppointment.patient.split(' ').map(n => n[0]).join('')}
-                                    </div>
-                                    <div>
-                                        <h4 className="text-base font-semibold text-gray-900">{selectedAppointment.patient}</h4>
-                                        <p className="text-sm text-gray-600">{selectedAppointment.doctor} • {selectedAppointment.specialty}</p>
-                                        <p className="text-xs text-gray-500">{selectedAppointment.date} at {selectedAppointment.time}</p>
-                                    </div>
-                                </div>
-
-                                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                                    <div className="flex items-start space-x-3">
-                                        <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <AlertCircle className="w-4 h-4 text-red-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-red-800 mb-1">Warning</p>
-                                            <p className="text-sm text-red-700">
-                                                Are you sure you want to delete this appointment? This action cannot be undone.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-end space-x-4">
-                                <button
-                                    onClick={() => setShowDeleteConfirm(false)}
-                                    className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={confirmDelete}
-                                    className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors duration-200"
-                                >
-                                    Delete Appointment
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

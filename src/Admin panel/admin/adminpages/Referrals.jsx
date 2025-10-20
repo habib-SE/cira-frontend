@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { 
     TrendingUp, 
     Search, 
@@ -9,132 +8,32 @@ import {
     Users,
     Calendar,
     Award,
-    Target,
-    Eye,
-    Settings,
-    Plus
+    Target
 } from 'lucide-react';
 import Card from '../admincomponents/Card';
 import Chart from '../admincomponents/Chart';
 
 const Referrals = () => {
-    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterProvider, setFilterProvider] = useState('');
-    const [filterStatus, setFilterStatus] = useState('');
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    
+    const handleRefreshContent = () => {
+        setIsRefreshing(true);
+        setTimeout(() => {
+            setIsRefreshing(false);
+        }, 1500);
+    };
+
+    
     const [filterPeriod, setFilterPeriod] = useState('');
 
-    // Sample referral data with new fields
-    const referrals = [
-        {
-            id: 1,
-            referralId: 'REF-2024-001',
-            provider: 'AirDoctor',
-            patient: 'John Doe',
-            sourcePage: 'landing-page',
-            clicks: 145,
-            converted: 98,
-            commission: 1470.00,
-            status: 'Completed',
-            createdAt: '2024-01-15',
-            appointmentId: 'APT-2024-001',
-            doctor: 'Dr. Sarah Johnson',
-            amount: 150.00,
-            clickSource: 'Google Ads',
-            commissionTier: 'Standard'
-        },
-        {
-            id: 2,
-            referralId: 'REF-2024-002',
-            provider: 'Doctor On Call',
-            patient: 'Jane Smith',
-            sourcePage: 'home-page',
-            clicks: 89,
-            converted: 67,
-            commission: 1005.00,
-            status: 'Completed',
-            createdAt: '2024-01-15',
-            appointmentId: 'APT-2024-002',
-            doctor: 'Dr. Michael Chen',
-            amount: 120.00,
-            clickSource: 'Facebook Ads',
-            commissionTier: 'Premium'
-        },
-        {
-            id: 3,
-            referralId: 'REF-2024-003',
-            provider: 'HealthCare Connect',
-            patient: 'Mike Johnson',
-            sourcePage: 'search-results',
-            clicks: 67,
-            converted: 42,
-            commission: 630.00,
-            status: 'Pending',
-            createdAt: '2024-01-16',
-            appointmentId: null,
-            doctor: null,
-            amount: 0.00,
-            clickSource: 'Organic Search',
-            commissionTier: 'Standard'
-        },
-        {
-            id: 4,
-            referralId: 'REF-2024-004',
-            provider: 'AirDoctor',
-            patient: 'Sarah Wilson',
-            sourcePage: 'doctor-profile',
-            clicks: 145,
-            converted: 98,
-            commission: 1470.00,
-            status: 'Completed',
-            createdAt: '2024-01-16',
-            appointmentId: 'APT-2024-003',
-            doctor: 'Dr. David Kim',
-            amount: 100.00,
-            clickSource: 'Direct Link',
-            commissionTier: 'Standard'
-        },
-        {
-            id: 5,
-            referralId: 'REF-2024-005',
-            provider: 'MediLink Partners',
-            patient: 'Robert Brown',
-            sourcePage: 'pricing-page',
-            clicks: 34,
-            converted: 23,
-            commission: 345.00,
-            status: 'Scheduled',
-            createdAt: '2024-01-17',
-            appointmentId: 'APT-2024-004',
-            doctor: 'Dr. Sarah Johnson',
-            amount: 150.00,
-            clickSource: 'Email Campaign',
-            commissionTier: 'Basic'
-        },
-        {
-            id: 6,
-            referralId: 'REF-2024-006',
-            provider: 'AirDoctor',
-            patient: 'Alice Cooper',
-            sourcePage: 'landing-page',
-            clicks: 145,
-            converted: 0,
-            commission: 0.00,
-            status: 'Not Converted',
-            createdAt: '2024-01-17',
-            appointmentId: null,
-            doctor: null,
-            amount: 0.00,
-            clickSource: 'Google Ads',
-            commissionTier: 'Standard'
-        }
-    ];
-
-    // Sample provider data for provider management
+    // Sample referral data
     const referralProviders = [
         {
             id: 1,
-            name: 'AirDoctor',
+            name: 'Air Doctor',
             type: 'Medical Provider',
             totalReferrals: 145,
             successfulBookings: 98,
@@ -143,12 +42,7 @@ const Referrals = () => {
             commissionEarned: 1470,
             status: 'Active',
             logo: 'AD',
-            lastActivity: '2024-01-17',
-            baseUrl: 'https://airdoctor.com',
-            referralParamKey: 'ref_id',
-            commissionModel: 'Percentage (10%)',
-            contact: 'partnerships@airdoctor.com',
-            termsUrl: 'https://airdoctor.com/terms'
+            lastActivity: '2024-01-17'
         },
         {
             id: 2,
@@ -161,12 +55,7 @@ const Referrals = () => {
             commissionEarned: 1005,
             status: 'Active',
             logo: 'DOC',
-            lastActivity: '2024-01-16',
-            baseUrl: 'https://doctoroncall.com',
-            referralParamKey: 'partner_ref',
-            commissionModel: 'Fixed ($15)',
-            contact: 'partners@doctoroncall.com',
-            termsUrl: 'https://doctoroncall.com/partner-terms'
+            lastActivity: '2024-01-16'
         },
         {
             id: 3,
@@ -179,12 +68,7 @@ const Referrals = () => {
             commissionEarned: 630,
             status: 'Active',
             logo: 'HCC',
-            lastActivity: '2024-01-15',
-            baseUrl: 'https://healthcareconnect.com',
-            referralParamKey: 'source_id',
-            commissionModel: 'Percentage (10%)',
-            contact: 'contact@healthcareconnect.com',
-            termsUrl: 'https://healthcareconnect.com/terms'
+            lastActivity: '2024-01-15'
         },
         {
             id: 4,
@@ -195,14 +79,62 @@ const Referrals = () => {
             conversionRate: 67.6,
             totalRevenue: 3450,
             commissionEarned: 345,
-            status: 'Inactive',
+            status: 'Pending',
             logo: 'MLP',
-            lastActivity: '2024-01-14',
-            baseUrl: 'https://medilinkpartners.com',
-            referralParamKey: 'ref',
-            commissionModel: 'Percentage (10%)',
-            contact: 'info@medilinkpartners.com',
-            termsUrl: 'https://medilinkpartners.com/terms'
+            lastActivity: '2024-01-14'
+        }
+    ];
+
+    const referralBookings = [
+        {
+            id: 1,
+            patient: 'John Doe',
+            provider: 'Air Doctor',
+            doctor: 'Dr. Sarah Johnson',
+            appointmentDate: '2024-01-15',
+            amount: 150.00,
+            commission: 15.00,
+            status: 'Completed'
+        },
+        {
+            id: 2,
+            patient: 'Jane Smith',
+            provider: 'Doctor On Call',
+            doctor: 'Dr. Michael Chen',
+            appointmentDate: '2024-01-15',
+            amount: 120.00,
+            commission: 12.00,
+            status: 'Completed'
+        },
+        {
+            id: 3,
+            patient: 'Mike Johnson',
+            provider: 'HealthCare Connect',
+            doctor: 'Dr. Emily Rodriguez',
+            appointmentDate: '2024-01-16',
+            amount: 200.00,
+            commission: 20.00,
+            status: 'Pending'
+        },
+        {
+            id: 4,
+            patient: 'Sarah Wilson',
+            provider: 'Air Doctor',
+            doctor: 'Dr. David Kim',
+            appointmentDate: '2024-01-16',
+            amount: 100.00,
+            commission: 10.00,
+            status: 'Completed'
+        },
+        {
+            id: 5,
+            patient: 'Robert Brown',
+            provider: 'MediLink Partners',
+            doctor: 'Dr. Sarah Johnson',
+            appointmentDate: '2024-01-17',
+            amount: 150.00,
+            commission: 15.00,
+            status: 'Scheduled'
         }
     ];
 
@@ -251,16 +183,15 @@ const Referrals = () => {
         return matchesSearch && matchesProvider;
     });
 
-    const filteredReferrals = referrals.filter(referral => {
+    const filteredBookings = referralBookings.filter(booking => {
         const matchesSearch = searchTerm === '' || 
-            referral.patient.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            referral.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            referral.referralId.toLowerCase().includes(searchTerm.toLowerCase());
+            booking.patient.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            booking.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            booking.doctor.toLowerCase().includes(searchTerm.toLowerCase());
         
-        const matchesProvider = filterProvider === '' || referral.provider === filterProvider;
-        const matchesStatus = filterStatus === '' || referral.status === filterStatus;
+        const matchesProvider = filterProvider === '' || booking.provider === filterProvider;
         
-        return matchesSearch && matchesProvider && matchesStatus;
+        return matchesSearch && matchesProvider;
     });
 
     // Calculate statistics
@@ -274,19 +205,27 @@ const Referrals = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Referral Management</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Referral Analytics</h1>
                     <p className="text-sm sm:text-base text-gray-600">Track referral bookings and commissions by provider</p>
                 </div>
-                <div className="flex items-center space-x-2">
-                    <button
-                        onClick={() => navigate('/admin/referral-providers')}
-                        className="flex items-center space-x-2 px-3 sm:px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 text-sm sm:text-base whitespace-nowrap"
-                    >
-                        <Settings className="w-4 h-4" />
-                        <span className="hidden sm:inline">Manage Providers</span>
-                        <span className="sm:hidden">Providers</span>
-                    </button>
-                </div>
+                <button
+                    onClick={handleRefreshContent}
+                    disabled={isRefreshing}
+                    className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
+                >
+                    {isRefreshing ? (
+                        <div className="flex items-center space-x-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            <span className="hidden sm:inline">Refreshing...</span>
+                            <span className="sm:hidden">...</span>
+                        </div>
+                    ) : (
+                        <>
+                            <span className="hidden sm:inline">Refresh</span>
+                            <span className="sm:hidden">↻</span>
+                        </>
+                    )}
+                </button>
             </div>
 
             {/* Main Content Area */}
@@ -366,7 +305,7 @@ const Referrals = () => {
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search referrals, patients, or providers..."
+                            placeholder="Search providers, patients, or doctors..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
@@ -386,17 +325,6 @@ const Referrals = () => {
                             ))}
                         </select>
                         <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="w-full sm:w-auto px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
-                        >
-                            <option value="">All Status</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Scheduled">Scheduled</option>
-                            <option value="Not Converted">Not Converted</option>
-                        </select>
-                        <select
                             value={filterPeriod}
                             onChange={(e) => setFilterPeriod(e.target.value)}
                             className="w-full sm:w-auto px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
@@ -408,12 +336,11 @@ const Referrals = () => {
                         </select>
                         
                         {/* Clear Filters Button */}
-                        {(searchTerm || filterProvider || filterStatus || filterPeriod) && (
+                        {(searchTerm || filterProvider || filterPeriod) && (
                             <button
                                 onClick={() => {
                                     setSearchTerm('');
                                     setFilterProvider('');
-                                    setFilterStatus('');
                                     setFilterPeriod('');
                                 }}
                                 className="w-full sm:w-auto px-3 py-2 text-pink-600 hover:bg-pink-50 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 border border-pink-200 hover:border-pink-300 hover:shadow-lg font-medium text-sm whitespace-nowrap"
@@ -465,15 +392,7 @@ const Referrals = () => {
                                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(provider.status)}`}>
                                         {provider.status}
                                     </span>
-                                    <button 
-                                        onClick={() => {
-                                            console.log('View provider details clicked for:', provider.name);
-                                            // Navigate to provider management page
-                                            navigate('/admin/referral-providers');
-                                        }}
-                                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-200"
-                                        title="View Provider Details"
-                                    >
+                                    <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
                                         <ExternalLink className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -483,30 +402,27 @@ const Referrals = () => {
                 </div>
             </Card>
 
-            {/* Referrals List */}
+            {/* Recent Referral Bookings */}
             <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Referrals List</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Referral Bookings</h3>
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Referral ID
+                                    Patient
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Provider
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Patient
+                                    Doctor
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Source Page
+                                    Appointment Date
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Clicks
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Converted
+                                    Amount
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Commission
@@ -514,62 +430,33 @@ const Referrals = () => {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Created At
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {filteredReferrals.map((referral) => (
-                                <tr key={referral.id} className="hover:bg-gray-50">
+                            {filteredBookings.map((booking) => (
+                                <tr key={booking.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">{referral.referralId}</div>
+                                        <div className="text-sm font-medium text-gray-900">{booking.patient}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{referral.provider}</div>
+                                        <div className="text-sm text-gray-900">{booking.provider}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{referral.patient}</div>
+                                        <div className="text-sm text-gray-900">{booking.doctor}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{referral.sourcePage}</div>
-                                        {referral.clickSource && (
-                                            <div className="text-xs text-gray-500">{referral.clickSource}</div>
-                                        )}
+                                        <div className="text-sm text-gray-900">{booking.appointmentDate}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{referral.clicks}</div>
+                                        <div className="text-sm font-medium text-gray-900">${booking.amount.toFixed(2)}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{referral.converted}</div>
-                                        {referral.converted > 0 && (
-                                            <div className="text-xs text-gray-500">
-                                                {((referral.converted / referral.clicks) * 100).toFixed(1)}%
-                                            </div>
-                                        )}
+                                        <div className="text-sm font-medium text-green-600">${booking.commission.toFixed(2)}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-green-600">${referral.commission.toFixed(2)}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(referral.status)}`}>
-                                            {referral.status}
+                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(booking.status)}`}>
+                                            {booking.status}
                                         </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{referral.createdAt}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <button
-                                            onClick={() => navigate(`/admin/referrals/${referral.id}`)}
-                                            className="text-blue-600 hover:text-blue-900 p-1"
-                                            title="View Details"
-                                        >
-                                            <Eye className="w-4 h-4" />
-                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -579,7 +466,7 @@ const Referrals = () => {
             </Card>
 
             {/* Empty State */}
-            {filteredProviders.length === 0 && filteredReferrals.length === 0 && (
+            {filteredProviders.length === 0 && filteredBookings.length === 0 && (
                 <Card className="p-12 text-center">
                     <div className="flex flex-col items-center space-y-4">
                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
@@ -588,7 +475,7 @@ const Referrals = () => {
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-2">No referral data found</h3>
                             <p className="text-gray-600">
-                                {searchTerm || filterProvider || filterStatus || filterPeriod
+                                {searchTerm || filterProvider || filterPeriod
                                     ? 'No referral data matches your current filters.'
                                     : 'No referral data has been recorded yet.'
                                 }
