@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { FileText, Download, Upload, Search, Filter, Eye, Bot, Calendar, Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
+import { useNavigate } from 'react-router-dom';
 
 const PatientReports = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+
+  const navigate = useNavigate();
 
   const aiReports = [
     { 
@@ -206,7 +209,9 @@ const PatientReports = () => {
                   </td>
                   <td className="py-4 px-4 align-top">
                     <div className="flex items-center space-x-2">
-                      <button className="flex items-center space-x-1 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                      <button 
+                      onClick={() => navigate(`/patient/reports/${report.id}`)}
+                      className="flex items-center space-x-1 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                         <Eye className="h-4 w-4" />
                         <span className="text-sm">View</span>
                       </button>

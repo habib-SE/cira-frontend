@@ -1,76 +1,365 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Thermometer, Activity, Droplets, Eye, Brain, AlertTriangle, CheckCircle, Clock, FileText, Download, Share } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 
 const PatientReportDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [reportData, setReportData] = useState(null);
+  const { reportId } = useParams();
+  const navigate = useNavigate();
 
-  // Sample report data - in real app this would come from props or API
-  const reportData = {
-    id: 1,
-    date: 'Sept 30, 2025',
-    time: '10:30 AM',
-    duration: '15 minutes',
-    type: 'Daily Checkup',
-    status: 'Completed',
-    aiScore: 95,
-    
-    symptoms: [
-      'Mild headache for 2 days',
-      'Occasional dizziness when standing',
-      'Slight fatigue in the evening',
-      'Dry mouth sensation',
-      'Difficulty concentrating'
-    ],
-    
-    vitals: {
-      heartRate: { value: 78, unit: 'bpm', status: 'normal' },
-      temperature: { value: 98.6, unit: '°F', status: 'normal' },
-      bloodPressure: { value: '120/80', unit: 'mmHg', status: 'normal' },
-      oxygenSaturation: { value: 98, unit: '%', status: 'normal' },
-      respiratoryRate: { value: 16, unit: 'breaths/min', status: 'normal' },
-      weight: { value: 165, unit: 'lbs', status: 'normal' }
+  // Sample reports data for different report IDs
+  const allReportsData = {
+    1: {
+      id: 1,
+      date: 'Sept 30, 2025',
+      time: '10:30 AM',
+      duration: '15 minutes',
+      type: 'Daily Checkup',
+      status: 'Completed',
+      aiScore: 95,
+      
+      symptoms: [
+        'Mild headache for 2 days',
+        'Occasional dizziness when standing',
+        'Slight fatigue in the evening',
+        'Dry mouth sensation',
+        'Difficulty concentrating'
+      ],
+      
+      vitals: {
+        heartRate: { value: 78, unit: 'bpm', status: 'normal' },
+        temperature: { value: 98.6, unit: '°F', status: 'normal' },
+        bloodPressure: { value: '120/80', unit: 'mmHg', status: 'normal' },
+        oxygenSaturation: { value: 98, unit: '%', status: 'normal' },
+        respiratoryRate: { value: 16, unit: 'breaths/min', status: 'normal' },
+        weight: { value: 165, unit: 'lbs', status: 'normal' }
+      },
+      
+      conditions: [
+        {
+          rank: 1,
+          name: 'Dehydration',
+          confidence: 85,
+          description: 'Mild dehydration based on symptoms and recent activity patterns',
+          severity: 'low'
+        },
+        {
+          rank: 2,
+          name: 'Stress-related tension headache',
+          confidence: 72,
+          description: 'Tension headache likely caused by stress or poor sleep',
+          severity: 'low'
+        },
+        {
+          rank: 3,
+          name: 'Mild fatigue syndrome',
+          confidence: 58,
+          description: 'General fatigue possibly related to lifestyle factors',
+          severity: 'low'
+        }
+      ],
+      
+      recommendations: [
+        'Increase daily water intake to 8-10 glasses',
+        'Maintain regular sleep schedule (7-8 hours)',
+        'Practice stress management techniques (meditation, deep breathing)',
+        'Take short breaks every hour during work',
+        'Consider light exercise like walking for 30 minutes daily',
+        'Monitor symptoms and consult doctor if they worsen'
+      ],
+      
+      nextSteps: [
+        'Follow up in 3 days if symptoms persist',
+        'Schedule appointment if new symptoms appear',
+        'Keep symptom diary for tracking progress'
+      ]
     },
-    
-    conditions: [
-      {
-        rank: 1,
-        name: 'Dehydration',
-        confidence: 85,
-        description: 'Mild dehydration based on symptoms and recent activity patterns',
-        severity: 'low'
+    2: {
+      id: 2,
+      date: 'Sept 29, 2025',
+      time: '2:15 PM',
+      duration: '8 minutes',
+      type: 'Medication Review',
+      status: 'Completed',
+      aiScore: 88,
+      
+      symptoms: [
+        'Mild nausea after medication',
+        'Improved sleep quality',
+        'Reduced anxiety levels',
+        'Better appetite'
+      ],
+      
+      vitals: {
+        heartRate: { value: 72, unit: 'bpm', status: 'normal' },
+        temperature: { value: 98.4, unit: '°F', status: 'normal' },
+        bloodPressure: { value: '118/76', unit: 'mmHg', status: 'normal' },
+        oxygenSaturation: { value: 99, unit: '%', status: 'normal' },
+        respiratoryRate: { value: 14, unit: 'breaths/min', status: 'normal' },
+        weight: { value: 164, unit: 'lbs', status: 'normal' }
       },
-      {
-        rank: 2,
-        name: 'Stress-related tension headache',
-        confidence: 72,
-        description: 'Tension headache likely caused by stress or poor sleep',
-        severity: 'low'
+      
+      conditions: [
+        {
+          rank: 1,
+          name: 'Medication side effects',
+          confidence: 78,
+          description: 'Mild nausea as potential side effect of current medication',
+          severity: 'low'
+        },
+        {
+          rank: 2,
+          name: 'Improved anxiety management',
+          confidence: 82,
+          description: 'Positive response to anxiety medication regimen',
+          severity: 'low'
+        }
+      ],
+      
+      recommendations: [
+        'Take medication with food to reduce nausea',
+        'Continue current dosage as prescribed',
+        'Monitor side effects for next 3 days',
+        'Stay hydrated throughout the day'
+      ],
+      
+      nextSteps: [
+        'Continue medication as prescribed',
+        'Report any worsening symptoms immediately',
+        'Follow up in 1 week for medication review'
+      ]
+    },
+    3: {
+      id: 3,
+      date: 'Sept 28, 2025',
+      time: '9:45 AM',
+      duration: '12 minutes',
+      type: 'Symptom Analysis',
+      status: 'In Progress',
+      aiScore: 76,
+      
+      symptoms: [
+        'Persistent headache',
+        'Blurred vision occasionally',
+        'Neck stiffness',
+        'Shoulder tension'
+      ],
+      
+      vitals: {
+        heartRate: { value: 82, unit: 'bpm', status: 'normal' },
+        temperature: { value: 99.1, unit: '°F', status: 'warning' },
+        bloodPressure: { value: '125/85', unit: 'mmHg', status: 'warning' },
+        oxygenSaturation: { value: 97, unit: '%', status: 'normal' },
+        respiratoryRate: { value: 18, unit: 'breaths/min', status: 'normal' },
+        weight: { value: 166, unit: 'lbs', status: 'normal' }
       },
-      {
-        rank: 3,
-        name: 'Mild fatigue syndrome',
-        confidence: 58,
-        description: 'General fatigue possibly related to lifestyle factors',
-        severity: 'low'
-      }
-    ],
-    
-    recommendations: [
-      'Increase daily water intake to 8-10 glasses',
-      'Maintain regular sleep schedule (7-8 hours)',
-      'Practice stress management techniques (meditation, deep breathing)',
-      'Take short breaks every hour during work',
-      'Consider light exercise like walking for 30 minutes daily',
-      'Monitor symptoms and consult doctor if they worsen'
-    ],
-    
-    nextSteps: [
-      'Follow up in 3 days if symptoms persist',
-      'Schedule appointment if new symptoms appear',
-      'Keep symptom diary for tracking progress'
-    ]
+      
+      conditions: [
+        {
+          rank: 1,
+          name: 'Tension headache',
+          confidence: 82,
+          description: 'Muscle tension in neck and shoulders contributing to headache',
+          severity: 'medium'
+        },
+        {
+          rank: 2,
+          name: 'Visual strain',
+          confidence: 65,
+          description: 'Possible eye strain from prolonged screen time',
+          severity: 'low'
+        }
+      ],
+      
+      recommendations: [
+        'Apply warm compress to neck and shoulders',
+        'Take regular breaks from screens every 20 minutes',
+        'Practice neck stretching exercises',
+        'Consider over-the-counter pain relief if needed'
+      ],
+      
+      nextSteps: [
+        'Complete the symptom analysis',
+        'Consult with healthcare provider if symptoms worsen',
+        'Schedule eye examination if vision issues persist'
+      ]
+    },
+    4: {
+      id: 4,
+      date: 'Sept 27, 2025',
+      time: '11:20 AM',
+      duration: '20 minutes',
+      type: 'Wellness Check',
+      status: 'Completed',
+      aiScore: 92,
+      
+      symptoms: [
+        'Good energy levels',
+        'Normal sleep patterns',
+        'Stable mood',
+        'Regular appetite'
+      ],
+      
+      vitals: {
+        heartRate: { value: 75, unit: 'bpm', status: 'normal' },
+        temperature: { value: 98.2, unit: '°F', status: 'normal' },
+        bloodPressure: { value: '122/78', unit: 'mmHg', status: 'normal' },
+        oxygenSaturation: { value: 98, unit: '%', status: 'normal' },
+        respiratoryRate: { value: 16, unit: 'breaths/min', status: 'normal' },
+        weight: { value: 165, unit: 'lbs', status: 'normal' }
+      },
+      
+      conditions: [
+        {
+          rank: 1,
+          name: 'Good overall health',
+          confidence: 90,
+          description: 'All vital signs within normal range and positive symptom report',
+          severity: 'low'
+        }
+      ],
+      
+      recommendations: [
+        'Continue current healthy lifestyle habits',
+        'Maintain regular exercise routine',
+        'Keep balanced diet and hydration',
+        'Continue stress management practices'
+      ],
+      
+      nextSteps: [
+        'Schedule next wellness check in 2 weeks',
+        'Continue monitoring daily symptoms',
+        'Maintain healthy lifestyle choices'
+      ]
+    },
+    5: {
+      id: 5,
+      date: 'Sept 26, 2025',
+      time: '3:45 PM',
+      duration: '5 minutes',
+      type: 'Emergency Consult',
+      status: 'Pending',
+      aiScore: 65,
+      
+      symptoms: [
+        'Chest pain',
+        'Shortness of breath',
+        'Rapid heartbeat',
+        'Anxiety'
+      ],
+      
+      vitals: {
+        heartRate: { value: 95, unit: 'bpm', status: 'warning' },
+        temperature: { value: 98.8, unit: '°F', status: 'normal' },
+        bloodPressure: { value: '135/90', unit: 'mmHg', status: 'warning' },
+        oxygenSaturation: { value: 96, unit: '%', status: 'warning' },
+        respiratoryRate: { value: 22, unit: 'breaths/min', status: 'warning' },
+        weight: { value: 165, unit: 'lbs', status: 'normal' }
+      },
+      
+      conditions: [
+        {
+          rank: 1,
+          name: 'Anxiety attack',
+          confidence: 70,
+          description: 'Symptoms consistent with acute anxiety or panic attack',
+          severity: 'medium'
+        },
+        {
+          rank: 2,
+          name: 'Cardiac evaluation needed',
+          confidence: 45,
+          description: 'Requires medical evaluation to rule out cardiac issues',
+          severity: 'high'
+        }
+      ],
+      
+      recommendations: [
+        'Seek immediate medical attention',
+        'Practice deep breathing exercises',
+        'Sit in quiet, comfortable position',
+        'Avoid strenuous activity'
+      ],
+      
+      nextSteps: [
+        'Urgent medical evaluation required',
+        'Contact healthcare provider immediately',
+        'Go to emergency room if symptoms worsen'
+      ]
+    },
+    6: {
+      id: 6,
+      date: 'Sept 25, 2025',
+      time: '8:30 PM',
+      duration: '18 minutes',
+      type: 'Sleep Analysis',
+      status: 'Completed',
+      aiScore: 89,
+      
+      symptoms: [
+        'Difficulty falling asleep',
+        'Waking up frequently at night',
+        'Daytime sleepiness',
+        'Restless legs'
+      ],
+      
+      vitals: {
+        heartRate: { value: 68, unit: 'bpm', status: 'normal' },
+        temperature: { value: 98.0, unit: '°F', status: 'normal' },
+        bloodPressure: { value: '118/75', unit: 'mmHg', status: 'normal' },
+        oxygenSaturation: { value: 97, unit: '%', status: 'normal' },
+        respiratoryRate: { value: 14, unit: 'breaths/min', status: 'normal' },
+        weight: { value: 164, unit: 'lbs', status: 'normal' }
+      },
+      
+      conditions: [
+        {
+          rank: 1,
+          name: 'Insomnia',
+          confidence: 85,
+          description: 'Difficulty initiating and maintaining sleep',
+          severity: 'medium'
+        },
+        {
+          rank: 2,
+          name: 'Restless leg syndrome',
+          confidence: 60,
+          description: 'Uncomfortable sensations in legs affecting sleep',
+          severity: 'low'
+        }
+      ],
+      
+      recommendations: [
+        'Establish consistent bedtime routine',
+        'Avoid screens 1 hour before bed',
+        'Keep bedroom cool and dark',
+        'Limit caffeine after 2 PM',
+        'Try relaxation techniques before sleep'
+      ],
+      
+      nextSteps: [
+        'Track sleep patterns for 1 week',
+        'Follow up if sleep doesn\'t improve',
+        'Consider sleep study if problems persist'
+      ]
+    }
   };
+
+  useEffect(() => {
+    // Simulate API call to fetch specific report data
+    const fetchReportData = () => {
+      setIsLoading(true);
+      setTimeout(() => {
+        const data = allReportsData[parseInt(reportId)];
+        setReportData(data);
+        setIsLoading(false);
+      }, 500);
+    };
+
+    fetchReportData();
+  }, [reportId]);
 
   const getVitalStatusColor = (status) => {
     switch (status) {
@@ -99,6 +388,18 @@ const PatientReportDetails = () => {
     }, 2000);
   };
 
+  // Loading state
+  if (isLoading || !reportData) {
+    return (
+      <div className="min-h-screen bg-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading report...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-pink-50">
       {/* Header */}
@@ -109,7 +410,7 @@ const PatientReportDetails = () => {
               <div className="text-left">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900">AI Nurse Report Details</h1>
                 <p className="text-xs sm:text-sm text-gray-600">
-                  {reportData.date} • {reportData.time} • {reportData.duration}
+                  {reportData.date} • {reportData.time} • {reportData.duration} • {reportData.type}
                 </p>
               </div>
             </div>
@@ -353,9 +654,14 @@ const PatientReportDetails = () => {
               </div>
             </div>
             <p className="text-gray-700 leading-relaxed">
-              Based on the reported symptoms and vital signs, the AI analysis suggests mild dehydration as the most likely cause of your symptoms. 
-              The combination of headache, dizziness, and dry mouth, along with normal vital signs, points to insufficient fluid intake. 
-              The recommendations focus on hydration, rest, and stress management. If symptoms persist or worsen, please consult with a healthcare provider.
+              Based on the reported symptoms and vital signs, the AI analysis suggests {reportData.conditions[0]?.name?.toLowerCase() || 'potential health concerns'} as the most likely cause of your symptoms. 
+              {reportData.id === 1 && ' The combination of headache, dizziness, and dry mouth, along with normal vital signs, points to insufficient fluid intake.'}
+              {reportData.id === 2 && ' The medication appears to be working effectively with only minor side effects reported.'}
+              {reportData.id === 3 && ' The symptoms appear to be related to muscle tension and possible visual strain from daily activities.'}
+              {reportData.id === 4 && ' All health indicators are within normal ranges, showing good overall wellness maintenance.'}
+              {reportData.id === 5 && ' Some vital signs show concerning patterns that require immediate medical evaluation to rule out serious conditions.'}
+              {reportData.id === 6 && ' The sleep patterns indicate difficulties with both sleep initiation and maintenance throughout the night.'}
+              The recommendations focus on {reportData.id === 1 ? 'hydration, rest, and stress management' : reportData.id === 5 ? 'immediate medical attention and safety measures' : 'addressing the specific symptoms and underlying causes'}. If symptoms persist or worsen, please consult with a healthcare provider.
             </p>
           </Card>
         </div>
