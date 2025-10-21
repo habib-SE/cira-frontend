@@ -112,8 +112,8 @@ const EnhancedLoginPage = () => {
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                     Email Address
                   </label>
-                  <div className="relative form-input-with-icon">
-                    <EnvelopeIcon className="icon-left h-5 w-5" />
+                  <div className="form-input-with-icon">
+                    <EnvelopeIcon className="icon-left h-5 w-5 text-gray-400" />
                     <FormicaFormField
                       label=""
                       name="email"
@@ -135,8 +135,8 @@ const EnhancedLoginPage = () => {
                   <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                     Password
                   </label>
-                  <div className="relative form-input-with-icon">
-                    <LockClosedIcon className="icon-left h-5 w-5" />
+                  <div className="form-input-with-icon">
+                    <LockClosedIcon className="icon-left h-5 w-5 text-gray-400" />
                     <FormicaFormField
                       label=""
                       name="password"
@@ -153,12 +153,12 @@ const EnhancedLoginPage = () => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="icon-right p-1 hover:bg-gray-100 rounded transition-colors cursor-pointer"
+                      className="icon-right p-1 hover:bg-gray-100 rounded transition-colors text-gray-400 hover:text-gray-600"
                     >
                       {showPassword ? (
-                        <EyeSlashIcon className="h-5 w-5 hover:text-gray-600" />
+                        <EyeSlashIcon className="h-5 w-5" />
                       ) : (
-                        <EyeIcon className="h-5 w-5 hover:text-gray-600" />
+                        <EyeIcon className="h-5 w-5" />
                       )}
                     </button>
                   </div>

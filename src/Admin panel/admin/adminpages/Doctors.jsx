@@ -24,7 +24,10 @@ const Doctors = () => {
     
 
     // Sample doctors data with new status system
-    const [doctors, setDoctors] = useState([
+    const [doctors, setDoctors] = useState(() => {
+        // Load pending doctors from localStorage and merge with sample data
+        const pendingDoctors = JSON.parse(localStorage.getItem('pendingDoctors') || '[]');
+        return [
         {
             id: 1,
             name: 'Dr. Sarah Johnson',
@@ -89,8 +92,11 @@ const Doctors = () => {
             verificationStatus: 'Under Review',
             documents: ['License', 'Certification'],
             joinDate: '2024-01-12'
-        }
-    ]);
+        },
+        // Merge pending doctors from localStorage
+        ...pendingDoctors
+    ];
+    });
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterSpecialty, setFilterSpecialty] = useState('');
@@ -109,6 +115,28 @@ const Doctors = () => {
             setSearchTerm(searchParam);
         }
     }, [location.search]);
+
+    // Refresh doctors list when localStorage changes
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const pendingDoctors = JSON.parse(localStorage.getItem('pendingDoctors') || '[]');
+            setDoctors(prev => {
+                // Remove old pending doctors and add new ones
+                const withoutPending = prev.filter(d => d.status !== 'Pending' || !d.createdAt);
+                return [...withoutPending, ...pendingDoctors];
+            });
+        };
+
+        // Listen for storage changes
+        window.addEventListener('storage', handleStorageChange);
+        
+        // Also check localStorage on mount
+        handleStorageChange();
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []);
 
     // Helper functions for status colors
     const getStatusColor = (status) => {
@@ -179,6 +207,12 @@ const Doctors = () => {
                 ? { ...d, status: 'Approved', verificationStatus: 'Verified' }
                 : d
         ));
+        
+        // Update localStorage - remove from pending doctors
+        const pendingDoctors = JSON.parse(localStorage.getItem('pendingDoctors') || '[]');
+        const updatedPendingDoctors = pendingDoctors.filter(d => d.id !== doctor.id);
+        localStorage.setItem('pendingDoctors', JSON.stringify(updatedPendingDoctors));
+        
         setShowSuccessMessage(true);
         setTimeout(() => setShowSuccessMessage(false), 3000);
     };
@@ -189,6 +223,12 @@ const Doctors = () => {
                 ? { ...d, status: 'Rejected', verificationStatus: 'Failed' }
                 : d
         ));
+        
+        // Update localStorage - remove from pending doctors
+        const pendingDoctors = JSON.parse(localStorage.getItem('pendingDoctors') || '[]');
+        const updatedPendingDoctors = pendingDoctors.filter(d => d.id !== doctor.id);
+        localStorage.setItem('pendingDoctors', JSON.stringify(updatedPendingDoctors));
+        
         setShowSuccessMessage(true);
         setTimeout(() => setShowSuccessMessage(false), 3000);
     };

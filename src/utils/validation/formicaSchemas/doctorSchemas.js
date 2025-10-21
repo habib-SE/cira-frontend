@@ -81,7 +81,7 @@ export const prescriptionSchema = createFormicaSchema()
   .string('instructions', { required: true, min: 10, max: 500 })
   .date('startDate', { required: true, future: true })
   .custom('endDate', 
-    (value, formData) => value >= formData.startDate,
+    (value, formData) => formData && formData.startDate ? value >= formData.startDate : true,
     'End date must be after start date'
   )
   .build();
@@ -121,20 +121,21 @@ export const doctorRegistrationSchema = createFormicaSchema()
   .string('firstName', { required: true, min: 2, max: 50 })
   .string('lastName', { required: true, min: 2, max: 50 })
   .string('email', { required: true, email: true })
-  .custom('password', 
-    FormicaValidators.password().safeParse,
-    'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
-  )
+  .string('password', { required: true, min: 6 })
   .custom('confirmPassword', 
-    (value, formData) => value === formData.password,
+    (value, formData) => formData && formData.password ? value === formData.password : true,
     'Passwords must match'
   )
   .string('specialty', { required: true, min: 2, max: 100 })
   .string('licenseNumber', { required: true, min: 5, max: 20 })
-  .custom('phone', 
-    FormicaValidators.phone().safeParse,
-    'Please enter a valid phone number'
-  )
+  .string('phone', { required: true, min: 10 })
+  .number('experience', { required: false, min: 0, max: 50 })
+  .string('bio', { required: false, min: 10, max: 500 })
+  .enum('consultationType', ['online', 'in-person', 'both'], { required: false })
+  .number('consultationFee', { required: false, min: 0, max: 10000 })
+  .number('appointmentDuration', { required: false, min: 15, max: 240 })
+  .array('availability', z.string(), { required: false, min: 0 })
+  .array('languages', z.string(), { required: false, min: 0 })
   .build();
 
 // Export all schemas

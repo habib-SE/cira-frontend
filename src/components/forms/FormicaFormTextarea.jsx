@@ -31,18 +31,14 @@ const FormicaFormTextarea = React.memo(({
         id={name}
         rows={rows}
         placeholder={placeholder}
-        className={`form-textarea ${hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-pink-500 focus:ring-pink-500'}`}
+        className={`form-textarea ${hasError ? 'error' : ''}`}
         {...fieldProps}
         aria-invalid={hasError}
         aria-describedby={hasError ? `${name}-error` : undefined}
         {...props}
       />
       
-      {hasError && (
-        <p id={`${name}-error`} className="formica-error text-red-500 text-sm mt-1" role="alert">
-          {errorMessage}
-        </p>
-      )}
+      {/* Error message removed - shown at top level instead */}
     </div>
   );
 });
