@@ -11,7 +11,12 @@ import {
     AlertCircle,
     XCircle,
     TrendingUp,
-    Target
+    Target,
+    X,
+    Building2,
+    Globe,
+    Mail,
+    FileText
 } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
@@ -19,7 +24,6 @@ const ReferralDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [referral, setReferral] = useState(null);
-    const [showProviderModal, setShowProviderModal] = useState(false);
 
     // Sample referral data - in real app, fetch by ID
     const referrals = [
@@ -204,269 +208,224 @@ const ReferralDetail = () => {
                         <p className="text-sm sm:text-base text-gray-600">{referral.referralId}</p>
                     </div>
                 </div>
-            </div>
-
-            {/* Status Banner */}
-            <Card className="p-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                        {getStatusIcon(referral.status)}
-                        <div>
-                            <h3 className="font-semibold text-gray-900">Referral Status</h3>
-                            <p className="text-sm text-gray-600">Current status of the referral</p>
-                        </div>
-                    </div>
+                <div className="flex items-center space-x-3">
                     <span className={`inline-flex px-4 py-2 text-sm font-semibold rounded-full ${getStatusColor(referral.status)}`}>
                         {referral.status}
                     </span>
                 </div>
-            </Card>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Details */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Referral Information */}
-                    <Card className="p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Referral Information</h2>
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-sm text-gray-600">Referral ID</p>
-                                    <p className="font-medium text-gray-900">{referral.referralId}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Provider</p>
-                                    <p className="font-medium text-gray-900">{referral.provider}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Source Page</p>
-                                    <p className="font-medium text-gray-900">{referral.sourcePage}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Click Source</p>
-                                    <p className="font-medium text-gray-900">{referral.clickSource}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Commission Tier</p>
-                                    <p className="font-medium text-gray-900">{referral.commissionTier}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Created At</p>
-                                    <p className="font-medium text-gray-900">{referral.createdAt}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-
-                    {/* Patient Information */}
-                    <Card className="p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Patient Information</h2>
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-sm text-gray-600">Name</p>
-                                    <p className="font-medium text-gray-900">{referral.patient}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Email</p>
-                                    <p className="font-medium text-gray-900">{referral.email}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Phone</p>
-                                    <p className="font-medium text-gray-900">{referral.phone}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-
-                    {/* Appointment Information */}
-                    {referral.appointmentId && (
-                        <Card className="p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Appointment Information</h2>
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-sm text-gray-600">Appointment ID</p>
-                                        <p className="font-medium text-gray-900">{referral.appointmentId}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-600">Doctor</p>
-                                        <p className="font-medium text-gray-900">{referral.doctor}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-600">Amount</p>
-                                        <p className="font-medium text-gray-900">${referral.amount.toFixed(2)}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-                    )}
-                </div>
-
-                {/* Sidebar */}
-                <div className="space-y-6">
-                    {/* Performance Metrics */}
-                    <Card className="p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h2>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between pb-3 border-b">
-                                <div className="flex items-center space-x-2">
-                                    <TrendingUp className="w-5 h-5 text-blue-500" />
-                                    <span className="text-gray-600">Clicks</span>
-                                </div>
-                                <span className="font-semibold text-gray-900">{referral.clicks}</span>
-                            </div>
-                            <div className="flex items-center justify-between pb-3 border-b">
-                                <div className="flex items-center space-x-2">
-                                    <Target className="w-5 h-5 text-green-500" />
-                                    <span className="text-gray-600">Converted</span>
-                                </div>
-                                <span className="font-semibold text-gray-900">{referral.converted}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-600">Conversion Rate</span>
-                                <span className="font-semibold text-gray-900">{referral.conversionRate.toFixed(1)}%</span>
-                            </div>
-                        </div>
-                    </Card>
-
-                    {/* Financial Summary */}
-                    <Card className="p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Financial Summary</h2>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center pb-3 border-b">
-                                <span className="text-gray-600">Total Commission</span>
-                                <span className="font-semibold text-green-600">${referral.commission.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-600">Commission Tier</span>
-                                <span className="font-semibold text-gray-900">{referral.commissionTier}</span>
-                            </div>
-                        </div>
-                    </Card>
-
-                    {/* Provider Information */}
-                    <Card className="p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Provider</h2>
-                        <div className="space-y-2">
-                            <p className="text-sm text-gray-600">Referral Provider</p>
-                            <p className="font-medium text-gray-900">{referral.provider}</p>
-                            <button 
-                                onClick={() => {
-                                    console.log('View Provider Details clicked for:', referral.provider);
-                                    setShowProviderModal(true);
-                                }}
-                                className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 mt-2 transition-colors"
-                            >
-                                <ExternalLink className="w-4 h-4" />
-                                <span className="text-sm">View Provider Details</span>
-                            </button>
-                        </div>
-                    </Card>
-                </div>
             </div>
 
-            {/* Provider Details Modal */}
-            {showProviderModal && referral && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <Card className="w-full max-w-2xl">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-semibold text-gray-900">Provider Details</h2>
-                                <button
-                                    onClick={() => setShowProviderModal(false)}
-                                    className="text-gray-400 hover:text-gray-600"
-                                >
-                                    <XCircle className="w-6 h-6" />
-                                </button>
+            {/* Main Form Layout */}
+            <Card className="p-8">
+                <div className="space-y-6">
+                    {/* Referral Information Section */}
+                    <div className="bg-gray-50 rounded-xl p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <TrendingUp className="w-4 h-4 text-blue-600" />
                             </div>
-                            
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-sm text-gray-600">Provider Name</p>
-                                        <p className="font-medium text-gray-900">{referral.provider}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-600">Commission Tier</p>
-                                        <p className="font-medium text-gray-900">{referral.commissionTier}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-600">Website</p>
-                                        <a 
-                                            href={
-                                                referral.provider === 'AirDoctor' ? 'https://airdoctor.com' : 
-                                                referral.provider === 'Doctor On Call' ? 'https://doctoroncall.com' :
-                                                referral.provider === 'HealthCare Connect' ? 'https://healthcareconnect.com' :
-                                                'https://medilinkpartners.com'
-                                            }
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline flex items-center space-x-1"
-                                        >
-                                            <span>Visit Website</span>
-                                            <ExternalLink className="w-3 h-3" />
-                                        </a>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-600">Contact Email</p>
-                                        <a 
-                                            href={`mailto:${
-                                                referral.provider === 'AirDoctor' ? 'partnerships@airdoctor.com' :
-                                                referral.provider === 'Doctor On Call' ? 'partners@doctoroncall.com' :
-                                                referral.provider === 'HealthCare Connect' ? 'contact@healthcareconnect.com' :
-                                                'info@medilinkpartners.com'
-                                            }`}
-                                            className="text-blue-600 hover:underline"
-                                        >
-                                            {referral.provider === 'AirDoctor' ? 'partnerships@airdoctor.com' :
-                                             referral.provider === 'Doctor On Call' ? 'partners@doctoroncall.com' :
-                                             referral.provider === 'HealthCare Connect' ? 'contact@healthcareconnect.com' :
-                                             'info@medilinkpartners.com'}
-                                        </a>
-                                    </div>
-                                </div>
+                            Referral Information
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Referral ID</label>
+                                <p className="text-gray-900 font-medium">{referral.referralId}</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Provider</label>
+                                <p className="text-gray-900 font-medium">{referral.provider}</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Source Page</label>
+                                <p className="text-gray-900">{referral.sourcePage}</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Click Source</label>
+                                <p className="text-gray-900">{referral.clickSource}</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Commission Tier</label>
+                                <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-purple-100 text-purple-800">
+                                    {referral.commissionTier}
+                                </span>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Created At</label>
+                                <p className="text-gray-900">{referral.createdAt}</p>
+                            </div>
+                        </div>
+                    </div>
 
-                                <div className="pt-4 border-t">
-                                    <h3 className="font-semibold text-gray-900 mb-2">Performance Summary</h3>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div>
-                                            <p className="text-sm text-gray-600">Total Clicks</p>
-                                            <p className="font-medium text-gray-900">{referral.clicks}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-600">Converted</p>
-                                            <p className="font-medium text-gray-900">{referral.converted}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-gray-600">Conversion Rate</p>
-                                            <p className="font-medium text-gray-900">{referral.conversionRate.toFixed(1)}%</p>
-                                        </div>
-                                    </div>
-                                </div>
+                    {/* Patient Information Section */}
+                    <div className="bg-gray-50 rounded-xl p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center mr-3">
+                                <User className="w-4 h-4 text-pink-600" />
+                            </div>
+                            Patient Information
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Name</label>
+                                <p className="text-gray-900 font-medium">{referral.patient}</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Email</label>
+                                <p className="text-gray-900">{referral.email}</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Phone</label>
+                                <p className="text-gray-900">{referral.phone}</p>
+                            </div>
+                        </div>
+                    </div>
 
-                                <div className="flex items-center justify-end space-x-3 pt-4">
-                                    <button
-                                        onClick={() => setShowProviderModal(false)}
-                                        className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                                    >
-                                        Close
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setShowProviderModal(false);
-                                            navigate('/admin/referral-providers');
-                                        }}
-                                        className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
-                                    >
-                                        Manage Provider
-                                    </button>
+                    {/* Performance Metrics Section */}
+                    <div className="bg-gray-50 rounded-xl p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                <Target className="w-4 h-4 text-green-600" />
+                            </div>
+                            Performance Metrics
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Total Clicks</label>
+                                <p className="text-2xl font-bold text-gray-900">{referral.clicks}</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Converted</label>
+                                <p className="text-2xl font-bold text-green-600">{referral.converted}</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Conversion Rate</label>
+                                <p className="text-2xl font-bold text-gray-900">{referral.conversionRate.toFixed(1)}%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Financial Summary Section */}
+                    <div className="bg-gray-50 rounded-xl p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                                <DollarSign className="w-4 h-4 text-yellow-600" />
+                            </div>
+                            Financial Summary
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Total Commission</label>
+                                <p className="text-2xl font-bold text-green-600">${referral.commission.toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Commission Tier</label>
+                                <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-purple-100 text-purple-800">
+                                    {referral.commissionTier}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Provider Information Section */}
+                    <div className="bg-gray-50 rounded-xl p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                                <Building2 className="w-4 h-4 text-indigo-600" />
+                            </div>
+                            Provider Information
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Provider Name</label>
+                                <p className="text-gray-900 font-medium">{referral.provider}</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Commission Tier</label>
+                                <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-purple-100 text-purple-800">
+                                    {referral.commissionTier}
+                                </span>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Website</label>
+                                <a 
+                                    href={
+                                        referral.provider === 'AirDoctor' ? 'https://airdoctor.com' : 
+                                        referral.provider === 'Doctor On Call' ? 'https://doctoroncall.com' :
+                                        referral.provider === 'HealthCare Connect' ? 'https://healthcareconnect.com' :
+                                        'https://medilinkpartners.com'
+                                    }
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline flex items-center space-x-1"
+                                >
+                                    <span>Visit Website</span>
+                                    <ExternalLink className="w-4 h-4" />
+                                </a>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-2">Contact Email</label>
+                                <a 
+                                    href={`mailto:${
+                                        referral.provider === 'AirDoctor' ? 'partnerships@airdoctor.com' :
+                                        referral.provider === 'Doctor On Call' ? 'partners@doctoroncall.com' :
+                                        referral.provider === 'HealthCare Connect' ? 'contact@healthcareconnect.com' :
+                                        'info@medilinkpartners.com'
+                                    }`}
+                                    className="text-blue-600 hover:underline"
+                                >
+                                    {referral.provider === 'AirDoctor' ? 'partnerships@airdoctor.com' :
+                                     referral.provider === 'Doctor On Call' ? 'partners@doctoroncall.com' :
+                                     referral.provider === 'HealthCare Connect' ? 'contact@healthcareconnect.com' :
+                                     'info@medilinkpartners.com'}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Appointment Information Section (if exists) */}
+                    {referral.appointmentId && (
+                        <div className="bg-gray-50 rounded-xl p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                    <Calendar className="w-4 h-4 text-blue-600" />
+                                </div>
+                                Appointment Information
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Appointment ID</label>
+                                    <p className="text-gray-900 font-medium">{referral.appointmentId}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Doctor</label>
+                                    <p className="text-gray-900">{referral.doctor}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-2">Amount</label>
+                                    <p className="text-gray-900 font-medium">${referral.amount.toFixed(2)}</p>
                                 </div>
                             </div>
                         </div>
-                    </Card>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                        <button
+                            onClick={() => navigate('/admin/referrals')}
+                            className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                        >
+                            Back to Referrals
+                        </button>
+                        <button
+                            onClick={() => navigate('/admin/referral-providers')}
+                            className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                        >
+                            <Building2 className="w-4 h-4" />
+                            <span>Manage Providers</span>
+                        </button>
+                    </div>
                 </div>
-            )}
+            </Card>
         </div>
     );
 };

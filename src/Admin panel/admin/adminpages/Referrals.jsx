@@ -11,9 +11,10 @@ import {
     Target
 } from 'lucide-react';
 import Card from '../admincomponents/Card';
-import Chart from '../admincomponents/Chart';
+import { useNavigate } from 'react-router-dom';
 
 const Referrals = () => {
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterProvider, setFilterProvider] = useState('');
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -85,74 +86,103 @@ const Referrals = () => {
         }
     ];
 
-    const referralBookings = [
+    const referralList = [
         {
             id: 1,
-            patient: 'John Doe',
+            referralId: 'REF-2024-001',
             provider: 'Air Doctor',
-            doctor: 'Dr. Sarah Johnson',
-            appointmentDate: '2024-01-15',
-            amount: 150.00,
-            commission: 15.00,
-            status: 'Completed'
+            patient: 'John Doe',
+            sourcePage: 'landing-page',
+            clicks: 245,
+            converted: 'Yes',
+            commission: 147.00,
+            status: 'Completed',
+            createdAt: '2024-01-15'
         },
         {
             id: 2,
-            patient: 'Jane Smith',
+            referralId: 'REF-2024-002',
             provider: 'Doctor On Call',
-            doctor: 'Dr. Michael Chen',
-            appointmentDate: '2024-01-15',
-            amount: 120.00,
-            commission: 12.00,
-            status: 'Completed'
+            patient: 'Jane Smith',
+            sourcePage: 'home-page',
+            clicks: 189,
+            converted: 'Yes',
+            commission: 120.00,
+            status: 'Completed',
+            createdAt: '2024-01-15'
         },
         {
             id: 3,
-            patient: 'Mike Johnson',
+            referralId: 'REF-2024-003',
             provider: 'HealthCare Connect',
-            doctor: 'Dr. Emily Rodriguez',
-            appointmentDate: '2024-01-16',
-            amount: 200.00,
-            commission: 20.00,
-            status: 'Pending'
+            patient: 'Mike Johnson',
+            sourcePage: 'search-results',
+            clicks: 156,
+            converted: 'No',
+            commission: 0.00,
+            status: 'Pending',
+            createdAt: '2024-01-16'
         },
         {
             id: 4,
-            patient: 'Sarah Wilson',
+            referralId: 'REF-2024-004',
             provider: 'Air Doctor',
-            doctor: 'Dr. David Kim',
-            appointmentDate: '2024-01-16',
-            amount: 100.00,
-            commission: 10.00,
-            status: 'Completed'
+            patient: 'Sarah Wilson',
+            sourcePage: 'doctor-profile',
+            clicks: 203,
+            converted: 'Yes',
+            commission: 100.00,
+            status: 'Completed',
+            createdAt: '2024-01-16'
         },
         {
             id: 5,
-            patient: 'Robert Brown',
+            referralId: 'REF-2024-005',
             provider: 'MediLink Partners',
-            doctor: 'Dr. Sarah Johnson',
-            appointmentDate: '2024-01-17',
-            amount: 150.00,
-            commission: 15.00,
-            status: 'Scheduled'
+            patient: 'Robert Brown',
+            sourcePage: 'pricing-page',
+            clicks: 98,
+            converted: 'Yes',
+            commission: 150.00,
+            status: 'Completed',
+            createdAt: '2024-01-17'
+        },
+        {
+            id: 6,
+            referralId: 'REF-2024-006',
+            provider: 'Air Doctor',
+            patient: 'Emily Davis',
+            sourcePage: 'landing-page',
+            clicks: 134,
+            converted: 'No',
+            commission: 0.00,
+            status: 'Not Converted',
+            createdAt: '2024-01-17'
+        },
+        {
+            id: 7,
+            referralId: 'REF-2024-007',
+            provider: 'Doctor On Call',
+            patient: 'Michael Brown',
+            sourcePage: 'blog-post',
+            clicks: 67,
+            converted: 'Yes',
+            commission: 95.00,
+            status: 'Completed',
+            createdAt: '2024-01-18'
+        },
+        {
+            id: 8,
+            referralId: 'REF-2024-008',
+            provider: 'HealthCare Connect',
+            patient: 'Lisa Anderson',
+            sourcePage: 'about-page',
+            clicks: 45,
+            converted: 'No',
+            commission: 0.00,
+            status: 'Not Converted',
+            createdAt: '2024-01-18'
         }
-    ];
-
-    // Chart data for referral trends
-    const referralTrendsData = [
-        { name: 'Jan', referrals: 45, bookings: 32 },
-        { name: 'Feb', referrals: 52, bookings: 38 },
-        { name: 'Mar', referrals: 48, bookings: 35 },
-        { name: 'Apr', referrals: 61, bookings: 44 },
-        { name: 'May', referrals: 55, bookings: 41 },
-        { name: 'Jun', referrals: 67, bookings: 48 },
-    ];
-
-    const conversionData = [
-        { name: 'Air Doctor', value: 67.6 },
-        { name: 'Doctor On Call', value: 75.3 },
-        { name: 'HealthCare Connect', value: 62.7 },
-        { name: 'MediLink Partners', value: 67.6 },
     ];
 
     const getStatusColor = (status) => {
@@ -166,6 +196,8 @@ const Referrals = () => {
             case 'Scheduled':
                 return 'bg-blue-100 text-blue-800';
             case 'Cancelled':
+                return 'bg-red-100 text-red-800';
+            case 'Not Converted':
                 return 'bg-red-100 text-red-800';
             default:
                 return 'bg-gray-100 text-gray-800';
@@ -183,13 +215,14 @@ const Referrals = () => {
         return matchesSearch && matchesProvider;
     });
 
-    const filteredBookings = referralBookings.filter(booking => {
+    const filteredReferrals = referralList.filter(referral => {
         const matchesSearch = searchTerm === '' || 
-            booking.patient.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            booking.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            booking.doctor.toLowerCase().includes(searchTerm.toLowerCase());
+            referral.patient.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            referral.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            referral.referralId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            referral.sourcePage.toLowerCase().includes(searchTerm.toLowerCase());
         
-        const matchesProvider = filterProvider === '' || booking.provider === filterProvider;
+        const matchesProvider = filterProvider === '' || referral.provider === filterProvider;
         
         return matchesSearch && matchesProvider;
     });
@@ -208,7 +241,7 @@ const Referrals = () => {
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Referral Analytics</h1>
                     <p className="text-sm sm:text-base text-gray-600">Track referral bookings and commissions by provider</p>
                 </div>
-                <button
+                {/* <button
                     onClick={handleRefreshContent}
                     disabled={isRefreshing}
                     className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
@@ -225,7 +258,7 @@ const Referrals = () => {
                             <span className="sm:hidden">↻</span>
                         </>
                     )}
-                </button>
+                </button> */}
             </div>
 
             {/* Main Content Area */}
@@ -278,25 +311,6 @@ const Referrals = () => {
                 </Card>
             </div>
 
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="p-6">
-                    <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Referral Trends</h3>
-                        <p className="text-sm text-gray-600">Monthly referral and booking trends</p>
-                    </div>
-                    <Chart type="line" data={referralTrendsData} height={300} />
-                </Card>
-
-                <Card className="p-6">
-                    <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Conversion Rates</h3>
-                        <p className="text-sm text-gray-600">Conversion rates by provider</p>
-                    </div>
-                    <Chart type="bar" data={conversionData} height={300} />
-                </Card>
-            </div>
-
             {/* Search and Filter */}
             <Card className="p-4">
                 <div className="space-y-4">
@@ -305,7 +319,7 @@ const Referrals = () => {
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search providers, patients, or doctors..."
+                            placeholder="Search referrals, providers, patients, or source pages..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
@@ -392,7 +406,9 @@ const Referrals = () => {
                                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(provider.status)}`}>
                                         {provider.status}
                                     </span>
-                                    <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                                    <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
+                                    onClick={() => navigate(`/admin/referrals/${provider.id}`)}
+                                    >
                                         <ExternalLink className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -402,27 +418,38 @@ const Referrals = () => {
                 </div>
             </Card>
 
-            {/* Recent Referral Bookings */}
+            {/* Referrals List */}
             <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Referral Bookings</h3>
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Referrals List</h3>
+                    <button
+                        onClick={() => navigate('/admin/referral-providers')}
+                        className="px-4 py-2 text-sm bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors"
+                    >
+                        Manage Providers
+                    </button>
+                </div>
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Patient
+                                    Referral ID
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Provider
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Doctor
+                                    Patient
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Appointment Date
+                                    Source Page
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Amount
+                                    Clicks
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Converted
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Commission
@@ -430,33 +457,59 @@ const Referrals = () => {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status
                                 </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Created At
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {filteredBookings.map((booking) => (
-                                <tr key={booking.id} className="hover:bg-gray-50">
+                            {filteredReferrals.map((referral) => (
+                                <tr key={referral.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">{booking.patient}</div>
+                                        <div className="text-sm font-medium text-gray-900">{referral.referralId}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{booking.provider}</div>
+                                        <div className="text-sm text-gray-900">{referral.provider}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{booking.doctor}</div>
+                                        <div className="text-sm text-gray-900">{referral.patient}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{booking.appointmentDate}</div>
+                                        <div className="text-sm text-gray-900">{referral.sourcePage}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">${booking.amount.toFixed(2)}</div>
+                                        <div className="text-sm font-medium text-gray-900">{referral.clicks}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-green-600">${booking.commission.toFixed(2)}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(booking.status)}`}>
-                                            {booking.status}
+                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                            referral.converted === 'Yes' 
+                                                ? 'bg-green-100 text-green-800' 
+                                                : 'bg-red-100 text-red-800'
+                                        }`}>
+                                            {referral.converted}
                                         </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-green-600">${referral.commission.toFixed(2)}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(referral.status)}`}>
+                                            {referral.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-900">{referral.createdAt}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <button
+                                            onClick={() => navigate(`/admin/referrals/${referral.id}`)}
+                                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                        >
+                                            View Details
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -466,7 +519,7 @@ const Referrals = () => {
             </Card>
 
             {/* Empty State */}
-            {filteredProviders.length === 0 && filteredBookings.length === 0 && (
+            {filteredReferrals.length === 0 && (
                 <Card className="p-12 text-center">
                     <div className="flex flex-col items-center space-y-4">
                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
