@@ -46,7 +46,7 @@ export const medicalRecordRequestSchema = createFormicaSchema()
   .enum('recordType', ['all', 'diagnosis', 'treatment', 'lab_result', 'imaging', 'surgery', 'other'], { required: true })
   .date('dateFrom', { required: true, past: true })
   .custom('dateTo', 
-    (value, formData) => value >= formData.dateFrom,
+    (value, formData) => formData && formData.dateFrom ? value >= formData.dateFrom : true,
     'End date must be after start date'
   )
   .string('reason', { required: true, min: 10, max: 500 })
@@ -97,7 +97,7 @@ export const insuranceSchema = createFormicaSchema()
   .string('groupNumber', { max: 50 })
   .date('effectiveDate', { required: true, past: true })
   .custom('expirationDate', 
-    (value, formData) => value >= formData.effectiveDate,
+    (value, formData) => formData && formData.effectiveDate ? value >= formData.effectiveDate : true,
     'Expiration date must be after effective date'
   )
   .number('copayAmount', { min: 0, max: 1000 })

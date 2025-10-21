@@ -18,7 +18,7 @@ export const registerSchema = createFormicaSchema()
     'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
   )
   .custom('confirmPassword', 
-    (value, formData) => value === formData.password,
+    (value, formData) => formData && formData.password ? value === formData.password : true,
     'Passwords must match'
   )
   .enum('role', ['admin', 'doctor', 'patient'], { required: true })
@@ -42,7 +42,7 @@ export const newPasswordSchema = createFormicaSchema()
     'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
   )
   .custom('confirmPassword', 
-    (value, formData) => value === formData.password,
+    (value, formData) => formData && formData.password ? value === formData.password : true,
     'Passwords must match'
   )
   .build();

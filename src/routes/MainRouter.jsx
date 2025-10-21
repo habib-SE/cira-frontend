@@ -2,14 +2,14 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute';
 import WelcomePage from '../Admin panel/admin/adminpages/WelcomePage';
-import { MainLoginPage, DoctorLoginPage } from '../pages/login';
+import { MainLoginPage, DoctorLoginPage } from '../components/auth';
 import EmailConfirmPage from '../Admin panel/admin/adminpages/EmailConfirmPage';
 import EnablePermissionPage from '../Admin panel/admin/adminpages/EnablePermissionPage';
 import PlusUnlockedPage from '../Admin panel/admin/adminpages/PlusUnlockedPage';
 import SubscriptionPlansPage from '../Admin panel/admin/adminpages/SubscriptionPlansPage';
 
 // Authentication Module Imports
-import { RegisterPage } from '../modules/auth';
+import { RegisterPage } from '../components/auth';
 
 // Admin Portal Imports
 import AdminLayout from '../Admin panel/admin/admincomponents/AdminLayout';
@@ -46,9 +46,14 @@ import DoctorDashboard from '../Admin panel/doctor/doctorpages/DoctorDashboard';
 import ProfileWizard from '../Admin panel/doctor/doctorpages/ProfileWizard';
 import DoctorSchedule from '../Admin panel/doctor/doctorpages/DoctorSchedule';
 import AppointmentDetail from '../Admin panel/doctor/doctorpages/AppointmentDetail';
+import CreateAppointment from '../Admin panel/doctor/doctorpages/CreateAppointment';
+import AIReportView from '../Admin panel/doctor/doctorpages/AIReportView';
 import Earnings from '../Admin panel/doctor/doctorpages/Earnings';
 import DoctorSettings from '../Admin panel/doctor/doctorpages/DoctorSettings';
 import DoctorProfile from '../Admin panel/doctor/doctorpages/DoctorProfile';
+import DoctorPatientReports from '../Admin panel/doctor/doctorpages/PatientReports';
+import DoctorPatientReportDetail from '../Admin panel/doctor/doctorpages/PatientReportDetail';
+import BankDetails from '../Admin panel/doctor/doctorpages/BankDetails';
 
 function MainRouter() {
   return (
@@ -137,9 +142,14 @@ function MainRouter() {
         <Route path="" element={<DoctorDashboard />} />
         <Route path="profile" element={<ProfileWizard />} />
         <Route path="appointments" element={<DoctorSchedule />} />
+        <Route path="appointments/create" element={<CreateAppointment />} />
         <Route path="appointment-detail" element={<AppointmentDetail />} />
         <Route path="appointments/:id" element={<AppointmentDetail />} />
+        <Route path="appointments/:id/report" element={<AIReportView />} />
+        <Route path="patient-reports" element={<DoctorPatientReports />} />
+        <Route path="patient-reports/:id" element={<DoctorPatientReportDetail />} />
         <Route path="earnings" element={<Earnings />} />
+        <Route path="earnings/bank-details" element={<BankDetails />} />
         <Route path="settings" element={<DoctorSettings />} />
         <Route path="my-profile" element={<DoctorProfile />} />
       </Route>
