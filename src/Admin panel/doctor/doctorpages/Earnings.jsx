@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
     DollarSign, 
     TrendingUp, 
@@ -13,20 +14,74 @@ import {
     Wallet,
     Banknote,
     PieChart,
-    BarChart3
+    BarChart3,
+    X
 } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 
 const Earnings = () => {
+    const navigate = useNavigate();
     const [selectedPeriod, setSelectedPeriod] = useState('month');
     const [selectedView, setSelectedView] = useState('overview');
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [showPayoutModal, setShowPayoutModal] = useState(false);
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [payoutAmount, setPayoutAmount] = useState('');
 
     const handleRefreshContent = () => {
         setIsRefreshing(true);
         setTimeout(() => {
             setIsRefreshing(false);
         }, 1500);
+    };
+
+    const handleRequestPayout = () => {
+        if (!payoutAmount || parseFloat(payoutAmount) <= 0) {
+            setErrorMessage('Please enter a valid payout amount!');
+            setShowErrorModal(true);
+            return;
+        }
+        if (parseFloat(payoutAmount) > earningsData.pendingPayout) {
+            setErrorMessage('Payout amount cannot exceed pending balance!');
+            setShowErrorModal(true);
+            return;
+        }
+        setSuccessMessage(`Payout request of $${payoutAmount} submitted successfully!`);
+        setShowSuccessModal(true);
+        setShowPayoutModal(false);
+        setPayoutAmount('');
+        
+        // Auto close success modal after 3 seconds
+        setTimeout(() => {
+            setShowSuccessModal(false);
+        }, 3000);
+    };
+
+    const handleNavigateToBankDetails = () => {
+        navigate('/doctor/earnings/bank-details');
+    };
+
+    const handleDownloadStatement = () => {
+        setSuccessMessage('Downloading earnings statement...');
+        setShowSuccessModal(true);
+        
+        // Auto close success modal after 2 seconds
+        setTimeout(() => {
+            setShowSuccessModal(false);
+        }, 2000);
+    };
+
+    const handleExportData = () => {
+        setSuccessMessage('Exporting earnings data...');
+        setShowSuccessModal(true);
+        
+        // Auto close success modal after 2 seconds
+        setTimeout(() => {
+            setShowSuccessModal(false);
+        }, 2000);
     };
 
     // Earnings data
@@ -41,13 +96,16 @@ const Earnings = () => {
         growth: 14.3
     };
 
-    // Transaction history
+    // Transaction history (Payments)
     const transactions = [
         {
             id: 1,
             type: 'consultation',
+            paymentType: 'Standard',
+            source: 'Patient Payment',
             patient: 'John Doe',
             amount: 150.00,
+            currency: 'USD',
             commission: 15.00,
             net: 135.00,
             date: '2024-01-15',
@@ -58,8 +116,11 @@ const Earnings = () => {
         {
             id: 2,
             type: 'follow-up',
+            paymentType: 'Standard',
+            source: 'Patient Payment',
             patient: 'Jane Smith',
             amount: 100.00,
+            currency: 'USD',
             commission: 10.00,
             net: 90.00,
             date: '2024-01-15',
@@ -70,8 +131,11 @@ const Earnings = () => {
         {
             id: 3,
             type: 'emergency',
+            paymentType: 'Standard',
+            source: 'Insurance',
             patient: 'Mike Johnson',
             amount: 250.00,
+            currency: 'USD',
             commission: 25.00,
             net: 225.00,
             date: '2024-01-14',
@@ -82,8 +146,11 @@ const Earnings = () => {
         {
             id: 4,
             type: 'teleconsultation',
+            paymentType: 'Referral',
+            source: 'Patient Payment',
             patient: 'Sarah Williams',
             amount: 120.00,
+            currency: 'USD',
             commission: 12.00,
             net: 108.00,
             date: '2024-01-14',
@@ -94,8 +161,11 @@ const Earnings = () => {
         {
             id: 5,
             type: 'payout',
+            paymentType: 'Standard',
+            source: 'Platform Payout',
             patient: 'Platform Payout',
             amount: 2500.00,
+            currency: 'USD',
             commission: 0.00,
             net: 2500.00,
             date: '2024-01-10',
@@ -109,7 +179,11 @@ const Earnings = () => {
     const payouts = [
         {
             id: 1,
-            amount: 2500.00,
+            doctor: 'Dr. Smith',
+            period: 'January 2024',
+            gross: 2750.00,
+            commission: 250.00,
+            net: 2500.00,
             date: '2024-01-10',
             method: 'Bank Transfer',
             status: 'completed',
@@ -117,7 +191,11 @@ const Earnings = () => {
         },
         {
             id: 2,
-            amount: 2200.00,
+            doctor: 'Dr. Smith',
+            period: 'December 2023',
+            gross: 2420.00,
+            commission: 220.00,
+            net: 2200.00,
             date: '2023-12-10',
             method: 'Bank Transfer',
             status: 'completed',
@@ -125,7 +203,11 @@ const Earnings = () => {
         },
         {
             id: 3,
-            amount: 1800.00,
+            doctor: 'Dr. Smith',
+            period: 'November 2023',
+            gross: 1980.00,
+            commission: 180.00,
+            net: 1800.00,
             date: '2023-11-10',
             method: 'Bank Transfer',
             status: 'completed',
@@ -237,7 +319,10 @@ const Earnings = () => {
                             </option>
                         ))}
                     </select>
-                        <button className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors text-sm sm:text-base whitespace-nowrap">
+                        <button 
+                            onClick={handleExportData}
+                            className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors text-sm sm:text-base whitespace-nowrap"
+                        >
                         <Download className="w-4 h-4" />
                             <span className="hidden sm:inline">Export</span>
                             <span className="sm:hidden">↓</span>
@@ -377,10 +462,31 @@ const Earnings = () => {
                             </div>
                             <div className="flex flex-col sm:items-end gap-3">
                                 <p className="text-2xl sm:text-3xl font-bold text-pink-600 break-words">${earningsData.pendingPayout.toLocaleString()}</p>
-                                <button className="w-full sm:w-auto px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors">
+                                <button 
+                                    onClick={() => setShowPayoutModal(true)}
+                                    className="w-full sm:w-auto px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors"
+                                >
                                     Request Payout
                                 </button>
                             </div>
+                        </div>
+                    </Card>
+
+                    {/* Bank Account Details */}
+                    <Card className="p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-gray-900">Bank Account Details</h3>
+                                <p className="text-sm text-gray-600 mt-1">
+                                    Chase Bank • ****1234 • Checking
+                                </p>
+                            </div>
+                            <button 
+                                onClick={handleNavigateToBankDetails}
+                                className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+                            >
+                                Update Bank Details
+                            </button>
                         </div>
                     </Card>
                 </>
@@ -420,15 +526,15 @@ const Earnings = () => {
                                     <div className="flex items-center space-x-4">
                                         <div>
                                             <p className="text-sm text-gray-600">Amount</p>
-                                            <p className="font-medium text-gray-900">${transaction.amount.toFixed(2)}</p>
+                                            <p className="font-medium text-gray-900">${transaction.amount ? transaction.amount.toFixed(2) : '0.00'}</p>
                                         </div>
                                         <div>
                                             <p className="text-sm text-gray-600">Commission</p>
-                                            <p className="font-medium text-red-600">-${transaction.commission.toFixed(2)}</p>
+                                            <p className="font-medium text-red-600">-${transaction.commission ? transaction.commission.toFixed(2) : '0.00'}</p>
                                         </div>
                                         <div>
                                             <p className="text-sm text-gray-600">Net</p>
-                                            <p className="font-bold text-green-600">${transaction.net.toFixed(2)}</p>
+                                            <p className="font-bold text-green-600">${transaction.net ? transaction.net.toFixed(2) : '0.00'}</p>
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             {getStatusIcon(transaction.status)}
@@ -448,7 +554,10 @@ const Earnings = () => {
                 <Card className="p-6">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-semibold text-gray-900">Payout History</h3>
-                        <button className="flex items-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors">
+                        <button 
+                            onClick={handleDownloadStatement}
+                            className="flex items-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors"
+                        >
                             <Download className="w-4 h-4" />
                             <span>Download Statement</span>
                         </button>
@@ -472,7 +581,7 @@ const Earnings = () => {
                                     <div className="flex items-center space-x-4">
                                         <div>
                                             <p className="text-sm text-gray-600">Amount</p>
-                                            <p className="text-xl font-bold text-gray-900">${payout.amount.toLocaleString()}</p>
+                                            <p className="text-xl font-bold text-gray-900">${payout.amount ? payout.amount.toLocaleString() : '0.00'}</p>
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             {getStatusIcon(payout.status)}
@@ -488,6 +597,115 @@ const Earnings = () => {
                 </Card>
             )}
             </div>
+
+            {/* Payout Request Modal */}
+            {showPayoutModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">Request Payout</h2>
+                                <p className="text-sm text-gray-600 mt-1">Withdraw funds to your bank account</p>
+                            </div>
+                            <button
+                                onClick={() => setShowPayoutModal(false)}
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <X className="w-6 h-6 text-gray-500" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="bg-gray-50 rounded-xl p-4">
+                                <p className="text-sm text-gray-600">Available Balance</p>
+                                <p className="text-3xl font-bold text-pink-600">${earningsData.pendingPayout.toLocaleString()}</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Payout Amount <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    value={payoutAmount}
+                                    onChange={(e) => setPayoutAmount(e.target.value)}
+                                    placeholder="Enter amount"
+                                    max={earningsData.pendingPayout}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                />
+                            </div>
+
+                            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                                <p className="text-sm text-blue-800">
+                                    <strong>Processing Time:</strong> 3-5 business days
+                                </p>
+                                <p className="text-xs text-blue-600 mt-1">
+                                    Funds will be transferred to your registered bank account
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex space-x-3 mt-6 pt-6 border-t border-gray-200">
+                            <button
+                                onClick={handleRequestPayout}
+                                className="flex-1 bg-pink-600 text-white py-3 px-6 rounded-xl hover:bg-pink-700 transition-colors font-medium"
+                            >
+                                Request Payout
+                            </button>
+                            <button
+                                onClick={() => setShowPayoutModal(false)}
+                                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Error Modal */}
+            {showErrorModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-scale-in">
+                        <div className="text-center">
+                            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                <AlertCircle className="w-10 h-10 text-red-500" />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                Error
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                                {errorMessage}
+                            </p>
+                            <button
+                                onClick={() => setShowErrorModal(false)}
+                                className="w-full bg-red-600 text-white py-3 px-6 rounded-xl hover:bg-red-700 transition-colors font-medium"
+                            >
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-scale-in">
+                        <div className="text-center">
+                            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                <CheckCircle className="w-10 h-10 text-green-500" />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                Success!
+                            </h3>
+                            <p className="text-gray-600">
+                                {successMessage}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

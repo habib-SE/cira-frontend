@@ -1,68 +1,33 @@
-// import React, { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
-// // import { useAuth } from '../../context/AuthContext';
-// import { useAuth } from '../../../context/AuthContext';
-// // import logo from '../../../assets/Logo.png';
-// import { 
-//     Stethoscope, 
-//     Mail, 
-//     Lock, 
-//     Eye, 
-//     EyeOff, 
-//     UserPlus,
-//     ArrowRight,
-//     CheckCircle,
-//     AlertCircle,
-//     Shield,
-//     Award,
-//     Clock,
-//     Heart,
-//     User,
-//     FileText,
-//     X,
-//     Star
-// } from 'lucide-react';
-// import { 
-//   FormicaValidatedForm, 
-//   FormicaFormField, 
-//   FormicaFormSelect 
-// } from '../../components/forms';
-// import { authFormicaSchemas, doctorFormicaSchemas } from '../../utils/validation/formicaSchemas';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-// import logo from '../../../assets/Logo.png';
-
-import {
-  Stethoscope,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  UserPlus,
-  ArrowRight,
-  CheckCircle,
-  AlertCircle,
-  Shield,
-  Award,
-  Clock,
-  Heart,
-  User,
-  FileText,
-  X,
-  Star,
+import logo from '../../../assets/Logo.png';
+import { 
+    Stethoscope, 
+    Mail, 
+    Lock, 
+    Eye, 
+    EyeOff, 
+    UserPlus,
+    ArrowLeft,
+    ArrowRight,
+    CheckCircle,
+    AlertCircle,
+    Shield,
+    Award,
+    Clock,
+    Heart,
+    User,
+    FileText,
+    X,
+    Star
 } from 'lucide-react';
-
-import {
-  FormicaValidatedForm,
-  FormicaFormField,
-  FormicaFormSelect,
+import { 
+  FormicaValidatedForm, 
+  FormicaFormField, 
+  FormicaFormSelect 
 } from '../../../components/forms';
-
-import {
-  authFormicaSchemas,
-  doctorFormicaSchemas,
-} from '../../../utils/validation/formicaSchemas';
+import { authFormicaSchemas, doctorFormicaSchemas } from '../../../utils/validation/formicaSchemas';
 
 const DoctorLoginPage = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -74,9 +39,19 @@ const DoctorLoginPage = () => {
     const [showProfileCompletionPrompt, setShowProfileCompletionPrompt] = useState(false);
     const [loginSuccess, setLoginSuccess] = useState(false);
     const [profileCompletionPercentage, setProfileCompletionPercentage] = useState(0);
+    const [registrationStep, setRegistrationStep] = useState(1);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [passwordsMatch, setPasswordsMatch] = useState(false);
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
 
     const { login } = useAuth();
     const navigate = useNavigate();
+
+    // Debug: Log modal state changes
+    useEffect(() => {
+        console.log('Modal state changed:', showSuccessModal);
+    }, [showSuccessModal]);
 
     const handleLoginSubmit = async (data) => {
         setLoading(true);
@@ -108,26 +83,120 @@ const DoctorLoginPage = () => {
     };
 
     const handleRegistrationSubmit = async (data) => {
+        console.log('=== FORM SUBMITTED ===');
+        console.log('Form data:', data);
+        console.log('Password:', data.password);
+        console.log('Confirm Password:', data.confirmPassword);
+        
         setLoading(true);
         setError('');
+        setSuccess('');
 
         try {
-                // Simulate registration API call
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Validate passwords match
+                if (data.password !== data.confirmPassword) {
+                    console.log('❌ Passwords do not match');
+                    setError('Passwords do not match!');
+                    setLoading(false);
+                    return;
+                }
                 
-                setSuccess('Registration successful! Please complete your profile.');
-                setTimeout(() => {
-                    navigate('/doctor/profile');
-                }, 2000);
+                console.log('✅ Passwords match, proceeding with registration...');
+                
+                // Simulate registration API call
+                console.log('⏳ Simulating API call...');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                console.log('✅ API call completed');
+                
+                // Create doctor object with Pending status
+                const newDoctor = {
+                    id: Date.now(), // Generate unique ID
+                    name: `Dr. ${data.firstName} ${data.lastName}`,
+                    email: data.email,
+                    phone: data.phone,
+                    specialty: data.specialty,
+                    licenseNumber: data.licenseNumber,
+                    experience: data.experience || '0 years',
+                    bio: data.bio || '',
+                    consultationType: data.consultationType,
+                    consultationFee: data.consultationFee,
+                    appointmentDuration: data.appointmentDuration,
+                    availability: data.availability || [],
+                    languages: data.languages || [],
+                    status: 'Pending', // IMPORTANT: Set status to Pending
+                    verificationStatus: 'Under Review',
+                    joinDate: new Date().toISOString().split('T')[0],
+                    avatar: `${data.firstName[0]}${data.lastName[0]}`,
+                    documents: [],
+                    totalPatients: 0,
+                    totalAppointments: 0,
+                    rating: 0,
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Get existing doctors from localStorage
+                const existingDoctors = JSON.parse(localStorage.getItem('pendingDoctors') || '[]');
+                
+                // Add new doctor to the list
+                existingDoctors.push(newDoctor);
+                
+                // Save back to localStorage
+                localStorage.setItem('pendingDoctors', JSON.stringify(existingDoctors));
+                
+                console.log('✅ Doctor registered successfully:', newDoctor);
+                console.log('✅ Saved to localStorage');
+                
+                setLoading(false);
+                
+                // Show success modal
+                console.log('🎉 Showing success modal...');
+                setShowSuccessModal(true);
+                console.log('✅ Success modal state set to true');
+                
         } catch (err) {
             setError(err.message || 'An error occurred. Please try again.');
-        } finally {
             setLoading(false);
         }
     };
 
+    const handleCloseSuccessModal = () => {
+        setShowSuccessModal(false);
+        setIsLogin(true);
+        setRegistrationStep(1);
+    };
+
     const handleFormError = (error) => {
         console.error('Formica validation error:', error);
+    };
+
+    const handlePasswordChange = (value) => {
+        setPassword(value);
+        if (value && confirmPassword) {
+            setPasswordsMatch(value === confirmPassword);
+        } else {
+            setPasswordsMatch(false);
+        }
+    };
+
+    const handleConfirmPasswordChange = (value) => {
+        setConfirmPassword(value);
+        if (password && value) {
+            setPasswordsMatch(password === value);
+        } else {
+            setPasswordsMatch(false);
+        }
+    };
+
+    const handleNextStep = () => {
+        if (registrationStep < 4) {
+            setRegistrationStep(registrationStep + 1);
+        }
+    };
+
+    const handlePreviousStep = () => {
+        if (registrationStep > 1) {
+            setRegistrationStep(registrationStep - 1);
+        }
     };
 
     const specialties = [
@@ -157,7 +226,7 @@ const DoctorLoginPage = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50 flex items-center justify-center p-4">
-            <div className="max-w-md w-full space-y-8">
+            <div className={`w-full space-y-8 ${isLogin ? 'max-w-md' : 'max-w-4xl'}`}>
                 {/* Header */}
                 <div className="text-center">
                     <div className="mx-auto h-16 w-16 bg-pink-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
@@ -172,20 +241,6 @@ const DoctorLoginPage = () => {
                             : 'Start your journey as a verified medical professional'
                         }
                     </p>
-                    
-                    {/* Doctor Benefits */}
-                    {!isLogin && (
-                        <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-                            <div className="flex items-center space-x-1 text-green-600">
-                                <Shield className="h-3 w-3" />
-                                <span>Verified</span>
-                            </div>
-                            <div className="flex items-center space-x-1 text-blue-600">
-                                <Award className="h-3 w-3" />
-                                <span>Professional</span>
-                            </div>
-                        </div>
-                    )}
                 </div>
 
                 {/* Form */}
@@ -216,8 +271,8 @@ const DoctorLoginPage = () => {
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Email Address
                                         </label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                        <div className="form-input-with-icon">
+                                            <Mail className="icon-left h-5 w-5 text-gray-400" />
                                             <FormicaFormField
                                                 label=""
                                                 name="email"
@@ -229,7 +284,7 @@ const DoctorLoginPage = () => {
                                                 hasFieldError={hasFieldError}
                                                 placeholder="doctor@example.com"
                                                 required
-                                                className="pl-10"
+                                                className="w-full"
                                             />
                                         </div>
                                     </div>
@@ -239,8 +294,8 @@ const DoctorLoginPage = () => {
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Password
                                         </label>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                        <div className="form-input-with-icon">
+                                            <Lock className="icon-left h-5 w-5 text-gray-400" />
                                             <FormicaFormField
                                                 label=""
                                                 name="password"
@@ -252,12 +307,12 @@ const DoctorLoginPage = () => {
                                                 hasFieldError={hasFieldError}
                                                 placeholder="Enter your password"
                                                 required
-                                                className="pl-10 pr-10"
+                                                className="w-full"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                className="icon-right p-1 hover:bg-gray-100 rounded transition-colors text-gray-400 hover:text-gray-600"
                                             >
                                                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                             </button>
@@ -301,7 +356,10 @@ const DoctorLoginPage = () => {
                         <FormicaValidatedForm
                             schema={doctorFormicaSchemas.doctorRegistration}
                             onSubmit={handleRegistrationSubmit}
-                            onError={handleFormError}
+                            onError={(error) => {
+                                console.log('Form validation error:', error);
+                                handleFormError(error);
+                            }}
                             defaultValues={{
                                 firstName: '',
                                 lastName: '',
@@ -310,7 +368,12 @@ const DoctorLoginPage = () => {
                                 confirmPassword: '',
                                 specialty: '',
                                 licenseNumber: '',
-                                phone: ''
+                                phone: '',
+                                consultationType: '',
+                                consultationFee: '',
+                                appointmentDuration: 30,
+                                availability: [],
+                                languages: []
                             }}
                         >
                             {({ 
@@ -323,7 +386,73 @@ const DoctorLoginPage = () => {
                                 hasFieldError 
                             }) => (
                                 <div className="space-y-6">
-                                    {/* Name Fields */}
+                                    {/* Admin Approval Notice */}
+                                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+                                        <div className="flex items-start">
+                                            <div className="flex-shrink-0">
+                                                <Shield className="h-5 w-5 text-blue-500" />
+                                            </div>
+                                            <div className="ml-3">
+                                                <p className="text-sm text-blue-700 font-medium">
+                                                    Get admin approval before activation
+                                                </p>
+                                                <p className="text-xs text-blue-600 mt-1">
+                                                    Your account will be reviewed by our admin team. You'll receive an email once approved.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Step Indicator */}
+                                    <div className="mb-8">
+                                        <div className="flex items-center justify-between">
+                                            {[1, 2, 3, 4].map((step, index) => (
+                                                <React.Fragment key={step}>
+                                                    <div className="flex flex-col items-center flex-1 relative z-10">
+                                                        <div
+                                                            className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 shadow-lg ${
+                                                                registrationStep === step
+                                                                    ? 'bg-pink-500 text-white ring-4 ring-pink-200 scale-110'
+                                                                    : registrationStep > step
+                                                                    ? 'bg-green-500 text-white ring-2 ring-green-200'
+                                                                    : 'bg-gray-200 text-gray-500'
+                                                            }`}
+                                                        >
+                                                            {registrationStep > step ? (
+                                                                <CheckCircle className="w-7 h-7" />
+                                                            ) : (
+                                                                <span className="text-base">{step}</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="mt-3 text-center">
+                                                            <p className={`text-sm font-semibold ${
+                                                                registrationStep >= step ? 'text-pink-600' : 'text-gray-500'
+                                                            }`}>
+                                                                {step === 1 && 'Personal'}
+                                                                {step === 2 && 'Professional'}
+                                                                {step === 3 && 'Consultation'}
+                                                                {step === 4 && 'Security'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    {index < 3 && (
+                                                        <div
+                                                            className={`flex-1 h-1 mx-4 transition-all duration-300 rounded-full ${
+                                                                registrationStep > step ? 'bg-green-500' : 'bg-gray-200'
+                                                            }`}
+                                                        />
+                                                    )}
+                                                </React.Fragment>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    {/* Step 1: Personal Information */}
+                                    {registrationStep === 1 && (
+                                        <div className="space-y-6">
+                                            <div className="text-center mb-6">
+                                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Personal Information</h3>
+                                                <p className="text-gray-600">Let's start with your basic details</p>
+                                            </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <FormicaFormField
                                             label="First Name"
@@ -350,8 +479,40 @@ const DoctorLoginPage = () => {
                                             required
                                         />
                                 </div>
+                                            <FormicaFormField
+                                                label="Email Address"
+                                                name="email"
+                                                type="email"
+                                                register={register}
+                                                errors={errors}
+                                                getFieldProps={getFieldProps}
+                                                getFieldError={getFieldError}
+                                                hasFieldError={hasFieldError}
+                                                placeholder="doctor@example.com"
+                                                required
+                                            />
+                                            <FormicaFormField
+                                                label="Phone Number"
+                                                name="phone"
+                                                type="tel"
+                                                register={register}
+                                                errors={errors}
+                                                getFieldProps={getFieldProps}
+                                                getFieldError={getFieldError}
+                                                hasFieldError={hasFieldError}
+                                                placeholder="+1 (555) 123-4567"
+                                                required
+                                            />
+                                        </div>
+                                    )}
 
-                                {/* Specialty */}
+                                    {/* Step 2: Professional Details */}
+                                    {registrationStep === 2 && (
+                                        <div className="space-y-6">
+                                            <div className="text-center mb-6">
+                                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Professional Details</h3>
+                                                <p className="text-gray-600">Your medical credentials and experience</p>
+                                            </div>
                                     <FormicaFormSelect
                                         label="Medical Specialty"
                                         name="specialty"
@@ -364,8 +525,6 @@ const DoctorLoginPage = () => {
                                         placeholder="Select your specialty"
                                         required
                                     />
-
-                                {/* License Number */}
                                     <FormicaFormField
                                         label="License Number"
                                         name="licenseNumber"
@@ -378,51 +537,118 @@ const DoctorLoginPage = () => {
                                         placeholder="MD12345"
                                         required
                                     />
+                                        </div>
+                                    )}
 
-                                {/* Phone */}
-                                    <FormicaFormField
-                                        label="Phone Number"
-                                        name="phone"
-                                        type="tel"
-                                        register={register}
-                                        errors={errors}
-                                        getFieldProps={getFieldProps}
-                                        getFieldError={getFieldError}
-                                        hasFieldError={hasFieldError}
-                                        placeholder="+1 (555) 123-4567"
-                                        required
-                                    />
+                                    {/* Step 3: Consultation Settings */}
+                                    {registrationStep === 3 && (
+                                        <div className="space-y-6">
+                                            <div className="text-center mb-6">
+                                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Consultation Settings</h3>
+                                                <p className="text-gray-600">Set up your consultation preferences</p>
+                                            </div>
 
-                        {/* Email */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Email Address
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                                            <FormicaFormField
-                                                label=""
-                                                name="email"
-                                    type="email"
+                                            {/* Consultation Type */}
+                                            <FormicaFormSelect
+                                                label="Consultation Type"
+                                                name="consultationType"
                                                 register={register}
                                                 errors={errors}
                                                 getFieldProps={getFieldProps}
                                                 getFieldError={getFieldError}
                                                 hasFieldError={hasFieldError}
-                                                placeholder="doctor@example.com"
+                                                options={[
+                                                    { value: 'online', label: 'Online Consultation' },
+                                                    { value: 'in-person', label: 'In-Person Consultation' },
+                                                    { value: 'both', label: 'Both Online & In-Person' }
+                                                ]}
+                                                placeholder="Select consultation type"
+                                        required
+                                    />
+
+                                            {/* Consultation Fee */}
+                                    <FormicaFormField
+                                                label="Consultation Fee (USD)"
+                                                name="consultationFee"
+                                                type="number"
+                                        register={register}
+                                        errors={errors}
+                                        getFieldProps={getFieldProps}
+                                        getFieldError={getFieldError}
+                                        hasFieldError={hasFieldError}
+                                                placeholder="150"
+                                        required
+                                    />
+
+                                            {/* Appointment Duration */}
+                                            <FormicaFormField
+                                                label="Appointment Duration (minutes)"
+                                                name="appointmentDuration"
+                                                type="number"
+                                                register={register}
+                                                errors={errors}
+                                                getFieldProps={getFieldProps}
+                                                getFieldError={getFieldError}
+                                                hasFieldError={hasFieldError}
+                                                placeholder="30"
                                     required
-                                                className="pl-10"
-                                />
+                                            />
+
+                                            {/* Availability Days */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-3">
+                                                    Available Days <span className="text-red-500">*</span>
+                                                </label>
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                    {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
+                                                        <label key={day} className="flex items-center space-x-2 cursor-pointer p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                                            <input
+                                                                type="checkbox"
+                                                                name="availability"
+                                                                value={day}
+                                                                className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+                                                            />
+                                                            <span className="text-sm text-gray-700 capitalize">{day}</span>
+                                                        </label>
+                                                    ))}
                             </div>
                         </div>
 
-                        {/* Password */}
+                                            {/* Languages */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-3">
+                                                    Languages Spoken <span className="text-red-500">*</span>
+                                                </label>
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                    {['English', 'Spanish', 'French', 'German', 'Chinese', 'Arabic', 'Hindi', 'Portuguese'].map((lang) => (
+                                                        <label key={lang} className="flex items-center space-x-2 cursor-pointer p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                                            <input
+                                                                type="checkbox"
+                                                                name="languages"
+                                                                value={lang.toLowerCase()}
+                                                                className="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+                                                            />
+                                                            <span className="text-sm text-gray-700">{lang}</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Step 4: Account Security */}
+                                    {registrationStep === 4 && (
+                                        <div className="space-y-6">
+                                            <div className="text-center mb-6">
+                                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Account Security</h3>
+                                                <p className="text-gray-600">Create a secure password for your account</p>
+                                            </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Password
                             </label>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                                <div className="form-input-with-icon">
+                                                    <Lock className="icon-left h-5 w-5 text-gray-400" />
                                             <FormicaFormField
                                                 label=""
                                                 name="password"
@@ -434,25 +660,24 @@ const DoctorLoginPage = () => {
                                                 hasFieldError={hasFieldError}
                                                 placeholder="Enter your password"
                                     required
-                                                className="pl-10 pr-10"
+                                                        className="w-full"
+                                                onChange={(e) => handlePasswordChange(e.target.value)}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                        className="icon-right p-1 hover:bg-gray-100 rounded transition-colors text-gray-400 hover:text-gray-600"
                                 >
                                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                 </button>
                             </div>
                         </div>
-
-                                    {/* Confirm Password */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Confirm Password
                                 </label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                                <div className="form-input-with-icon">
+                                                    <Lock className="icon-left h-5 w-5 text-gray-400" />
                                             <FormicaFormField
                                                 label=""
                                                 name="confirmPassword"
@@ -464,17 +689,29 @@ const DoctorLoginPage = () => {
                                                 hasFieldError={hasFieldError}
                                         placeholder="Confirm your password"
                                                 required
-                                                className="pl-10 pr-10"
+                                                        className="w-full"
+                                                onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                        className="icon-right p-1 hover:bg-gray-100 rounded transition-colors text-gray-400 hover:text-gray-600"
                                     >
                                         {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                     </button>
                                 </div>
+                                {!passwordsMatch && registrationStep === 4 && (
+                                    <p className="text-red-500 text-xs mt-1">Passwords do not match</p>
+                                )}
+                                {passwordsMatch && registrationStep === 4 && (
+                                    <p className="text-green-500 text-xs mt-1 flex items-center">
+                                        <CheckCircle className="w-3 h-3 mr-1" />
+                                        Passwords match
+                                    </p>
+                                )}
+                                </div>
                             </div>
+                                    )}
 
                         {/* Error/Success Messages */}
                         {error && (
@@ -485,27 +722,71 @@ const DoctorLoginPage = () => {
                         )}
 
                         {success && (
-                            <div className="flex items-center space-x-2 text-green-600 bg-green-50 p-3 rounded-xl">
-                                <CheckCircle className="h-5 w-5" />
-                                <span className="text-sm">{success}</span>
+                            <div className="bg-green-50 border-l-4 border-green-500 p-6 rounded-xl shadow-lg">
+                                <div className="flex items-start">
+                                    <div className="flex-shrink-0">
+                                        <CheckCircle className="h-8 w-8 text-green-500" />
+                                    </div>
+                                    <div className="ml-4">
+                                        <h3 className="text-lg font-semibold text-green-800 mb-2">
+                                            Registration Successful!
+                                        </h3>
+                                        <p className="text-sm text-green-700 mb-2">
+                                            {success}
+                                        </p>
+                                        <p className="text-xs text-green-600">
+                                            Please wait for admin approval. You'll receive an email notification once your account is activated.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
-                        {/* Submit Button */}
+                        {/* Navigation Buttons */}
+                        {!success && (
+                        <div className="flex items-center justify-between gap-4 pt-4 border-t border-gray-200">
+                            <button
+                                type="button"
+                                onClick={handlePreviousStep}
+                                disabled={registrationStep === 1}
+                                className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
+                                    registrationStep === 1
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-pink-300'
+                                }`}
+                            >
+                                <ArrowLeft className="w-5 h-5" />
+                                <span>Previous</span>
+                            </button>
+
+                            {registrationStep < 4 ? (
+                                <button
+                                    type="button"
+                                    onClick={handleNextStep}
+                                    className="flex items-center space-x-2 px-8 py-3 bg-pink-500 text-white rounded-xl font-medium hover:bg-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+                                >
+                                    <span>Next</span>
+                                    <ArrowRight className="w-5 h-5" />
+                                </button>
+                            ) : (
                         <button
                             type="submit"
-                                        disabled={loading || isSubmitting || !isValid}
-                            className="w-full flex items-center justify-center space-x-2 bg-pink-500 text-white py-3 px-4 rounded-xl hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                        disabled={loading || isSubmitting || !passwordsMatch}
+                                    className="flex items-center space-x-2 px-8 py-3 bg-pink-500 text-white rounded-xl font-medium hover:bg-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => console.log('Button clicked!', { loading, isSubmitting, passwordsMatch })}
                         >
                                         {loading || isSubmitting ? (
                                 <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
                             ) : (
                                 <>
                                                 <span>Create Account</span>
-                                    <ArrowRight className="h-5 w-5" />
+                                            <CheckCircle className="w-5 h-5" />
                                 </>
                             )}
                         </button>
+                            )}
+                        </div>
+                        )}
                                 </div>
                             )}
                         </FormicaValidatedForm>
@@ -612,6 +893,53 @@ const DoctorLoginPage = () => {
                                     Skip for now
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={(e) => console.log('Modal clicked:', e.target)}>
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-scale-in">
+                        <div className="text-center">
+                            {/* Success Icon */}
+                            <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                <CheckCircle className="w-12 h-12 text-green-500" />
+                            </div>
+                            
+                            {/* Title */}
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                                Registration Successful!
+                            </h3>
+                            
+                            {/* Message */}
+                            <p className="text-gray-600 mb-6">
+                                Your account has been created and sent for admin approval.
+                            </p>
+                            
+                            {/* Info Box */}
+                            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-6 text-left">
+                                <div className="flex items-start">
+                                    <Shield className="w-5 h-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
+                                    <div>
+                                        <p className="text-sm font-semibold text-blue-800 mb-1">
+                                            Get admin approval before activation
+                                        </p>
+                                        <p className="text-xs text-blue-600">
+                                            Your account will be reviewed by our admin team. You'll receive an email notification once your account is activated.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Button */}
+                            <button
+                                onClick={handleCloseSuccessModal}
+                                className="w-full bg-pink-500 text-white py-3 px-6 rounded-xl font-medium hover:bg-pink-600 transition-colors duration-200 shadow-lg hover:shadow-xl"
+                            >
+                                Go to Login
+                            </button>
                         </div>
                     </div>
                 </div>

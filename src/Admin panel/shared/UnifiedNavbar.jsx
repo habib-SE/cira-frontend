@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Bell, User, Settings, LogOut, Menu, X, Search } from 'lucide-react';
+import ConsentIndicator from '../../components/shared/ConsentIndicator';
 
 const UnifiedNavbar = ({ 
   onMenuClick, 
@@ -233,6 +234,9 @@ const UnifiedNavbar = ({
 
         {/* Right side */}
         <div className="flex items-center space-x-4">
+          {/* Consent/Privacy Indicator */}
+          <ConsentIndicator />
+
           {/* Notifications */}
           <div className="relative">
             <button

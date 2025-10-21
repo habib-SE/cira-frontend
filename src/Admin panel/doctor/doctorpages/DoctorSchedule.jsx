@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     Calendar, 
@@ -17,7 +17,10 @@ import {
     User,
     ChevronLeft,
     ChevronRight,
-    Download
+    Download,
+    XCircle,
+    ThumbsUp,
+    ThumbsDown
 } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 
@@ -28,9 +31,17 @@ const DoctorSchedule = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [filterType, setFilterType] = useState('');
+    const [showAcceptModal, setShowAcceptModal] = useState(false);
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
 
     // Sample appointments data with AI reports
-    const appointments = [
+    const [appointments, setAppointments] = useState(() => {
+        // Load from localStorage and merge with sample data
+        const savedAppointments = JSON.parse(localStorage.getItem('doctorAppointments') || '[]');
+        return [
         {
             id: 1,
             patient: 'John Doe',
@@ -38,10 +49,12 @@ const DoctorSchedule = () => {
             time: '09:00 AM',
             type: 'Consultation',
             status: 'confirmed',
+            paymentStatus: 'paid',
             duration: '30 min',
             mode: 'clinic',
             room: 'Room 301',
             reason: 'Follow-up for blood pressure management',
+            createdAt: '2024-01-10T09:00:00',
             aiReport: {
                 id: 'AI-2024-001',
                 status: 'completed',
@@ -56,10 +69,12 @@ const DoctorSchedule = () => {
             time: '10:30 AM',
             type: 'Follow-up',
             status: 'confirmed',
+            paymentStatus: 'paid',
             duration: '20 min',
             mode: 'teleconsultation',
             room: 'Virtual',
             reason: 'Review blood sugar levels',
+            createdAt: '2024-01-11T10:30:00',
             aiReport: {
                 id: 'AI-2024-002',
                 status: 'pending',
@@ -74,10 +89,12 @@ const DoctorSchedule = () => {
             time: '02:00 PM',
             type: 'Emergency',
             status: 'in-progress',
+            paymentStatus: 'pending',
             duration: '45 min',
             mode: 'clinic',
             room: 'Room 301',
             reason: 'Acute chest pain - immediate attention needed',
+            createdAt: '2024-01-12T14:00:00',
             aiReport: {
                 id: 'AI-2024-003',
                 status: 'urgent',
@@ -92,10 +109,12 @@ const DoctorSchedule = () => {
             time: '03:30 PM',
             type: 'Consultation',
             status: 'waiting',
+            paymentStatus: 'paid',
             duration: '30 min',
             mode: 'clinic',
             room: 'Room 301',
             reason: 'Annual health check-up',
+            createdAt: '2024-01-13T15:30:00',
             aiReport: {
                 id: 'AI-2024-004',
                 status: 'completed',
@@ -110,18 +129,98 @@ const DoctorSchedule = () => {
             time: '09:00 AM',
             type: 'Consultation',
             status: 'scheduled',
+            paymentStatus: 'unpaid',
             duration: '30 min',
             mode: 'teleconsultation',
             room: 'Virtual',
             reason: 'Initial consultation for diabetes management',
+            createdAt: '2024-01-14T09:00:00',
             aiReport: {
                 id: 'AI-2024-005',
                 status: 'pending',
                 summary: 'Pre-consultation health screening in progress',
                 priority: 'normal'
             }
-        }
+        },
+        {
+            id: 6,
+            patient: 'Robert Wilson',
+            date: '2024-01-17',
+            time: '11:00 AM',
+            type: 'Consultation',
+            status: 'pending',
+            paymentStatus: 'unpaid',
+            duration: '45 min',
+            mode: 'clinic',
+            room: 'Room 301',
+            reason: 'New patient consultation for chronic pain',
+            createdAt: '2024-01-15T11:00:00',
+            aiReport: {
+                id: 'AI-2024-006',
+                status: 'pending',
+                summary: 'Initial health assessment in progress',
+                priority: 'normal'
+            }
+        },
+        {
+            id: 7,
+            patient: 'Maria Garcia',
+            date: '2024-01-17',
+            time: '02:30 PM',
+            type: 'Follow-up',
+            status: 'pending',
+            paymentStatus: 'paid',
+            duration: '30 min',
+            mode: 'teleconsultation',
+            room: 'Virtual',
+            reason: 'Post-surgery follow-up consultation',
+            createdAt: '2024-01-16T14:30:00',
+            aiReport: {
+                id: 'AI-2024-007',
+                status: 'completed',
+                summary: 'Recovery progress assessment shows positive signs',
+                priority: 'normal'
+            }
+        },
+        {
+            id: 8,
+            patient: 'James Anderson',
+            date: '2024-01-18',
+            time: '10:00 AM',
+            type: 'Consultation',
+            status: 'pending',
+            paymentStatus: 'unpaid',
+            duration: '30 min',
+            mode: 'clinic',
+            room: 'Room 301',
+            reason: 'Annual health check-up',
+            createdAt: '2024-01-17T10:00:00',
+            aiReport: {
+                id: 'AI-2024-008',
+                status: 'completed',
+                summary: 'Comprehensive health screening completed',
+                priority: 'normal'
+            }
+        },
+        ...savedAppointments // Add saved appointments to the top
     ];
+    });
+
+    // Listen for storage changes to update appointments in real-time
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const savedAppointments = JSON.parse(localStorage.getItem('doctorAppointments') || '[]');
+            setAppointments(prevAppointments => {
+                // Merge saved appointments with existing ones
+                const existingIds = prevAppointments.map(apt => apt.id);
+                const newAppointments = savedAppointments.filter(apt => !existingIds.includes(apt.id));
+                return [...newAppointments, ...prevAppointments];
+            });
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -133,6 +232,8 @@ const DoctorSchedule = () => {
                 return 'bg-yellow-100 text-yellow-800';
             case 'scheduled':
                 return 'bg-purple-100 text-purple-800';
+            case 'pending':
+                return 'bg-orange-100 text-orange-800';
             case 'cancelled':
                 return 'bg-red-100 text-red-800';
             default:
@@ -150,8 +251,10 @@ const DoctorSchedule = () => {
                 return <Clock className="w-4 h-4 text-yellow-500" />;
             case 'scheduled':
                 return <Calendar className="w-4 h-4 text-purple-500" />;
+            case 'pending':
+                return <AlertCircle className="w-4 h-4 text-orange-500" />;
             case 'cancelled':
-                return <AlertCircle className="w-4 h-4 text-red-500" />;
+                return <XCircle className="w-4 h-4 text-red-500" />;
             default:
                 return <AlertCircle className="w-4 h-4 text-gray-500" />;
         }
@@ -221,8 +324,18 @@ const DoctorSchedule = () => {
         return matchesSearch && matchesStatus && matchesType;
     });
 
+    // Sort appointments by creation date (newest first)
+    const sortedAppointments = [...filteredAppointments].sort((a, b) => {
+        // Get creation timestamp
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        
+        // Sort newest first (descending)
+        return timeB - timeA;
+    });
+
     // Group appointments by date
-    const groupedAppointments = filteredAppointments.reduce((groups, appointment) => {
+    const groupedAppointments = sortedAppointments.reduce((groups, appointment) => {
         const date = appointment.date;
         if (!groups[date]) {
             groups[date] = [];
@@ -239,6 +352,7 @@ const DoctorSchedule = () => {
 
     const statusOptions = [
         { value: '', label: 'All Status' },
+        { value: 'pending', label: 'Pending Approval' },
         { value: 'scheduled', label: 'Scheduled' },
         { value: 'confirmed', label: 'Confirmed' },
         { value: 'in-progress', label: 'In Progress' },
@@ -259,7 +373,71 @@ const DoctorSchedule = () => {
     };
 
     const handleViewAIReport = (appointmentId) => {
-        // Navigate to AI report view
+        navigate(`/doctor/appointments/${appointmentId}/report`);
+    };
+
+    const handleStartConsultation = (appointmentId) => {
+        // Navigate to consultation page or open consultation modal
+        // For now, we'll show a confirmation modal
+        const appointment = appointments.find(apt => apt.id === appointmentId);
+        setSelectedAppointment(appointment);
+        setShowSuccessModal(true);
+        setSuccessMessage(`Starting consultation with ${appointment.patient}...`);
+        
+        // Auto close after 2 seconds and navigate
+        setTimeout(() => {
+            setShowSuccessModal(false);
+            // You can navigate to a consultation page here
+            // navigate(`/doctor/consultation/${appointmentId}`);
+        }, 2000);
+    };
+
+    const handleAcceptClick = (appointmentId) => {
+        const appointment = appointments.find(apt => apt.id === appointmentId);
+        setSelectedAppointment(appointment);
+        setShowAcceptModal(true);
+    };
+
+    const handleRejectClick = (appointmentId) => {
+        const appointment = appointments.find(apt => apt.id === appointmentId);
+        setSelectedAppointment(appointment);
+        setShowRejectModal(true);
+    };
+
+    const handleConfirmAccept = () => {
+        setAppointments(prevAppointments =>
+            prevAppointments.map(appointment =>
+                appointment.id === selectedAppointment.id
+                    ? { ...appointment, status: 'confirmed' }
+                    : appointment
+            )
+        );
+        setShowAcceptModal(false);
+        setSuccessMessage('Appointment accepted successfully!');
+        setShowSuccessModal(true);
+        
+        // Auto close success modal after 3 seconds
+        setTimeout(() => {
+            setShowSuccessModal(false);
+        }, 3000);
+    };
+
+    const handleConfirmReject = () => {
+        setAppointments(prevAppointments =>
+            prevAppointments.map(appointment =>
+                appointment.id === selectedAppointment.id
+                    ? { ...appointment, status: 'cancelled' }
+                    : appointment
+            )
+        );
+        setShowRejectModal(false);
+        setSuccessMessage('Appointment rejected successfully!');
+        setShowSuccessModal(true);
+        
+        // Auto close success modal after 3 seconds
+        setTimeout(() => {
+            setShowSuccessModal(false);
+        }, 3000);
     };
 
     return (
@@ -271,7 +449,10 @@ const DoctorSchedule = () => {
                     <p className="text-sm sm:text-base text-gray-600">Manage your appointments and view AI reports</p>
                 </div>
                 <div className="flex items-center space-x-2 sm:space-x-4">
-                    <button className="flex items-center justify-center space-x-2 bg-pink-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-pink-700 transition-colors font-medium text-sm sm:text-base whitespace-nowrap">
+                    <button 
+                        onClick={() => navigate('/doctor/appointments/create')}
+                        className="flex items-center justify-center space-x-2 bg-pink-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-pink-700 transition-colors font-medium text-sm sm:text-base whitespace-nowrap"
+                    >
                         <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                         <span className="hidden sm:inline">Add Appointment</span>
                         <span className="sm:hidden">Add</span>
@@ -376,6 +557,10 @@ const DoctorSchedule = () => {
                             className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                         />
                         <div className="mt-4 space-y-2">
+                            <div className="flex items-center space-x-2 text-sm">
+                                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                                <span>Pending ({filteredAppointments.filter(a => a.status === 'pending').length})</span>
+                            </div>
                             <div className="flex items-center space-x-2 text-sm">
                                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                                 <span>Confirmed ({filteredAppointments.filter(a => a.status === 'confirmed').length})</span>
@@ -497,6 +682,33 @@ const DoctorSchedule = () => {
 
                                                     {/* Action Buttons */}
                                                     <div className="flex items-center justify-end space-x-2 mt-3">
+                                                        {appointment.status === 'pending' ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleAcceptClick(appointment.id)}
+                                                                    className="flex items-center space-x-1 px-3 py-1.5 text-sm bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors font-medium"
+                                                                >
+                                                                    <ThumbsUp className="w-4 h-4" />
+                                                                    <span>Accept</span>
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleRejectClick(appointment.id)}
+                                                                    className="flex items-center space-x-1 px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                                                                >
+                                                                    <ThumbsDown className="w-4 h-4" />
+                                                                    <span>Reject</span>
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleViewAppointment(appointment.id)}
+                                                                    disabled
+                                                                    className="flex items-center space-x-1 px-3 py-1 text-sm text-gray-400 cursor-not-allowed opacity-50"
+                                                                >
+                                                                    <Eye className="w-4 h-4" />
+                                                                    <span>View Details</span>
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <>
                                                         <button
                                                             onClick={() => handleViewAppointment(appointment.id)}
                                                             className="flex items-center space-x-1 px-3 py-1 text-sm text-pink-600 hover:text-pink-800"
@@ -504,10 +716,15 @@ const DoctorSchedule = () => {
                                                             <Eye className="w-4 h-4" />
                                                             <span>View Details</span>
                                                         </button>
-                                                        <button className="flex items-center space-x-1 px-3 py-1 text-sm text-green-600 hover:text-green-800">
+                                                                <button 
+                                                                    onClick={() => handleStartConsultation(appointment.id)}
+                                                                    className="flex items-center space-x-1 px-3 py-1 text-sm text-green-600 hover:text-green-800 font-medium"
+                                                                >
                                                             <MessageCircle className="w-4 h-4" />
                                                             <span>Start Consultation</span>
                                                         </button>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                             ))}
@@ -519,6 +736,149 @@ const DoctorSchedule = () => {
                     </Card>
                 </div>
             </div>
+
+            {/* Accept Confirmation Modal */}
+            {showAcceptModal && selectedAppointment && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+                        <div className="text-center">
+                            <div className="mx-auto w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center mb-4">
+                                <ThumbsUp className="w-10 h-10 text-pink-600" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                                Accept Appointment?
+                            </h2>
+                            <p className="text-gray-600 mb-6">
+                                You are about to accept this appointment request.
+                            </p>
+
+                            <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Patient:</span>
+                                        <span className="font-semibold text-gray-900">{selectedAppointment.patient}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Date:</span>
+                                        <span className="font-semibold text-gray-900">{selectedAppointment.date}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Time:</span>
+                                        <span className="font-semibold text-gray-900">{selectedAppointment.time}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Type:</span>
+                                        <span className="font-semibold text-gray-900">{selectedAppointment.type}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6 text-left">
+                                <p className="text-sm text-blue-800">
+                                    <strong>Note:</strong> Once accepted, the patient will be notified and the appointment will be confirmed.
+                                </p>
+                            </div>
+
+                            <div className="flex space-x-3">
+                                <button
+                                    onClick={() => setShowAcceptModal(false)}
+                                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirmAccept}
+                                    className="flex-1 flex items-center justify-center space-x-2 bg-pink-600 text-white py-3 px-6 rounded-xl hover:bg-pink-700 transition-colors font-medium"
+                                >
+                                    <CheckCircle className="w-5 h-5" />
+                                    <span>Yes, Accept</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Reject Confirmation Modal */}
+            {showRejectModal && selectedAppointment && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+                        <div className="text-center">
+                            <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                <ThumbsDown className="w-10 h-10 text-red-600" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                                Reject Appointment?
+                            </h2>
+                            <p className="text-gray-600 mb-6">
+                                You are about to reject this appointment request.
+                            </p>
+
+                            <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Patient:</span>
+                                        <span className="font-semibold text-gray-900">{selectedAppointment.patient}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Date:</span>
+                                        <span className="font-semibold text-gray-900">{selectedAppointment.date}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Time:</span>
+                                        <span className="font-semibold text-gray-900">{selectedAppointment.time}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Type:</span>
+                                        <span className="font-semibold text-gray-900">{selectedAppointment.type}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg mb-6 text-left">
+                                <p className="text-sm text-red-800">
+                                    <strong>Warning:</strong> Rejecting this appointment will cancel it and notify the patient. This action cannot be undone.
+                                </p>
+                            </div>
+
+                            <div className="flex space-x-3">
+                                <button
+                                    onClick={() => setShowRejectModal(false)}
+                                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirmReject}
+                                    className="flex-1 flex items-center justify-center space-x-2 bg-red-600 text-white py-3 px-6 rounded-xl hover:bg-red-700 transition-colors font-medium"
+                                >
+                                    <XCircle className="w-5 h-5" />
+                                    <span>Yes, Reject</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-scale-in">
+                        <div className="text-center">
+                            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                <CheckCircle className="w-10 h-10 text-green-500" />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                Success!
+                            </h3>
+                            <p className="text-gray-600">
+                                {successMessage}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

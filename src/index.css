@@ -1,8 +1,9 @@
 /* ================================
    1. Import Google Fonts FIRST
    ================================ */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Commented out to avoid network errors - using system fonts instead */
+/* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap'); */
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'); */
 
 @import "tailwindcss";
 @import "./styles/forms.css";
@@ -124,4 +125,29 @@ p {
   outline: none !important;
   box-shadow: none !important;
   background: transparent !important;
+}
+
+/* ================================
+   6. Toast Animation
+   ================================ */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 }
