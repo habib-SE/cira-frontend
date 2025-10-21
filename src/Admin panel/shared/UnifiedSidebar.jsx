@@ -44,6 +44,7 @@ const UnifiedSidebar = ({
           { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/admin/appointments' },
           { id: 'reports', label: 'Reports', icon: FileText, path: '/admin/reports' },
           { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
+          { id: 'plans', label: 'Subscriptions', icon: CreditCard, path: '/admin/plans' },
           { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
           { id: 'referrals', label: 'Referrals', icon: TrendingUp, path: '/admin/referrals' },
         ];

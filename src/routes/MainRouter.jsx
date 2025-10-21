@@ -22,8 +22,15 @@ import Patients from '../Admin panel/admin/adminpages/Patients';
 import Appointments from '../Admin panel/admin/adminpages/Appointments';
 import Reports from '../Admin panel/admin/adminpages/Reports';
 import Payments from '../Admin panel/admin/adminpages/Payments';
+import PaymentDetail from '../Admin panel/admin/adminpages/PaymentDetail';
 import Settings from '../Admin panel/admin/adminpages/Settings';
 import Referrals from '../Admin panel/admin/adminpages/Referrals';
+import ReferralDetail from '../Admin panel/admin/adminpages/ReferralDetail';
+import ReferralProviders from '../Admin panel/admin/adminpages/ReferralProviders';
+import ReferralProviderEdit from '../Admin panel/admin/adminpages/ReferralProviderEdit';
+import Plans from '../Admin panel/admin/adminpages/Plans';
+import PlanEditor from '../Admin panel/admin/adminpages/PlanEditor';
+import PlanDetail from '../Admin panel/admin/adminpages/PlanDetail';
 
 // Patient Portal Imports
 import PatientLayout from '../Admin panel/patient/patientcomponents/PatientLayout';
@@ -39,6 +46,7 @@ import PatientReportDetails from '../Admin panel/patient/patientpages/PatientRep
 import MyDoctors from '../Admin panel/patient/patientpages/MyDoctors';
 import PatientMessages from '../Admin panel/patient/patientpages/PatientMessages';
 import PatientSettings from '../Admin panel/patient/patientpages/PatientSettings';
+import Billing from '../Admin panel/patient/patientpages/Billing';
 
 // Doctor Portal Imports
 import DoctorLayout from '../Admin panel/doctor/doctorcomponents/DoctorLayout';
@@ -95,6 +103,7 @@ function MainRouter() {
         <Route path="users/edit/:id" element={<Users />} />
         <Route path="users/view/:id" element={<Users />} />
         <Route path="doctors" element={<Doctors />} />
+        <Route path="doctors/edit/:id" element={<Doctors />} />
         <Route path="doctors/:id" element={<AdminDoctorProfile />} />
         <Route path="appointments" element={<Appointments />} />
         <Route path="appointments/add" element={<Appointments />} />
@@ -102,8 +111,16 @@ function MainRouter() {
         <Route path="appointments/view/:id" element={<Appointments />} />
         <Route path="reports" element={<Reports />} />
         <Route path="payments" element={<Payments />} />
+        <Route path="payments/:id" element={<PaymentDetail />} />
+        <Route path="plans" element={<Plans />} />
+        <Route path="plans/create" element={<PlanEditor mode="create" />} />
+        <Route path="plans/edit/:id" element={<PlanEditor mode="edit" />} />
+        <Route path="plans/view/:id" element={<PlanDetail />} />
         <Route path="settings" element={<Settings />} />
         <Route path="referrals" element={<Referrals />} />
+        <Route path="referrals/:id" element={<ReferralDetail />} />
+        <Route path="referral-providers" element={<ReferralProviders />} />
+        <Route path="referral-providers/edit/:id" element={<ReferralProviderEdit />} />
         <Route path="doctor-profile" element={<DoctorProfileDetail />} />
       </Route>
 
@@ -125,6 +142,7 @@ function MainRouter() {
         <Route path="profile" element={<PatientProfile/>} />
         <Route path="history" element={<History />} />
         <Route path="subscriptions" element={<PatientSubscriptions />} />
+        <Route path="billing" element={<Billing />} />
         <Route path="messages" element={<PatientMessages />} />
         <Route path="settings" element={<PatientSettings />} />
       </Route>
