@@ -8,7 +8,8 @@ import {
     FileText,
     DollarSign,
     Mail,
-    CheckCircle
+    CheckCircle,
+    X
 } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
@@ -139,6 +140,10 @@ const ReferralProviderEdit = () => {
             ...prev,
             [name]: value
         }));
+    };
+
+    const handleCancel = () => {
+        navigate('/admin/referral-providers');
     };
 
     const handleSave = async () => {

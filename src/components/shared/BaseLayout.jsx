@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import PageLoader from './PageLoader';
-import Footer from './Footer';
 
 const BaseLayout = ({ 
   Sidebar, 
@@ -88,9 +87,6 @@ const BaseLayout = ({
           <PageLoader isLoading={isLoading}>
             <Outlet />
           </PageLoader>
-          
-          {/* Footer */}
-          <Footer />
         </main>
       </div>
     </div>
