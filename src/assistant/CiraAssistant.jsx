@@ -660,7 +660,8 @@ export default function CiraAssistant() {
     handleScanAccept,
     handleScanDecline,
     handleCloseVitals,
-    handleStartFromVitals
+    handleStartFromVitals,
+    resetModalStates, 
   } = useModalLogic();
 
   // Initialize conversation hook
@@ -695,7 +696,7 @@ export default function CiraAssistant() {
 
   const { status, isSpeaking } = conversation;
 
-  // Mic permission - check when component mounts
+  // Mic permission check
   useEffect(() => {
     (async () => {
       try {
@@ -707,11 +708,11 @@ export default function CiraAssistant() {
     })();
   }, []);
 
+  // 🧠 Now this reopens the modal flow every time you restart
   const handleStartConversation = async () => {
     try {
-      console.log("Starting conversation...");
-      // Show modal again when starting conversation
-      console.log("Welcome modal shown - waiting for user choice");
+      console.log("Restarting conversation flow...");
+      resetModalStates(); // ✅ reopen Welcome → Vitals sequence
     } catch (err) {
       console.error("Failed to start conversation:", err);
       setErrorMessage("Failed to start conversation");
@@ -721,7 +722,6 @@ export default function CiraAssistant() {
   const handleStartConversationDirectly = async () => {
     try {
       console.log("Starting conversation directly...");
-      
       await conversation.startSession({
         agentId: import.meta.env.VITE_ELEVENLABS_AGENT_ID,
       });
@@ -812,14 +812,14 @@ export default function CiraAssistant() {
       </div>
 
       {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
-      
+
       {status === "connected" && (
         <p className="text-green-600 mb-2">
           {isSpeaking ? "Speaking..." : "Listening..."}
         </p>
       )}
 
-      {/* Controls - Only show when conversation is active */}
+      {/* Controls */}
       {isConnected && (
         <div className="flex gap-4 mt-2">
           <button
@@ -841,7 +841,7 @@ export default function CiraAssistant() {
         </div>
       )}
 
-      {/* Start Conversation button - Only show when conversation has ended */}
+      {/* Start Conversation button */}
       {conversationEnded && (
         <button
           onClick={handleStartConversation}
@@ -858,7 +858,7 @@ export default function CiraAssistant() {
         </button>
       )}
 
-      {/* Welcome Modal - Shows immediately on first load and when restarting conversation */}
+      {/* Welcome + Vitals Modals */}
       <AnimatePresence>
         {showWelcomeModal && (
           <WelcomeScanModal
@@ -867,12 +867,14 @@ export default function CiraAssistant() {
             isScanning={isScanning}
           />
         )}
-        
+
         {showVitals && vitalsData && (
           <VitalSignsDisplay
             vitals={vitalsData}
             onClose={handleCloseVitals}
-            onStartConversation={() => handleStartFromVitals(handleStartConversationDirectly)}
+            onStartConversation={() =>
+              handleStartFromVitals(handleStartConversationDirectly)
+            }
           />
         )}
       </AnimatePresence>
