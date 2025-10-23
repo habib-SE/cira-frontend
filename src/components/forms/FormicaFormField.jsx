@@ -38,11 +38,7 @@ const FormicaFormField = React.memo(({
         {...props}
       />
       
-      {hasError && (
-        <p id={`${name}-error`} className="error-message" role="alert">
-          {errorMessage}
-        </p>
-      )}
+      {/* Error message removed - shown at top level instead */}
     </div>
   );
 });

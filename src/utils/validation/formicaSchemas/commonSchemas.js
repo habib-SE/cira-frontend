@@ -77,6 +77,6 @@ export const commonFormSchemas = {
   passwordChange: createFormicaSchema()
     .custom('currentPassword', FormicaValidators.password().safeParse, 'Current password is invalid')
     .custom('newPassword', FormicaValidators.password().safeParse, 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character')
-    .custom('confirmPassword', (value, formData) => value === formData.newPassword, 'Passwords must match')
+    .custom('confirmPassword', (value, formData) => formData && formData.newPassword ? value === formData.newPassword : true, 'Passwords must match')
     .build(),
 };

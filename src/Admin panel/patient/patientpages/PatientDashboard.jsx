@@ -242,7 +242,7 @@ const PatientDashboard = () => {
       {/* Floating AI Nurse Button */}
       <div className="fixed bottom-6 right-6 z-50">
         <button
-          onClick={() => navigate('/ai-nurse')}
+          onClick={() => navigate('/assistant')}
           className="bg-gradient-to-r from-pink-400 to-pink-500 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all font-semibold flex items-center gap-2"
         >
           <Bot className="h-5 w-5" />

@@ -51,11 +51,13 @@ const ProfileWizard = () => {
             sunday: { start: '10:00', end: '14:00', available: false }
         },
         
-        // Step 4: Fees
+        // Step 4: Fees & Consultation
+        consultationType: '',
         consultationFee: '',
         followUpFee: '',
         emergencyFee: '',
-        teleconsultationFee: ''
+        teleconsultationFee: '',
+        appointmentDuration: 30
     });
 
     const [errors, setErrors] = useState({});
@@ -462,11 +464,44 @@ const ProfileWizard = () => {
                 return (
                     <div className="space-y-6">
                         <div className="text-center mb-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Set Your Fees</h3>
-                            <p className="text-gray-600">Define your consultation and service pricing</p>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Set Your Fees & Consultation</h3>
+                            <p className="text-gray-600">Define your consultation type and service pricing</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Consultation Type *
+                                </label>
+                                <select
+                                    name="consultationType"
+                                    value={formData.consultationType}
+                                    onChange={handleInputChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    <option value="">Select consultation type</option>
+                                    <option value="online">Online Consultation</option>
+                                    <option value="in-person">In-Person Consultation</option>
+                                    <option value="both">Both Online & In-Person</option>
+                                </select>
+                                {errors.consultationType && <p className="text-red-500 text-sm mt-1">{errors.consultationType}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Appointment Duration (minutes) *
+                                </label>
+                                <input
+                                    type="number"
+                                    name="appointmentDuration"
+                                    value={formData.appointmentDuration}
+                                    onChange={handleInputChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                    placeholder="30"
+                                />
+                                {errors.appointmentDuration && <p className="text-red-500 text-sm mt-1">{errors.appointmentDuration}</p>}
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Consultation Fee *
