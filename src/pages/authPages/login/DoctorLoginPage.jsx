@@ -29,7 +29,7 @@ import {
 } from '../../../components/forms';
 import { authFormicaSchemas, doctorFormicaSchemas } from '../../../utils/validation/formicaSchemas';
 
-const DoctorLogin = () => {
+const DoctorLoginPage = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -948,5 +948,5 @@ const DoctorLogin = () => {
     );
 };
 
-export default DoctorLogin;
+export default DoctorLoginPage;
 

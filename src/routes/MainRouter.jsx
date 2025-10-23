@@ -2,14 +2,17 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute';
 import WelcomePage from '../Admin panel/admin/adminpages/WelcomePage';
-import { MainLoginPage, DoctorLoginPage } from '../components/auth';
+// import { MainLoginPage, DoctorLoginPage } from '../components/auth';
+import MainLoginPage from '../pages/authPages/login/MainLoginPage';
+import DoctorLoginPage from '../pages/authPages/login/DoctorLoginPage';
 import EmailConfirmPage from '../Admin panel/admin/adminpages/EmailConfirmPage';
 import EnablePermissionPage from '../Admin panel/admin/adminpages/EnablePermissionPage';
 import PlusUnlockedPage from '../Admin panel/admin/adminpages/PlusUnlockedPage';
 import SubscriptionPlansPage from '../Admin panel/admin/adminpages/SubscriptionPlansPage';
 
 // Authentication Module Imports
-import { RegisterPage } from '../components/auth';
+// import { RegisterPage } from '../components/auth';
+import RegisterPage from '../pages/authPages/Register/RegisterPage'
 
 // Admin Portal Imports
 import AdminLayout from '../Admin panel/admin/admincomponents/AdminLayout';
@@ -134,9 +137,9 @@ function MainRouter() {
         }
       >
         <Route path="" element={<PatientDashboard />} />
-        <Route path="ai-nurse" element={<AI_Nurse />} />
+        <Route path="ai" element={<AI_Nurse />} />
         <Route path="reports" element={<PatientReports />} />
-         <Route path="reportsId" element={<PatientReportDetails />} />
+        <Route path="reports/:reportId" element={<PatientReportDetails />} />
         <Route path="book-doctor" element={<MyDoctors/>} />
         <Route path="Referralcheckout" element={<ReferralCheckout/>} />
         <Route path="profile" element={<PatientProfile/>} />

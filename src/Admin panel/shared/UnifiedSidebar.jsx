@@ -63,9 +63,8 @@ const UnifiedSidebar = ({
       case 'patient':
         return [
           { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/patient' },
-          { id: 'ai-nurse', label: 'AI Nurse', icon: Bot, path: '/patient/ai-nurse' },
+          { id: 'ai-nurse', label: 'AI Nurse', icon: Bot, path: '/patient/ai' },
           { id: 'reports', label: 'Reports', icon: FileText, path: '/patient/reports' },
-          { id: 'report-detail', label: 'Report Detail', icon: Clipboard, path: '/patient/reportsId' },
           { id: 'book-doctor', label: 'Book Doctor', icon: Stethoscope, path: '/patient/book-doctor' },
           { id: 'referral-checkout', label: 'Referral Checkout', icon: LogOut, path: '/patient/Referralcheckout' },
           { id: 'profile', label: 'Profile', icon: UserPen, path: '/patient/profile' },

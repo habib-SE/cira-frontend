@@ -2,19 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Mic, 
   MicOff, 
-  Camera, 
-  CameraOff, 
   Send, 
-  Heart, 
-  Thermometer, 
-  Activity,
-  Video,
-  VideoOff,
-  Phone,
-  PhoneOff,
-  X,
-  MessageSquare
+  Scan
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const AI_Nurse = () => {
   const [messages, setMessages] = useState([
@@ -24,7 +15,7 @@ const AI_Nurse = () => {
       sender: 'ai',
       timestamp: new Date().toLocaleTimeString()
     }
-  ]);
+  ]); 
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isCameraOn, setIsCameraOn] = useState(false);
@@ -32,8 +23,6 @@ const AI_Nurse = () => {
   const [rightPanelMode, setRightPanelMode] = useState('camera'); // 'camera' or 'voice'
   const [voiceTranscription, setVoiceTranscription] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [isVoiceChatModalOpen, setIsVoiceChatModalOpen] = useState(false);
-  const [isVoiceOrbActive, setIsVoiceOrbActive] = useState(false);
   const [vitals, setVitals] = useState({
     heartRate: 72,
     temperature: 98.6,
@@ -44,6 +33,8 @@ const AI_Nurse = () => {
   const messagesEndRef = useRef(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+
+  const navigate = useNavigate();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -179,51 +170,12 @@ const AI_Nurse = () => {
     setIsCallActive(!isCallActive);
   };
 
-  const openVoiceChatModal = () => {
-    setIsVoiceChatModalOpen(true);
-  };
-
-  const closeVoiceChatModal = () => {
-    setIsVoiceChatModalOpen(false);
-    setIsVoiceOrbActive(false);
-  };
-
-  const toggleVoiceOrb = () => {
-    setIsVoiceOrbActive(!isVoiceOrbActive);
-    
-    if (!isVoiceOrbActive) {
-      // Simulate voice recording
-      setTimeout(() => {
-        const voiceMessage = {
-          id: messages.length + 1,
-          text: "Voice message: I need help with my medication schedule",
-          sender: 'user',
-          timestamp: new Date().toLocaleTimeString(),
-          isVoice: true
-        };
-        setMessages(prev => [...prev, voiceMessage]);
-        setIsVoiceOrbActive(false);
-        
-        // Simulate AI response
-        setTimeout(() => {
-          const aiResponse = {
-            id: messages.length + 2,
-            text: "I'd be happy to help you with your medication schedule. What specific questions do you have?",
-            sender: 'ai',
-            timestamp: new Date().toLocaleTimeString()
-          };
-          setMessages(prev => [...prev, aiResponse]);
-        }, 1500);
-      }, 3000);
-    }
-  };
-
   return (
     <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col lg:flex-row">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col lg:w-3/4">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b border-gray-200 p-4">
+        <div className="bg-white shadow-sm border-b border-gray-200 p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
@@ -239,8 +191,8 @@ const AI_Nurse = () => {
           </div>
         </div>
 
-        {/* Messages Area */}
-        <div className="flex-1 p-4 space-y-4 scrollbar overflow-hidden">
+        {/* Messages Area - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -273,8 +225,8 @@ const AI_Nurse = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area */}
-        <div className="bg-white border-t border-gray-200 p-4">
+        {/* Input Area - Fixed at bottom */}
+        <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
           <div className="flex items-center space-x-3">
             <div className="flex-1 relative">
               <input
@@ -300,23 +252,24 @@ const AI_Nurse = () => {
       {/* Right Panel - Camera or Voice */}
       <div className="lg:w-1/4 bg-white border-l border-gray-200 flex flex-col">
         {/* Panel Header */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-gray-200 flex-shrink-0">
           {rightPanelMode === 'camera' && (
             <div className="space-y-3">
               <button
                 onClick={toggleCamera}
-                className={`w-full p-2 rounded-lg transition-colors ${
+                className={`w-full flex justify-center gap-3 p-3 rounded-lg transition-colors ${
                   isCameraOn 
                     ? 'bg-red-500 text-white hover:bg-red-600' 
                     : 'bg-gray-500 text-white hover:bg-gray-600'
                 }`}
               >
+                <Scan size={24} className=''/>
                 {isCameraOn ? 'Turn Off Camera' : 'Turn On Camera'}
               </button>
               
               {/* Voice Chat Button */}
               <button
-                onClick={openVoiceChatModal}
+                onClick={() => navigate('/assistant')}
                 className="w-full p-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
               >
                 <Mic size={20} />
@@ -327,10 +280,9 @@ const AI_Nurse = () => {
         </div>
 
         {/* Panel Content */}
-        <div className="flex-1 p-4">
+        <div className="flex-1 p-4 overflow-y-auto">
           {rightPanelMode === 'camera' ? (
             <>
-
               {/* Vitals Display */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-red-50 p-3 rounded-lg">
@@ -449,102 +401,6 @@ const AI_Nurse = () => {
           )}
         </div>
       </div>
-
-      {/* Voice Chat Modal Overlay */}
-      {isVoiceChatModalOpen && (
-        <div className="fixed inset-0 z-50 w-screen h-screen overflow-hidden">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
-            onClick={closeVoiceChatModal}
-          ></div>
-          
-          {/* Modal Content */}
-          <div className="relative w-full h-full bg-white flex flex-col">
-            {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                  <MessageSquare size={24} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold">Voice Chat Assistant</h2>
-                  <p className="text-blue-100 text-sm">AI-powered healthcare support</p>
-                </div>
-              </div>
-              <button
-                onClick={closeVoiceChatModal}
-                className="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-6 bg-gray-50 min-h-0 scrollbar-hide">
-              <div className="max-w-4xl mx-auto space-y-4 h-full">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-md px-6 py-4 rounded-2xl ${
-                        message.sender === 'user'
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-white text-gray-800 shadow-lg border'
-                      }`}
-                    >
-                      <p className="text-sm leading-relaxed">{message.text}</p>
-                      <p className={`text-xs mt-2 ${
-                        message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
-                      }`}>
-                        {message.timestamp}
-                      </p>
-                      {message.isVoice && (
-                        <div className="flex items-center mt-3">
-                          <div className="w-4 h-4 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                            <Mic size={12} />
-                          </div>
-                          <span className="ml-2 text-xs">Voice Message</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            </div>
-
-            {/* Voice Orb Container */}
-            <div className="relative bg-white p-4 flex flex-col items-center flex-shrink-0">
-              {/* Status Text */}
-              <div className="mb-4 text-center">
-                <p className="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-full shadow-sm">
-                  {isVoiceOrbActive ? 'Listening... Tap to stop' : 'Tap the microphone to start voice chat'}
-                </p>
-              </div>
-              
-              {/* Voice Orb */}
-              <div className="relative">
-                <button
-                  onClick={toggleVoiceOrb}
-                  className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 ${
-                    isVoiceOrbActive
-                      ? 'bg-red-500 text-white scale-110 shadow-2xl shadow-red-500/50 animate-pulse'
-                      : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:scale-105 shadow-2xl hover:shadow-xl'
-                  }`}
-                >
-                  {isVoiceOrbActive ? <MicOff size={28} /> : <Mic size={28} />}
-                </button>
-                {isVoiceOrbActive && (
-                  <div className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-30"></div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
