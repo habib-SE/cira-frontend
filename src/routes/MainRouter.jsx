@@ -5,6 +5,7 @@ import WelcomePage from '../Admin panel/admin/adminpages/WelcomePage';
 // import { MainLoginPage, DoctorLoginPage } from '../components/auth';
 import MainLoginPage from '../pages/authPages/login/MainLoginPage';
 import DoctorLoginPage from '../pages/authPages/login/DoctorLoginPage';
+import CompanyLoginPage from '../pages/authPages/login/CompanyLoginPage';
 import EmailConfirmPage from '../Admin panel/admin/adminpages/EmailConfirmPage';
 import EnablePermissionPage from '../Admin panel/admin/adminpages/EnablePermissionPage';
 import PlusUnlockedPage from '../Admin panel/admin/adminpages/PlusUnlockedPage';
@@ -66,6 +67,16 @@ import DoctorPatientReports from '../Admin panel/doctor/doctorpages/PatientRepor
 import DoctorPatientReportDetail from '../Admin panel/doctor/doctorpages/PatientReportDetail';
 import BankDetails from '../Admin panel/doctor/doctorpages/BankDetails';
 
+// Company Portal Imports
+import CompanyLayout from '../Admin panel/company/companycomponents/CompanyLayout';
+import CompanyDashboard from '../Admin panel/company/companypages/CompanyDashboard';
+import CompanyUsers from '../Admin panel/company/companypages/CompanyUsers';
+import CompanyUserForm from '../Admin panel/company/companypages/CompanyUserForm';
+import CompanyReports from '../Admin panel/company/companypages/CompanyReports';
+import CompanyConsultations from '../Admin panel/company/companypages/CompanyConsultations';
+import CompanyBilling from '../Admin panel/company/companypages/CompanyBilling';
+import CompanySettings from '../Admin panel/company/companypages/CompanySettings';
+
 function MainRouter() {
   return (
     <Routes>
@@ -78,6 +89,7 @@ function MainRouter() {
       <Route path="/login" element={<MainLoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/doctor/login" element={<DoctorLoginPage />} />
+      <Route path="/company/login" element={<CompanyLoginPage />} />
       
       
       {/* Email confirmation page */}
@@ -173,6 +185,26 @@ function MainRouter() {
         <Route path="earnings/bank-details" element={<BankDetails />} />
         <Route path="settings" element={<DoctorSettings />} />
         <Route path="my-profile" element={<DoctorProfile />} />
+      </Route>
+
+      {/* Company Portal Routes - Protected */}
+      <Route 
+        path="/company" 
+        element={
+          <ProtectedRoute allowedRoles={['company']}>
+            <CompanyLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="" element={<CompanyDashboard />} />
+        <Route path="users" element={<CompanyUsers />} />
+        <Route path="users/create" element={<CompanyUserForm mode="create" />} />
+        <Route path="users/edit/:id" element={<CompanyUserForm mode="edit" />} />
+        <Route path="users/view/:id" element={<CompanyUserForm mode="view" />} />
+        <Route path="reports" element={<CompanyReports />} />
+        <Route path="consultations" element={<CompanyConsultations />} />
+        <Route path="billing" element={<CompanyBilling />} />
+        <Route path="settings" element={<CompanySettings />} />
       </Route>
     </Routes>
   );

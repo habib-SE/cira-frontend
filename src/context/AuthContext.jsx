@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }) => {
         admin: { email: 'admin@cira.com', password: 'admin123', role: 'admin', name: 'Admin User' },
         patient: { email: 'patient@cira.com', password: 'patient123', role: 'patient', name: 'John Doe' },
         doctor: { email: 'doctor@cira.com', password: 'doctor123', role: 'doctor', name: 'Dr. Smith' },
+        company: { email: 'company@example.com', password: 'password', role: 'company', name: 'Company Admin' },
       };
 
       const mockUser = mockUsers[role];
@@ -69,6 +70,9 @@ export const AuthProvider = ({ children }) => {
             break;
           case 'doctor':
             navigate('/doctor');
+            break;
+          case 'company':
+            navigate('/company');
             break;
           default:
             navigate('/login');
