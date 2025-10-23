@@ -84,12 +84,14 @@ const BaseLayout = ({
         />
 
         {/* Page content */}
-        <main className={`flex-1 overflow-y-auto items-center overflow-x-hidden relative min-h-0 bg-${pageBackground}`}>
-          <PageLoader isLoading={isLoading}>
-            <Outlet />
-          </PageLoader>
+        <main className={`flex-1 overflow-y-auto items-center overflow-x-hidden relative min-h-0 bg-${pageBackground} flex flex-col`}>
+          <div className="flex-1">
+            <PageLoader isLoading={isLoading}>
+              <Outlet />
+            </PageLoader>
+          </div>
           
-          {/* Footer */}
+          {/* Footer - Always at bottom */}
           <Footer />
         </main>
       </div>
