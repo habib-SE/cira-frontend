@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import PageLoader from './PageLoader';
+import Footer from './Footer';
 
 const BaseLayout = ({ 
   Sidebar, 
@@ -84,8 +85,14 @@ const BaseLayout = ({
 
         {/* Page content */}
         <main className={`flex-1 overflow-y-auto items-center overflow-x-hidden relative min-h-0 bg-${pageBackground}`}>
-          <PageLoader isLoading={isLoading}>
-            <Outlet />
+          <PageLoader isLoading={isLoading}>    
+            <div className="min-h-full flex flex-col">
+              <div className="flex-1">
+                <Outlet />
+              </div>
+              {/* Footer - only shows at bottom of content, not fixed */}
+              <Footer />
+            </div>
           </PageLoader>
         </main>
       </div>

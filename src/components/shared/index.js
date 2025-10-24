@@ -9,4 +9,5 @@ export { default as BaseNavbar } from './BaseNavbar';
 export { default as FormInput } from './FormInput';
 export { default as Button } from './Button';
 export { default as StatsCard } from './StatsCard';
-
+export { default as ConfirmationModal } from './ConfirmationModal';
+export { default as AlertModal } from './AlertModal';
