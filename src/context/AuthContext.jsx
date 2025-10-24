@@ -25,65 +25,55 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password, role) => {
-    try {
-      // In production, this would be an API call to your backend
-      // For now, we'll simulate authentication
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+  const login = (email, password, role) => {
+    // Simple validation - no async, no backend calls
+    const mockUsers = {
+      admin: { email: 'admin@cira.com', password: 'admin123', role: 'admin', name: 'Admin User' },
+      user: { email: 'user@cira.com', password: 'user123', role: 'user', name: 'John Doe' },
+      doctor: { email: 'doctor@cira.com', password: 'doctor123', role: 'doctor', name: 'Dr. Smith' },
+      company: { email: 'company@cira.com', password: 'company123', role: 'company', name: 'Company Admin' },
+    };
 
-      // Mock user validation (replace with actual API call)
-      const mockUsers = {
-        admin: { email: 'admin@cira.com', password: 'admin123', role: 'admin', name: 'Admin User' },
-        patient: { email: 'patient@cira.com', password: 'patient123', role: 'patient', name: 'John Doe' },
-        doctor: { email: 'doctor@cira.com', password: 'doctor123', role: 'doctor', name: 'Dr. Smith' },
-        company: { email: 'company@example.com', password: 'password', role: 'company', name: 'Company Admin' },
+    const mockUser = mockUsers[role];
+    
+    if (mockUser && mockUser.email === email && mockUser.password === password) {
+      // Generate token
+      const token = `mock_token_${Date.now()}_${role}`;
+      
+      const userData = {
+        id: Math.random().toString(36).substr(2, 9),
+        email: mockUser.email,
+        name: mockUser.name,
+        role: mockUser.role,
       };
 
-      const mockUser = mockUsers[role];
+      // Store in localStorage
+      localStorage.setItem('userToken', token);
+      localStorage.setItem('userData', JSON.stringify(userData));
       
-      if (mockUser && mockUser.email === email && mockUser.password === password) {
-        // Generate mock token (in production, this comes from backend)
-        const token = `mock_token_${Date.now()}_${role}`;
-        
-        const userData = {
-          id: Math.random().toString(36).substr(2, 9),
-          email: mockUser.email,
-          name: mockUser.name,
-          role: mockUser.role,
-        };
+      setUser(userData);
 
-        // Store in localStorage
-        localStorage.setItem('userToken', token);
-        localStorage.setItem('userData', JSON.stringify(userData));
-        
-        setUser(userData);
-
-        // Redirect based on role
-        switch (role) {
-          case 'admin':
-            navigate('/admin');
-            break;
-          case 'patient':
-            navigate('/patient');
-            break;
-          case 'doctor':
-            navigate('/doctor');
-            break;
-          case 'company':
-            navigate('/company');
-            break;
-          default:
-            navigate('/login');
-        }
-
-        return { success: true, message: 'Login successful!' };
-      } else {
-        return { success: false, message: 'Invalid email or password' };
+      // Redirect based on role
+      switch (role) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'user':
+          navigate('/user');
+          break;
+        case 'doctor':
+          navigate('/doctor');
+          break;
+        case 'company':
+          navigate('/company');
+          break;
+        default:
+          navigate('/login');
       }
-    } catch (error) {
-      return { success: false, message: 'An error occurred during login' };
+
+      return { success: true, message: 'Login successful!' };
+    } else {
+      return { success: false, message: 'Invalid email or password' };
     }
   };
 

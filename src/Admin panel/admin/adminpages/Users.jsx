@@ -15,7 +15,7 @@ const Users = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        role: 'Patient',
+        role: 'User',
         status: 'Active',
         password: '',
         confirmPassword: ''
@@ -85,7 +85,7 @@ const Users = () => {
             id: 1,
             name: 'John Doe',
             email: 'john.doe@email.com',
-            role: 'Patient',
+            role: 'User',
             status: 'Active',
             joinDate: '2024-01-15',
             lastActiveTimestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
@@ -96,7 +96,7 @@ const Users = () => {
             id: 2,
             name: 'Jane Smith',
             email: 'jane.smith@email.com',
-            role: 'Patient',
+            role: 'User',
             status: 'Active',
             joinDate: '2024-01-14',
             lastActiveTimestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
@@ -118,7 +118,7 @@ const Users = () => {
             id: 4,
             name: 'Mike Johnson',
             email: 'mike.johnson@email.com',
-            role: 'Patient',
+            role: 'User',
             status: 'Suspended',
             joinDate: '2024-01-10',
             lastActiveTimestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
@@ -140,7 +140,7 @@ const Users = () => {
             id: 6,
             name: 'Sarah Wilson',
             email: 'sarah.wilson@email.com',
-            role: 'Patient',
+            role: 'User',
             status: 'Active',
             joinDate: '2024-01-12',
             lastActiveTimestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
@@ -198,7 +198,7 @@ const Users = () => {
         setFormData({
             name: '',
             email: '',
-            role: 'Patient',
+            role: 'User',
             status: 'Active',
             password: '',
             confirmPassword: ''
@@ -329,7 +329,7 @@ const Users = () => {
         switch (role) {
             case 'Doctor':
                 return 'bg-blue-100 text-blue-800';
-            case 'Patient':
+            case 'User':
                 return 'bg-purple-100 text-purple-800';
             case 'Admin':
                 return 'bg-pink-100 text-pink-800';
@@ -520,7 +520,7 @@ const Users = () => {
             setFormData({
                 name: '',
                 email: '',
-                role: 'Patient',
+                role: 'User',
                 status: 'Active',
                 password: '',
                 confirmPassword: ''
@@ -649,9 +649,7 @@ const Users = () => {
                                     onChange={handleEditInputChange}
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                                 >
-                                    <option value="Patient">Patient</option>
-                                    <option value="Doctor">Doctor</option>
-                                    <option value="Admin">Admin</option>
+                                    <option value="User">User</option>
                                 </select>
                             </div>
 
@@ -776,9 +774,7 @@ const Users = () => {
                                     onChange={handleInputChange}
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                                 >
-                                    <option value="Patient">Patient</option>
-                                    <option value="Doctor">Doctor</option>
-                                    <option value="Admin">Admin</option>
+                                    <option value="User">User</option>
                                 </select>
                             </div>
 
@@ -997,9 +993,7 @@ const Users = () => {
                             className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
                         >
                             <option value="">All Roles</option>
-                            <option value="Patient">Patient</option>
-                            <option value="Doctor">Doctor</option>
-                            <option value="Admin">Admin</option>
+                            <option value="User">User</option>
                         </select>
                         
                         {/* Clear Filters Button */}
@@ -1027,22 +1021,13 @@ const Users = () => {
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    User
+                                    Name
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Email
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Role
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Join Date
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Last Active
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Appointments
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
@@ -1053,38 +1038,15 @@ const Users = () => {
                             {filteredUsers.map((user) => (
                                 <tr key={user.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div className="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold mr-3">
-                                                {user.avatar}
-                                            </div>
-                                            <div>
                                                 <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-500">{user.email}</div>
-                                            </div>
-                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
                                             {user.role}
                                         </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(user.status)}`}>
-                                            {user.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{user.joinDate}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">
-                                            {user.lastActiveTimestamp 
-                                                ? getRelativeTime(user.lastActiveTimestamp)
-                                                : (user.lastActive || 'Never')}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">{user.totalAppointments}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div className="flex items-center space-x-2">

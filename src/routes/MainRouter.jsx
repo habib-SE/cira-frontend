@@ -22,7 +22,6 @@ import Users from '../Admin panel/admin/adminpages/Users';
 import Doctors from '../Admin panel/admin/adminpages/Doctors';
 import AdminDoctorProfile from '../Admin panel/admin/adminpages/DoctorProfile';
 import DoctorProfileDetail from '../Admin panel/admin/adminpages/DoctorProfileDetail';
-import Patients from '../Admin panel/admin/adminpages/Patients';
 import Appointments from '../Admin panel/admin/adminpages/Appointments';
 import Reports from '../Admin panel/admin/adminpages/Reports';
 import Payments from '../Admin panel/admin/adminpages/Payments';
@@ -36,8 +35,8 @@ import Plans from '../Admin panel/admin/adminpages/Plans';
 import PlanEditor from '../Admin panel/admin/adminpages/PlanEditor';
 import PlanDetail from '../Admin panel/admin/adminpages/PlanDetail';
 
-// Patient Portal Imports
-import PatientLayout from '../Admin panel/patient/patientcomponents/PatientLayout';
+// User Portal Imports
+import UserLayout from '../Admin panel/patient/patientcomponents/PatientLayout';
 import AI_Nurse from '../Admin panel/patient/patientpages/AI_Nurse';
 import PatientDashboard from '../Admin panel/patient/patientpages/PatientDashboard';
 import PatientReports from '../Admin panel/patient/patientpages/PatientReports';
@@ -59,13 +58,6 @@ import ProfileWizard from '../Admin panel/doctor/doctorpages/ProfileWizard';
 import DoctorSchedule from '../Admin panel/doctor/doctorpages/DoctorSchedule';
 import AppointmentDetail from '../Admin panel/doctor/doctorpages/AppointmentDetail';
 import CreateAppointment from '../Admin panel/doctor/doctorpages/CreateAppointment';
-import AIReportView from '../Admin panel/doctor/doctorpages/AIReportView';
-import Earnings from '../Admin panel/doctor/doctorpages/Earnings';
-import DoctorSettings from '../Admin panel/doctor/doctorpages/DoctorSettings';
-import DoctorProfile from '../Admin panel/doctor/doctorpages/DoctorProfile';
-import DoctorPatientReports from '../Admin panel/doctor/doctorpages/PatientReports';
-import DoctorPatientReportDetail from '../Admin panel/doctor/doctorpages/PatientReportDetail';
-import BankDetails from '../Admin panel/doctor/doctorpages/BankDetails';
 
 // Company Portal Imports
 import CompanyLayout from '../Admin panel/company/companycomponents/CompanyLayout';
@@ -76,6 +68,13 @@ import CompanyReports from '../Admin panel/company/companypages/CompanyReports';
 import CompanyConsultations from '../Admin panel/company/companypages/CompanyConsultations';
 import CompanyBilling from '../Admin panel/company/companypages/CompanyBilling';
 import CompanySettings from '../Admin panel/company/companypages/CompanySettings';
+import AIReportView from '../Admin panel/doctor/doctorpages/AIReportView';
+import Earnings from '../Admin panel/doctor/doctorpages/Earnings';
+import DoctorSettings from '../Admin panel/doctor/doctorpages/DoctorSettings';
+import DoctorProfile from '../Admin panel/doctor/doctorpages/DoctorProfile';
+import DoctorPatientReports from '../Admin panel/doctor/doctorpages/PatientReports';
+import DoctorPatientReportDetail from '../Admin panel/doctor/doctorpages/PatientReportDetail';
+import BankDetails from '../Admin panel/doctor/doctorpages/BankDetails';
 
 function MainRouter() {
   return (
@@ -139,12 +138,12 @@ function MainRouter() {
         <Route path="doctor-profile" element={<DoctorProfileDetail />} />
       </Route>
 
-      {/* Patient Portal Routes - Protected */}
+      {/* User Portal Routes - Protected */}
       <Route 
-        path="/patient" 
+        path="/user" 
         element={
-          <ProtectedRoute allowedRoles={['patient']}>
-            <PatientLayout />
+          <ProtectedRoute allowedRoles={['user']}>
+            <UserLayout />
           </ProtectedRoute>
         }
       >
