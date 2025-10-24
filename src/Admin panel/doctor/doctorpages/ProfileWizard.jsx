@@ -582,17 +582,17 @@ const ProfileWizard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-4xl mx-auto px-4">
+        <div className="min-h-screen  py-8">
+            <div className="max-w-4xl px-4">
                 {/* Header */}
-                <div className="text-center mb-8">
+                <div className="text-left mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Profile</h1>
                     <p className="text-gray-600">Set up your doctor profile to start accepting appointments</p>
                 </div>
 
                 {/* Progress Steps */}
                 <div className="mb-8">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-start space-x-8">
                         {steps.map((step, index) => {
                             const Icon = step.icon;
                             const isActive = currentStep === step.id;
@@ -600,7 +600,7 @@ const ProfileWizard = () => {
                             
                             return (
                                 <div key={step.id} className="flex items-center">
-                                    <div className="flex flex-col items-center">
+                                    <div className="flex flex-col items-start">
                                         <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${
                                             isCompleted 
                                                 ? 'bg-green-500 border-green-500 text-white' 
@@ -614,7 +614,7 @@ const ProfileWizard = () => {
                                                 <Icon className="h-6 w-6" />
                                             )}
                                         </div>
-                                        <div className="mt-2 text-center">
+                                        <div className="mt-2 text-left">
                                             <p className={`text-sm font-medium ${
                                                 isActive ? 'text-pink-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
                                             }`}>
@@ -623,11 +623,6 @@ const ProfileWizard = () => {
                                             <p className="text-xs text-gray-500">{step.description}</p>
                                         </div>
                                     </div>
-                                    {index < steps.length - 1 && (
-                                        <div className={`flex-1 h-0.5 mx-4 ${
-                                            isCompleted ? 'bg-green-500' : 'bg-gray-300'
-                                        }`} />
-                                    )}
                                 </div>
                             );
                         })}
@@ -635,11 +630,13 @@ const ProfileWizard = () => {
                 </div>
 
                 {/* Form Content */}
-                <Card className="p-8">
-                    {renderStepContent()}
+                <Card className="p-0">
+                    <div className="px-0 py-8">
+                        {renderStepContent()}
+                    </div>
 
                     {/* Navigation Buttons */}
-                    <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
+                    <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200 px-8 pb-8">
                         <button
                             type="button"
                             onClick={handlePrevious}

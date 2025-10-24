@@ -18,6 +18,7 @@ import {
   FormicaFormField 
 } from '../../../components/forms';
 import { authFormicaSchemas } from '../../../utils/validation/formicaSchemas';
+import { Building } from 'lucide-react';
 
 const MainLoginPage = () => {
   const navigate = useNavigate();
@@ -64,6 +65,7 @@ const MainLoginPage = () => {
               <p><strong>Admin:</strong> admin@cira.com / admin123</p>
               <p><strong>Patient:</strong> patient@cira.com / patient123</p>
               <p><strong>Doctor:</strong> doctor@cira.com / doctor123</p>
+              <p><strong>Company:</strong> company@example.com / password</p>
             </div>
           </div>
 
@@ -98,8 +100,8 @@ const MainLoginPage = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     I am a
                   </label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {['patient', 'doctor', 'admin'].map((role) => (
+                  <div className="grid grid-cols-2 gap-3">
+                    {['patient', 'doctor', 'admin', 'company'].map((role) => (
                       <button
                         key={role}
                         type="button"
@@ -110,7 +112,11 @@ const MainLoginPage = () => {
                             : 'border-gray-200 hover:border-gray-300 text-gray-700'
                         }`}
                       >
-                        <UserIcon className="h-5 w-5 mx-auto mb-1" />
+                        {role === 'company' ? (
+                          <Building className="h-5 w-5 mx-auto mb-1" />
+                        ) : (
+                          <UserIcon className="h-5 w-5 mx-auto mb-1" />
+                        )}
                         <span className="text-sm font-medium capitalize">{role}</span>
                       </button>
                     ))}

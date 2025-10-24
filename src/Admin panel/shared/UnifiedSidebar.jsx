@@ -48,13 +48,22 @@ const UnifiedSidebar = ({
           { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
           { id: 'referrals', label: 'Referrals', icon: TrendingUp, path: '/admin/referrals' },
         ];
+      case 'company':
+        return [
+          { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/company' },
+          { id: 'users', label: 'Users', icon: Users, path: '/company/users' },
+          { id: 'reports', label: 'Reports', icon: FileText, path: '/company/reports' },
+          { id: 'consultations', label: 'Consultations', icon: Stethoscope, path: '/company/consultations' },
+          { id: 'billing', label: 'Billing & Subscription', icon: CreditCard, path: '/company/billing' },
+          { id: 'settings', label: 'Settings', icon: Settings, path: '/company/settings' },
+        ];
       case 'doctor':
         return [
           { id: 'login', label: 'Login/Registration', icon: LogIn, path: '/doctor/login' },
           { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/doctor' },
           { id: 'profile', label: 'Profile Wizard', icon: User, path: '/doctor/profile' },
           { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/doctor/appointments' },
-          { id: 'appointment-detail', label: 'Appointment Detail', icon: FileText, path: '/doctor/appointment-detail' },
+          // { id: 'appointment-detail', label: 'Appointment Detail', icon: FileText, path: '/doctor/appointment-detail' },
           { id: 'patient-reports', label: 'Patient Reports', icon: Clipboard, path: '/doctor/patient-reports' },
           { id: 'earnings', label: 'Earnings', icon: DollarSign, path: '/doctor/earnings' },
           { id: 'settings', label: 'Settings', icon: Settings, path: '/doctor/settings' },
@@ -96,7 +105,7 @@ const UnifiedSidebar = ({
     
     // For non-base paths, only match if it's a sub-route
     // Prevent /patient from matching /patient/something
-    const basePaths = ['/admin', '/doctor', '/patient'];
+    const basePaths = ['/admin', '/doctor', '/patient', '/company'];
     if (basePaths.includes(path)) {
       return location.pathname === path;
     }
