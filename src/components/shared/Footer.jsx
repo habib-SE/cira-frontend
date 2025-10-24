@@ -5,9 +5,9 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-white border-t border-gray-200 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+    <footer className="bg-white border-t border-gray-200 mt-auto w-full">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex flex-col sm:flex-row justify-start items-start space-y-4 sm:space-y-0 sm:space-x-8">
           {/* Left side - Version & Copyright */}
           <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600">
             <span className="flex items-center space-x-1">
@@ -58,7 +58,7 @@ const Footer = () => {
         </div>
 
         {/* Contact info */}
-        <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-6 text-xs text-gray-500">
+        <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-start items-start space-y-2 sm:space-y-0 sm:space-x-6 text-xs text-gray-500">
           <a 
             href="mailto:support@cira.ai" 
             className="flex items-center space-x-1 hover:text-pink-600 transition-colors"

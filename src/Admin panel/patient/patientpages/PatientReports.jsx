@@ -109,7 +109,7 @@ const PatientReports = () => {
   });
 
   return (
-    <div className="p-4 lg:p-6 space-y-6 overflow-x-hidden bg-pink-50 min-h-screen">
+    <div className="p-4 lg:p-6 space-y-6 overflow-x-hidden bg-pink-50 min-h-screen max-w-full">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
         <div className="text-center lg:text-left w-full lg:w-1/2">
@@ -159,9 +159,10 @@ const PatientReports = () => {
           <p className="text-sm text-gray-600 text-center lg:text-left">Your AI-powered health consultations and analysis reports</p>
         </div>
 
-        {/* Desktop Table View */}
-        <div className="hidden lg:block overflow-x-auto">
-          <table className="w-full table-fixed min-w-[800px]">
+         {/* Desktop Table View */}
+         <div className="hidden lg:block overflow-x-hidden">
+           <div className="overflow-x-auto">
+             <table className="w-full min-w-[800px]">
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-center py-3 px-4 font-semibold text-gray-900 w-32">Date</th>
@@ -223,9 +224,10 @@ const PatientReports = () => {
                   </td>
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
+             </tbody>
+           </table>
+           </div>
+         </div>
 
         {/* Mobile Card View */}
         <div className="lg:hidden space-y-4">

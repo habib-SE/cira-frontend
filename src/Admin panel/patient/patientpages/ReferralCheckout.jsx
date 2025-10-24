@@ -841,8 +841,8 @@ const ReferralModal = ({ open, onClose, onSubmit, doctor }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
-      <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+      <div className="w-full max-w-xl bg-white rounded-xl shadow-xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b">
           <div className="flex items-center gap-2">
             <HeartHandshake className="h-5 w-5 text-pink-600" />
@@ -924,7 +924,7 @@ const ReferralModal = ({ open, onClose, onSubmit, doctor }) => {
             </div>
 
             <div className="mt-5 flex items-center justify-end gap-3">
-              <button onClick={onClose} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700">
+              <button onClick={onClose} className="px-4 py-2 rounded-lg bg-pink-100 text-pink-700 hover:bg-pink-200">
                 Cancel
               </button>
               <button

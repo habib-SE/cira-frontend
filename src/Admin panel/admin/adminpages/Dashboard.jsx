@@ -4,14 +4,6 @@ import Card from '../admincomponents/Card';
 import Chart from '../admincomponents/Chart';
 
 const Dashboard = () => {
-    const [isRefreshing, setIsRefreshing] = useState(false);
-
-    const handleRefreshContent = () => {
-        setIsRefreshing(true);
-        setTimeout(() => {
-            setIsRefreshing(false);
-        }, 1500);
-    };
     // Sample data for charts
     const patientData = [
         { name: 'Jan', value: 120 },

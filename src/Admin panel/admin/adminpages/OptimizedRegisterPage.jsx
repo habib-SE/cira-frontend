@@ -71,29 +71,37 @@ const OptimizedRegisterPage = () => {
 
       {/* Success Banner */}
       {showSuccessBanner && (
-        <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 animate-slide-in">
-          <Check className="w-5 h-5" />
-          <span>{bannerMessage}</span>
-          <button
-            onClick={() => setShowSuccessBanner(false)}
-            className="ml-2 hover:bg-green-600 rounded-full p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
+        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+          <div className="bg-pink-50 border-l-4 border-pink-500 rounded-lg shadow-lg flex items-center space-x-3 px-4 py-3 max-w-sm">
+            <div className="flex-shrink-0">
+              <Check className="w-5 h-5 text-pink-500" />
+            </div>
+            <span className="text-pink-700 font-medium flex-1">{bannerMessage}</span>
+            <button
+              onClick={() => setShowSuccessBanner(false)}
+              className="flex-shrink-0 text-pink-500 hover:text-pink-700 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 
       {/* Error Banner */}
       {showErrorBanner && (
-        <div className="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 animate-slide-in">
-          <AlertCircle className="w-5 h-5" />
-          <span>{bannerMessage}</span>
-          <button
-            onClick={() => setShowErrorBanner(false)}
-            className="ml-2 hover:bg-red-600 rounded-full p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
+        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+          <div className="bg-red-50 border-l-4 border-red-500 rounded-lg shadow-lg flex items-center space-x-3 px-4 py-3 max-w-sm">
+            <div className="flex-shrink-0">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+            </div>
+            <span className="text-red-700 font-medium flex-1">{bannerMessage}</span>
+            <button
+              onClick={() => setShowErrorBanner(false)}
+              className="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 

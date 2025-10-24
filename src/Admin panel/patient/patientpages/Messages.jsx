@@ -45,7 +45,7 @@ const Messages = () => {
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
             />
           </div>
-          <button className="flex items-center space-x-2 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+          <button className="flex items-center space-x-2 px-4 py-3 bg-pink-100 text-pink-700 rounded-xl hover:bg-pink-200 transition-colors">
             <Filter className="h-5 w-5" />
             <span>Filter</span>
           </button>

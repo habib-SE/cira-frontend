@@ -15,12 +15,6 @@ const Prescriptions = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleRefreshContent = () => {
-    setIsContentLoading(true);
-    setTimeout(() => {
-      setIsContentLoading(false);
-    }, 1000);
-  };
 
   // Sample prescriptions data
   const samplePrescriptions = [
@@ -108,12 +102,6 @@ const Prescriptions = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Prescriptions</h1>
           <p className="text-gray-600">Manage your medications and prescription refills</p>
         </div>
-        <button
-          onClick={handleRefreshContent}
-          className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors duration-200"
-        >
-          Refresh
-        </button>
       </div>
 
       {/* Content with loader */}

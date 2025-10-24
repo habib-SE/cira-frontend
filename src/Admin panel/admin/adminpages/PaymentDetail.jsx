@@ -13,13 +13,16 @@ import {
     AlertCircle,
     XCircle,
     Send,
-    Receipt
+    Receipt,
+    X
 } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const PaymentDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
     const [payment, setPayment] = useState(null);
 
     // Sample payment data - in real app, fetch by ID
@@ -186,12 +189,16 @@ const PaymentDetail = () => {
 
     const handleDownloadReceipt = () => {
         // Generate and download receipt
-        alert('Receipt download functionality would be implemented here');
+        setToastMessage('Receipt download functionality would be implemented here');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
     };
 
     const handleProcessPayout = () => {
         // Process payout
-        alert('Payout processing functionality would be implemented here');
+        setToastMessage('Payout processing functionality would be implemented here');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
     };
 
     if (!payment) {
@@ -432,6 +439,24 @@ const PaymentDetail = () => {
                     )}
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            {showToast && (
+                <div className="fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out">
+                    <div className="bg-pink-50 border-l-4 border-pink-500 rounded-lg shadow-lg flex items-center space-x-3 px-4 py-3 max-w-sm">
+                        <div className="flex-shrink-0">
+                            <CheckCircle className="w-5 h-5 text-pink-500" />
+                        </div>
+                        <span className="text-pink-700 font-medium flex-1">{toastMessage}</span>
+                        <button 
+                            onClick={() => setShowToast(false)}
+                            className="flex-shrink-0 text-pink-500 hover:text-pink-700 transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

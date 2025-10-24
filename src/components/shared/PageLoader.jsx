@@ -61,7 +61,7 @@ const PageLoader = ({ isLoading, children, variant = "default" }) => {
 
   // Default variant - hide content completely
   return (
-    <>
+    <div className="relative h-full">
       {/* Loader */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center z-50">
@@ -71,10 +71,10 @@ const PageLoader = ({ isLoading, children, variant = "default" }) => {
           </div>
         </div>
       )}
-      <div className={`${isLoading ? 'hidden' : 'block'}`}>
+      <div className={`${isLoading ? 'hidden' : 'block'} h-full`}>
         {children}
       </div>
-    </>
+    </div>
   );
 };
 

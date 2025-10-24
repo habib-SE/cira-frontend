@@ -20,7 +20,10 @@ import {
   Bot,
   LogOut,
   UserPen,
-  History
+  History,
+  Clock,
+  Wallet,
+  BarChart3
 } from 'lucide-react';
 import logo from '../../assets/logo.png';
 import loginLogo from '../../assets/loginlogo.png';
@@ -52,13 +55,14 @@ const UnifiedSidebar = ({
         return [
           { id: 'login', label: 'Login/Registration', icon: LogIn, path: '/doctor/login' },
           { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/doctor' },
-          { id: 'profile', label: 'Profile Wizard', icon: User, path: '/doctor/profile' },
+          { id: 'profile', label: 'Profile', icon: User, path: '/doctor/profile' },
+          { id: 'availability', label: 'Availability', icon: Clock, path: '/doctor/availability' },
           { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/doctor/appointments' },
-          { id: 'appointment-detail', label: 'Appointment Detail', icon: FileText, path: '/doctor/appointment-detail' },
           { id: 'patient-reports', label: 'Patient Reports', icon: Clipboard, path: '/doctor/patient-reports' },
+          { id: 'messaging', label: 'Messaging', icon: MessageSquare, path: '/doctor/messages' },
           { id: 'earnings', label: 'Earnings', icon: DollarSign, path: '/doctor/earnings' },
+          { id: 'payouts', label: 'Payouts', icon: Wallet, path: '/doctor/payouts' },
           { id: 'settings', label: 'Settings', icon: Settings, path: '/doctor/settings' },
-          { id: 'my-profile', label: 'My Profile', icon: User, path: '/doctor/my-profile' },
         ];
       case 'patient':
         return [
@@ -106,7 +110,7 @@ const UnifiedSidebar = ({
   };
 
   return (
-    <div className={`bg-white border-r border-gray-200 transition-all duration-300 ease-in-out h-screen flex flex-col ${
+    <div className={`bg-white border-r border-gray-200 transition-all duration-300 ease-in-out h-screen flex flex-col overflow-x-hidden ${
       isCollapsed ? 'w-16' : 'w-64'
     }`}>
       {/* Header */}

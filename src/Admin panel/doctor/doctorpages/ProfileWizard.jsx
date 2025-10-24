@@ -16,12 +16,16 @@ import {
     Award,
     Clock,
     Globe,
-    Camera
+    Camera,
+    X,
+    AlertCircle
 } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 
 const ProfileWizard = () => {
     const [currentStep, setCurrentStep] = useState(1);
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
     const [formData, setFormData] = useState({
         // Step 1: Personal Info
         firstName: '',
@@ -61,6 +65,8 @@ const ProfileWizard = () => {
     });
 
     const [errors, setErrors] = useState({});
+    const [uploadedFiles, setUploadedFiles] = useState([]);
+    const [isUploading, setIsUploading] = useState(false);
     const navigate = useNavigate();
 
     const steps = [
@@ -165,6 +171,65 @@ const ProfileWizard = () => {
         setCurrentStep(prev => Math.max(prev - 1, 1));
     };
 
+    const handleFileUpload = async (event) => {
+        const files = Array.from(event.target.files);
+        if (files.length === 0) return;
+
+        setIsUploading(true);
+        
+        try {
+            // Simulate file upload process
+            const uploadPromises = files.map(file => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const fileData = {
+                            id: Date.now() + Math.random(),
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            uploadDate: new Date().toISOString(),
+                            status: 'uploaded'
+                        };
+                        resolve(fileData);
+                    }, 1000 + Math.random() * 2000); // Simulate upload time
+                });
+            });
+
+            const uploadedFileData = await Promise.all(uploadPromises);
+            setUploadedFiles(prev => [...prev, ...uploadedFileData]);
+            
+            // Update form data with uploaded files
+            setFormData(prev => ({
+                ...prev,
+                documents: [...prev.documents, ...uploadedFileData]
+            }));
+            
+        } catch (error) {
+            console.error('File upload error:', error);
+            setToastMessage('Error uploading files. Please try again.');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 4000);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const removeFile = (fileId) => {
+        setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
+        setFormData(prev => ({
+            ...prev,
+            documents: prev.documents.filter(file => file.id !== fileId)
+        }));
+    };
+
+    const formatFileSize = (bytes) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
     const handleSubmit = () => {
         if (validateStep(4)) {
             // Save profile data
@@ -177,7 +242,7 @@ const ProfileWizard = () => {
             case 1:
                 return (
                     <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     First Name *
@@ -226,7 +291,7 @@ const ProfileWizard = () => {
                             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Phone Number *
@@ -282,7 +347,7 @@ const ProfileWizard = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Languages Spoken *
                             </label>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
                                 {languages.map(language => (
                                     <label key={language} className="flex items-center space-x-2 cursor-pointer">
                                         <input
@@ -303,7 +368,7 @@ const ProfileWizard = () => {
             case 2:
                 return (
                     <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Medical License Number *
@@ -398,12 +463,52 @@ const ProfileWizard = () => {
                                 <p className="text-sm text-gray-600 mb-2">
                                     Upload your medical license, certifications, and other documents
                                 </p>
-                                <button
-                                    type="button"
-                                    className="text-pink-600 hover:text-pink-700 font-medium"
+                                <input
+                                    type="file"
+                                    id="file-upload"
+                                    multiple
+                                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                    onChange={handleFileUpload}
+                                    className="hidden"
+                                />
+                                <label
+                                    htmlFor="file-upload"
+                                    className="cursor-pointer text-pink-600 hover:text-pink-700 font-medium"
                                 >
                                     Choose Files
-                                </button>
+                                </label>
+                                
+                                {/* Upload Progress */}
+                                {isUploading && (
+                                    <div className="mt-4">
+                                        <div className="flex items-center justify-center space-x-2">
+                                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-pink-200 border-t-pink-500"></div>
+                                            <span className="text-sm text-gray-600">Uploading files...</span>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {/* Uploaded Files List */}
+                                {uploadedFiles.length > 0 && (
+                                    <div className="mt-4 space-y-2">
+                                        <p className="text-sm font-medium text-gray-700">Uploaded Files:</p>
+                                        {uploadedFiles.map((file) => (
+                                            <div key={file.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                                                <div className="flex items-center space-x-2">
+                                                    <FileText className="w-4 h-4 text-gray-500" />
+                                                    <span className="text-sm text-gray-700">{file.name}</span>
+                                                    <span className="text-xs text-gray-500">({formatFileSize(file.size)})</span>
+                                                </div>
+                                                <button
+                                                    onClick={() => removeFile(file.id)}
+                                                    className="text-red-500 hover:text-red-700 text-sm"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -468,7 +573,7 @@ const ProfileWizard = () => {
                             <p className="text-gray-600">Define your consultation type and service pricing</p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Consultation Type *
@@ -582,17 +687,17 @@ const ProfileWizard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-4xl mx-auto px-4">
+        <div className="min-h-screen py-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="text-center mb-8">
+                <div className="text-left mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Profile</h1>
                     <p className="text-gray-600">Set up your doctor profile to start accepting appointments</p>
                 </div>
 
                 {/* Progress Steps */}
                 <div className="mb-8">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between space-x-4 sm:space-x-8">
                         {steps.map((step, index) => {
                             const Icon = step.icon;
                             const isActive = currentStep === step.id;
@@ -600,7 +705,7 @@ const ProfileWizard = () => {
                             
                             return (
                                 <div key={step.id} className="flex items-center">
-                                    <div className="flex flex-col items-center">
+                                    <div className="flex flex-col items-start">
                                         <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${
                                             isCompleted 
                                                 ? 'bg-green-500 border-green-500 text-white' 
@@ -614,7 +719,7 @@ const ProfileWizard = () => {
                                                 <Icon className="h-6 w-6" />
                                             )}
                                         </div>
-                                        <div className="mt-2 text-center">
+                                        <div className="mt-2 text-left">
                                             <p className={`text-sm font-medium ${
                                                 isActive ? 'text-pink-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
                                             }`}>
@@ -623,11 +728,6 @@ const ProfileWizard = () => {
                                             <p className="text-xs text-gray-500">{step.description}</p>
                                         </div>
                                     </div>
-                                    {index < steps.length - 1 && (
-                                        <div className={`flex-1 h-0.5 mx-4 ${
-                                            isCompleted ? 'bg-green-500' : 'bg-gray-300'
-                                        }`} />
-                                    )}
                                 </div>
                             );
                         })}
@@ -635,11 +735,13 @@ const ProfileWizard = () => {
                 </div>
 
                 {/* Form Content */}
-                <Card className="p-8">
-                    {renderStepContent()}
+                <Card className="p-0">
+                    <div className="px-0 py-8">
+                        {renderStepContent()}
+                    </div>
 
                     {/* Navigation Buttons */}
-                    <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
+                    <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200 px-8 pb-8">
                         <button
                             type="button"
                             onClick={handlePrevious}
@@ -676,6 +778,24 @@ const ProfileWizard = () => {
                     </div>
                 </Card>
             </div>
+
+            {/* Toast Notification */}
+            {showToast && (
+                <div className="fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out">
+                    <div className="bg-red-50 border-l-4 border-red-500 rounded-lg shadow-lg flex items-center space-x-3 px-4 py-3 max-w-sm">
+                        <div className="flex-shrink-0">
+                            <AlertCircle className="w-5 h-5 text-red-500" />
+                        </div>
+                        <span className="text-red-700 font-medium flex-1">{toastMessage}</span>
+                        <button 
+                            onClick={() => setShowToast(false)}
+                            className="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

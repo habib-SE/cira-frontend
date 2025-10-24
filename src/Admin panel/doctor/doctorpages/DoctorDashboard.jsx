@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
-    Calendar, 
     Clock, 
     Users, 
     DollarSign, 
@@ -17,14 +17,7 @@ import Card from '../../admin/admincomponents/Card';
 
 const DoctorDashboard = () => {
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-
-    const handleRefreshContent = () => {
-        setIsRefreshing(true);
-        setTimeout(() => {
-            setIsRefreshing(false);
-        }, 1500);
-    };
+    const navigate = useNavigate();
 
     // Today's appointments data
     const todaysAppointments = [
@@ -77,7 +70,7 @@ const DoctorDashboard = () => {
             color: 'text-blue-600'
         },
         {
-            icon: Calendar,
+            icon: Clock,
             title: 'Today\'s Appointments',
             value: todaysAppointments.length.toString(),
             change: '4 scheduled',
@@ -126,8 +119,29 @@ const DoctorDashboard = () => {
         }
     };
 
+    // Quick Actions handlers
+    const handleScheduleAppointment = () => {
+        navigate('/doctor/appointments/create');
+    };
+
+    const handleViewPatients = () => {
+        navigate('/doctor/patients');
+    };
+
+    const handleViewEarnings = () => {
+        navigate('/doctor/earnings');
+    };
+
+    const handleViewAnalytics = () => {
+        navigate('/doctor/analytics');
+    };
+
+    const handleViewAppointmentDetails = (appointmentId) => {
+        navigate(`/doctor/appointments/${appointmentId}`);
+    };
+
     return (
-        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
+        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
             {/* Header */}
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -136,24 +150,6 @@ const DoctorDashboard = () => {
                         <p className="text-sm sm:text-base text-gray-600 break-words">Welcome back, Dr. Smith! Here's your overview for today.</p>
                     </div>
                     <div className="flex items-center space-x-2 sm:space-x-4">
-                        <button
-                            onClick={handleRefreshContent}
-                            disabled={isRefreshing}
-                            className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
-                        >
-                            {isRefreshing ? (
-                                <div className="flex items-center space-x-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                    <span className="hidden sm:inline">Refreshing...</span>
-                                    <span className="sm:hidden">...</span>
-                                </div>
-                            ) : (
-                                <>
-                                    <span className="hidden sm:inline">Refresh</span>
-                                    <span className="sm:hidden">↻</span>
-                                </>
-                            )}
-                        </button>
                         <input
                             type="date"
                             value={selectedDate}
@@ -165,7 +161,7 @@ const DoctorDashboard = () => {
             </div>
 
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
                 {stats.map((stat, index) => {
                     const Icon = stat.icon;
                     return (
@@ -186,9 +182,9 @@ const DoctorDashboard = () => {
                     </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
                 {/* Today's Appointments */}
-                <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+                <div className="xl:col-span-2 space-y-4 sm:space-y-6">
                     <Card className="p-4 sm:p-6">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
                             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Today's Appointments</h2>
@@ -237,7 +233,10 @@ const DoctorDashboard = () => {
                                                 <span>{appointment.duration}</span>
                                         </div>
                                         </div>
-                                        <button className="text-pink-600 hover:text-pink-700 font-medium text-xs sm:text-sm whitespace-nowrap">
+                                        <button 
+                                            onClick={() => handleViewAppointmentDetails(appointment.id)}
+                                            className="text-pink-600 hover:text-pink-700 font-medium text-xs sm:text-sm whitespace-nowrap"
+                                        >
                                             View Details
                                         </button>
                                     </div>
@@ -248,26 +247,57 @@ const DoctorDashboard = () => {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="space-y-6">
-                    <Card className="p-6">
+                <div className="space-y-4 sm:space-y-6">
+                    <Card className="p-4 sm:p-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
                         <div className="space-y-3">
-                            <button className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-                                <Calendar className="w-5 h-5 text-blue-500" />
+                            <button 
+                                onClick={handleScheduleAppointment}
+                                className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                            >
+                                <Clock className="w-5 h-5 text-blue-500" />
                                 <span>Schedule Appointment</span>
                             </button>
-                            <button className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                            <button 
+                                onClick={handleViewPatients}
+                                className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                            >
                                 <Users className="w-5 h-5 text-green-500" />
                                 <span>View Patients</span>
                             </button>
-                            <button className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                            <button 
+                                onClick={handleViewEarnings}
+                                className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                            >
                                 <DollarSign className="w-5 h-5 text-purple-500" />
                                 <span>View Earnings</span>
                             </button>
-                            <button className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                            <button 
+                                onClick={handleViewAnalytics}
+                                className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                            >
                                 <TrendingUp className="w-5 h-5 text-orange-500" />
                                 <span>Analytics</span>
                             </button>
+                        </div>
+                    </Card>
+                    
+                    {/* Additional Info Card */}
+                    <Card className="p-4 sm:p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Today's Summary</h3>
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600">Completed Appointments</span>
+                                <span className="text-sm font-medium text-green-600">3/4</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600">Pending Reviews</span>
+                                <span className="text-sm font-medium text-yellow-600">2</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600">Next Appointment</span>
+                                <span className="text-sm font-medium text-blue-600">2:00 PM</span>
+                            </div>
                         </div>
                     </Card>
                 </div>

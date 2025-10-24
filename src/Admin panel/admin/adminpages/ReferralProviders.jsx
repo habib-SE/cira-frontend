@@ -390,7 +390,7 @@ const ReferralProviders = () => {
 
             {/* Add/Edit Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                         <div className="p-6">
                             <h2 className="text-xl font-semibold text-gray-900 mb-4">
@@ -511,41 +511,39 @@ const ReferralProviders = () => {
                     }}
                 >
                     <div 
-                        className={`flex items-center space-x-3 px-4 py-3 rounded-lg shadow-lg min-w-[300px] max-w-[400px] ${
-                            toastType === 'success' ? 'bg-green-50 border border-green-200' :
-                            toastType === 'error' ? 'bg-red-50 border border-red-200' :
-                            toastType === 'warning' ? 'bg-pink-50 border border-pink-200' :
-                            'bg-yellow-50 border border-yellow-200'
+                        className={`flex items-center space-x-3 px-4 py-3 rounded-lg shadow-lg max-w-sm border-l-4 ${
+                            toastType === 'success' ? 'bg-green-50 border-l-green-500' :
+                            toastType === 'error' ? 'bg-red-50 border-l-red-500' :
+                            toastType === 'warning' ? 'bg-pink-50 border-l-pink-500' :
+                            'bg-yellow-50 border-l-yellow-500'
                         }`}
                     >
                         <div className={`flex-shrink-0 ${
-                            toastType === 'success' ? 'text-green-600' :
-                            toastType === 'error' ? 'text-red-600' :
-                            toastType === 'warning' ? 'text-pink-600' :
-                            'text-yellow-600'
+                            toastType === 'success' ? 'text-green-500' :
+                            toastType === 'error' ? 'text-red-500' :
+                            toastType === 'warning' ? 'text-pink-500' :
+                            'text-yellow-500'
                         }`}>
                             <CheckCircle className="w-5 h-5" />
                         </div>
-                        <div className="flex-1">
-                            <p className={`text-sm font-medium ${
-                                toastType === 'success' ? 'text-green-800' :
-                                toastType === 'error' ? 'text-red-800' :
-                                toastType === 'warning' ? 'text-pink-800' :
-                                'text-yellow-800'
-                            }`}>
-                                {toastMessage}
-                            </p>
-                        </div>
+                        <span className={`font-medium flex-1 ${
+                            toastType === 'success' ? 'text-green-700' :
+                            toastType === 'error' ? 'text-red-700' :
+                            toastType === 'warning' ? 'text-pink-700' :
+                            'text-yellow-700'
+                        }`}>
+                            {toastMessage}
+                        </span>
                         <button
                             onClick={() => setShowToast(false)}
-                            className={`flex-shrink-0 ${
-                                toastType === 'success' ? 'text-green-600 hover:text-green-800' :
-                                toastType === 'error' ? 'text-red-600 hover:text-red-800' :
-                                toastType === 'warning' ? 'text-pink-600 hover:text-pink-800' :
-                                'text-yellow-600 hover:text-yellow-800'
+                            className={`flex-shrink-0 transition-colors ${
+                                toastType === 'success' ? 'text-green-500 hover:text-green-700' :
+                                toastType === 'error' ? 'text-red-500 hover:text-red-700' :
+                                toastType === 'warning' ? 'text-pink-500 hover:text-pink-700' :
+                                'text-yellow-500 hover:text-yellow-700'
                             }`}
                         >
-                            <XCircle className="w-4 h-4" />
+                            <X className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
