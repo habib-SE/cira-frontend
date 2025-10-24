@@ -1,9 +1,37 @@
-import React from 'react';
-import { BarChart3, TrendingUp, Users, Calendar, Activity, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { BarChart3, TrendingUp, Users, Calendar, Activity, Clock, CheckCircle, AlertCircle, X } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 import Chart from '../../admin/admincomponents/Chart';
 
 const DoctorAnalytics = () => {
+  const navigate = useNavigate();
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Navigation and action functions
+  const handleGenerateReport = () => {
+    // Generate analytics report
+    setToastMessage('Generating analytics report...');
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const handlePatientInsights = () => {
+    navigate('/doctor/patients');
+  };
+
+  const handleScheduleAnalysis = () => {
+    navigate('/doctor/appointments');
+  };
+
+  const handleExportData = () => {
+    // Export analytics data
+    setToastMessage('Exporting analytics data...');
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
   const patientData = [
     { name: 'Jan', value: 45 },
     { name: 'Feb', value: 52 },
@@ -211,24 +239,54 @@ const DoctorAnalytics = () => {
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <button className="flex items-center space-x-3 p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors duration-200">
+          <button 
+            onClick={handleGenerateReport}
+            className="flex items-center space-x-3 p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors duration-200"
+          >
             <BarChart3 className="w-5 h-5 text-pink-600" />
             <span className="font-medium text-pink-600">Generate Report</span>
           </button>
-          <button className="flex items-center space-x-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors duration-200">
+          <button 
+            onClick={handlePatientInsights}
+            className="flex items-center space-x-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors duration-200"
+          >
             <Users className="w-5 h-5 text-blue-600" />
             <span className="font-medium text-blue-600">Patient Insights</span>
           </button>
-          <button className="flex items-center space-x-3 p-4 bg-green-50 hover:bg-green-100 rounded-xl transition-colors duration-200">
+          <button 
+            onClick={handleScheduleAnalysis}
+            className="flex items-center space-x-3 p-4 bg-green-50 hover:bg-green-100 rounded-xl transition-colors duration-200"
+          >
             <Calendar className="w-5 h-5 text-green-600" />
             <span className="font-medium text-green-600">Schedule Analysis</span>
           </button>
-          <button className="flex items-center space-x-3 p-4 bg-purple-50 hover:bg-purple-100 rounded-xl transition-colors duration-200">
+          <button 
+            onClick={handleExportData}
+            className="flex items-center space-x-3 p-4 bg-purple-50 hover:bg-purple-100 rounded-xl transition-colors duration-200"
+          >
             <TrendingUp className="w-5 h-5 text-purple-600" />
             <span className="font-medium text-purple-600">Export Data</span>
           </button>
         </div>
       </Card>
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out">
+          <div className="bg-pink-50 border-l-4 border-pink-500 rounded-lg shadow-lg flex items-center space-x-3 px-4 py-3 max-w-sm">
+            <div className="flex-shrink-0">
+              <CheckCircle className="w-5 h-5 text-pink-500" />
+            </div>
+            <span className="text-pink-700 font-medium flex-1">{toastMessage}</span>
+            <button 
+              onClick={() => setShowToast(false)}
+              className="flex-shrink-0 text-pink-500 hover:text-pink-700 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

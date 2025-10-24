@@ -225,7 +225,7 @@ const UnifiedNavbar = ({
                 type="text"
                 value={searchTerm}
                 onChange={handleSearchInputChange}
-                placeholder={`Search ${portalType === 'admin' ? 'patients, "sarah", "dr. michael", "lisa", reports...' : portalType === 'doctor' ? 'patients, appointments...' : 'doctors, appointments...'}`}
+                placeholder={`Search ${portalType === 'admin' ? 'people, doctors' : portalType === 'doctor' ? 'patients, appointments...' : 'doctors, appointments...'}`}
                 className="bg-transparent border-none outline-none text-sm text-gray-700 placeholder-gray-400 w-64"
               />
             </form>

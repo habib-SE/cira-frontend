@@ -18,7 +18,7 @@ function VitalSignsDisplay({ vitals, onClose, onStartConversation }) {
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 50, opacity: 0 }}
-        className="relative bg-white/40 backdrop-blur-md rounded-2xl p-6 max-w-md w-full border border-white/30 shadow-2xl"
+        className="relative bg-white/40 backdrop-blur-md rounded-xl p-6 max-w-md w-full border border-white/30 shadow-2xl"
       >
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold text-pink-500">Vital Signs Scan</h3>

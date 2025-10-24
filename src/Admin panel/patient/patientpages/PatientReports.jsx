@@ -208,7 +208,7 @@ const PatientReports = () => {
   );
 
   return (
- <div className="p-4 lg:p-6 space-y-6 overflow-x-hidden bg-pink-50 min-h-screen">
+    <div className="p-4 lg:p-6 space-y-6 overflow-x-hidden bg-pink-50 min-h-screen max-w-full">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
         <div className="text-center lg:text-left w-full lg:w-1/2">
@@ -258,67 +258,75 @@ const PatientReports = () => {
           <p className="text-sm text-gray-600 text-center lg:text-left">Your AI-powered health consultations and analysis reports</p>
         </div>
 
-        {/* Desktop Table View */}
-       {/* Desktop Table View */}
-<div className="hidden lg:block w-full">
-  <div 
-    className="relative w-full overflow-x-auto rounded-xl border border-gray-200"
-    style={{ maxWidth: '100%', height: 600 }}
-  >
-    <div style={{ minWidth: 1000 }}> {/* ensures horizontal scroll */}
-      <DataGrid
-        rows={filteredReports}
-        columns={columns}
-        getRowId={(row) => row.id}
-        disableRowSelectionOnClick
-        pagination
-        paginationMode="client"
-        paginationModel={{ page: 0, pageSize: 25 }}
-        pageSizeOptions={[5, 10, 20, 25]}
-        sx={{
-          color: '#111827',
-          backgroundColor: '#ffffff',
-          borderColor: '#e5e7eb',
-          '& .MuiDataGrid-columnHeader': {
-            backgroundColor: '#f9fafb',
-            color: '#111827',
-            borderColor: '#e5e7eb',
-            fontWeight: 600,
-          },
-          '& .MuiDataGrid-cell': {
-            display: 'flex',
-            alignItems: 'center',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            borderColor: '#f3f4f6',
-            color: '#111827',
-          },
-          '& .MuiDataGrid-footerContainer': {
-            backgroundColor: '#f9fafb',
-            borderTop: '1px solid #e5e7eb',
-            color: '#111827',
-          },
-          '& .MuiTablePagination-root': {
-            color: '#111827',
-          },
-          '& .MuiButtonBase-root': {
-            color: '#111827',
-          },
-          '& .MuiDataGrid-row:hover': {
-            backgroundColor: '#f9fafb',
-          },
-          '& .MuiDataGrid-row.Mui-selected': {
-            backgroundColor: '#f3f4f6 !important',
-          },
-          '& .MuiDataGrid-row.Mui-selected:hover': {
-            backgroundColor: '#e5e7eb !important',
-          },
-        }}
-      />
-    </div>
-  </div>
-</div>
+         {/* Desktop Table View */}
+         <div className="hidden lg:block overflow-x-hidden">
+           <div className="overflow-x-auto">
+             <table className="w-full min-w-[800px]">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-center py-3 px-4 font-semibold text-gray-900 w-32">Date</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900">Summary</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900 w-32">Type</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900 w-36">Status</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900 w-32">AI Score</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-900 w-40">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredReports.map((report) => (
+                <tr key={report.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 align-top">
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm font-medium text-gray-900">{report.date}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">{report.duration}</p>
+                  </td>
+                  <td className="py-4 px-4 align-top">
+                    <p className="text-sm text-gray-900">{report.summary}</p>
+                  </td>
+                  <td className="py-4 px-4 align-top">
+                    <span className="inline-flex items-center text-center px-3 py-2 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {report.type}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4 align-top">
+                    {getStatusBadge(report.status)}
+                  </td>
+                  <td className="py-4 px-4 align-top">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-16 bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            report.aiScore >= 90 ? 'bg-green-500' : 
+                            report.aiScore >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${report.aiScore}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">{report.aiScore}%</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4 align-top">
+                    <div className="flex items-center space-x-2">
+                      <button 
+                      onClick={() => navigate(`/patient/reports/${report.id}`)}
+                      className="flex items-center space-x-1 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                        <Eye className="h-4 w-4" />
+                        <span className="text-sm">View</span>
+                      </button>
+                      <button className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+                        <Download className="h-4 w-4" />
+                        <span className="text-sm">Download</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+             </tbody>
+           </table>
+           </div>
+         </div>
 
         {/* Mobile Card View */}
         <div className="lg:hidden space-y-4">

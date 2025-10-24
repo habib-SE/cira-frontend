@@ -66,19 +66,7 @@ const DoctorProfileDetail = () => {
     const [doctor, setDoctor] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
     const [isEditing, setIsEditing] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-
-    
     const [isContentLoading, setIsContentLoading] = useState(false);
-    
-    const handleRefreshContent = () => {
-        setIsRefreshing(true);
-        setIsContentLoading(true);
-        setTimeout(() => {
-            setIsRefreshing(false);
-            setIsContentLoading(false);
-        }, 1500);
-    };
 
     
 
@@ -388,24 +376,6 @@ const DoctorProfileDetail = () => {
                         <p className="text-sm sm:text-base text-gray-600">{doctor.specialty} • {doctor.experience} experience</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <button
-                    onClick={handleRefreshContent}
-                    disabled={isRefreshing}
-                        className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
-                >
-                    {isRefreshing ? (
-                        <div className="flex items-center space-x-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                <span className="hidden sm:inline">Refreshing...</span>
-                                <span className="sm:hidden">...</span>
-                        </div>
-                    ) : (
-                            <>
-                                <span className="hidden sm:inline">Refresh</span>
-                                <span className="sm:hidden">↻</span>
-                            </>
-                    )}
-                </button>
                     <span className={`inline-flex items-center space-x-1 px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold rounded-full ${getStatusColor(doctor.status)}`}>
                         {getStatusIcon(doctor.status)}
                         <span>{doctor.status}</span>
@@ -480,17 +450,7 @@ const DoctorProfileDetail = () => {
 
             {/* Main Content Area with Loader */}
             <div className="relative min-h-[600px]">
-                {/* Content Loader */}
-                {isRefreshing && (
-                    <div className="absolute inset-0 flex items-start justify-center z-50 pt-32">
-                        <div className="flex flex-col items-center justify-center space-y-4">
-                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-500"></div>
-                            <p className="text-gray-600 font-medium">Loading doctor profile...</p>
-                        </div>
-                    </div>
-                )}
-
-                <div className={`grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 transition-opacity duration-300 ${isRefreshing ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
                     {/* Profile Sidebar */}
                     <Card className="p-0 lg:col-span-1">
                     <div className="p-4 sm:p-6 text-center border-b border-gray-200">
@@ -893,7 +853,7 @@ const DoctorProfileDetail = () => {
                         <Card className="p-6">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-lg font-semibold text-gray-900">Documents</h3>
-                                <button className="flex items-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors">
+                                <button className="flex items-center space-x-2 px-4 py-2 bg-pink-400 text-white rounded-xl hover:bg-pink-500 transition-colors">
                                     <Upload className="w-4 h-4" />
                                     <span>Upload Document</span>
                                 </button>

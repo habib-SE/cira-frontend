@@ -16,12 +16,6 @@ const PatientAppointments = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleRefreshContent = () => {
-    setIsContentLoading(true);
-    setTimeout(() => {
-      setIsContentLoading(false);
-    }, 1000);
-  };
 
   // Sample appointments data
   const sampleAppointments = [
@@ -126,12 +120,6 @@ const PatientAppointments = () => {
           <button className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors duration-200 flex items-center space-x-2">
             <Plus className="w-4 h-4" />
             <span>Book Appointment</span>
-          </button>
-          <button
-            onClick={handleRefreshContent}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200"
-          >
-            Refresh
           </button>
         </div>
       </div>

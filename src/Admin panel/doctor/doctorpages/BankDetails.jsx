@@ -1,26 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     ArrowLeft,
     CreditCard,
     CheckCircle,
     AlertCircle,
-    Save
+    Save,
+    X
 } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 
 const BankDetails = () => {
     const navigate = useNavigate();
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
     const [bankDetails, setBankDetails] = useState({
-        accountHolder: 'Dr. Smith',
-        accountNumber: '****1234',
-        bankName: 'Chase Bank',
-        routingNumber: '****5678',
+        accountHolder: '',
+        accountNumber: '',
+        bankName: '',
+        routingNumber: '',
         accountType: 'Checking'
     });
+
+    // Load bank details from localStorage on component mount
+    useEffect(() => {
+        const savedBankDetails = localStorage.getItem('doctorBankDetails');
+        if (savedBankDetails) {
+            try {
+                const parsedDetails = JSON.parse(savedBankDetails);
+                setBankDetails(parsedDetails);
+            } catch (error) {
+                console.error('Error parsing saved bank details:', error);
+            }
+        } else {
+            // Set default values if no saved data
+            setBankDetails({
+                accountHolder: 'Dr. Smith',
+                accountNumber: '****1234',
+                bankName: 'Chase Bank',
+                routingNumber: '****5678',
+                accountType: 'Checking'
+            });
+        }
+    }, []);
 
     const handleSaveBankDetails = () => {
         // Validate required fields
@@ -30,14 +55,34 @@ const BankDetails = () => {
             return;
         }
 
-        // Save bank details (in real app, this would be an API call)
-        setShowSuccessModal(true);
+        // Set loading state
+        setIsSaving(true);
         
-        // Auto close and navigate back after 2 seconds
+        // Show toast notification for saving
+        setToastMessage('Saving bank details...');
+        setShowToast(true);
+        
+        // Simulate save operation
         setTimeout(() => {
-            setShowSuccessModal(false);
-            navigate('/doctor/earnings');
-        }, 2000);
+            try {
+                // Save bank details to localStorage
+                localStorage.setItem('doctorBankDetails', JSON.stringify(bankDetails));
+                
+                setToastMessage('Bank details saved successfully!');
+                setIsSaving(false);
+                
+                // Navigate back after showing success
+                setTimeout(() => {
+                    setShowToast(false);
+                    navigate('/doctor/earnings');
+                }, 2000);
+            } catch (error) {
+                console.error('Error saving bank details:', error);
+                setToastMessage('Error saving bank details. Please try again.');
+                setIsSaving(false);
+                setTimeout(() => setShowToast(false), 3000);
+            }
+        }, 1500);
     };
 
     return (
@@ -172,14 +217,28 @@ const BankDetails = () => {
                     <div className="flex space-x-3 mt-8 pt-6 border-t border-gray-200">
                         <button
                             onClick={handleSaveBankDetails}
-                            className="flex-1 flex items-center justify-center space-x-2 bg-pink-600 text-white py-3 px-6 rounded-xl hover:bg-pink-700 transition-colors font-medium"
+                            disabled={isSaving}
+                            className={`flex-1 flex items-center justify-center space-x-2 py-3 px-6 rounded-xl transition-colors font-medium ${
+                                isSaving 
+                                    ? 'bg-pink-300 cursor-not-allowed' 
+                                    : 'bg-pink-400 hover:bg-pink-500'
+                            } text-white`}
                         >
-                            <Save className="w-5 h-5" />
-                            <span>Save Changes</span>
+                            {isSaving ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                                    <span>Saving...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-5 h-5" />
+                                    <span>Save Changes</span>
+                                </>
+                            )}
                         </button>
                         <button
                             onClick={() => navigate('/doctor/earnings')}
-                            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                            className="px-6 py-3 bg-pink-100 text-pink-700 rounded-xl hover:bg-pink-200 transition-colors font-medium"
                         >
                             Cancel
                         </button>
@@ -189,8 +248,8 @@ const BankDetails = () => {
 
             {/* Error Modal */}
             {showErrorModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-scale-in">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-6 animate-scale-in">
                         <div className="text-center">
                             <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                                 <AlertCircle className="w-10 h-10 text-red-500" />
@@ -212,21 +271,20 @@ const BankDetails = () => {
                 </div>
             )}
 
-            {/* Success Modal */}
-            {showSuccessModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-scale-in">
-                        <div className="text-center">
-                            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                <CheckCircle className="w-10 h-10 text-green-500" />
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">
-                                Success!
-                            </h3>
-                            <p className="text-gray-600">
-                                Bank details saved successfully!
-                            </p>
+            {/* Toast Notification */}
+            {showToast && (
+                <div className="fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out">
+                    <div className="bg-pink-50 border-l-4 border-pink-500 rounded-lg shadow-lg flex items-center space-x-3 px-4 py-3 max-w-sm">
+                        <div className="flex-shrink-0">
+                            <CheckCircle className="w-5 h-5 text-pink-500" />
                         </div>
+                        <span className="text-pink-700 font-medium flex-1">{toastMessage}</span>
+                        <button 
+                            onClick={() => setShowToast(false)}
+                            className="flex-shrink-0 text-pink-500 hover:text-pink-700 transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
                     </div>
                 </div>
             )}
