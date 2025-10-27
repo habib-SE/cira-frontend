@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Shield, CheckCircle, Clock, X } from 'lucide-react';
 
 const ConsentIndicator = () => {
   const [showDetails, setShowDetails] = useState(false);
+  const dropdownRef = useRef(null);
   
   // Mock consent data - in real app, this would come from API
   const consentData = {
@@ -11,6 +12,23 @@ const ConsentIndicator = () => {
     version: '2.1',
     expiresIn: '90 days'
   };
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDetails(false);
+      }
+    };
+
+    if (showDetails) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDetails]);
 
   const getStatusColor = () => {
     switch (consentData.status) {
@@ -37,7 +55,7 @@ const ConsentIndicator = () => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       {/* Consent indicator button */}
       <button
         onClick={() => setShowDetails(!showDetails)}
@@ -50,17 +68,9 @@ const ConsentIndicator = () => {
         </span>
       </button>
 
-      {/* Consent details modal */}
+      {/* Consent details dropdown */}
       {showDetails && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-20 z-40"
-            onClick={() => setShowDetails(false)}
-          />
-
-          {/* Modal */}
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
             {/* Header */}
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -114,26 +124,19 @@ const ConsentIndicator = () => {
               </div>
 
               {/* Actions */}
-              <div className="flex space-x-2 pt-2 border-t border-gray-200">
+              <div className="pt-2 border-t border-gray-200">
                 <button
                   onClick={() => {
                     // Navigate to consent log
                     setShowDetails(false);
                   }}
-                  className="flex-1 px-4 py-2 bg-pink-600 text-white text-sm rounded-lg hover:bg-pink-700 transition-colors font-medium"
+                  className="w-full px-4 py-2 bg-pink-600 text-white text-sm rounded-lg hover:bg-pink-700 transition-colors font-medium"
                 >
                   View Consent Log
-                </button>
-                <button
-                  onClick={() => setShowDetails(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Close
                 </button>
               </div>
             </div>
           </div>
-        </>
       )}
     </div>
   );

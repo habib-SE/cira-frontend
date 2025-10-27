@@ -15,7 +15,8 @@ import {
   AlertCircle,
   Calendar,
   User,
-  Clock
+  Clock,
+  X
 } from 'lucide-react';
 
 // Sample AI Nurse Reports Data (same as PatientReports.jsx)
@@ -239,11 +240,22 @@ const PatientReportDetail = () => {
   const navigate = useNavigate();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isMarkingReviewed, setIsMarkingReviewed] = useState(false);
 
   useEffect(() => {
     // Simulate loading
     const timer = setTimeout(() => {
       const foundReport = aiNurseReports.find(r => r.id === parseInt(id));
+      
+      // Check if there's a saved status in localStorage
+      const savedStatus = localStorage.getItem(`report_status_${id}`);
+      if (savedStatus) {
+        foundReport.status = savedStatus;
+      }
+      
       setReport(foundReport);
       setLoading(false);
     }, 500);
@@ -252,14 +264,74 @@ const PatientReportDetail = () => {
   }, [id]);
 
   const handleDownloadReport = () => {
-    console.log('Downloading report:', report.id);
-    // Add download logic here
+    setIsDownloading(true);
+    setToastMessage('Preparing report download...');
+    setShowToast(true);
+    
+    // Simulate file generation and download
+    setTimeout(() => {
+      // Create a mock PDF content
+      const reportContent = `AI Nurse Health Assessment Report
+
+Patient: ${report.patientName}
+Patient ID: ${report.patientId}
+Generated: ${report.generatedDate} ${report.generatedTime}
+
+AI Analysis: ${report.aiInsights}
+
+Key Findings:
+${report.findings.map(f => `• ${f}`).join('\n')}
+
+Recommendations:
+${report.recommendations.map(r => `• ${r}`).join('\n')}
+
+Vital Signs:
+Blood Pressure: ${report.vitals.bloodPressure}
+Heart Rate: ${report.vitals.heartRate}
+Temperature: ${report.vitals.temperature}
+O2 Saturation: ${report.vitals.oxygenSaturation}
+
+Risk Level: ${report.riskLevel}
+Next Steps: ${report.nextSteps}
+
+AI Confidence: ${report.confidence}%`;
+      
+      // Create and download the file
+      const blob = new Blob([reportContent], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `AI_Report_${report.patientId}_${report.generatedDate}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      setToastMessage('Report downloaded successfully!');
+      setShowToast(true);
+      setIsDownloading(false);
+      setTimeout(() => setShowToast(false), 3000);
+    }, 2000);
   };
 
   const handleMarkAsReviewed = () => {
-    console.log('Marking report as reviewed:', report.id);
-    // Add logic to update report status
-    navigate('/doctor/patient-reports');
+    setIsMarkingReviewed(true);
+    setToastMessage('Marking report as reviewed...');
+    setShowToast(true);
+    
+    // Simulate API call to update status
+    setTimeout(() => {
+      // Update local state
+      setReport(prev => ({ ...prev, status: 'Reviewed' }));
+      
+      // Save to localStorage for persistence
+      localStorage.setItem(`report_status_${id}`, 'Reviewed');
+      
+      setToastMessage('Report marked as reviewed successfully!');
+      setShowToast(true);
+      setIsMarkingReviewed(false);
+      setTimeout(() => setShowToast(false), 3000);
+    }, 1500);
   };
 
   const getPriorityColor = (priority) => {
@@ -332,34 +404,13 @@ const PatientReportDetail = () => {
           <span className="font-medium">Back to Patient Reports</span>
         </button>
         
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-14 h-14 bg-gradient-to-br from-pink-400 to-pink-600 rounded-xl flex items-center justify-center">
-              <span className="text-3xl">🤖</span>
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{report.reportType}</h1>
-              <p className="text-gray-600">AI Nurse v{report.aiNurseVersion}</p>
-            </div>
+        <div className="flex items-center space-x-3">
+          <div className="w-14 h-14 bg-gradient-to-br from-pink-400 to-pink-600 rounded-xl flex items-center justify-center">
+            <span className="text-3xl">🤖</span>
           </div>
-          
-          <div className="flex space-x-3">
-            <button
-              onClick={handleDownloadReport}
-              className="flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-xl hover:bg-green-700 transition-colors font-medium"
-            >
-              <Download className="w-5 h-5" />
-              <span>Download Report</span>
-            </button>
-            {report.status === 'Pending Review' && (
-              <button
-                onClick={handleMarkAsReviewed}
-                className="flex items-center space-x-2 bg-pink-600 text-white px-6 py-3 rounded-xl hover:bg-pink-700 transition-colors font-medium"
-              >
-                <CheckCircle className="w-5 h-5" />
-                <span>Mark as Reviewed</span>
-              </button>
-            )}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">{report.reportType}</h1>
+            <p className="text-gray-600">AI Nurse v{report.aiNurseVersion}</p>
           </div>
         </div>
       </div>
@@ -514,14 +565,11 @@ const PatientReportDetail = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Attachments</h3>
             <div className="space-y-2">
               {report.attachments.map((file, idx) => (
-                <div key={idx} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                <div key={idx} className="flex items-center bg-gray-50 p-3 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <FileText className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-700">{file}</span>
                   </div>
-                  <button className="text-blue-600 hover:text-blue-700 font-medium">
-                    Download
-                  </button>
                 </div>
               ))}
             </div>
@@ -532,28 +580,60 @@ const PatientReportDetail = () => {
         <div className="flex space-x-3 pt-6 border-t border-gray-200">
           <button
             onClick={handleDownloadReport}
-            className="flex-1 flex items-center justify-center space-x-2 bg-green-600 text-white py-3 px-6 rounded-xl hover:bg-green-700 transition-colors font-medium"
+            disabled={isDownloading}
+            className="flex-1 flex items-center justify-center space-x-2 bg-pink-400 text-white py-3 px-6 rounded-xl hover:bg-pink-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Download className="w-5 h-5" />
-            <span>Download Report</span>
+            {isDownloading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <span>Downloading...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-5 h-5" />
+                <span>Download Report</span>
+              </>
+            )}
           </button>
           {report.status === 'Pending Review' && (
             <button
               onClick={handleMarkAsReviewed}
-              className="flex-1 flex items-center justify-center space-x-2 bg-pink-600 text-white py-3 px-6 rounded-xl hover:bg-pink-700 transition-colors font-medium"
+              disabled={isMarkingReviewed}
+              className="flex-1 flex items-center justify-center space-x-2 bg-pink-600 text-white py-3 px-6 rounded-xl hover:bg-pink-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <CheckCircle className="w-5 h-5" />
-              <span>Mark as Reviewed</span>
+              {isMarkingReviewed ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Marking...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-5 h-5" />
+                  <span>Mark as Reviewed</span>
+                </>
+              )}
             </button>
           )}
-          <button
-            onClick={() => navigate('/doctor/patient-reports')}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
-          >
-            Back to List
-          </button>
         </div>
       </div>
+      
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out">
+          <div className="bg-pink-50 border-l-4 border-pink-500 rounded-lg shadow-lg flex items-center space-x-3 px-4 py-3 max-w-sm">
+            <div className="flex-shrink-0">
+              <CheckCircle className="w-5 h-5 text-pink-500" />
+            </div>
+            <span className="text-pink-700 font-medium flex-1">{toastMessage}</span>
+            <button 
+              onClick={() => setShowToast(false)}
+              className="flex-shrink-0 text-pink-500 hover:text-pink-700 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

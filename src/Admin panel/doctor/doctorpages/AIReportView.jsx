@@ -16,13 +16,16 @@ import {
     Clock,
     MapPin,
     Video,
-    XCircle
+    XCircle,
+    X
 } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 
 const AIReportView = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
     const [loading, setLoading] = useState(true);
 
     // Load appointments from localStorage
@@ -289,8 +292,12 @@ const AIReportView = () => {
                     </div>
                 </div>
                 <button
-                    onClick={() => alert('Downloading report...')}
-                    className="flex items-center space-x-2 bg-green-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-green-700 transition-colors font-medium"
+                    onClick={() => {
+                        setToastMessage('Downloading report...');
+                        setShowToast(true);
+                        setTimeout(() => setShowToast(false), 3000);
+                    }}
+                    className="flex items-center space-x-2 bg-pink-400 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-pink-500 transition-colors font-medium"
                 >
                     <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                     <span className="hidden sm:inline">Download Report</span>
@@ -438,19 +445,41 @@ const AIReportView = () => {
                 <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
                     <button
                         onClick={() => navigate(`/doctor/appointments/${id}`)}
-                        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                        className="px-6 py-3 bg-pink-100 text-pink-700 rounded-xl hover:bg-pink-200 transition-colors font-medium"
                     >
                         Back to Appointment
                     </button>
                     <button
-                        onClick={() => alert('Downloading report...')}
-                        className="flex items-center space-x-2 bg-green-600 text-white py-3 px-6 rounded-xl hover:bg-green-700 transition-colors font-medium"
+                        onClick={() => {
+                            setToastMessage('Downloading report...');
+                            setShowToast(true);
+                            setTimeout(() => setShowToast(false), 3000);
+                        }}
+                        className="flex items-center space-x-2 bg-pink-400 text-white py-3 px-6 rounded-xl hover:bg-pink-500 transition-colors font-medium"
                     >
                         <Download className="w-5 h-5" />
                         <span>Download PDF</span>
                     </button>
                 </div>
             </Card>
+
+            {/* Toast Notification */}
+            {showToast && (
+                <div className="fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out">
+                    <div className="bg-pink-50 border-l-4 border-pink-500 rounded-lg shadow-lg flex items-center space-x-3 px-4 py-3 max-w-sm">
+                        <div className="flex-shrink-0">
+                            <CheckCircle className="w-5 h-5 text-pink-500" />
+                        </div>
+                        <span className="text-pink-700 font-medium flex-1">{toastMessage}</span>
+                        <button 
+                            onClick={() => setShowToast(false)}
+                            className="flex-shrink-0 text-pink-500 hover:text-pink-700 transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

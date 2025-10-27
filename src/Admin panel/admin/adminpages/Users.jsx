@@ -14,7 +14,9 @@ const Users = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
+        username: '',
         email: '',
+        department: '',
         role: 'User',
         status: 'Active',
         password: '',
@@ -84,7 +86,9 @@ const Users = () => {
         {
             id: 1,
             name: 'John Doe',
+            username: 'johndoe',
             email: 'john.doe@email.com',
+            department: 'Engineering',
             role: 'User',
             status: 'Active',
             joinDate: '2024-01-15',
@@ -95,7 +99,9 @@ const Users = () => {
         {
             id: 2,
             name: 'Jane Smith',
+            username: 'janesmith',
             email: 'jane.smith@email.com',
+            department: 'Marketing',
             role: 'User',
             status: 'Active',
             joinDate: '2024-01-14',
@@ -106,7 +112,9 @@ const Users = () => {
         {
             id: 3,
             name: 'Dr. Sarah Johnson',
+            username: 'sarahjohnson',
             email: 'sarah.johnson@clinic.com',
+            department: 'Medical',
             role: 'Doctor',
             status: 'Active',
             joinDate: '2023-12-01',
@@ -117,7 +125,9 @@ const Users = () => {
         {
             id: 4,
             name: 'Mike Johnson',
+            username: 'mikejohnson',
             email: 'mike.johnson@email.com',
+            department: 'Sales',
             role: 'User',
             status: 'Suspended',
             joinDate: '2024-01-10',
@@ -128,7 +138,9 @@ const Users = () => {
         {
             id: 5,
             name: 'Dr. Michael Chen',
+            username: 'michaelchen',
             email: 'michael.chen@clinic.com',
+            department: 'Medical',
             role: 'Doctor',
             status: 'Pending',
             joinDate: '2024-01-20',
@@ -139,7 +151,9 @@ const Users = () => {
         {
             id: 6,
             name: 'Sarah Wilson',
+            username: 'sarahwilson',
             email: 'sarah.wilson@email.com',
+            department: 'HR',
             role: 'User',
             status: 'Active',
             joinDate: '2024-01-12',
@@ -237,10 +251,18 @@ const Users = () => {
             errors.name = 'Name is required';
         }
         
+        if (!formData.username.trim()) {
+            errors.username = 'Username is required';
+        }
+        
         if (!formData.email.trim()) {
             errors.email = 'Email is required';
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             errors.email = 'Email is invalid';
+        }
+        
+        if (!formData.department.trim()) {
+            errors.department = 'Department is required';
         }
         
         if (!formData.password) {
@@ -275,7 +297,9 @@ const Users = () => {
             const newUser = {
                 id: Math.max(...users.map(u => u.id)) + 1, // Generate new ID
                 name: formData.name,
+                username: formData.username,
                 email: formData.email,
+                department: formData.department,
                 role: formData.role,
                 status: formData.status,
                 joinDate: new Date().toISOString().split('T')[0], // Today's date
@@ -451,10 +475,18 @@ const Users = () => {
             errors.name = 'Name is required';
         }
         
+        if (!editFormData.username.trim()) {
+            errors.username = 'Username is required';
+        }
+        
         if (!editFormData.email.trim()) {
             errors.email = 'Email is required';
         } else if (!/\S+@\S+\.\S+/.test(editFormData.email)) {
             errors.email = 'Email is invalid';
+        }
+        
+        if (!editFormData.department.trim()) {
+            errors.department = 'Department is required';
         }
         
         return errors;
@@ -475,7 +507,9 @@ const Users = () => {
                 u.id === userToEdit.id ? {
                     ...u,
                     name: editFormData.name,
+                    username: editFormData.username,
                     email: editFormData.email,
+                    department: editFormData.department,
                     role: editFormData.role,
                     status: editFormData.status,
                     totalAppointments: parseInt(editFormData.totalAppointments)
@@ -541,7 +575,9 @@ const Users = () => {
                 setUserToEdit(user);
                 setEditFormData({
                     name: user.name,
+                    username: user.username || '',
                     email: user.email,
+                    department: user.department || '',
                     role: user.role,
                     status: user.status,
                     totalAppointments: user.totalAppointments
@@ -618,6 +654,26 @@ const Users = () => {
                                 )}
                             </div>
 
+                            {/* Username Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Username *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="username"
+                                    value={editFormData.username || ''}
+                                    onChange={handleEditInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        editFormErrors.username ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter username"
+                                />
+                                {editFormErrors.username && (
+                                    <p className="text-red-500 text-sm mt-1">{editFormErrors.username}</p>
+                                )}
+                            </div>
+
                             {/* Email Field */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -636,6 +692,28 @@ const Users = () => {
                                 {editFormErrors.email && (
                                     <p className="text-red-500 text-sm mt-1">{editFormErrors.email}</p>
                                 )}
+                            </div>
+
+                            {/* Department Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Department *
+                                </label>
+                                <select
+                                    name="department"
+                                    value={editFormData.department || ''}
+                                    onChange={handleEditInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    <option value="">Select Department</option>
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="HR">HR</option>
+                                    <option value="Medical">Medical</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Operations">Operations</option>
+                                </select>
                             </div>
 
                             {/* Role Field */}
@@ -743,6 +821,26 @@ const Users = () => {
                                 )}
                             </div>
 
+                            {/* Username Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Username *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="username"
+                                    value={formData.username}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                                        formErrors.username ? 'border-red-300' : 'border-gray-200'
+                                    }`}
+                                    placeholder="Enter username"
+                                />
+                                {formErrors.username && (
+                                    <p className="mt-1 text-sm text-red-600">{formErrors.username}</p>
+                                )}
+                            </div>
+
                             {/* Email Field */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -761,6 +859,28 @@ const Users = () => {
                                 {formErrors.email && (
                                     <p className="mt-1 text-sm text-red-600">{formErrors.email}</p>
                                 )}
+                            </div>
+
+                            {/* Department Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Department *
+                                </label>
+                                <select
+                                    name="department"
+                                    value={formData.department}
+                                    onChange={handleInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    <option value="">Select Department</option>
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="HR">HR</option>
+                                    <option value="Medical">Medical</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Operations">Operations</option>
+                                </select>
                             </div>
 
                             {/* Role Field */}
@@ -1024,7 +1144,13 @@ const Users = () => {
                                     Name
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Username
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Email
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Department
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Role
@@ -1038,10 +1164,16 @@ const Users = () => {
                             {filteredUsers.map((user) => (
                                 <tr key={user.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-500">{user.email}</div>
+                                        <div className="text-sm text-gray-600 font-medium">{user.username || 'N/A'}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-500">{user.email}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-700 font-medium">{user.department || 'N/A'}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
@@ -1177,8 +1309,16 @@ const Users = () => {
                                     <p className="text-sm text-gray-900">{selectedUser.name}</p>
                                 </div>
                                 <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Username</label>
+                                    <p className="text-sm text-gray-900">{selectedUser.username || 'N/A'}</p>
+                                </div>
+                                <div className="space-y-2">
                                     <label className="block text-sm font-medium text-gray-700">Email</label>
                                     <p className="text-sm text-gray-900">{selectedUser.email}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">Department</label>
+                                    <p className="text-sm text-gray-900">{selectedUser.department || 'N/A'}</p>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-gray-700">Role</label>
@@ -1227,7 +1367,7 @@ const Users = () => {
             {/* Delete Confirmation Modal */}
             {isDeleteModalOpen && userToDelete && (
                 <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-6 border-b border-gray-200">
                             <div className="flex items-center space-x-3">

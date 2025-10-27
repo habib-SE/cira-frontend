@@ -198,7 +198,7 @@ const DoctorProfile = () => {
                                 {doctor.name.split(' ').map(n => n[0]).join('')}
                             </div>
                             {isEditing && (
-                                <button className="absolute bottom-0 right-0 w-8 h-8 bg-pink-500 text-white rounded-full flex items-center justify-center hover:bg-pink-600 transition-colors">
+                                <button className="absolute bottom-0 right-0 w-8 h-8 bg-pink-400 text-white rounded-full flex items-center justify-center hover:bg-pink-500 transition-colors">
                                     <Camera className="w-4 h-4" />
                                 </button>
                             )}
@@ -367,7 +367,7 @@ const DoctorProfile = () => {
                         <Card className="p-6">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-lg font-semibold text-gray-900">Documents</h3>
-                                <button className="flex items-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors">
+                                <button className="flex items-center space-x-2 px-4 py-2 bg-pink-400 text-white rounded-xl hover:bg-pink-500 transition-colors">
                                     <Upload className="w-4 h-4" />
                                     <span>Upload Document</span>
                                 </button>

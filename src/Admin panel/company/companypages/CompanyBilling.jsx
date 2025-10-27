@@ -154,6 +154,98 @@ const CompanyBilling = () => {
     }
   };
 
+  // Handler functions
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      // Add your refresh logic here
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      showAlert({
+        type: 'success',
+        title: 'Refreshed',
+        message: 'Billing information has been refreshed successfully.',
+        buttonText: 'OK'
+      });
+    } catch (error) {
+      showAlert({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to refresh billing information.',
+        buttonText: 'OK'
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleExportInvoices = () => {
+    showAlert({
+      type: 'info',
+      title: 'Export Invoices',
+      message: 'Invoice export functionality will be available in the next update.',
+      buttonText: 'Got it'
+    });
+  };
+
+  const handleUpdatePayment = () => {
+    showAlert({
+      type: 'info',
+      title: 'Update Payment Method',
+      message: 'Payment method update functionality will be available soon.',
+      buttonText: 'Got it'
+    });
+  };
+
+  const handleManagePlan = () => {
+    showAlert({
+      type: 'info',
+      title: 'Manage Plan',
+      message: 'Plan management functionality will be available soon.',
+      buttonText: 'Got it'
+    });
+  };
+
+  const handleUpgradePlan = (planName) => {
+    showAlert({
+      type: 'info',
+      title: 'Upgrade Plan',
+      message: `Upgrade to ${planName} functionality will be available soon.`,
+      buttonText: 'Got it'
+    });
+  };
+
+  const handleAddPaymentMethod = () => {
+    showAlert({
+      type: 'info',
+      title: 'Add Payment Method',
+      message: 'Add payment method functionality will be available soon.',
+      buttonText: 'Got it'
+    });
+  };
+
+  const handleDownloadInvoice = (invoiceId) => {
+    showAlert({
+      type: 'info',
+      title: 'Download Invoice',
+      message: `Download invoice ${invoiceId} functionality will be available soon.`,
+      buttonText: 'Got it'
+    });
+  };
+
+  const showAlert = (alertConfig) => {
+    setAlertModal({
+      isOpen: true,
+      ...alertConfig
+    });
+  };
+
+  const closeAlert = () => {
+    setAlertModal(prev => ({
+      ...prev,
+      isOpen: false
+    }));
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}

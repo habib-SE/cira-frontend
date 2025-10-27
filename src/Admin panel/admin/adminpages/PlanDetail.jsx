@@ -66,7 +66,7 @@ const PlanDetail = () => {
         <div className="space-y-6">
           <Card className="p-6">
             <h2 className="text-lg font-semibold mb-4">Actions</h2>
-            <button onClick={() => navigate(`/admin/plans/edit/${plan.id}`)} className="w-full px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600">Edit Plan</button>
+            <button onClick={() => navigate(`/admin/plans/edit/${plan.id}`)} className="w-full px-4 py-2 bg-pink-400 text-white rounded-lg hover:bg-pink-500">Edit Plan</button>
           </Card>
         </div>
       </div>

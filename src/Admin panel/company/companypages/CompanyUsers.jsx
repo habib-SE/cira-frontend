@@ -196,12 +196,11 @@ const CompanyUsers = () => {
 
   const handleExportUsers = () => {
     const csvContent = [
-      ['Name', 'Email', 'Department', 'Role', 'Status', 'Created At'],
+      ['Name', 'Email', 'Department', 'Status', 'Created At'],
       ...filteredUsers.map(user => [
         user.name,
         user.email,
         user.department,
-        user.role,
         user.status,
         user.createdAt
       ])
@@ -239,11 +238,6 @@ const CompanyUsers = () => {
     }
   };
 
-  const getRoleColor = (role) => {
-    return role === 'Admin' 
-      ? 'bg-purple-100 text-purple-800' 
-      : 'bg-blue-100 text-blue-800';
-  };
 
   return (
     <div className="p-6 space-y-6">
@@ -326,9 +320,6 @@ const CompanyUsers = () => {
                   Department
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -357,11 +348,6 @@ const CompanyUsers = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {user.department}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(user.role)}`}>
-                      {user.role}
-                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}>

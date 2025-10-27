@@ -80,7 +80,7 @@ const DoctorRecords = () => {
               <option value="Cardiac">Cardiac</option>
               <option value="Pathology">Pathology</option>
             </select>
-            <button className="flex items-center space-x-2 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+            <button className="flex items-center space-x-2 px-4 py-3 bg-pink-100 text-pink-700 rounded-xl hover:bg-pink-200 transition-colors">
               <Filter className="h-5 w-5" />
               <span>More Filters</span>
             </button>
