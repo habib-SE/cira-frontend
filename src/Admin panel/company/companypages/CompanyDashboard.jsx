@@ -89,7 +89,7 @@ const CompanyDashboard = () => {
       color: 'bg-purple-500'
     },
     {
-      title: 'Scenarios Handled by Cira',
+      title: 'Health Cases Analyzed',
       value: '234',
       description: 'Unique health cases analyzed by the AI',
       icon: TrendingUp,

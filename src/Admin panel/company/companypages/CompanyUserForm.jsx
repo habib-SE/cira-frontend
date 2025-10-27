@@ -11,7 +11,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
-import { ConfirmationModal } from '../../../components/shared';
+import { ConfirmationModal, AlertModal } from '../../../components/shared';
 
 const CompanyUserForm = ({ mode = 'create' }) => {
   const navigate = useNavigate();
@@ -28,35 +28,43 @@ const CompanyUserForm = ({ mode = 'create' }) => {
     confirmText: 'Confirm',
     cancelText: 'Cancel'
   });
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: '',
+    buttonText: 'OK'
+  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    department: '',
-    role: 'Employee',
-    status: 'Active',
+    username: '',
     phone: '',
-    position: '',
-    startDate: '',
-    notes: ''
+    status: 'Active',
+    role: 'User',
+    notes: '',
+    password: ''
   });
 
   // Load user data for edit/view modes
   useEffect(() => {
     if (mode === 'edit' || mode === 'view') {
-      // Mock user data - replace with actual API call
-      const mockUser = {
-        id: id,
-        name: 'John Doe',
-        email: 'john.doe@company.com',
-        department: 'Engineering',
-        role: 'Employee',
-        status: 'Active',
-        phone: '+1 (555) 123-4567',
-        position: 'Software Engineer',
-        startDate: '2024-01-15',
-        notes: 'Experienced developer with 5 years of experience'
-      };
-      setFormData(mockUser);
+      // Load user data from localStorage
+      const existingUsers = JSON.parse(localStorage.getItem('companyUsers') || '[]');
+      const user = existingUsers.find(u => u.id === parseInt(id));
+      
+      if (user) {
+        setFormData({
+          name: user.name || '',
+          email: user.email || '',
+          username: user.username || '',
+          phone: user.phone || '',
+          status: user.status || 'Active',
+          role: user.role || 'User',
+          notes: user.notes || '',
+          password: ''
+        });
+      }
     }
   }, [id, mode]);
 
@@ -67,6 +75,20 @@ const CompanyUserForm = ({ mode = 'create' }) => {
     }));
   };
 
+  const showAlert = (config) => {
+    setAlertModal({
+      isOpen: true,
+      type: config.type || 'success',
+      title: config.title,
+      message: config.message,
+      buttonText: config.buttonText || 'OK'
+    });
+  };
+
+  const closeAlert = () => {
+    setAlertModal(prev => ({ ...prev, isOpen: false }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -75,17 +97,57 @@ const CompanyUserForm = ({ mode = 'create' }) => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      if (mode === 'create') {
-        console.log('Creating user:', formData);
-        alert('User created successfully!');
-      } else if (mode === 'edit') {
-        console.log('Updating user:', formData);
-        alert('User updated successfully!');
-      }
+      // Get existing users from localStorage
+      const existingUsers = JSON.parse(localStorage.getItem('companyUsers') || '[]');
       
-      navigate('/company/users');
+      if (mode === 'create') {
+        // Create new user
+        const newUser = {
+          ...formData,
+          id: Date.now(), // Generate a unique ID
+          createdAt: new Date().toISOString().split('T')[0]
+        };
+        const updatedUsers = [...existingUsers, newUser];
+        localStorage.setItem('companyUsers', JSON.stringify(updatedUsers));
+        // Dispatch event to notify users list to reload
+        window.dispatchEvent(new Event('companyUsersUpdated'));
+        
+        showAlert({
+          type: 'success',
+          title: 'Success',
+          message: 'User created successfully!'
+        });
+        
+        // Navigate after a short delay to show the success message
+        setTimeout(() => {
+          navigate('/company/users');
+        }, 1500);
+      } else if (mode === 'edit') {
+        // Update existing user
+        const updatedUsers = existingUsers.map(user => 
+          user.id === parseInt(id) ? { ...user, ...formData } : user
+        );
+        localStorage.setItem('companyUsers', JSON.stringify(updatedUsers));
+        // Dispatch event to notify users list to reload
+        window.dispatchEvent(new Event('companyUsersUpdated'));
+        
+        showAlert({
+          type: 'success',
+          title: 'Success',
+          message: 'User updated successfully!'
+        });
+        
+        // Navigate after a short delay to show the success message
+        setTimeout(() => {
+          navigate('/company/users');
+        }, 1500);
+      }
     } catch (error) {
-      alert('An error occurred. Please try again.');
+      showAlert({
+        type: 'error',
+        title: 'Error',
+        message: 'An error occurred. Please try again.'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -123,156 +185,184 @@ const CompanyUserForm = ({ mode = 'create' }) => {
         </div>
       </div>
 
+      {/* View Mode User Profile */}
+      {isViewMode && (
+        <>
+          {/* Header Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+            <div className="flex items-center space-x-6 mb-6">
+              <div className="w-28 h-28 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full flex items-center justify-center text-5xl font-bold text-pink-600 shadow-inner">
+                {formData.name.split(' ').map(n => n[0]).join('')}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-4 mb-2">
+                  <h2 className="text-3xl font-bold text-gray-900">{formData.name}</h2>
+                  <div className={`px-4 py-1.5 rounded-lg font-semibold text-sm ${
+                    formData.status === 'Active' 
+                      ? 'bg-green-50 text-green-700 border border-green-200' 
+                      : formData.status === 'Suspended' 
+                      ? 'bg-red-50 text-red-700 border border-red-200' 
+                      : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                  }`}>
+                    {formData.status}
+                  </div>
+                </div>
+                <p className="text-gray-600 text-lg">{formData.email}</p>
+                {formData.username && (
+                  <p className="text-gray-500">@{formData.username}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Detailed Information Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-gray-100 pt-6">
+              {/* User Information */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">User Information</h3>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Full Name</p>
+                    <p className="text-sm font-medium text-gray-900">{formData.name}</p>
+                  </div>
+                  {formData.username && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Username</p>
+                      <p className="text-sm font-medium text-gray-900">@{formData.username}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Email Address</p>
+                    <p className="text-sm font-medium text-gray-900">{formData.email}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Account Status */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Account Status</h3>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Status</p>
+                    <p className="text-sm font-medium text-gray-900">{formData.status}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Basic Information */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name *
-                </label>
-                <div className="relative">
+      {!isViewMode && (
+        <div className="rounded-lg shadow-sm border border-gray-200 bg-white">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Basic Information */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900"
+                      placeholder="Enter full name"
+                    />
+                    <UserPlus className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Username *
+                  </label>
                   <input
                     type="text"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    disabled={isViewMode}
+                    value={formData.username}
+                    onChange={(e) => handleInputChange('username', e.target.value)}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-50"
-                    placeholder="Enter full name"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900"
+                    placeholder="Enter username"
                   />
-                  <UserPlus className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <div className="relative">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900"
+                      placeholder="Enter email address"
+                    />
+                    <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number
+                  </label>
                   <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    disabled={isViewMode}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-50"
-                    placeholder="Enter email address"
+                    type="tel"
+                    value={formData.phone || ''}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900"
+                    placeholder="Enter phone number"
                   />
-                  <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  disabled={isViewMode}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-50"
-                  placeholder="Enter phone number"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Position
-                </label>
-                <input
-                  type="text"
-                  value={formData.position}
-                  onChange={(e) => handleInputChange('position', e.target.value)}
-                  disabled={isViewMode}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-50"
-                  placeholder="Enter job position"
-                />
-              </div>
             </div>
-          </div>
 
-          {/* Department */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Department</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Department *
-                </label>
-                <div className="relative">
-                  <select
-                    value={formData.department}
-                    onChange={(e) => handleInputChange('department', e.target.value)}
-                    disabled={isViewMode}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-50"
-                  >
-                    <option value="">Select Department</option>
-                    <option value="Engineering">Engineering</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Sales">Sales</option>
-                    <option value="HR">Human Resources</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Operations">Operations</option>
-                  </select>
-                  <Building className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Status *
-                </label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => handleInputChange('status', e.target.value)}
-                  disabled={isViewMode}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-50"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Suspended">Suspended</option>
-                  <option value="Pending">Pending</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.startDate}
-                  onChange={(e) => handleInputChange('startDate', e.target.value)}
-                  disabled={isViewMode}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-50"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Additional Information */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Information</h3>
+            {/* Account Settings */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Notes
-              </label>
-              <textarea
-                value={formData.notes}
-                onChange={(e) => handleInputChange('notes', e.target.value)}
-                disabled={isViewMode}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-50"
-                placeholder="Enter any additional notes about this user"
-              />
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Settings</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Status *
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => handleInputChange('status', e.target.value)}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Suspended">Suspended</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+              </div>
             </div>
-          </div>
+
+            {/* Additional Information */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Information</h3>
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bio/Notes
+                  </label>
+                  <textarea
+                    value={formData.notes || ''}
+                    onChange={(e) => handleInputChange('notes', e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 resize-none"
+                    placeholder="Enter any additional information or notes about this user"
+                  />
+                </div>
+              </div>
+            </div>
 
           {/* Password Section - Only for create mode */}
           {isCreateMode && (
@@ -305,49 +395,57 @@ const CompanyUserForm = ({ mode = 'create' }) => {
           )}
 
           {/* Action Buttons */}
-          {!isViewMode && (
-            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="px-6 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>{isCreateMode ? 'Creating...' : 'Saving...'}</span>
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4" />
-                    <span>{isCreateMode ? 'Create User' : 'Save Changes'}</span>
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-
-          {/* View Mode Actions */}
-          {isViewMode && (
-            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-              <button
-                onClick={() => navigate(`/company/users/edit/${id}`)}
-                className="px-6 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors flex items-center space-x-2"
-              >
-                <Save className="h-4 w-4" />
-                <span>Edit User</span>
-              </button>
-            </div>
-          )}
+          <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="px-6 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+            >
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>{isCreateMode ? 'Creating...' : 'Saving...'}</span>
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  <span>{isCreateMode ? 'Create User' : 'Save Changes'}</span>
+                </>
+              )}
+            </button>
+          </div>
         </form>
       </div>
+      )}
+
+      {/* View Mode Actions */}
+      {isViewMode && (
+        <div className="flex justify-start mt-6">
+          <button
+            onClick={handleCancel}
+            className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Back
+          </button>
+        </div>
+      )}
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={closeAlert}
+        type={alertModal.type}
+        title={alertModal.title}
+        message={alertModal.message}
+        buttonText={alertModal.buttonText}
+      />
     </div>
   );
 };
