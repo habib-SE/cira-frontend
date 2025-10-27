@@ -362,7 +362,7 @@ const PhoneNumberInput = ({ value, onChange, error, placeholder = "Phone Number"
 
       {/* Custom Country Selection Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md h-[70vh] flex flex-col">
             {/* Modal Header */}
             <div className="p-6 border-b border-gray-100">

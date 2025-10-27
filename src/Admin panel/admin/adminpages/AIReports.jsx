@@ -99,7 +99,7 @@ const AIReports = () => {
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">AI Reports</h1>
                     <p className="text-gray-600">AI-generated medical reports and analysis</p>
                 </div>
-                <button className="flex items-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200">
+                <button className="flex items-center space-x-2 px-4 py-2 bg-pink-400 text-white rounded-xl hover:bg-pink-500 transition-colors duration-200">
                     <Brain className="w-4 h-4" />
                     <span>Generate Report</span>
                 </button>

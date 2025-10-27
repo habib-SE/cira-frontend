@@ -5,8 +5,7 @@ import {
   Save, 
   UserPlus, 
   Mail, 
-  Building, 
-  Shield,
+  Building,
   Eye,
   EyeOff,
   CheckCircle,
@@ -197,9 +196,9 @@ const CompanyUserForm = ({ mode = 'create' }) => {
             </div>
           </div>
 
-          {/* Department & Role */}
+          {/* Department */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Department & Role</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Department</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -222,26 +221,6 @@ const CompanyUserForm = ({ mode = 'create' }) => {
                     <option value="Operations">Operations</option>
                   </select>
                   <Building className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Role *
-                </label>
-                <div className="relative">
-                  <select
-                    value={formData.role}
-                    onChange={(e) => handleInputChange('role', e.target.value)}
-                    disabled={isViewMode}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-50"
-                  >
-                    <option value="Employee">Employee</option>
-                    <option value="Admin">Admin</option>
-                    <option value="Manager">Manager</option>
-                  </select>
-                  <Shield className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 </div>
               </div>
 

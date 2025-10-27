@@ -437,7 +437,7 @@ const PatientReportDetails = () => {
                 <span>{isLoading ? 'Generating...' : 'Download PDF'}</span>
               </button>
               
-              <button className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+              <button className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-pink-100 text-pink-700 rounded-lg hover:bg-pink-200 transition-colors">
                 <Share className="h-4 w-4" />
                 <span>Share</span>
               </button>

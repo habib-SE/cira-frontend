@@ -75,6 +75,11 @@ import DoctorProfile from '../Admin panel/doctor/doctorpages/DoctorProfile';
 import DoctorPatientReports from '../Admin panel/doctor/doctorpages/PatientReports';
 import DoctorPatientReportDetail from '../Admin panel/doctor/doctorpages/PatientReportDetail';
 import BankDetails from '../Admin panel/doctor/doctorpages/BankDetails';
+import DoctorPatients from '../Admin panel/doctor/doctorpages/DoctorPatients';
+import PatientDetail from '../Admin panel/doctor/doctorpages/PatientDetail';
+import DoctorMessages from '../Admin panel/doctor/doctorpages/DoctorMessages';
+import DoctorPayouts from '../Admin panel/doctor/doctorpages/DoctorPayouts';
+import Analytics from '../Admin panel/doctor/doctorpages/Analytics';
 
 function MainRouter() {
   return (
@@ -173,6 +178,7 @@ function MainRouter() {
       >
         <Route path="" element={<DoctorDashboard />} />
         <Route path="profile" element={<ProfileWizard />} />
+        <Route path="availability" element={<DoctorSchedule />} />
         <Route path="appointments" element={<DoctorSchedule />} />
         <Route path="appointments/create" element={<CreateAppointment />} />
         <Route path="appointment-detail" element={<AppointmentDetail />} />
@@ -180,8 +186,13 @@ function MainRouter() {
         <Route path="appointments/:id/report" element={<AIReportView />} />
         <Route path="patient-reports" element={<DoctorPatientReports />} />
         <Route path="patient-reports/:id" element={<DoctorPatientReportDetail />} />
+        <Route path="patients" element={<DoctorPatients />} />
+        <Route path="patients/:id" element={<PatientDetail />} />
+        <Route path="messages" element={<DoctorMessages />} />
         <Route path="earnings" element={<Earnings />} />
         <Route path="earnings/bank-details" element={<BankDetails />} />
+        <Route path="payouts" element={<DoctorPayouts />} />
+        <Route path="analytics" element={<Analytics />} />
         <Route path="settings" element={<DoctorSettings />} />
         <Route path="my-profile" element={<DoctorProfile />} />
       </Route>

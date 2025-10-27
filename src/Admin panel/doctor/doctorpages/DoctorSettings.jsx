@@ -44,7 +44,9 @@ import {
 
     Monitor,
 
-    Smartphone
+    Smartphone,
+
+    X
 
 } from 'lucide-react';
 
@@ -55,6 +57,9 @@ import Card from '../../admin/admincomponents/Card';
 const DoctorSettings = () => {
 
     const [activeTab, setActiveTab] = useState('availability');
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
 
     const [settings, setSettings] = useState({
 
@@ -360,6 +365,72 @@ const DoctorSettings = () => {
 
     };
 
+    const handleSaveChanges = async () => {
+        setIsSaving(true);
+        setToastMessage('Saving changes...');
+        setShowToast(true);
+
+        try {
+            // Simulate API call to save settings
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Save to localStorage for persistence
+            localStorage.setItem('doctorSettings', JSON.stringify(settings));
+            
+            setToastMessage('Settings saved successfully!');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        } catch (error) {
+            setToastMessage('Failed to save settings. Please try again.');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 4000);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleAddBreak = (day) => {
+        const newBreak = { start: '12:00', end: '13:00' };
+        setSettings(prev => ({
+            ...prev,
+            availability: {
+                ...prev.availability,
+                [day]: {
+                    ...prev.availability[day],
+                    breaks: [...prev.availability[day].breaks, newBreak]
+                }
+            }
+        }));
+    };
+
+    const handleRemoveBreak = (day, breakIndex) => {
+        setSettings(prev => ({
+            ...prev,
+            availability: {
+                ...prev.availability,
+                [day]: {
+                    ...prev.availability[day],
+                    breaks: prev.availability[day].breaks.filter((_, index) => index !== breakIndex)
+                }
+            }
+        }));
+    };
+
+    const handleBreakChange = (day, breakIndex, field, value) => {
+        setSettings(prev => ({
+            ...prev,
+            availability: {
+                ...prev.availability,
+                [day]: {
+                    ...prev.availability[day],
+                    breaks: prev.availability[day].breaks.map((breakItem, index) => 
+                        index === breakIndex ? { ...breakItem, [field]: value } : breakItem
+                    )
+                }
+            }
+        }));
+    };
+
 
 
     const renderAvailabilitySettings = () => (
@@ -373,74 +444,105 @@ const DoctorSettings = () => {
 
 
 
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-4">
                 {Object.entries(settings.availability).map(([day, schedule]) => (
-
-                    <div key={day} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-xl gap-3">
-                        <div className="flex items-center space-x-3 sm:space-x-4">
-                            <div className="w-20 sm:w-24 text-xs sm:text-sm font-medium text-gray-900 capitalize flex-shrink-0">
-                                {day}
-
+                    <div key={day} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                        {/* Day Header */}
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-24 text-sm font-semibold text-gray-900 capitalize">
+                                    {day}
+                                </div>
+                                <label className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={schedule.available}
+                                        onChange={(e) => handleAvailabilityChange(day, 'available', e.target.checked)}
+                                        className="w-4 h-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+                                    />
+                                    <span className="text-sm text-gray-700 font-medium">Available</span>
+                                </label>
                             </div>
-
-                            <label className="flex items-center space-x-2 cursor-pointer">
-
-                                <input
-
-                                    type="checkbox"
-
-                                    checked={schedule.available}
-
-                                    onChange={(e) => handleAvailabilityChange(day, 'available', e.target.checked)}
-
-                                    className="rounded border-gray-300 text-pink-600 focus:ring-pink-500"
-
-                                />
-
-                                <span className="text-xs sm:text-sm text-gray-700">Available</span>
-                            </label>
-
                         </div>
 
-                        
-
+                        {/* Working Hours */}
                         {schedule.available && (
-
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 pl-24 sm:pl-0">
-                                <div className="flex items-center space-x-2 flex-wrap">
-                                    <Clock className="w-4 h-4 text-gray-400 hidden sm:block flex-shrink-0" />
-                                    <input
-
-                                        type="time"
-
-                                        value={schedule.start}
-
-                                        onChange={(e) => handleAvailabilityChange(day, 'start', e.target.value)}
-
-                                        className="px-2 py-1 text-xs sm:text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-500 flex-shrink-0"
-                                    />
-
-                                    <span className="text-gray-500 text-xs sm:text-sm">to</span>
-                                    <input
-
-                                        type="time"
-
-                                        value={schedule.end}
-
-                                        onChange={(e) => handleAvailabilityChange(day, 'end', e.target.value)}
-
-                                        className="px-2 py-1 text-xs sm:text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-500 flex-shrink-0"
-                                    />
-
+                            <div className="mb-4">
+                                <div className="flex items-center space-x-3">
+                                    <Clock className="w-5 h-5 text-gray-500" />
+                                    <span className="text-sm font-medium text-gray-700">Working Hours:</span>
                                 </div>
-
-                                <button className="text-xs sm:text-sm text-pink-600 hover:text-pink-700 whitespace-nowrap text-left sm:text-center">
-                                    Add Break
-
-                                </button>
-
+                                <div className="mt-2 flex items-center space-x-3">
+                                    <input
+                                        type="time"
+                                        value={schedule.start}
+                                        onChange={(e) => handleAvailabilityChange(day, 'start', e.target.value)}
+                                        className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                    />
+                                    <span className="text-gray-500 font-medium">to</span>
+                                    <input
+                                        type="time"
+                                        value={schedule.end}
+                                        onChange={(e) => handleAvailabilityChange(day, 'end', e.target.value)}
+                                        className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                    />
+                                </div>
                             </div>
+                        )}
 
+                        {/* Breaks Section */}
+                        {schedule.available && (
+                            <div className="mt-4 w-full">
+                                <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h4 className="text-sm font-medium text-gray-700 flex items-center space-x-2">
+                                            <Clock className="w-4 h-4 text-gray-500" />
+                                            <span>Breaks</span>
+                                        </h4>
+                                        <button 
+                                            onClick={() => handleAddBreak(day)}
+                                            className="text-xs text-pink-600 hover:text-pink-700 font-medium px-2 py-1 rounded hover:bg-pink-50 transition-colors"
+                                        >
+                                            + Add Break
+                                        </button>
+                                    </div>
+                                    {schedule.breaks && schedule.breaks.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {schedule.breaks.map((breakItem, breakIndex) => (
+                                                <div key={breakIndex} className="flex items-center space-x-3 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                                    <div className="flex items-center space-x-2 flex-1">
+                                                        <input
+                                                            type="time"
+                                                            value={breakItem.start}
+                                                            onChange={(e) => handleBreakChange(day, breakIndex, 'start', e.target.value)}
+                                                            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                                        />
+                                                        <span className="text-gray-500 text-sm font-medium">to</span>
+                                                        <input
+                                                            type="time"
+                                                            value={breakItem.end}
+                                                            onChange={(e) => handleBreakChange(day, breakIndex, 'end', e.target.value)}
+                                                            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleRemoveBreak(day, breakIndex)}
+                                                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                                                        title="Remove break"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-4">
+                                            <p className="text-sm text-gray-500 mb-2">No breaks scheduled</p>
+                                            <p className="text-xs text-gray-400">Click "Add Break" to schedule break times</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         )}
 
                     </div>
@@ -1316,7 +1418,7 @@ const DoctorSettings = () => {
 
 
 
-                <button className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors">
+                <button className="px-4 py-2 bg-pink-400 text-white rounded-xl hover:bg-pink-500 transition-colors">
 
                     Update Password
 
@@ -1374,90 +1476,100 @@ const DoctorSettings = () => {
 
     return (
 
-        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
-            {/* Header */}
+        <div className="min-h-screen bg-gray-50">
+            <div className="max-w-7xl mx-auto p-4 lg:p-6">
+                {/* Header */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Settings</h1>
+                            <p className="text-sm sm:text-base text-gray-600">Manage your practice settings and preferences</p>
+                        </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Settings</h1>
-                    <p className="text-sm sm:text-base text-gray-600">Manage your practice settings and preferences</p>
+                        <button 
+                            onClick={handleSaveChanges}
+                            disabled={isSaving}
+                            className="flex items-center justify-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors text-sm sm:text-base whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        >
+                            {isSaving ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                    <span className="hidden sm:inline">Saving...</span>
+                                    <span className="sm:hidden">Saving...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Save Changes</span>
+                                    <span className="sm:hidden">Save</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
-                <button className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors text-sm sm:text-base whitespace-nowrap">
-                    <Save className="w-4 h-4" />
-
-                    <span className="hidden sm:inline">Save Changes</span>
-                    <span className="sm:hidden">Save</span>
-                </button>
-
-            </div>
 
 
-
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
-                {/* Settings Navigation */}
-
-                <Card className="p-0 lg:col-span-1">
-                    <div className="p-3 sm:p-4 border-b border-gray-200">
-                        <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Settings</h3>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    {/* Settings Navigation */}
+                    <div className="lg:col-span-1">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div className="p-4 border-b border-gray-200 bg-gray-50">
+                                <h3 className="font-semibold text-gray-900 text-base">Settings</h3>
+                            </div>
+                            <nav className="p-2">
+                                <div className="space-y-1">
+                                    {tabs.map((tab) => {
+                                        const Icon = tab.icon;
+                                        return (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => setActiveTab(tab.id)}
+                                                className={`w-full flex items-start space-x-3 px-3 py-3 rounded-lg transition-all duration-200 text-left ${
+                                                    activeTab === tab.id
+                                                        ? 'bg-pink-50 text-pink-600 border border-pink-200 shadow-sm'
+                                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                                }`}
+                                            >
+                                                <Icon className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                                                <div className="min-w-0 flex-1">
+                                                    <span className="font-medium text-sm block">{tab.label}</span>
+                                                    <p className="text-xs text-gray-500 mt-1">{tab.description}</p>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </nav>
+                        </div>
                     </div>
 
-                    <nav className="p-2">
-
-                        <div className="grid grid-cols-2 lg:grid-cols-1 gap-1">
-                        {tabs.map((tab) => {
-
-                            const Icon = tab.icon;
-
-                            return (
-
-                                <button
-
-                                    key={tab.id}
-
-                                    onClick={() => setActiveTab(tab.id)}
-
-                                    className={`flex items-start space-x-2 lg:space-x-3 px-2 lg:px-3 py-2 lg:py-3 rounded-xl transition-all duration-200 text-left ${
-                                        activeTab === tab.id
-
-                                            ? 'bg-pink-50 text-pink-600 border border-pink-200'
-
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-
-                                    }`}
-
-                                >
-
-                                    <Icon className="w-4 h-4 lg:w-5 lg:h-5 mt-0.5 flex-shrink-0" />
-                                    <div className="min-w-0 flex-1">
-                                        <span className="font-medium text-xs lg:text-sm truncate block">{tab.label}</span>
-                                        <p className="text-xs text-gray-500 mt-1 hidden lg:block">{tab.description}</p>
-                                    </div>
-
-                                </button>
-
-                            );
-
-                        })}
-
+                    {/* Settings Content */}
+                    <div className="lg:col-span-3">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            {renderTabContent()}
                         </div>
-                    </nav>
-
-                </Card>
-
-
-
-                {/* Settings Content */}
-
-                <div className="lg:col-span-3 space-y-4 sm:space-y-6">
-                    <Card className="p-4 sm:p-6">
-                        {renderTabContent()}
-
-                    </Card>
-
+                    </div>
                 </div>
-
             </div>
+
+            {/* Toast Notification */}
+            {showToast && (
+                <div className="fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out">
+                    <div className="bg-pink-50 border-l-4 border-pink-500 rounded-lg shadow-lg flex items-center space-x-3 px-4 py-3 max-w-sm">
+                        <div className="flex-shrink-0">
+                            <CheckCircle className="w-5 h-5 text-pink-500" />
+                        </div>
+                        <span className="text-pink-700 font-medium flex-1">{toastMessage}</span>
+                        <button 
+                            onClick={() => setShowToast(false)}
+                            className="flex-shrink-0 text-pink-500 hover:text-pink-700 transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
 
         </div>
 

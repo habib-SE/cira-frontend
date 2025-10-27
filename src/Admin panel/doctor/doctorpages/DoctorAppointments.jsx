@@ -7,12 +7,6 @@ const DoctorAppointments = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isContentLoading, setIsContentLoading] = useState(false);
 
-  const handleRefreshContent = () => {
-    setIsContentLoading(true);
-    setTimeout(() => {
-      setIsContentLoading(false);
-    }, 1500);
-  };
 
   // Auto-trigger loader on component mount
   useEffect(() => {
@@ -73,23 +67,18 @@ const DoctorAppointments = () => {
   const currentAppointments = appointments[activeTab] || [];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Appointments</h1>
-          <p className="text-gray-600">Manage your patient appointments and schedule</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Appointments</h1>
+          <p className="text-sm sm:text-base text-gray-600">Manage your patient appointments and schedule</p>
         </div>
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={handleRefreshContent}
-            className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200"
-          >
-            Refresh
-          </button>
-          <button className="flex items-center space-x-2 bg-pink-600 text-white px-6 py-3 rounded-xl hover:bg-pink-700 transition-colors font-medium">
-            <Calendar className="w-5 h-5" />
-            <span>Schedule New</span>
+        <div className="flex items-center space-x-3 flex-shrink-0">
+          <button className="flex items-center space-x-2 bg-pink-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl hover:bg-pink-700 transition-colors font-medium text-sm sm:text-base">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Schedule New</span>
+            <span className="sm:hidden">New</span>
           </button>
         </div>
       </div>
@@ -129,19 +118,19 @@ const DoctorAppointments = () => {
 
         <div className="p-6">
           {/* Search and Filter */}
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6">
+            <div className="flex-1 relative min-w-0">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search appointments by patient name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm sm:text-base"
               />
             </div>
-            <button className="flex items-center space-x-2 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
-              <Filter className="h-5 w-5" />
+            <button className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-pink-100 text-pink-700 rounded-xl hover:bg-pink-200 transition-colors text-sm sm:text-base flex-shrink-0">
+              <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Filter</span>
             </button>
           </div>
@@ -149,22 +138,22 @@ const DoctorAppointments = () => {
           {/* Appointments List */}
           <div className="space-y-4">
             {currentAppointments.map((appointment) => (
-              <div key={appointment.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all duration-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-pink-100 p-3 rounded-xl">
-                      <Users className="h-6 w-6 text-pink-600" />
+              <div key={appointment.id} className="border border-gray-200 rounded-xl p-4 sm:p-6 hover:shadow-md transition-all duration-200">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div className="flex items-start space-x-3 sm:space-x-4 min-w-0 flex-1">
+                    <div className="bg-pink-100 p-2 sm:p-3 rounded-xl flex-shrink-0">
+                      <Users className="h-5 w-5 sm:h-6 sm:w-6 text-pink-600" />
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{appointment.patient}</h3>
-                      <p className="text-gray-600">{appointment.notes}</p>
-                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{appointment.patient}</h3>
+                      <p className="text-sm sm:text-base text-gray-600 truncate">{appointment.notes}</p>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-gray-600">
                         <div className="flex items-center space-x-1">
-                          <Clock className="h-4 w-4" />
+                          <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                           <span>{appointment.time}</span>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <MapPin className="h-4 w-4" />
+                          <MapPin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                           <span>{appointment.room}</span>
                         </div>
                         <span>{appointment.duration}</span>
@@ -172,22 +161,22 @@ const DoctorAppointments = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 lg:flex-shrink-0">
                     <div className="flex items-center space-x-2">
                       {getStatusIcon(appointment.status)}
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(appointment.status)}`}>
+                      <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(appointment.status)}`}>
                         {appointment.status}
                       </span>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(appointment.type)}`}>
+                    <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${getTypeColor(appointment.type)}`}>
                       {appointment.type}
                     </span>
-                    <div className="flex space-x-2">
-                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                        <Video className="h-4 w-4" />
+                    <div className="flex space-x-1 sm:space-x-2">
+                      <button className="p-1.5 sm:p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                        <Video className="h-3 w-3 sm:h-4 sm:w-4" />
                       </button>
-                      <button className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">
-                        <Phone className="h-4 w-4" />
+                      <button className="p-1.5 sm:p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">
+                        <Phone className="h-3 w-3 sm:h-4 sm:w-4" />
                       </button>
                     </div>
                   </div>

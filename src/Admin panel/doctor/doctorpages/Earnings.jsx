@@ -23,20 +23,13 @@ const Earnings = () => {
     const navigate = useNavigate();
     const [selectedPeriod, setSelectedPeriod] = useState('month');
     const [selectedView, setSelectedView] = useState('overview');
-    const [isRefreshing, setIsRefreshing] = useState(false);
     const [showPayoutModal, setShowPayoutModal] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
     const [payoutAmount, setPayoutAmount] = useState('');
-
-    const handleRefreshContent = () => {
-        setIsRefreshing(true);
-        setTimeout(() => {
-            setIsRefreshing(false);
-        }, 1500);
-    };
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleRequestPayout = () => {
         if (!payoutAmount || parseFloat(payoutAmount) <= 0) {
@@ -49,39 +42,163 @@ const Earnings = () => {
             setShowErrorModal(true);
             return;
         }
-        setSuccessMessage(`Payout request of $${payoutAmount} submitted successfully!`);
-        setShowSuccessModal(true);
+        
+        // Show toast notification instead of modal
+        setToastMessage(`Payout request of $${payoutAmount} submitted successfully!`);
+        setShowToast(true);
         setShowPayoutModal(false);
         setPayoutAmount('');
         
-        // Auto close success modal after 3 seconds
+        // Auto close toast after 4 seconds
         setTimeout(() => {
-            setShowSuccessModal(false);
-        }, 3000);
+            setShowToast(false);
+        }, 4000);
     };
 
     const handleNavigateToBankDetails = () => {
         navigate('/doctor/earnings/bank-details');
     };
 
-    const handleDownloadStatement = () => {
-        setSuccessMessage('Downloading earnings statement...');
-        setShowSuccessModal(true);
+    // Helper function to download files
+    const downloadFile = (data, filename, mimeType) => {
+        const blob = new Blob([data], { type: mimeType });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    };
+
+    // Generate CSV data for export
+    const generateCSVData = () => {
+        const headers = ['Date', 'Type', 'Patient', 'Amount', 'Commission', 'Net Amount', 'Status'];
+        const csvRows = [headers.join(',')];
         
-        // Auto close success modal after 2 seconds
+        // Add filtered transaction data
+        filteredData.transactions.forEach(transaction => {
+            const row = [
+                transaction.date,
+                transaction.type,
+                transaction.patient,
+                transaction.amount,
+                transaction.commission,
+                transaction.net,
+                transaction.status
+            ];
+            csvRows.push(row.join(','));
+        });
+        
+        return csvRows.join('\n');
+    };
+
+    // Generate PDF data for statement
+    const generatePDFData = () => {
+        // Simple PDF content simulation (in real app, you'd use a PDF library)
+        const pdfContent = `
+%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+
+4 0 obj
+<<
+/Length 200
+>>
+stream
+BT
+/F1 12 Tf
+100 700 Td
+(Earnings Statement) Tj
+0 -20 Td
+(Period: ${selectedPeriod}) Tj
+0 -20 Td
+(Total Earned: $${earningsData.totalEarned}) Tj
+0 -20 Td
+(Commission: $${earningsData.commissionDeducted}) Tj
+0 -20 Td
+(Current Balance: $${earningsData.currentBalance}) Tj
+ET
+endstream
+endobj
+
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000204 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+454
+%%EOF
+        `;
+        return pdfContent;
+    };
+
+    const handleDownloadStatement = () => {
+        setToastMessage('Preparing earnings statement...');
+        setShowToast(true);
+        
+        // Simulate file preparation and download
         setTimeout(() => {
-            setShowSuccessModal(false);
+            setToastMessage('Earnings statement downloaded successfully!');
+            
+            // Create and download PDF file
+            const pdfData = generatePDFData();
+            downloadFile(pdfData, `earnings-statement-${new Date().toISOString().split('T')[0]}.pdf`, 'application/pdf');
+            
+            // Auto close toast after 4 seconds
+            setTimeout(() => {
+                setShowToast(false);
+            }, 4000);
         }, 2000);
     };
 
     const handleExportData = () => {
-        setSuccessMessage('Exporting earnings data...');
-        setShowSuccessModal(true);
+        setToastMessage('Preparing earnings data for export...');
+        setShowToast(true);
         
-        // Auto close success modal after 2 seconds
+        // Simulate file preparation and download
         setTimeout(() => {
-            setShowSuccessModal(false);
-        }, 2000);
+            setToastMessage('Earnings data exported successfully!');
+            
+            // Create and download CSV file
+            const csvData = generateCSVData();
+            downloadFile(csvData, `earnings-export-${selectedPeriod}-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+            
+            // Auto close toast after 4 seconds
+            setTimeout(() => {
+                setShowToast(false);
+            }, 4000);
+        }, 1500);
     };
 
     // Earnings data
@@ -274,6 +391,62 @@ const Earnings = () => {
         { value: 'year', label: 'This Year' }
     ];
 
+    // Filter data based on selected period
+    const getFilteredData = () => {
+        const now = new Date();
+        let startDate, endDate;
+
+        switch (selectedPeriod) {
+            case 'week':
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                endDate = now;
+                break;
+            case 'month':
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                break;
+            case 'quarter':
+                const quarter = Math.floor(now.getMonth() / 3);
+                startDate = new Date(now.getFullYear(), quarter * 3, 1);
+                endDate = new Date(now.getFullYear(), quarter * 3 + 3, 0);
+                break;
+            case 'year':
+                startDate = new Date(now.getFullYear(), 0, 1);
+                endDate = new Date(now.getFullYear(), 11, 31);
+                break;
+            default:
+                startDate = new Date(0);
+                endDate = new Date();
+        }
+
+        return {
+            transactions: transactions.filter(transaction => {
+                const transactionDate = new Date(transaction.date);
+                const isInDateRange = transactionDate >= startDate && transactionDate <= endDate;
+                
+                // Apply search filter if search query exists
+                if (searchQuery.trim()) {
+                    const searchLower = searchQuery.toLowerCase();
+                    const matchesSearch = 
+                        transaction.patient.toLowerCase().includes(searchLower) ||
+                        transaction.type.toLowerCase().includes(searchLower) ||
+                        transaction.description.toLowerCase().includes(searchLower) ||
+                        transaction.status.toLowerCase().includes(searchLower);
+                    
+                    return isInDateRange && matchesSearch;
+                }
+                
+                return isInDateRange;
+            }),
+            payouts: payouts.filter(payout => {
+                const payoutDate = new Date(payout.date);
+                return payoutDate >= startDate && payoutDate <= endDate;
+            })
+        };
+    };
+
+    const filteredData = getFilteredData();
+
     const views = [
         { value: 'overview', label: 'Overview', icon: PieChart },
         { value: 'transactions', label: 'Transactions', icon: BarChart3 },
@@ -281,7 +454,7 @@ const Earnings = () => {
     ];
 
     return (
-        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
+        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto overflow-x-hidden">
             {/* Header */}
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -290,24 +463,6 @@ const Earnings = () => {
                         <p className="text-sm sm:text-base text-gray-600">Track your earnings, commissions, and payouts</p>
                 </div>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                    <button
-                        onClick={handleRefreshContent}
-                        disabled={isRefreshing}
-                            className="px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
-                    >
-                        {isRefreshing ? (
-                            <div className="flex items-center space-x-2">
-                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                    <span className="hidden sm:inline">Refreshing...</span>
-                                    <span className="sm:hidden">...</span>
-                            </div>
-                        ) : (
-                                <>
-                                    <span className="hidden sm:inline">Refresh</span>
-                                    <span className="sm:hidden">↻</span>
-                                </>
-                        )}
-                    </button>
                     <select
                         value={selectedPeriod}
                         onChange={(e) => setSelectedPeriod(e.target.value)}
@@ -321,7 +476,7 @@ const Earnings = () => {
                     </select>
                         <button 
                             onClick={handleExportData}
-                            className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors text-sm sm:text-base whitespace-nowrap"
+                            className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-pink-400 text-white rounded-xl hover:bg-pink-500 transition-colors text-sm sm:text-base whitespace-nowrap"
                         >
                         <Download className="w-4 h-4" />
                             <span className="hidden sm:inline">Export</span>
@@ -464,7 +619,7 @@ const Earnings = () => {
                                 <p className="text-2xl sm:text-3xl font-bold text-pink-600 break-words">${earningsData.pendingPayout.toLocaleString()}</p>
                                 <button 
                                     onClick={() => setShowPayoutModal(true)}
-                                    className="w-full sm:w-auto px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors"
+                                    className="w-full sm:w-auto px-4 py-2 bg-pink-400 text-white rounded-xl hover:bg-pink-500 transition-colors"
                                 >
                                     Request Payout
                                 </button>
@@ -483,7 +638,7 @@ const Earnings = () => {
                             </div>
                             <button 
                                 onClick={handleNavigateToBankDetails}
-                                className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+                                className="w-full sm:w-auto px-4 py-2 bg-pink-100 text-pink-700 rounded-xl hover:bg-pink-200 transition-colors"
                             >
                                 Update Bank Details
                             </button>
@@ -495,21 +650,42 @@ const Earnings = () => {
             {selectedView === 'transactions' && (
                 <Card className="p-6">
                     <div className="flex items-center justify-between mb-6">
+                        <div>
                         <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                                {searchQuery.trim() 
+                                    ? `Showing ${filteredData.transactions.length} transactions matching "${searchQuery}" for ${periods.find(p => p.value === selectedPeriod)?.label}`
+                                    : `Showing ${filteredData.transactions.length} transactions for ${periods.find(p => p.value === selectedPeriod)?.label}`
+                                }
+                            </p>
+                        </div>
                         <div className="flex items-center space-x-2">
                             <input
                                 type="text"
                                 placeholder="Search transactions..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                             />
-                            <button className="p-2 text-gray-400 hover:text-gray-600">
-                                <Eye className="w-4 h-4" />
-                            </button>
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        {transactions.map((transaction) => (
+                        {filteredData.transactions.length === 0 ? (
+                            <div className="text-center py-12">
+                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <BarChart3 className="w-8 h-8 text-gray-400" />
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">No transactions found</h3>
+                                <p className="text-gray-600">
+                                    {searchQuery.trim() 
+                                        ? `No transactions found matching "${searchQuery}" for ${periods.find(p => p.value === selectedPeriod)?.label}`
+                                        : `No transactions available for ${periods.find(p => p.value === selectedPeriod)?.label}`
+                                    }
+                                </p>
+                            </div>
+                        ) : (
+                            filteredData.transactions.map((transaction) => (
                             <div key={transaction.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
                                 <div className="flex items-center space-x-4">
                                     <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -545,7 +721,8 @@ const Earnings = () => {
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        ))
+                        )}
                     </div>
                 </Card>
             )}
@@ -553,10 +730,15 @@ const Earnings = () => {
             {selectedView === 'payouts' && (
                 <Card className="p-6">
                     <div className="flex items-center justify-between mb-6">
+                        <div>
                         <h3 className="text-lg font-semibold text-gray-900">Payout History</h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                                Showing {filteredData.payouts.length} payouts for {periods.find(p => p.value === selectedPeriod)?.label}
+                            </p>
+                        </div>
                         <button 
                             onClick={handleDownloadStatement}
-                            className="flex items-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors"
+                            className="flex items-center space-x-2 px-4 py-2 bg-pink-400 text-white rounded-xl hover:bg-pink-500 transition-colors"
                         >
                             <Download className="w-4 h-4" />
                             <span>Download Statement</span>
@@ -564,7 +746,16 @@ const Earnings = () => {
                     </div>
 
                     <div className="space-y-4">
-                        {payouts.map((payout) => (
+                        {filteredData.payouts.length === 0 ? (
+                            <div className="text-center py-12">
+                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Wallet className="w-8 h-8 text-gray-400" />
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">No payouts found</h3>
+                                <p className="text-gray-600">No payouts available for {periods.find(p => p.value === selectedPeriod)?.label}</p>
+                            </div>
+                        ) : (
+                            filteredData.payouts.map((payout) => (
                             <div key={payout.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
                                 <div className="flex items-center space-x-4">
                                     <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -592,7 +783,8 @@ const Earnings = () => {
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        ))
+                        )}
                     </div>
                 </Card>
             )}
@@ -600,8 +792,8 @@ const Earnings = () => {
 
             {/* Payout Request Modal */}
             {showPayoutModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm sm:max-w-md max-h-[95vh] overflow-y-auto overflow-x-hidden mx-2 sm:mx-4 p-4 sm:p-6">
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h2 className="text-2xl font-bold text-gray-900">Request Payout</h2>
@@ -648,13 +840,13 @@ const Earnings = () => {
                         <div className="flex space-x-3 mt-6 pt-6 border-t border-gray-200">
                             <button
                                 onClick={handleRequestPayout}
-                                className="flex-1 bg-pink-600 text-white py-3 px-6 rounded-xl hover:bg-pink-700 transition-colors font-medium"
+                                className="flex-1 bg-pink-400 text-white py-3 px-6 rounded-xl hover:bg-pink-500 transition-colors font-medium"
                             >
                                 Request Payout
                             </button>
                             <button
                                 onClick={() => setShowPayoutModal(false)}
-                                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                                className="px-6 py-3 bg-pink-100 text-pink-700 rounded-xl hover:bg-pink-200 transition-colors font-medium"
                             >
                                 Cancel
                             </button>
@@ -665,8 +857,8 @@ const Earnings = () => {
 
             {/* Error Modal */}
             {showErrorModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-scale-in">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-xs sm:max-w-sm max-h-[95vh] overflow-y-auto overflow-x-hidden mx-2 sm:mx-4 p-4 sm:p-6 animate-scale-in">
                         <div className="text-center">
                             <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                                 <AlertCircle className="w-10 h-10 text-red-500" />
@@ -688,21 +880,21 @@ const Earnings = () => {
                 </div>
             )}
 
-            {/* Success Modal */}
-            {showSuccessModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-scale-in">
-                        <div className="text-center">
-                            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                <CheckCircle className="w-10 h-10 text-green-500" />
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">
-                                Success!
-                            </h3>
-                            <p className="text-gray-600">
-                                {successMessage}
-                            </p>
+
+            {/* Toast Notification */}
+            {showToast && (
+                <div className="fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out">
+                    <div className="bg-pink-50 border-l-4 border-pink-500 rounded-lg shadow-lg flex items-center space-x-3 px-4 py-3 max-w-sm">
+                        <div className="flex-shrink-0">
+                            <CheckCircle className="w-5 h-5 text-pink-500" />
                         </div>
+                        <span className="text-pink-700 font-medium flex-1">{toastMessage}</span>
+                        <button 
+                            onClick={() => setShowToast(false)}
+                            className="flex-shrink-0 text-pink-500 hover:text-pink-700 transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
                     </div>
                 </div>
             )}

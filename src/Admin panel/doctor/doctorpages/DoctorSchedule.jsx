@@ -376,22 +376,6 @@ const DoctorSchedule = () => {
         navigate(`/doctor/appointments/${appointmentId}/report`);
     };
 
-    const handleStartConsultation = (appointmentId) => {
-        // Navigate to consultation page or open consultation modal
-        // For now, we'll show a confirmation modal
-        const appointment = appointments.find(apt => apt.id === appointmentId);
-        setSelectedAppointment(appointment);
-        setShowSuccessModal(true);
-        setSuccessMessage(`Starting consultation with ${appointment.patient}...`);
-        
-        // Auto close after 2 seconds and navigate
-        setTimeout(() => {
-            setShowSuccessModal(false);
-            // You can navigate to a consultation page here
-            // navigate(`/doctor/consultation/${appointmentId}`);
-        }, 2000);
-    };
-
     const handleAcceptClick = (appointmentId) => {
         const appointment = appointments.find(apt => apt.id === appointmentId);
         setSelectedAppointment(appointment);
@@ -534,79 +518,33 @@ const DoctorSchedule = () => {
                 </div>
             </Card>
 
-            {/* Calendar View */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                {/* Calendar */}
-                <div className="lg:col-span-1">
-                    <Card className="p-4">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-gray-900">Calendar</h3>
-                            <div className="flex items-center space-x-1">
-                                <button className="p-1 hover:bg-gray-100 rounded">
-                                    <ChevronLeft className="w-4 h-4" />
-                                </button>
-                                <button className="p-1 hover:bg-gray-100 rounded">
-                                    <ChevronRight className="w-4 h-4" />
-                                </button>
-                            </div>
+            {/* Appointments List */}
+            <div className="w-full">
+                <Card className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                            {viewMode === 'day' ? 'Today\'s Appointments' : 
+                             viewMode === 'week' ? 'This Week\'s Appointments' : 
+                             'This Month\'s Appointments'}
+                        </h3>
+                        <div className="flex items-center space-x-2">
+                            <span className="text-sm text-gray-500">
+                                {filteredAppointments.length} appointments
+                            </span>
                         </div>
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                        />
-                        <div className="mt-4 space-y-2">
-                            <div className="flex items-center space-x-2 text-sm">
-                                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                                <span>Pending ({filteredAppointments.filter(a => a.status === 'pending').length})</span>
-                            </div>
-                            <div className="flex items-center space-x-2 text-sm">
-                                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                                <span>Confirmed ({filteredAppointments.filter(a => a.status === 'confirmed').length})</span>
-                            </div>
-                            <div className="flex items-center space-x-2 text-sm">
-                                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                                <span>Waiting ({filteredAppointments.filter(a => a.status === 'waiting').length})</span>
-                            </div>
-                            <div className="flex items-center space-x-2 text-sm">
-                                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                <span>In Progress ({filteredAppointments.filter(a => a.status === 'in-progress').length})</span>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
+                    </div>
 
-                {/* Appointments List */}
-                <div className="lg:col-span-3">
-                    <Card className="p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                                {viewMode === 'day' ? 'Today\'s Appointments' : 
-                                 viewMode === 'week' ? 'This Week\'s Appointments' : 
-                                 'This Month\'s Appointments'}
-                            </h3>
-                            <div className="flex items-center space-x-2">
-                                <span className="text-sm text-gray-500">
-                                    {filteredAppointments.length} appointments
-                                </span>
-                                <button className="p-2 text-gray-400 hover:text-gray-600">
-                                    <Download className="w-4 h-4" />
-                                </button>
-                            </div>
+                    {Object.keys(groupedAppointments).length === 0 ? (
+                        <div className="text-center py-12">
+                            <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments found</h3>
+                            <p className="text-gray-600">Try adjusting your filters or add a new appointment.</p>
                         </div>
-
-                        {Object.keys(groupedAppointments).length === 0 ? (
-                            <div className="text-center py-12">
-                                <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments found</h3>
-                                <p className="text-gray-600">Try adjusting your filters or add a new appointment.</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                {Object.entries(groupedAppointments).map(([date, dayAppointments]) => (
-                                    <div key={date}>
-                                        <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    ) : (
+                        <div className="space-y-4">
+                            {Object.entries(groupedAppointments).map(([date, dayAppointments]) => (
+                                <div key={date}>
+                                    <h4 className="text-sm font-medium text-gray-700 mb-3">
                                             {new Date(date).toLocaleDateString('en-US', { 
                                                 weekday: 'long', 
                                                 year: 'numeric', 
@@ -716,13 +654,6 @@ const DoctorSchedule = () => {
                                                             <Eye className="w-4 h-4" />
                                                             <span>View Details</span>
                                                         </button>
-                                                                <button 
-                                                                    onClick={() => handleStartConsultation(appointment.id)}
-                                                                    className="flex items-center space-x-1 px-3 py-1 text-sm text-green-600 hover:text-green-800 font-medium"
-                                                                >
-                                                            <MessageCircle className="w-4 h-4" />
-                                                            <span>Start Consultation</span>
-                                                        </button>
                                                             </>
                                                         )}
                                                     </div>
@@ -734,13 +665,12 @@ const DoctorSchedule = () => {
                             </div>
                         )}
                     </Card>
-                </div>
             </div>
 
             {/* Accept Confirmation Modal */}
             {showAcceptModal && selectedAppointment && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto overflow-x-hidden p-6 sm:p-8">
                         <div className="text-center">
                             <div className="mx-auto w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center mb-4">
                                 <ThumbsUp className="w-10 h-10 text-pink-600" />
@@ -801,8 +731,8 @@ const DoctorSchedule = () => {
 
             {/* Reject Confirmation Modal */}
             {showRejectModal && selectedAppointment && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto overflow-x-hidden p-6 sm:p-8">
                         <div className="text-center">
                             <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-4">
                                 <ThumbsDown className="w-10 h-10 text-red-600" />
@@ -816,27 +746,27 @@ const DoctorSchedule = () => {
 
                             <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
                                 <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Patient:</span>
-                                        <span className="font-semibold text-gray-900">{selectedAppointment.patient}</span>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-600 flex-shrink-0">Patient:</span>
+                                        <span className="font-semibold text-gray-900 text-right break-words">{selectedAppointment.patient}</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Date:</span>
-                                        <span className="font-semibold text-gray-900">{selectedAppointment.date}</span>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-600 flex-shrink-0">Date:</span>
+                                        <span className="font-semibold text-gray-900 text-right break-words">{selectedAppointment.date}</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Time:</span>
-                                        <span className="font-semibold text-gray-900">{selectedAppointment.time}</span>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-600 flex-shrink-0">Time:</span>
+                                        <span className="font-semibold text-gray-900 text-right break-words">{selectedAppointment.time}</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Type:</span>
-                                        <span className="font-semibold text-gray-900">{selectedAppointment.type}</span>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-600 flex-shrink-0">Type:</span>
+                                        <span className="font-semibold text-gray-900 text-right break-words">{selectedAppointment.type}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg mb-6 text-left">
-                                <p className="text-sm text-red-800">
+                                <p className="text-sm text-red-800 break-words">
                                     <strong>Warning:</strong> Rejecting this appointment will cancel it and notify the patient. This action cannot be undone.
                                 </p>
                             </div>
@@ -863,8 +793,8 @@ const DoctorSchedule = () => {
 
             {/* Success Modal */}
             {showSuccessModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-scale-in">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-6 animate-scale-in">
                         <div className="text-center">
                             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                                 <CheckCircle className="w-10 h-10 text-green-500" />

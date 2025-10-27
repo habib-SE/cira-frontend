@@ -7,19 +7,7 @@ const Doctors = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-
-    
     const [isContentLoading, setIsContentLoading] = useState(false);
-    
-    const handleRefreshContent = () => {
-        setIsRefreshing(true);
-        setIsContentLoading(true);
-        setTimeout(() => {
-            setIsRefreshing(false);
-            setIsContentLoading(false);
-        }, 1500);
-    };
 
     
 
@@ -541,17 +529,7 @@ const Doctors = () => {
 
             {/* Main Content Area with Loader */}
             <div className="relative min-h-[600px]">
-                {/* Content Loader */}
-                {isRefreshing && (
-                    <div className="absolute inset-0 flex items-start justify-center z-50 pt-32">
-                        <div className="flex flex-col items-center justify-center space-y-4">
-                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-500"></div>
-                            <p className="text-gray-600 font-medium">Loading content...</p>
-                        </div>
-                    </div>
-                )}
-                
-                <div className={`space-y-6 transition-opacity duration-300 ${isRefreshing ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                <div className="space-y-6">
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="p-4">

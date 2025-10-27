@@ -9,7 +9,6 @@ import {
     Mail, 
     MapPin,
     FileText,
-    MessageCircle,
     Video,
     Camera,
     Download,
@@ -414,14 +413,6 @@ const AppointmentDetail = () => {
                     </p>
                 </div>
                 
-                {/* Action Button */}
-                <div className="flex justify-start">
-                    <button className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors text-sm sm:text-base">
-                        <MessageCircle className="w-4 h-4" />
-                        <span className="hidden sm:inline">Start Consultation</span>
-                        <span className="sm:hidden">Start</span>
-                    </button>
-                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">

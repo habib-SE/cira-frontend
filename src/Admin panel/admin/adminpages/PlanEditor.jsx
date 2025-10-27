@@ -54,7 +54,7 @@ const PlanEditor = ({ mode = 'create' }) => {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => navigate('/admin/plans')} className="px-4 py-2 border rounded-lg"><X className="w-4 h-4" /></button>
-          <button onClick={onSave} className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600"><Save className="w-4 h-4 mr-2 inline" /> Save</button>
+          <button onClick={onSave} className="px-4 py-2 bg-pink-400 text-white rounded-lg hover:bg-pink-500"><Save className="w-4 h-4 mr-2 inline" /> Save</button>
         </div>
       </div>
 

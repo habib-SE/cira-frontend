@@ -10,12 +10,15 @@ import {
     Video,
     Phone,
     CheckCircle,
-    AlertCircle
+    AlertCircle,
+    X
 } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 
 const CreateAppointment = () => {
     const navigate = useNavigate();
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
     const [formData, setFormData] = useState({
         patient: '',
         date: new Date().toISOString().split('T')[0],
@@ -128,7 +131,9 @@ const CreateAppointment = () => {
         } catch (error) {
             console.error('Error creating appointment:', error);
             setIsSubmitting(false);
-            alert('Failed to create appointment. Please try again.');
+            setToastMessage('Failed to create appointment. Please try again.');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 4000);
         }
     };
 
@@ -142,7 +147,8 @@ const CreateAppointment = () => {
     };
 
     return (
-        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
+        <div className="min-h-screen overflow-x-hidden">
+            <div className="p-2 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 max-w-full">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -161,9 +167,9 @@ const CreateAppointment = () => {
 
             {/* Form */}
             <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                     {/* Main Form Content */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="lg:col-span-2 space-y-4 sm:space-y-6 min-w-0">
                         {/* Patient Information */}
                         <Card className="p-4 sm:p-6">
                             <div className="flex items-center space-x-3 mb-6">
@@ -367,7 +373,7 @@ const CreateAppointment = () => {
                     </div>
 
                     {/* Sidebar - Quick Info */}
-                    <div className="lg:col-span-1 space-y-6">
+                    <div className="lg:col-span-1 space-y-4 sm:space-y-6 min-w-0">
                         <Card className="p-4 sm:p-6">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Info</h3>
                             <div className="space-y-4">
@@ -473,30 +479,31 @@ const CreateAppointment = () => {
 
             {/* Confirmation Modal */}
             {showConfirmModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
-                                    <AlertCircle className="w-6 h-6 text-pink-600" />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-900">Confirm Appointment</h2>
-                                    <p className="text-sm text-gray-600">Please review the details below</p>
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm sm:max-w-md max-h-[95vh] overflow-y-auto overflow-x-hidden mx-2 sm:mx-4">
+                        <div className="p-3 sm:p-4">
+                            <div className="flex items-center justify-between mb-4 min-w-0">
+                                <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-pink-600" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <h2 className="text-base sm:text-lg font-bold text-gray-900 truncate">Confirm Appointment</h2>
+                                        <p className="text-xs sm:text-sm text-gray-600 truncate">Please review the details below</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="space-y-4 mb-6">
-                            <div className="bg-gray-50 rounded-xl p-4">
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600">Patient:</span>
-                                        <span className="text-sm font-semibold text-gray-900">{formData.patient}</span>
+                        <div className="space-y-3 mb-4">
+                            <div className="bg-gray-50 rounded-lg p-3">
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between min-w-0">
+                                        <span className="text-xs sm:text-sm text-gray-600 flex-shrink-0">Patient:</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-900 truncate ml-2">{formData.patient}</span>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600">Date:</span>
-                                        <span className="text-sm font-semibold text-gray-900">
+                                    <div className="flex items-center justify-between min-w-0">
+                                        <span className="text-xs sm:text-sm text-gray-600 flex-shrink-0">Date:</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-900 truncate ml-2">
                                             {new Date(formData.date).toLocaleDateString('en-US', { 
                                                 weekday: 'short', 
                                                 year: 'numeric', 
@@ -505,50 +512,51 @@ const CreateAppointment = () => {
                                             })}
                                         </span>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600">Time:</span>
-                                        <span className="text-sm font-semibold text-gray-900">{formData.time}</span>
+                                    <div className="flex items-center justify-between min-w-0">
+                                        <span className="text-xs sm:text-sm text-gray-600 flex-shrink-0">Time:</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-900 truncate ml-2">{formData.time}</span>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600">Type:</span>
-                                        <span className="text-sm font-semibold text-gray-900">{formData.type}</span>
+                                    <div className="flex items-center justify-between min-w-0">
+                                        <span className="text-xs sm:text-sm text-gray-600 flex-shrink-0">Type:</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-900 truncate ml-2">{formData.type}</span>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600">Mode:</span>
-                                        <span className="text-sm font-semibold text-gray-900 capitalize">{formData.mode}</span>
+                                    <div className="flex items-center justify-between min-w-0">
+                                        <span className="text-xs sm:text-sm text-gray-600 flex-shrink-0">Mode:</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-900 truncate ml-2 capitalize">{formData.mode}</span>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600">Duration:</span>
-                                        <span className="text-sm font-semibold text-gray-900">{formData.duration}</span>
+                                    <div className="flex items-center justify-between min-w-0">
+                                        <span className="text-xs sm:text-sm text-gray-600 flex-shrink-0">Duration:</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-900 truncate ml-2">{formData.duration}</span>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600">Status:</span>
-                                        <span className="text-sm font-semibold text-gray-900 capitalize">{formData.status}</span>
+                                    <div className="flex items-center justify-between min-w-0">
+                                        <span className="text-xs sm:text-sm text-gray-600 flex-shrink-0">Status:</span>
+                                        <span className="text-xs sm:text-sm font-semibold text-gray-900 truncate ml-2 capitalize">{formData.status}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
-                                <p className="text-sm text-blue-800">
+                            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-lg">
+                                <p className="text-xs sm:text-sm text-blue-800 break-words">
                                     <strong>Note:</strong> Once confirmed, this appointment will be added to your schedule.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex space-x-3">
+                        <div className="flex flex-col gap-2 sm:gap-3">
                             <button
                                 onClick={() => setShowConfirmModal(false)}
-                                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                                className="w-full px-3 py-2 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleConfirmCreate}
-                                className="flex-1 flex items-center justify-center space-x-2 bg-pink-600 text-white py-3 px-6 rounded-xl hover:bg-pink-700 transition-colors font-medium"
+                                className="w-full flex items-center justify-center space-x-2 bg-pink-600 text-white py-2 sm:py-3 px-3 rounded-lg hover:bg-pink-700 transition-colors font-medium text-sm"
                             >
-                                <CheckCircle className="w-5 h-5" />
-                                <span>Confirm & Create</span>
+                                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                                <span className="truncate">Confirm & Create</span>
                             </button>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -556,8 +564,8 @@ const CreateAppointment = () => {
 
             {/* Success Modal */}
             {showSuccessModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8">
                         <div className="text-center">
                             <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
                                 <CheckCircle className="w-12 h-12 text-green-500" />
@@ -596,6 +604,25 @@ const CreateAppointment = () => {
                     </div>
                 </div>
             )}
+
+            {/* Toast Notification */}
+            {showToast && (
+                <div className="fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out">
+                    <div className="bg-red-50 border-l-4 border-red-500 rounded-lg shadow-lg flex items-center space-x-3 px-4 py-3 max-w-sm">
+                        <div className="flex-shrink-0">
+                            <AlertCircle className="w-5 h-5 text-red-500" />
+                        </div>
+                        <span className="text-red-700 font-medium flex-1">{toastMessage}</span>
+                        <button 
+                            onClick={() => setShowToast(false)}
+                            className="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
+            </div>
         </div>
     );
 };
