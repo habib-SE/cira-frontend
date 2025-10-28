@@ -68,6 +68,7 @@ import CompanyReports from '../Admin panel/company/companypages/CompanyReports';
 import CompanyConsultations from '../Admin panel/company/companypages/CompanyConsultations';
 import CompanyBilling from '../Admin panel/company/companypages/CompanyBilling';
 import CompanySettings from '../Admin panel/company/companypages/CompanySettings';
+import CompanyProfile from '../Admin panel/company/companypages/CompanyProfile';
 import AIReportView from '../Admin panel/doctor/doctorpages/AIReportView';
 import Earnings from '../Admin panel/doctor/doctorpages/Earnings';
 import DoctorSettings from '../Admin panel/doctor/doctorpages/DoctorSettings';
@@ -215,6 +216,7 @@ function MainRouter() {
         <Route path="consultations" element={<CompanyConsultations />} />
         <Route path="billing" element={<CompanyBilling />} />
         <Route path="settings" element={<CompanySettings />} />
+        <Route path="profile" element={<CompanyProfile />} />
       </Route>
     </Routes>
   );

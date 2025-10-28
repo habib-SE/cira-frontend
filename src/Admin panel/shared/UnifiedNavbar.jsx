@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Bell, User, Settings, LogOut, Menu, X, Search } from 'lucide-react';
@@ -17,6 +17,39 @@ const UnifiedNavbar = ({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const profileRef = useRef(null);
+  const notificationRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setIsNotificationOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleProfileSettings = () => {
+    // Navigate to profile settings page based on portal type
+    if (portalType === 'admin') {
+      navigate('/admin/profile');
+    } else if (portalType === 'company') {
+      navigate('/company/settings');
+    } else if (portalType === 'doctor') {
+      navigate('/doctor/profile');
+    } else if (portalType === 'patient') {
+      navigate('/patient/profile');
+    }
+    setIsProfileOpen(false);
+  };
 
   const handleSignOut = () => {
     logout();
@@ -238,7 +271,7 @@ const UnifiedNavbar = ({
           <ConsentIndicator />
 
           {/* Notifications */}
-          <div className="relative">
+          <div className="relative" ref={notificationRef}>
             <button
               onClick={() => setIsNotificationOpen(!isNotificationOpen)}
               className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
@@ -275,7 +308,7 @@ const UnifiedNavbar = ({
           </div>
 
           {/* User profile */}
-          <div className="relative">
+          <div className="relative" ref={profileRef}>
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
@@ -293,19 +326,30 @@ const UnifiedNavbar = ({
             {isProfileOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                 <div className="py-1">
-                  {config.userMenu.map((item, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        item.onClick();
-                        setIsProfileOpen(false);
-                      }}
-                      className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.label}</span>
-                    </button>
-                  ))}
+                  <button
+                    onClick={handleProfileSettings}
+                    className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span>Profile Settings</span>
+                  </button>
+                  {config.userMenu && config.userMenu.length > 0 && (
+                    <>
+                      {config.userMenu.map((item, index) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            item.onClick();
+                            setIsProfileOpen(false);
+                          }}
+                          className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </button>
+                      ))}
+                    </>
+                  )}
                   <div className="border-t border-gray-200 my-1" />
                   <button
                     onClick={() => {
