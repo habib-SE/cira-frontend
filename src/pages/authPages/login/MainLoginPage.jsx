@@ -24,15 +24,15 @@ const MainLoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   
-  const [selectedRole, setSelectedRole] = useState('patient');
+  const [selectedRole, setSelectedRole] = useState('user');
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
 
-  const handleSubmit = async (data) => {
+  const handleSubmit = (data) => {
     setLoginError('');
 
     try {
-      const result = await login(data.email, data.password, selectedRole);
+      const result = login(data.email, data.password, selectedRole);
       
       if (!result.success) {
         setLoginError(result.message);
@@ -63,9 +63,9 @@ const MainLoginPage = () => {
             <p className="text-sm font-semibold text-blue-800 mb-2">Demo Credentials:</p>
             <div className="text-xs text-blue-700 space-y-1">
               <p><strong>Admin:</strong> admin@cira.com / admin123</p>
-              <p><strong>Patient:</strong> patient@cira.com / patient123</p>
+              <p><strong>User:</strong> user@cira.com / user123</p>
               <p><strong>Doctor:</strong> doctor@cira.com / doctor123</p>
-              <p><strong>Company:</strong> company@example.com / password</p>
+              <p><strong>Company:</strong> company@cira.com / company123</p>
             </div>
           </div>
 
@@ -75,33 +75,21 @@ const MainLoginPage = () => {
             </div>
           )}
 
-          <FormicaValidatedForm
-            schema={authFormicaSchemas.login}
-            onSubmit={handleSubmit}
-            onError={handleError}
-            defaultValues={{
-              email: '',
-              password: '',
-              role: 'patient'
-            }}
-          >
-            {({ 
-              register, 
-              errors, 
-              isSubmitting, 
-              isValid, 
-              getFieldProps, 
-              getFieldError, 
-              hasFieldError 
-            }) => (
-              <div className="space-y-5">
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const email = formData.get('email') || e.target.email.value;
+            const password = formData.get('password') || e.target.password.value;
+            handleSubmit({ email, password });
+          }}>
+            <div className="space-y-5">
                 {/* Role Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     I am a
                   </label>
                   <div className="grid grid-cols-2 gap-3">
-                    {['patient', 'doctor', 'admin', 'company'].map((role) => (
+                    {['user', 'doctor', 'admin', 'company'].map((role) => (
                       <button
                         key={role}
                         type="button"
@@ -128,20 +116,16 @@ const MainLoginPage = () => {
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                     Email Address
                   </label>
-                  <div className="form-input-with-icon">
-                    <EnvelopeIcon className="icon-left h-5 w-5 text-gray-400" />
-                    <FormicaFormField
-                      label=""
+                  <div className="relative">
+                    <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      id="email"
                       name="email"
                       type="email"
-                      register={register}
-                      errors={errors}
-                      getFieldProps={getFieldProps}
-                      getFieldError={getFieldError}
-                      hasFieldError={hasFieldError}
+                      defaultValue={selectedRole === 'user' ? 'user@cira.com' : selectedRole === 'admin' ? 'admin@cira.com' : selectedRole === 'doctor' ? 'doctor@cira.com' : 'company@cira.com'}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="you@example.com"
                       required
-                      className="w-full"
                     />
                   </div>
                 </div>
@@ -151,25 +135,21 @@ const MainLoginPage = () => {
                   <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                     Password
                   </label>
-                  <div className="form-input-with-icon">
-                    <LockClosedIcon className="icon-left h-5 w-5 text-gray-400" />
-                    <FormicaFormField
-                      label=""
+                  <div className="relative">
+                    <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      id="password"
                       name="password"
                       type={showPassword ? 'text' : 'password'}
-                      register={register}
-                      errors={errors}
-                      getFieldProps={getFieldProps}
-                      getFieldError={getFieldError}
-                      hasFieldError={hasFieldError}
+                      defaultValue={selectedRole === 'user' ? 'user123' : selectedRole === 'admin' ? 'admin123' : selectedRole === 'doctor' ? 'doctor123' : 'company123'}
+                      className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter your password"
                       required
-                      className="w-full"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="icon-right p-1 hover:bg-gray-100 rounded transition-colors text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded transition-colors text-gray-400 hover:text-gray-600"
                     >
                       {showPassword ? (
                         <EyeSlashIcon className="h-5 w-5" />
@@ -204,25 +184,12 @@ const MainLoginPage = () => {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isSubmitting || !isValid}
-                  className={`w-full py-3 px-4 border border-transparent rounded-lg text-white font-medium ${
-                    isSubmitting || !isValid
-                      ? 'bg-blue-400 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-                  } transition-colors`}
+                  className="w-full py-3 px-4 border border-transparent rounded-lg text-white font-medium bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
                 >
-                  {isSubmitting ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Signing in...
-                    </div>
-                  ) : (
-                    'Sign in'
-                  )}
+                  Sign in
                 </button>
               </div>
-            )}
-          </FormicaValidatedForm>
+          </form>
 
           {/* Register Link */}
           <div className="mt-6 text-center">

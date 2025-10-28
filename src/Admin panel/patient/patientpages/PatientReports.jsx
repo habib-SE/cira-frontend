@@ -1,7 +1,5 @@
-import { AppBar, Box, Button, Card, CardContent, Container, Grid, IconButton, Paper, Toolbar, Typography, useTheme, styled } from '@mui/material';
 import { useState, useMemo } from 'react';
-import { DataGrid } from '@mui/x-data-grid';
-import { FileText, Download, Upload, Search, Filter, Eye, Bot, Calendar, Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { Download, Upload, Search, Filter, Eye, Bot, Calendar, Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const PatientReports = () => {

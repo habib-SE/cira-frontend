@@ -55,8 +55,8 @@ const UnifiedSidebar = ({
         return [
           { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/company' },
           { id: 'users', label: 'Users', icon: Users, path: '/company/users' },
-          { id: 'reports', label: 'Reports', icon: FileText, path: '/company/reports' },
-          { id: 'consultations', label: 'Consultations', icon: Stethoscope, path: '/company/consultations' },
+          // { id: 'reports', label: 'Reports', icon: FileText, path: '/company/reports' },
+          // { id: 'consultations', label: 'Consultations', icon: Stethoscope, path: '/company/consultations' },
           { id: 'billing', label: 'Billing & Subscription', icon: CreditCard, path: '/company/billing' },
           { id: 'settings', label: 'Settings', icon: Settings, path: '/company/settings' },
         ];
