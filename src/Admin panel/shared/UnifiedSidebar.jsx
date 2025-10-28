@@ -73,18 +73,18 @@ const UnifiedSidebar = ({
           { id: 'payouts', label: 'Payouts', icon: Wallet, path: '/doctor/payouts' },
           { id: 'settings', label: 'Settings', icon: Settings, path: '/doctor/settings' },
         ];
-      case 'patient':
+      case 'user':
         return [
-          { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/patient' },
-          { id: 'ai-nurse', label: 'AI Nurse', icon: Bot, path: '/patient/ai' },
-          { id: 'reports', label: 'Reports', icon: FileText, path: '/patient/reports' },
-          { id: 'book-doctor', label: 'Book Doctor', icon: Stethoscope, path: '/patient/book-doctor' },
-          { id: 'referral-checkout', label: 'Referral Checkout', icon: LogOut, path: '/patient/Referralcheckout' },
-          { id: 'profile', label: 'Profile', icon: UserPen, path: '/patient/profile' },
-          { id: 'history', label: 'History', icon: History, path: '/patient/history' },
-          { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, path: '/patient/subscriptions' },
-          { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/patient/messages' },
-          { id: 'settings', label: 'Settings', icon: Settings, path: '/patient/settings' },
+          { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/user' },
+          { id: 'ai-nurse', label: 'AI Nurse', icon: Bot, path: '/user/ai' },
+          { id: 'reports', label: 'Reports', icon: FileText, path: '/user/reports' },
+          { id: 'book-doctor', label: 'Book Doctor', icon: Stethoscope, path: '/user/book-doctor' },
+          { id: 'referral-checkout', label: 'Referral Checkout', icon: LogOut, path: '/user/Referralcheckout' },
+          { id: 'profile', label: 'Profile', icon: UserPen, path: '/user/profile' },
+          { id: 'history', label: 'History', icon: History, path: '/user/history' },
+          { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, path: '/user/subscriptions' },
+          { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/user/messages' },
+          { id: 'settings', label: 'Settings', icon: Settings, path: '/user/settings' },
         ];
       default:
         return [];
@@ -109,7 +109,7 @@ const UnifiedSidebar = ({
     
     // For non-base paths, only match if it's a sub-route
     // Prevent /patient from matching /patient/something
-    const basePaths = ['/admin', '/doctor', '/patient', '/company'];
+    const basePaths = ['/admin', '/doctor', '/user', '/company'];
     if (basePaths.includes(path)) {
       return location.pathname === path;
     }

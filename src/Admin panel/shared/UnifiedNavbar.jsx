@@ -45,8 +45,8 @@ const UnifiedNavbar = ({
       navigate('/company/settings');
     } else if (portalType === 'doctor') {
       navigate('/doctor/profile');
-    } else if (portalType === 'patient') {
-      navigate('/patient/profile');
+    } else if (portalType === 'user') {
+      navigate('/user/profile');
     }
     setIsProfileOpen(false);
   };
@@ -146,9 +146,9 @@ const UnifiedNavbar = ({
       // For doctor portal
       navigate('/doctor/appointments');
       setSearchTerm('');
-    } else if (portalType === 'patient') {
+    } else if (portalType === 'user') {
       // For patient portal
-      navigate('/patient/my-doctors');
+      navigate('/user/my-doctors');
       setSearchTerm('');
     }
   };
@@ -190,7 +190,7 @@ const UnifiedNavbar = ({
           showMobileMenu: true,
           padding: 'px-3 sm:px-4 py-2 sm:py-3'
         };
-      case 'patient':
+      case 'user':
         return {
           notifications: [
             { id: 1, title: 'Appointment confirmed', time: '1 hour ago', type: 'success' },
@@ -201,7 +201,7 @@ const UnifiedNavbar = ({
             { label: 'Profile', icon: User, onClick: () => console.log('Profile clicked') },
             { label: 'Settings', icon: Settings, onClick: () => console.log('Settings clicked') },
           ],
-          displayName: 'Patient',
+          displayName: 'user',
           showMobileMenu: false, // Patient sidebar is persistent on mobile
           padding: 'px-4 py-3'
         };

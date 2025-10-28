@@ -8,10 +8,10 @@ const PatientLayout = () => {
             Sidebar={UnifiedSidebar}
             Navbar={UnifiedNavbar}
             sidebarProps={{
-                portalType: "patient"
+                portalType: "user"
             }}
             navbarProps={{
-                portalType: "patient",
+                portalType: "user",
                 showSearch: false
             }}
             sidebarBehavior="persistent"
