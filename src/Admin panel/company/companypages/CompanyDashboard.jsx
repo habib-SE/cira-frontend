@@ -11,7 +11,8 @@ import {
   Settings,
   RefreshCw,
   Download,
-  Plus
+  Plus,
+  Stethoscope
 } from 'lucide-react';
 
 const CompanyDashboard = () => {
@@ -127,6 +128,46 @@ const CompanyDashboard = () => {
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+        <div className="text-sm font-semibold text-gray-500 mb-3">
+          • Quick actions:
+        </div>
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <button
+            onClick={() => navigate('/company/appointments/new')}
+            className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            New Appointment
+          </button>
+          <button
+            onClick={() => navigate('/company/users/new')}
+            className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+          >
+            <Users className="w-4 h-4" />
+            New User
+          </button>
+          <button
+            onClick={() => navigate('/company/reports')}
+            className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+          >
+            <FileText className="w-4 h-4" />
+            View Reports
+          </button>
+          <button
+            onClick={() => navigate('/company/billing')}
+            className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+          >
+            <CreditCard className="w-4 h-4" />
+            Billing
+          </button>
+        </div>
+        <div className="mt-3 text-xs text-gray-400">
+          (Company)
         </div>
       </div>
 

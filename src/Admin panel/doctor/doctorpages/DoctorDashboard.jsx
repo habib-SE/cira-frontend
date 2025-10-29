@@ -5,13 +5,14 @@ import {
     Users, 
     DollarSign, 
     TrendingUp,
-    TrendingDown,
     Phone,
     Video,
     MapPin,
     CheckCircle,
     AlertCircle,
-    Clock as ClockIcon
+    Plus,
+    Calendar as CalendarIcon,
+    Stethoscope
 } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 
@@ -159,6 +160,46 @@ const DoctorDashboard = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Quick Actions */}
+            <Card className="p-4 sm:p-6">
+                <div className="text-sm font-semibold text-gray-500 mb-3">
+                    • Quick actions:
+                </div>
+                <div className="flex flex-wrap gap-2 sm:gap-3">
+                    <button
+                        onClick={() => navigate('/doctor/appointments/new')}
+                        className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+                    >
+                        <Plus className="w-4 h-4" />
+                        New Appointment
+                    </button>
+                    <button
+                        onClick={() => navigate('/doctor/availability')}
+                        className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+                    >
+                        <Clock className="w-4 h-4" />
+                        Update Availability
+                    </button>
+                    <button
+                        onClick={() => navigate('/doctor/appointments')}
+                        className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+                    >
+                        <CalendarIcon className="w-4 h-4" />
+                        View Appointments
+                    </button>
+                    <button
+                        onClick={() => navigate('/doctor/earnings')}
+                        className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+                    >
+                        <DollarSign className="w-4 h-4" />
+                        View Earnings
+                    </button>
+                </div>
+                <div className="mt-3 text-xs text-gray-400">
+                    (Doctor)
+                </div>
+            </Card>
 
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">

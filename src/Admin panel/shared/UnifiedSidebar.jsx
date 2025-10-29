@@ -13,16 +13,15 @@ import {
   TrendingUp,
   User,
   DollarSign,
-  LogIn,
   Clipboard,
   MessageSquare,
-  Heart,
   Bot,
-  LogOut,
   UserPen,
-  History,
   Clock,
   Wallet,
+  CheckCircle,
+  Shield,
+  Receipt,
   BarChart3
 } from 'lucide-react';
 import logo from '../../assets/logo.png';
@@ -44,47 +43,47 @@ const UnifiedSidebar = ({
           { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/admin' },
           { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
           { id: 'doctors', label: 'Doctors', icon: Stethoscope, path: '/admin/doctors' },
-          { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/admin/appointments' },
-          { id: 'reports', label: 'Reports', icon: FileText, path: '/admin/reports' },
+          { id: 'approvals', label: 'Approvals', icon: CheckCircle, path: '/admin/approvals' },
+          { id: 'compliance', label: 'Compliance', icon: Shield, path: '/admin/compliance' },
           { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
-          { id: 'plans', label: 'Subscriptions', icon: CreditCard, path: '/admin/plans' },
-          { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
+          { id: 'payouts', label: 'Payouts', icon: Receipt, path: '/admin/payouts' },
+          { id: 'reports', label: 'Reports', icon: FileText, path: '/admin/reports' },
           { id: 'referrals', label: 'Referrals', icon: TrendingUp, path: '/admin/referrals' },
+          { id: 'subscriptions', label: 'Subscriptions', icon: User, path: '/admin/plans' },
+          { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/admin/appointments' },
+          { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
+          { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
         ];
       case 'company':
         return [
           { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/company' },
           { id: 'users', label: 'Users', icon: Users, path: '/company/users' },
-          // { id: 'reports', label: 'Reports', icon: FileText, path: '/company/reports' },
-          // { id: 'consultations', label: 'Consultations', icon: Stethoscope, path: '/company/consultations' },
+          { id: 'reports', label: 'Reports', icon: FileText, path: '/company/reports' },
+          { id: 'consultations', label: 'Consultations', icon: Stethoscope, path: '/company/consultations' },
           { id: 'billing', label: 'Billing & Subscription', icon: CreditCard, path: '/company/billing' },
           { id: 'settings', label: 'Settings', icon: Settings, path: '/company/settings' },
         ];
       case 'doctor':
         return [
-          { id: 'login', label: 'Login/Registration', icon: LogIn, path: '/doctor/login' },
           { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/doctor' },
-          { id: 'profile', label: 'Profile', icon: User, path: '/doctor/profile' },
+          { id: 'profile', label: 'Profile', icon: User, path: '/doctor/my-profile' },
           { id: 'availability', label: 'Availability', icon: Clock, path: '/doctor/availability' },
           { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/doctor/appointments' },
           { id: 'patient-reports', label: 'Patient Reports', icon: Clipboard, path: '/doctor/patient-reports' },
           { id: 'messaging', label: 'Messaging', icon: MessageSquare, path: '/doctor/messages' },
           { id: 'earnings', label: 'Earnings', icon: DollarSign, path: '/doctor/earnings' },
           { id: 'payouts', label: 'Payouts', icon: Wallet, path: '/doctor/payouts' },
-          { id: 'settings', label: 'Settings', icon: Settings, path: '/doctor/settings' },
         ];
       case 'patient':
         return [
-          { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/patient' },
-          { id: 'ai-nurse', label: 'AI Nurse', icon: Bot, path: '/patient/ai' },
-          { id: 'reports', label: 'Reports', icon: FileText, path: '/patient/reports' },
-          { id: 'book-doctor', label: 'Book Doctor', icon: Stethoscope, path: '/patient/book-doctor' },
-          { id: 'referral-checkout', label: 'Referral Checkout', icon: LogOut, path: '/patient/Referralcheckout' },
-          { id: 'profile', label: 'Profile', icon: UserPen, path: '/patient/profile' },
-          { id: 'history', label: 'History', icon: History, path: '/patient/history' },
-          { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, path: '/patient/subscriptions' },
-          { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/patient/messages' },
-          { id: 'settings', label: 'Settings', icon: Settings, path: '/patient/settings' },
+          { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/user' },
+          { id: 'ai-nurse', label: 'AI Nurse', icon: Bot, path: '/user/ai' },
+          { id: 'reports', label: 'Reports', icon: FileText, path: '/user/reports' },
+          { id: 'doctor-marketplace', label: 'Doctor Marketplace', icon: Stethoscope, path: '/user/book-doctor' },
+          { id: 'referrals', label: 'Referrals', icon: TrendingUp, path: '/user/book-doctor' },
+          { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/user/appointments' },
+          { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, path: '/user/subscriptions' },
+          { id: 'profile', label: 'Profile', icon: UserPen, path: '/user/profile' },
         ];
       default:
         return [];
@@ -101,15 +100,17 @@ const UnifiedSidebar = ({
     setIsCollapsed(!isCollapsed);
   };
 
-  const isActive = (path) => {
-    // Exact match for base paths (dashboard)
+  const isActive = (item) => {
+    const path = item.path;
+    
+    // Check if current path exactly matches the menu item path
     if (location.pathname === path) {
       return true;
     }
     
     // For non-base paths, only match if it's a sub-route
-    // Prevent /patient from matching /patient/something
-    const basePaths = ['/admin', '/doctor', '/patient', '/company'];
+    // Prevent /admin from matching /admin/users
+    const basePaths = ['/admin', '/doctor', '/user', '/company'];
     if (basePaths.includes(path)) {
       return location.pathname === path;
     }
@@ -202,7 +203,7 @@ const UnifiedSidebar = ({
         <div className="space-y-1 px-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const active = isActive(item.path);
+            const active = isActive(item);
             
             return (
               <button

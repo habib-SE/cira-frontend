@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, Plus, Search, Filter, Clock, User, Stethoscope, X, Save, Edit, Trash2, Eye, Phone, Mail, MapPin, AlertCircle, CheckCircle, FileText, TrendingUp, BarChart3, PieChart, Activity, Bell, Star, Award, Target, Zap, Users, Calendar as CalendarIcon, Clock as ClockIcon, DollarSign, MessageSquare, Video, MapPin as LocationIcon } from 'lucide-react';
 import Card from '../admincomponents/Card';
+import Breadcrumbs from '../../../components/shared/Breadcrumbs';
+import MetaChips from '../../../components/shared/MetaChips';
 
 const Appointments = () => {
     const navigate = useNavigate();
@@ -1454,12 +1456,23 @@ const Appointments = () => {
                 </Card>
             )}
 
+            {/* Breadcrumbs */}
+            {!showFormInLayout && !showEditFormInLayout && !showViewFormInLayout && (
+            <Breadcrumbs />
+            )}
+
             {/* Header - Only show when form is not visible */}
             {!showFormInLayout && !showEditFormInLayout && !showViewFormInLayout && (
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Appointments</h1>
                     <p className="text-sm sm:text-base text-gray-600">Manage patient appointments and schedules</p>
+                    <MetaChips 
+                        status={`${appointmentAnalytics.pendingAppointments} Pending`}
+                        id={`Total: ${appointmentAnalytics.totalAppointments}`}
+                        date={new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        owner="Admin"
+                    />
                 </div>
                 <div className="flex items-center flex-wrap gap-2 sm:gap-3">
                     <button 
