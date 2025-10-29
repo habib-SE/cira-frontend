@@ -695,40 +695,47 @@ const ProfileWizard = () => {
                     <p className="text-gray-600">Set up your doctor profile to start accepting appointments</p>
                 </div>
 
-                {/* Progress Steps */}
+                {/* Progress Steps - match registration style */}
                 <div className="mb-8">
-                    <div className="flex items-center justify-between space-x-4 sm:space-x-8">
+                    <div className="flex items-center justify-center gap-6 md:gap-10">
                         {steps.map((step, index) => {
-                            const Icon = step.icon;
                             const isActive = currentStep === step.id;
                             const isCompleted = currentStep > step.id;
-                            
                             return (
-                                <div key={step.id} className="flex items-center">
-                                    <div className="flex flex-col items-start">
-                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${
-                                            isCompleted 
-                                                ? 'bg-green-500 border-green-500 text-white' 
-                                                : isActive 
-                                                    ? 'bg-pink-500 border-pink-500 text-white' 
-                                                    : 'bg-white border-gray-300 text-gray-400'
-                                        }`}>
+                                <React.Fragment key={step.id}>
+                                    <div className="flex flex-col items-center">
+                                        <div
+                                            className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 shadow-lg ${
+                                                isActive
+                                                    ? 'bg-pink-500 text-white ring-4 ring-pink-200 scale-110'
+                                                    : isCompleted
+                                                    ? 'bg-green-500 text-white ring-2 ring-green-200'
+                                                    : 'bg-gray-200 text-gray-500'
+                                            }`}
+                                        >
                                             {isCompleted ? (
-                                                <CheckCircle className="h-6 w-6" />
+                                                <CheckCircle className="w-7 h-7" />
                                             ) : (
-                                                <Icon className="h-6 w-6" />
+                                                <span className="text-base">{step.id}</span>
                                             )}
                                         </div>
-                                        <div className="mt-2 text-left">
-                                            <p className={`text-sm font-medium ${
-                                                isActive ? 'text-pink-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
+                                        <div className="mt-3 text-center">
+                                            <p className={`text-sm font-semibold ${
+                                                currentStep >= step.id ? 'text-pink-600' : 'text-gray-500'
                                             }`}>
                                                 {step.title}
                                             </p>
                                             <p className="text-xs text-gray-500">{step.description}</p>
                                         </div>
                                     </div>
-                                </div>
+                                    {index < steps.length - 1 && (
+                                        <div
+                                            className={`w-10 md:w-16 h-0.5 mx-2 transition-all duration-300 rounded-full ${
+                                                currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'
+                                            }`}
+                                        />
+                                    )}
+                                </React.Fragment>
                             );
                         })}
                     </div>
