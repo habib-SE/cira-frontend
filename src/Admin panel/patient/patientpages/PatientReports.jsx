@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Download, Upload, Search, Filter, Eye, Bot, Calendar, Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Card } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
 
 const PatientReports = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -184,7 +186,7 @@ const PatientReports = () => {
           <div className="flex items-center justify-center">
             <button
               type="button"
-              onClick={() => navigate(`/patient/reports/${params.row.id}`)}
+              onClick={() => navigate(`/user/reports/${params.row.id}`)}
               title="View"
               className="flex items-center space-x-1 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
             >
