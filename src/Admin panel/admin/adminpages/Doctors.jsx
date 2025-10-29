@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Users, Clock, Award, X, Star, Calendar, Edit } from 'lucide-react';
 import Card from '../admincomponents/Card';
+import Breadcrumbs from '../../../components/shared/Breadcrumbs';
+import MetaChips from '../../../components/shared/MetaChips';
 
 const Doctors = () => {
     const navigate = useNavigate();
@@ -519,11 +521,20 @@ const Doctors = () => {
                 </Card>
             ) : (
                 <>
+            {/* Breadcrumbs */}
+            <Breadcrumbs />
+            
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Doctors</h1>
                     <p className="text-sm sm:text-base text-gray-600">Manage doctor verification and platform access</p>
+                    <MetaChips 
+                        status={`${approvedCount} Active`}
+                        id={`Total: ${totalDoctors}`}
+                        date={new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        owner="Admin"
+                    />
                 </div>
             </div>
 

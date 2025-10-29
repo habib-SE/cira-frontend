@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { Users, Calendar, Activity, Stethoscope, TrendingUp, Clock, CheckCircle, AlertCircle, DollarSign } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Calendar, Stethoscope, TrendingUp, Clock, CheckCircle, AlertCircle, DollarSign, Plus } from 'lucide-react';
 import Card from '../admincomponents/Card';
 import Chart from '../admincomponents/Chart';
+import Breadcrumbs from '../../../components/shared/Breadcrumbs';
+import MetaChips from '../../../components/shared/MetaChips';
 
 const Dashboard = () => {
+    const navigate = useNavigate();
+    
     // Sample data for charts
     const patientData = [
         { name: 'Jan', value: 120 },
@@ -93,12 +98,46 @@ const Dashboard = () => {
 
     return (
         <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
+            {/* Breadcrumbs */}
+            <Breadcrumbs />
+            
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
                     <p className="text-sm sm:text-base text-gray-600">Welcome back! Here's what's happening with your platform.</p>
+                    <MetaChips 
+                        status="Active"
+                        id="Admin Dashboard"
+                        date={new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        owner="System"
+                    />
                 </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="inline-block w-auto">
+                <Card className="p-4 sm:p-6">
+                    <div className="text-sm font-semibold text-gray-500 mb-3">
+                        • Quick actions:
+                    </div>
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
+                        <button
+                            onClick={() => navigate('/admin/appointments/add')}
+                            className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+                        >
+                            <Plus className="w-4 h-4" />
+                            New Appointment
+                        </button>
+                        <button
+                            onClick={() => navigate('/admin/doctors')}
+                            className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+                        >
+                            <Stethoscope className="w-4 h-4" />
+                            Manage Doctors
+                        </button>
+                    </div>
+                </Card>
             </div>
 
             {/* Main Content Area */}

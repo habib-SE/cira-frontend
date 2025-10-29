@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Users as UsersIcon, Search, Filter, Eye, Ban, Trash2, MoreVertical, UserCheck, UserX, UserPlus, X, CheckCircle, AlertCircle, EyeOff, Edit } from 'lucide-react';
 import Card from '../admincomponents/Card';
+import Breadcrumbs from '../../../components/shared/Breadcrumbs';
+import MetaChips from '../../../components/shared/MetaChips';
 
 const Users = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('');
-    const [filterRole, setFilterRole] = useState('');
     const [_isContentLoading, _setIsContentLoading] = useState(false);
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -364,26 +364,39 @@ const Users = () => {
 
     // Filter users
     const filteredUsers = users.filter(user => {
+        if (!searchTerm) return true;
+        
         const searchLower = searchTerm.toLowerCase();
         
-        // Check if search term starts with "dr" or "dr."
-        const isDoctorSearch = searchLower.startsWith('dr') || searchLower.startsWith('dr.');
+        // Handle special search patterns
+        if (searchLower.startsWith('role:')) {
+            const roleSearch = searchLower.replace('role:', '').trim();
+            return user.role.toLowerCase().includes(roleSearch);
+        }
         
-        // If searching for doctor, only show Doctor role users
-        // If not searching for doctor, only show non-Doctor role users
-        const roleMatchesSearch = searchTerm === '' || !isDoctorSearch || user.role === 'Doctor';
-        const nonDoctorMatchesSearch = searchTerm === '' || isDoctorSearch || user.role !== 'Doctor';
+        if (searchLower.startsWith('dept:') || searchLower.startsWith('department:')) {
+            const deptSearch = searchLower.replace(/^(dept:|department:)/, '').trim();
+            return user.department && user.department.toLowerCase().includes(deptSearch);
+        }
         
-        const matchesSearch = searchTerm === '' || 
-            (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.status.toLowerCase().includes(searchTerm.toLowerCase())) &&
-            roleMatchesSearch && nonDoctorMatchesSearch;
+        if (searchLower.startsWith('status:')) {
+            const statusSearch = searchLower.replace('status:', '').trim();
+            return user.status.toLowerCase().includes(statusSearch);
+        }
         
-        const matchesStatus = filterStatus === '' || user.status === filterStatus;
-        const matchesRole = filterRole === '' || user.role === filterRole;
+        if (searchLower.startsWith('id:')) {
+            const idSearch = searchLower.replace('id:', '').trim();
+            const userId = `CIRA-${String(user.id).padStart(4, '0')}`;
+            return userId.toLowerCase().includes(idSearch);
+        }
         
-        return matchesSearch && matchesStatus && matchesRole;
+        // Regular search across all fields
+        return user.name.toLowerCase().includes(searchLower) ||
+               user.email.toLowerCase().includes(searchLower) ||
+               user.status.toLowerCase().includes(searchLower) ||
+               user.role.toLowerCase().includes(searchLower) ||
+               (user.department && user.department.toLowerCase().includes(searchLower)) ||
+               `CIRA-${String(user.id).padStart(4, '0')}`.toLowerCase().includes(searchLower);
     });
 
     // Calculate statistics
@@ -1014,11 +1027,20 @@ const Users = () => {
                 </Card>
             ) : (
                 <>
+            {/* Breadcrumbs */}
+            <Breadcrumbs />
+            
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Users</h1>
                     <p className="text-gray-600">Manage all platform users and their access</p>
+                    <MetaChips 
+                        status="Active" 
+                        id={`Total: ${totalUsers}`}
+                        date={new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        owner="Admin"
+                    />
                 </div>
                 <button
                     onClick={handleCreateUser}
@@ -1087,50 +1109,25 @@ const Users = () => {
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search users by name, email, or status..."
+                            placeholder="Search by name, email, ID, role, department, or status..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                         />
                     </div>
                     
-                    {/* Filter Row */}
-                    <div className="flex flex-wrap items-center gap-3">
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
-                        >
-                            <option value="">All Status</option>
-                            <option value="Active">Active</option>
-                            <option value="Suspended">Suspended</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
-                        <select
-                            value={filterRole}
-                            onChange={(e) => setFilterRole(e.target.value)}
-                            className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
-                        >
-                            <option value="">All Roles</option>
-                            <option value="User">User</option>
-                        </select>
-                        
-                        {/* Clear Filters Button */}
-                        {(searchTerm || filterStatus || filterRole) && (
+                    {/* Clear Search Button */}
+                    {searchTerm && (
+                        <div className="flex justify-end">
                             <button
-                                onClick={() => {
-                                    setSearchTerm('');
-                                    setFilterStatus('');
-                                    setFilterRole('');
-                                }}
+                                onClick={() => setSearchTerm('')}
                                 className="px-4 py-2 text-pink-600 hover:bg-pink-50 rounded-xl transition-all duration-300 flex items-center space-x-2 border border-pink-200 hover:border-pink-300 hover:shadow-lg font-medium text-sm"
                             >
                                 <Filter className="w-4 h-4" />
-                                <span>Clear All</span>
+                                <span>Clear Search</span>
                             </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </Card>
 
@@ -1140,6 +1137,9 @@ const Users = () => {
                     <table className="w-full">
                         <thead className="bg-gray-50">
                             <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    ID
+                                </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Name
                                 </th>
@@ -1163,6 +1163,9 @@ const Users = () => {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {filteredUsers.map((user) => (
                                 <tr key={user.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-mono text-gray-600 font-medium">CIRA-{String(user.id).padStart(4, '0')}</div>
+                                    </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-gray-900">{user.name}</div>
                                     </td>
@@ -1239,8 +1242,8 @@ const Users = () => {
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-2">No users found</h3>
                             <p className="text-gray-600">
-                                {searchTerm || filterStatus || filterRole
-                                    ? 'No users match your current filters.'
+                                {searchTerm
+                                    ? 'No users match your search criteria.'
                                     : 'No users have been registered yet.'
                                 }
                             </p>
