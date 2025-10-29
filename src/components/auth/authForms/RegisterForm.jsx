@@ -39,7 +39,7 @@ const RegisterForm = ({
         confirmPassword: '',
         role: allowedRoles[0],
         phone: '',
-        dateOfBirth: '',
+        // dateOfBirth: '',
         terms: false,
         ...defaultValues
       }}
@@ -152,7 +152,7 @@ const RegisterForm = ({
           )}
 
           {/* Date of Birth Field */}
-          {requireDateOfBirth && (
+          {/* {requireDateOfBirth && (
             <div className="auth-field">
               <Field
                 label="Date of Birth"
@@ -162,10 +162,10 @@ const RegisterForm = ({
                 className="auth-input"
               />
             </div>
-          )}
+          )} */}
 
           {/* Terms and Conditions */}
-          <div className="auth-field">
+          <div className="auth-field mb-4 mt-4">
             <div className="flex items-start space-x-3">
               <div className="flex items-center h-5">
                 <input

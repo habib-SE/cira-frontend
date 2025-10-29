@@ -3,87 +3,62 @@ import { useNavigate } from 'react-router-dom';
 import { 
   CreditCard, 
   Download, 
-  Calendar, 
-  DollarSign, 
-  TrendingUp,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  FileText,
   Settings,
-  RefreshCw,
   Plus,
-  Edit
+  Edit,
+  TrendingUp,
+  Calendar,
+  DollarSign,
+  CheckCircle,
+  AlertCircle,
+  X
 } from 'lucide-react';
-import { AlertModal } from '../../../components/shared';
 
 const CompanyBilling = () => {
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState('current');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [alertModal, setAlertModal] = useState({
-    isOpen: false,
-    type: 'info',
-    title: '',
-    message: '',
-    buttonText: 'OK'
-  });
+  const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
+  const [showManagePlanModal, setShowManagePlanModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [alertMessage, setAlertMessage] = useState({ show: false, type: '', message: '' });
 
-  // Mock data - replace with actual API calls
+  // Mock data
   const currentPlan = {
     name: 'Enterprise Plan',
     price: '$299',
     period: 'per month',
-    features: [
-      'Up to 500 employees',
-      'Unlimited AI consultations',
-      'Priority support',
-      'Advanced analytics',
-      'Custom integrations'
-    ],
-    renewalDate: '2024-02-15',
+    nextBilling: '2024-02-15',
     status: 'Active'
   };
+
+  const stats = [
+    { label: 'Total Spent', value: '$1,293', change: '+12%', positive: true, icon: TrendingUp },
+    { label: 'Next Billing', value: 'Feb 15', change: 'Due Soon', positive: null, icon: Calendar },
+    { label: 'Invoices', value: '12', change: 'This Year', positive: null, icon: DollarSign }
+  ];
 
   const plans = [
     {
       name: 'Starter',
       price: '$99',
       period: 'per month',
-      features: [
-        'Up to 50 employees',
-        'Basic AI consultations',
-        'Email support',
-        'Standard analytics'
-      ],
+      features: ['Up to 50 employees', 'Basic AI consultations'],
       popular: false
     },
     {
       name: 'Professional',
       price: '$199',
       period: 'per month',
-      features: [
-        'Up to 200 employees',
-        'Advanced AI consultations',
-        'Priority support',
-        'Advanced analytics',
-        'API access'
-      ],
+      features: ['Up to 200 employees', 'Advanced AI consultations'],
       popular: true
     },
     {
       name: 'Enterprise',
       price: '$299',
       period: 'per month',
-      features: [
-        'Up to 500 employees',
-        'Unlimited AI consultations',
-        'Priority support',
-        'Advanced analytics',
-        'Custom integrations',
-        'Dedicated account manager'
-      ],
-      popular: false
+      features: ['Up to 500 employees', 'Unlimited consultations'],
+      popular: false,
+      isCurrent: true
     }
   ];
 
@@ -92,411 +67,436 @@ const CompanyBilling = () => {
       id: 'INV-001',
       date: '2024-01-15',
       amount: '$299.00',
-      status: 'Paid',
-      description: 'Enterprise Plan - January 2024'
+      description: 'Enterprise Plan - January 2024',
+      status: 'Paid'
     },
     {
       id: 'INV-002',
       date: '2023-12-15',
       amount: '$299.00',
-      status: 'Paid',
-      description: 'Enterprise Plan - December 2023'
+      description: 'Enterprise Plan - December 2023',
+      status: 'Paid'
     },
     {
       id: 'INV-003',
       date: '2023-11-15',
       amount: '$199.00',
-      status: 'Paid',
-      description: 'Professional Plan - November 2023'
+      description: 'Professional Plan - November 2023',
+      status: 'Paid'
     }
   ];
 
   const paymentMethods = [
     {
-      type: 'Credit Card',
-      last4: '4242',
+      id: 1,
       brand: 'Visa',
+      last4: '4242',
       expiry: '12/25',
       isDefault: true
-    },
-    {
-      type: 'Bank Account',
-      last4: '1234',
-      brand: 'Chase',
-      expiry: null,
-      isDefault: false
     }
   ];
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Paid':
-        return 'bg-green-100 text-green-800';
-      case 'Pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Failed':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'Paid':
-        return CheckCircle;
-      case 'Pending':
-        return Clock;
-      case 'Failed':
-        return AlertCircle;
-      default:
-        return Clock;
-    }
-  };
-
-  // Handler functions
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    try {
-      // Add your refresh logic here
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      showAlert({
-        type: 'success',
-        title: 'Refreshed',
-        message: 'Billing information has been refreshed successfully.',
-        buttonText: 'OK'
-      });
-    } catch (error) {
-      showAlert({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to refresh billing information.',
-        buttonText: 'OK'
-      });
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const handleExportInvoices = () => {
-    showAlert({
-      type: 'info',
-      title: 'Export Invoices',
-      message: 'Invoice export functionality will be available in the next update.',
-      buttonText: 'Got it'
-    });
-  };
-
-  const handleUpdatePayment = () => {
-    showAlert({
-      type: 'info',
-      title: 'Update Payment Method',
-      message: 'Payment method update functionality will be available soon.',
-      buttonText: 'Got it'
-    });
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsRefreshing(false);
+    showAlert('success', 'Billing information refreshed successfully!');
   };
 
   const handleManagePlan = () => {
-    showAlert({
-      type: 'info',
-      title: 'Manage Plan',
-      message: 'Plan management functionality will be available soon.',
-      buttonText: 'Got it'
-    });
+    setShowManagePlanModal(true);
   };
 
-  const handleUpgradePlan = (planName) => {
-    showAlert({
-      type: 'info',
-      title: 'Upgrade Plan',
-      message: `Upgrade to ${planName} functionality will be available soon.`,
-      buttonText: 'Got it'
-    });
+  const handleCloseManagePlan = () => {
+    setShowManagePlanModal(false);
   };
 
   const handleAddPaymentMethod = () => {
-    showAlert({
-      type: 'info',
-      title: 'Add Payment Method',
-      message: 'Add payment method functionality will be available soon.',
-      buttonText: 'Got it'
-    });
+    setShowAddPaymentModal(true);
+  };
+
+  const handleCloseAddPayment = () => {
+    setShowAddPaymentModal(false);
+  };
+
+  const handleSelectPlan = (planName) => {
+    setSelectedPlan(planName);
+    showAlert('success', `Switching to ${planName} plan. Your subscription will be updated!`);
   };
 
   const handleDownloadInvoice = (invoiceId) => {
-    showAlert({
-      type: 'info',
-      title: 'Download Invoice',
-      message: `Download invoice ${invoiceId} functionality will be available soon.`,
-      buttonText: 'Got it'
-    });
+    showAlert('success', `Invoice ${invoiceId} downloaded successfully!`);
   };
 
-  const showAlert = (alertConfig) => {
-    setAlertModal({
-      isOpen: true,
-      ...alertConfig
-    });
+  const handleViewAllInvoices = () => {
+    showAlert('info', 'Viewing all invoices...');
   };
 
-  const closeAlert = () => {
-    setAlertModal(prev => ({
-      ...prev,
-      isOpen: false
-    }));
+  const handleEditPaymentMethod = (methodId) => {
+    showAlert('info', `Editing payment method ${methodId}...`);
+  };
+
+  const showAlert = (type, message) => {
+    setAlertMessage({ show: true, type, message });
+    setTimeout(() => {
+      setAlertMessage({ show: false, type: '', message: '' });
+    }, 3000);
   };
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Billing & Subscription</h1>
-          <p className="text-gray-600 mt-2">Manage payment plans and subscription details</p>
-        </div>
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
-          </button>
-          <button 
-            onClick={handleExportInvoices}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2"
-          >
-            <Download className="h-4 w-4" />
-            <span>Export</span>
-          </button>
-          <button 
-            onClick={handleUpdatePayment}
-            className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors"
-          >
-            Update Payment
-          </button>
-        </div>
+        <p className="text-gray-600 mt-1">Manage your subscription and payment methods</p>
       </div>
 
+      {/* Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <div key={index} className="bg-white rounded-lg p-5 border border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <div className="bg-pink-100 p-2 rounded-lg">
+                  <Icon className="h-5 w-5 text-pink-600" />
+                </div>
+                {stat.positive !== null && (
+                  <span className={`text-sm font-medium ${stat.positive ? 'text-green-600' : 'text-red-600'}`}>
+                    {stat.change}
+                  </span>
+                )}
+        </div>
+              <p className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</p>
+              <p className="text-sm text-gray-600">{stat.label}</p>
+              {stat.positive === null && (
+                <p className="text-xs text-gray-500 mt-1">{stat.change}</p>
+              )}
+        </div>
+          );
+        })}
+      </div>
+
+      {/* Current Plan & Payment Methods Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Current Plan */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex justify-between items-start">
-          <div>
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Current Plan</h3>
-            <div className="mt-4">
-              <div className="flex items-center space-x-3">
-                <h4 className="text-2xl font-bold text-gray-900">{currentPlan.name}</h4>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(currentPlan.status)}`}>
-                  {currentPlan.status}
+            <span className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full flex items-center space-x-1">
+              <CheckCircle className="h-3 w-3" />
+              <span>Active</span>
                 </span>
               </div>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
-                {currentPlan.price} <span className="text-lg font-normal text-gray-600">{currentPlan.period}</span>
-              </p>
-              <p className="text-sm text-gray-600 mt-1">Renews on {currentPlan.renewalDate}</p>
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-2xl font-bold text-gray-900 mb-1">{currentPlan.name}</h4>
+              <p className="text-4xl font-bold text-pink-600 mb-2">{currentPlan.price}</p>
+              <p className="text-sm text-gray-600">{currentPlan.period}</p>
             </div>
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Next billing date</span>
+                <span className="text-sm font-medium text-gray-900">{currentPlan.nextBilling}</span>
           </div>
           <button 
             onClick={handleManagePlan}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2"
+                className="w-full bg-pink-600 text-white py-2.5 rounded-lg font-medium hover:bg-pink-700 transition-colors flex items-center justify-center space-x-2 mt-3"
           >
             <Settings className="h-4 w-4" />
             <span>Manage Plan</span>
           </button>
+            </div>
         </div>
       </div>
 
-      {/* Billing Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <DollarSign className="h-6 w-6 text-green-600" />
+        {/* Payment Methods */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Payment Methods</h3>
+            <button 
+              onClick={handleAddPaymentMethod}
+              className="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700 flex items-center space-x-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Method</span>
+            </button>
+          </div>
+          <div className="space-y-3">
+            {paymentMethods.map((method) => (
+              <div key={method.id} className="border-2 border-gray-200 rounded-lg p-4 hover:border-pink-500 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 rounded-lg">
+                      <CreditCard className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">{method.brand} •••• {method.last4}</p>
+                      <p className="text-sm text-gray-600">Expires {method.expiry}</p>
+        </div>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Spent</p>
-              <p className="text-2xl font-bold text-gray-900">$897.00</p>
-              <p className="text-xs text-gray-500">Last 3 months</p>
+                  <div className="flex items-center space-x-2">
+                    {method.isDefault && (
+                      <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                        Default
+                      </span>
+                    )}
+                    <button 
+                      onClick={() => handleEditPaymentMethod(method.id)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <Edit className="h-4 w-4 text-gray-600" />
+                    </button>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Calendar className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Next Billing</p>
-              <p className="text-2xl font-bold text-gray-900">Feb 15</p>
-              <p className="text-xs text-gray-500">$299.00</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Usage</p>
-              <p className="text-2xl font-bold text-gray-900">156/500</p>
-              <p className="text-xs text-gray-500">Employees</p>
-            </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Available Plans */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Available Plans</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Plans Row */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">Available Plans</h3>
+          <p className="text-sm text-gray-600 mt-1">Choose the plan that fits your needs</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`p-6 border rounded-lg ${
-                plan.popular
+              className={`flex flex-col rounded-lg border-2 p-5 transition-all cursor-pointer hover:shadow-md ${
+                plan.isCurrent
                   ? 'border-pink-500 bg-pink-50'
+                  : plan.popular
+                  ? 'border-purple-500 bg-purple-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
               {plan.popular && (
-                <div className="bg-pink-600 text-white text-xs font-medium px-2 py-1 rounded-full inline-block mb-4">
+                <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full text-center mb-3">
                   Most Popular
                 </div>
               )}
-              <h4 className="text-xl font-bold text-gray-900">{plan.name}</h4>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
-                {plan.price} <span className="text-lg font-normal text-gray-600">{plan.period}</span>
-              </p>
-              <ul className="mt-4 space-y-2">
-                {plan.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-center text-sm text-gray-600">
-                    <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                    {feature}
+              {plan.isCurrent && (
+                <div className="bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full text-center mb-3">
+                  Current Plan
+                </div>
+              )}
+              <h4 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h4>
+              <div className="mb-4">
+                <span className="text-3xl font-bold text-gray-900">{plan.price}</span>
+                <span className="text-gray-600 ml-1">/{plan.period}</span>
+              </div>
+              <ul className="space-y-2 mb-4 flex-grow">
+                {plan.features.map((feature, idx) => (
+                  <li key={idx} className="flex items-start">
+                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                    <span className="text-sm text-gray-700">{feature}</span>
                   </li>
                 ))}
               </ul>
               <button 
-                onClick={() => handleUpgradePlan(plan.name)}
-                className={`w-full mt-6 py-2 px-4 rounded-lg font-medium transition-colors ${
-                  plan.popular
-                    ? 'bg-pink-600 text-white hover:bg-pink-700'
-                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                onClick={() => !plan.isCurrent && handleSelectPlan(plan.name)}
+                className={`w-full py-2.5 rounded-lg font-medium transition-colors mt-auto ${
+                  plan.isCurrent
+                    ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
+                    : 'bg-pink-600 text-white hover:bg-pink-700'
                 }`}
+                disabled={plan.isCurrent}
               >
-                {plan.name === 'Enterprise' ? 'Current Plan' : 'Upgrade'}
+                {plan.isCurrent ? 'Current Plan' : 'Select Plan'}
               </button>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Payment Methods */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Payment Methods</h3>
+      {/* Recent Invoices */}
+      <div className="bg-white rounded-lg border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div>
+          <h3 className="text-lg font-semibold text-gray-900">Recent Invoices</h3>
+            <p className="text-sm text-gray-600 mt-1">Download and manage your invoices</p>
+          </div>
           <button 
-            onClick={handleAddPaymentMethod}
-            className="text-pink-600 hover:text-pink-700 font-medium"
+            onClick={handleViewAllInvoices}
+            className="text-pink-600 hover:text-pink-700 text-sm font-medium"
           >
-            Add Payment Method
+            View All →
           </button>
         </div>
-        <div className="space-y-4">
-          {paymentMethods.map((method, index) => (
-            <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-              <div className="flex items-center space-x-4">
-                <div className="p-2 bg-gray-100 rounded-lg">
-                  <CreditCard className="h-6 w-6 text-gray-600" />
+        <div className="divide-y divide-gray-200">
+          {invoices.map((invoice, index) => (
+            <div key={index} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-pink-100 p-3 rounded-lg">
+                    <Download className="h-5 w-5 text-pink-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">{invoice.id}</p>
+                    <p className="text-sm text-gray-600">{invoice.description}</p>
+                    <p className="text-xs text-gray-500 mt-1">Paid on {invoice.date}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-gray-900">
-                    {method.brand} •••• {method.last4}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {method.type} {method.expiry && `• Expires ${method.expiry}`}
-                  </p>
+                <div className="flex items-center space-x-4">
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-gray-900">{invoice.amount}</p>
+                    <span className="inline-flex items-center space-x-1 mt-1">
+                      <CheckCircle className="h-3 w-3 text-green-500" />
+                      <span className="text-xs text-green-700 font-medium">{invoice.status}</span>
+                      </span>
+                  </div>
+                  <button 
+                    onClick={() => handleDownloadInvoice(invoice.id)}
+                    className="bg-pink-50 hover:bg-pink-100 p-2.5 rounded-lg transition-colors"
+                  >
+                    <Download className="h-5 w-5 text-pink-600" />
+                  </button>
                 </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                {method.isDefault && (
-                  <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                    Default
-                  </span>
-                )}
-                <button className="text-gray-400 hover:text-gray-600">
-                  <Settings className="h-4 w-4" />
-                </button>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Recent Invoices */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Recent Invoices</h3>
-          <button 
-            onClick={() => showAlert({
-              type: 'info',
-              title: 'View All Invoices',
-              message: 'View all invoices functionality will be available in the next update. Please contact support for assistance.',
-              buttonText: 'Got it'
-            })}
-            className="text-pink-600 hover:text-pink-700 font-medium"
-          >
-            View All
-          </button>
+      {/* Alert Notification */}
+      {alertMessage.show && (
+        <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 ${
+          alertMessage.type === 'success' ? 'bg-green-500 text-white' : 
+          alertMessage.type === 'error' ? 'bg-red-500 text-white' : 
+          'bg-blue-500 text-white'
+        }`}>
+          {alertMessage.type === 'success' && <CheckCircle className="h-5 w-5" />}
+          {alertMessage.type === 'error' && <AlertCircle className="h-5 w-5" />}
+          <span className="font-medium">{alertMessage.message}</span>
         </div>
-        <div className="space-y-4">
-          {invoices.map((invoice, index) => {
-            const StatusIcon = getStatusIcon(invoice.status);
-            return (
-              <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <div className="p-2 bg-gray-100 rounded-lg">
-                    <FileText className="h-6 w-6 text-gray-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{invoice.id}</p>
-                    <p className="text-sm text-gray-600">{invoice.description}</p>
-                    <p className="text-xs text-gray-500">{invoice.date}</p>
-                  </div>
+      )}
+
+      {/* Manage Plan Modal */}
+      {showManagePlanModal && (
+        <div className="fixed inset-0 bg-gray-500/30 backdrop-blur-md flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Manage Your Plan</h2>
+              <button 
+                onClick={handleCloseManagePlan}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="mb-4">
+              <p className="text-gray-600 mb-4">Current Plan: <span className="font-semibold text-gray-900">{currentPlan.name}</span></p>
+              <p className="text-gray-600 mb-2">Manage your subscription settings:</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2">
+                <li>Update billing cycle</li>
+                <li>Change plan</li>
+                <li>Cancel subscription</li>
+                <li>Update billing information</li>
+              </ul>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={handleCloseManagePlan}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  showAlert('success', 'Plan settings will be updated.');
+                  handleCloseManagePlan();
+                }}
+                className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Payment Method Modal */}
+      {showAddPaymentModal && (
+        <div className="fixed inset-0 bg-gray-500/30 backdrop-blur-md flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Add Payment Method</h2>
+              <button 
+                onClick={handleCloseAddPayment}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  placeholder="1234 5678 9012 3456"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="MM/YY"
+                  />
                 </div>
-                <div className="flex items-center space-x-4">
-                  <div className="text-right">
-                    <p className="font-medium text-gray-900">{invoice.amount}</p>
-                    <div className="flex items-center space-x-1">
-                      <StatusIcon className="h-4 w-4 text-green-500" />
-                      <span className={`text-xs font-medium ${getStatusColor(invoice.status)}`}>
-                        {invoice.status}
-                      </span>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => handleDownloadInvoice(invoice.id)}
-                    className="p-2 text-gray-400 hover:text-gray-600"
-                  >
-                    <Download className="h-4 w-4" />
-                  </button>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">CVC</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="123"
+                  />
                 </div>
               </div>
-            );
-          })}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  placeholder="John Doe"
+                />
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="defaultPayment"
+                  className="mr-2"
+                />
+                <label htmlFor="defaultPayment" className="text-sm text-gray-600">
+                  Set as default payment method
+                </label>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 mt-6">
+              <button
+                onClick={handleCloseAddPayment}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  showAlert('success', 'Payment method added successfully!');
+                  handleCloseAddPayment();
+                }}
+                className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
+              >
+                Add Method
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Custom Alert Modal */}
-      <AlertModal
-        isOpen={alertModal.isOpen}
-        onClose={closeAlert}
-        type={alertModal.type}
-        title={alertModal.title}
-        message={alertModal.message}
-        buttonText={alertModal.buttonText}
-      />
+      )}
     </div>
   );
 };

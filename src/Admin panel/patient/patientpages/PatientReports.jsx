@@ -1,10 +1,13 @@
 import { useState, useMemo } from 'react';
 import { Download, Upload, Search, Filter, Eye, Bot, Calendar, Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Card } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
 
 const PatientReports = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 });
   const navigate = useNavigate();
 
   const aiReports = [
@@ -106,23 +109,23 @@ const PatientReports = () => {
 
   const columns = useMemo(
     () => [
-     {
-  field: 'date',
-  headerName: 'Date',
-  flex: 0.8,
-  minWidth: 120,
-  renderCell: (params) => (
-    <div className="flex items-center space-x-2">
-      <Calendar className="h-4 w-4 text-gray-400" />
-      <div className="leading-tight flex flex-col"> {/* reduces vertical spacing */}
-        <span className="text-sm font-medium text-gray-900 block">
-          {params.row.date}
-        </span>
-        <p className="text-xs text-gray-500 mt-0.5">{params.row.duration}</p>
-      </div>
-    </div>
-  ),
-},
+      {
+        field: 'date',
+        headerName: 'Date',
+        flex: 0.8,
+        minWidth: 120,
+        renderCell: (params) => (
+          <div className="flex items-center space-x-2">
+            <Calendar className="h-4 w-4 text-gray-400" />
+            <div className="leading-tight flex flex-col">
+              <span className="text-sm font-medium text-gray-900 block">
+                {params.row.date}
+              </span>
+              <p className="text-xs text-gray-500 mt-0.5">{params.row.duration}</p>
+            </div>
+          </div>
+        ),
+      },
       {
         field: 'summary',
         headerName: 'Summary',
@@ -183,7 +186,7 @@ const PatientReports = () => {
           <div className="flex items-center justify-center">
             <button
               type="button"
-              onClick={() => navigate(`/patient/reports/${params.row.id}`)}
+              onClick={() => navigate(`/user/reports/${params.row.id}`)}
               title="View"
               className="flex items-center space-x-1 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
             >
@@ -206,7 +209,7 @@ const PatientReports = () => {
   );
 
   return (
-    <div className="p-4 lg:p-6 space-y-6 overflow-x-hidden bg-pink-50 min-h-screen max-w-full">
+    <div className="p-4 lg:p-6 space-y-6 overflow-x-hidden bg-pink-50 min-h-screen">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
         <div className="text-center lg:text-left w-full lg:w-1/2">
@@ -215,9 +218,9 @@ const PatientReports = () => {
         </div>
         <div className="flex items-center justify-center lg:justify-end space-x-3 w-full lg:w-1/2">
           <button className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gray-600 text-white px-5 py-2.5 rounded-xl hover:bg-gray-700 transition-colors font-medium">
-          <Upload className="w-5 h-5" />
+            <Upload className="w-5 h-5" />
             <span>Upload Report</span>
-        </button>
+          </button>
         </div>
       </div>
 
@@ -257,71 +260,66 @@ const PatientReports = () => {
         </div>
 
         {/* Desktop Table View */}
-        <div className="hidden lg:block overflow-x-auto">
-          <table className="w-full table-fixed min-w-[800px]">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-center py-3 px-4 font-semibold text-gray-900 w-32">Date</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-900">Summary</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-900 w-32">Type</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-900 w-36">Status</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-900 w-32">AI Score</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-900 w-40">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredReports.map((report) => (
-                <tr key={report.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                  <td className="py-4 px-4 align-top">
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm font-medium text-gray-900">{report.date}</span>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">{report.duration}</p>
-                  </td>
-                  <td className="py-4 px-4 align-top">
-                    <p className="text-sm text-gray-900">{report.summary}</p>
-                  </td>
-                  <td className="py-4 px-4 align-top">
-                    <span className="inline-flex items-center text-center px-3 py-2 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {report.type}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4 align-top">
-                    {getStatusBadge(report.status)}
-                  </td>
-                  <td className="py-4 px-4 align-top">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-16 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full ${
-                            report.aiScore >= 90 ? 'bg-green-500' : 
-                            report.aiScore >= 70 ? 'bg-yellow-500' : 'bg-red-500'
-                          }`}
-                          style={{ width: `${report.aiScore}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium text-gray-900">{report.aiScore}%</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 align-top">
-                    <div className="flex items-center space-x-2">
-                      <button 
-                      onClick={() => navigate(`/patient/reports/${report.id}`)}
-                      className="flex items-center space-x-1 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                        <Eye className="h-4 w-4" />
-                        <span className="text-sm">View</span>
-                      </button>
-                      <button className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-                        <Download className="h-4 w-4" />
-                        <span className="text-sm">Download</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="hidden lg:block w-full h-full">
+          <div style={{ height: 600, width: '100%' }}>
+            <DataGrid
+              rows={filteredReports}
+              columns={columns}
+              getRowId={(row) => row.id}
+              disableRowSelectionOnClick
+              pagination
+              paginationMode="client"
+              paginationModel={paginationModel}
+              onPaginationModelChange={setPaginationModel}
+              pageSizeOptions={[5, 10, 20, 25]}
+              sx={{
+                color: '#111827',
+                backgroundColor: '#ffffff',
+                borderColor: '#e5e7eb',
+                '& .MuiDataGrid-columnHeader': {
+                  backgroundColor: '#f9fafb',
+                  color: '#111827',
+                  borderColor: '#e5e7eb',
+                  fontWeight: 600,
+                },
+                '& .MuiDataGrid-cell': {
+                  display: 'flex',
+                  alignItems: 'center',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  borderColor: '#f3f4f6',
+                  color: '#111827',
+                },
+                '& .MuiDataGrid-footerContainer': {
+                  backgroundColor: '#f9fafb',
+                  borderTop: '1px solid #e5e7eb',
+                  color: '#111827',
+                },
+                '& .MuiTablePagination-root': {
+                  color: '#111827',
+                },
+                '& .MuiButtonBase-root': {
+                  color: '#111827',
+                },
+                '& .MuiDataGrid-row:hover': {
+                  backgroundColor: '#f9fafb',
+                },
+                '& .MuiDataGrid-row.Mui-selected': {
+                  backgroundColor: '#f3f4f6 !important',
+                },
+                '& .MuiDataGrid-row.Mui-selected:hover': {
+                  backgroundColor: '#e5e7eb !important',
+                },
+                '& .MuiDataGrid-main': {
+                  overflowX: 'auto',
+                },
+                '& .MuiDataGrid-virtualScroller': {
+                  overflowY: 'auto !important',
+                },
+              }}
+            />
+          </div>
         </div>
 
         {/* Mobile Card View */}

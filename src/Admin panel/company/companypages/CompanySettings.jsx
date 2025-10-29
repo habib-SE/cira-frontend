@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Save, 
   Upload, 
@@ -17,6 +17,41 @@ import {
 const CompanySettings = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const fileInputRef = useRef(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
+  
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        setShowErrorMessage(true);
+        setTimeout(() => setShowErrorMessage(false), 3000);
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setShowErrorMessage(true);
+        setTimeout(() => setShowErrorMessage(false), 3000);
+        return;
+      }
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleLogoButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const [formData, setFormData] = useState({
     // Company Profile
     companyName: 'Acme Corporation',
@@ -50,9 +85,52 @@ const CompanySettings = () => {
     }));
   };
 
-  const handleSave = () => {
-    // Handle save logic here
-    console.log('Saving settings:', formData);
+  // Load saved settings on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('companySettings');
+    if (savedSettings) {
+      try {
+        const parsed = JSON.parse(savedSettings);
+        setFormData(parsed);
+        if (parsed.logo) {
+          setLogoPreview(parsed.logo);
+        }
+      } catch (error) {
+        console.error('Error loading saved settings:', error);
+      }
+    }
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      // Save company settings to localStorage
+      const settingsToSave = {
+        ...formData,
+        logo: logoPreview, // Save the logo preview as base64
+        lastUpdated: new Date().toISOString()
+      };
+      
+      localStorage.setItem('companySettings', JSON.stringify(settingsToSave));
+      
+      // Show success message
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+      
+      // Log for debugging
+      console.log('Settings saved:', settingsToSave);
+      
+      // In production, you would send this to an API endpoint:
+      // await fetch('/api/company/settings', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(settingsToSave)
+      // });
+      
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 3000);
+    }
   };
 
   const tabs = [
@@ -115,13 +193,34 @@ const CompanySettings = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Company Logo</label>
                     <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <Building className="h-8 w-8 text-gray-400" />
+                      {logoPreview ? (
+                        <img 
+                          src={logoPreview} 
+                          alt="Company Logo" 
+                          className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Building className="h-8 w-8 text-gray-400" />
+                        </div>
+                      )}
+                      <div>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleLogoUpload}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                        <button 
+                          onClick={handleLogoButtonClick}
+                          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2"
+                        >
+                          <Upload className="h-4 w-4" />
+                          <span>Upload Logo</span>
+                        </button>
+                        <p className="text-xs text-gray-500 mt-1">JPG, PNG or GIF (max. 5MB)</p>
                       </div>
-                      <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2">
-                        <Upload className="h-4 w-4" />
-                        <span>Upload Logo</span>
-                      </button>
                     </div>
                   </div>
 
@@ -371,6 +470,22 @@ const CompanySettings = () => {
           </div>
         </div>
       </div>
+
+      {/* Success Toast Notification */}
+      {showSuccessMessage && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 z-50 animate-slide-in">
+          <CheckCircle className="h-5 w-5" />
+          <span className="font-medium">Settings saved successfully!</span>
+        </div>
+      )}
+
+      {/* Error Toast Notification */}
+      {showErrorMessage && (
+        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 z-50 animate-slide-in">
+          <AlertCircle className="h-5 w-5" />
+          <span className="font-medium">Failed to save settings. Please try again.</span>
+        </div>
+      )}
     </div>
   );
 };

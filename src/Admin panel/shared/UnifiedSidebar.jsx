@@ -74,16 +74,18 @@ const UnifiedSidebar = ({
           { id: 'earnings', label: 'Earnings', icon: DollarSign, path: '/doctor/earnings' },
           { id: 'payouts', label: 'Payouts', icon: Wallet, path: '/doctor/payouts' },
         ];
-      case 'patient':
+      case 'user':
         return [
           { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/user' },
           { id: 'ai-nurse', label: 'AI Nurse', icon: Bot, path: '/user/ai' },
           { id: 'reports', label: 'Reports', icon: FileText, path: '/user/reports' },
-          { id: 'doctor-marketplace', label: 'Doctor Marketplace', icon: Stethoscope, path: '/user/book-doctor' },
-          { id: 'referrals', label: 'Referrals', icon: TrendingUp, path: '/user/book-doctor' },
-          { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/user/appointments' },
-          { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, path: '/user/subscriptions' },
+          { id: 'book-doctor', label: 'Book Doctor', icon: Stethoscope, path: '/user/book-doctor' },
+          { id: 'referral-checkout', label: 'Referral Checkout', icon: LogOut, path: '/user/Referralcheckout' },
           { id: 'profile', label: 'Profile', icon: UserPen, path: '/user/profile' },
+          { id: 'history', label: 'History', icon: History, path: '/user/history' },
+          { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, path: '/user/subscriptions' },
+          { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/user/messages' },
+          { id: 'settings', label: 'Settings', icon: Settings, path: '/user/settings' },
         ];
       default:
         return [];
