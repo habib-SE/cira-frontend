@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Bell, User, Settings, LogOut, Menu, X, Search } from 'lucide-react';
+import { Bell, User, LogOut, Menu, X, Search, Settings } from 'lucide-react';
 import ConsentIndicator from '../../components/shared/ConsentIndicator';
 
 const UnifiedNavbar = ({ 
@@ -37,12 +37,12 @@ const UnifiedNavbar = ({
     };
   }, []);
 
-  const handleProfileSettings = () => {
-    // Navigate to profile settings page based on portal type
+  const handleProfile = () => {
+    // Navigate to profile page for each portal
     if (portalType === 'admin') {
-      navigate('/admin/profile');
+      navigate('/admin/settings');
     } else if (portalType === 'company') {
-      navigate('/company/settings');
+      navigate('/company/profile');
     } else if (portalType === 'doctor') {
       navigate('/doctor/profile');
     } else if (portalType === 'user') {
@@ -167,10 +167,7 @@ const UnifiedNavbar = ({
             { id: 2, title: 'AI report generated', time: '5 min ago', type: 'success' },
             { id: 3, title: 'Appointment reminder', time: '10 min ago', type: 'warning' },
           ],
-          userMenu: [
-            { label: 'Profile', icon: User, onClick: () => console.log('Profile clicked') },
-            { label: 'Settings', icon: Settings, onClick: () => console.log('Settings clicked') },
-          ],
+          userMenu: [],
           displayName: 'Admin User',
           showMobileMenu: true,
           padding: 'px-4 py-3'
@@ -182,10 +179,7 @@ const UnifiedNavbar = ({
             { id: 2, title: 'Patient lab results ready', time: '1 hour ago', type: 'success' },
             { id: 3, title: 'Appointment starting soon', time: '2 hours', type: 'warning' },
           ],
-          userMenu: [
-            { label: 'Profile', icon: User, onClick: () => console.log('Profile clicked') },
-            { label: 'Settings', icon: Settings, onClick: () => console.log('Settings clicked') },
-          ],
+          userMenu: [],
           displayName: 'Doctor',
           showMobileMenu: true,
           padding: 'px-3 sm:px-4 py-2 sm:py-3'
@@ -327,29 +321,12 @@ const UnifiedNavbar = ({
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                 <div className="py-1">
                   <button
-                    onClick={handleProfileSettings}
+                    onClick={handleProfile}
                     className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <Settings className="h-4 w-4" />
-                    <span>Profile Settings</span>
+                    <User className="h-4 w-4" />
+                    <span>Profile</span>
                   </button>
-                  {config.userMenu && config.userMenu.length > 0 && (
-                    <>
-                      {config.userMenu.map((item, index) => (
-                        <button
-                          key={index}
-                          onClick={() => {
-                            item.onClick();
-                            setIsProfileOpen(false);
-                          }}
-                          className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.label}</span>
-                        </button>
-                      ))}
-                    </>
-                  )}
                   <div className="border-t border-gray-200 my-1" />
                   <button
                     onClick={() => {

@@ -53,23 +53,8 @@ export const AuthProvider = ({ children }) => {
       
       setUser(userData);
 
-      // Redirect based on role
-      switch (role) {
-        case 'admin':
-          navigate('/admin');
-          break;
-        case 'user':
-          navigate('/user');
-          break;
-        case 'doctor':
-          navigate('/doctor');
-          break;
-        case 'company':
-          navigate('/company');
-          break;
-        default:
-          navigate('/login');
-      }
+      // After login, force onboarding flow (email confirm → plus → plans)
+      navigate('/email-confirm');
 
       return { success: true, message: 'Login successful!' };
     } else {
@@ -86,12 +71,23 @@ export const AuthProvider = ({ children }) => {
     navigate('/login');
   };
 
+  const updateUser = (partial) => {
+    setUser((prev) => {
+      const next = { ...(prev || {}), ...(partial || {}) };
+      try {
+        localStorage.setItem('userData', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
   const value = {
     user,
     login,
     logout,
     loading,
     isAuthenticated: !!user,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

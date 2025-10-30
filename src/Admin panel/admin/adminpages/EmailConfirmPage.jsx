@@ -84,6 +84,8 @@ const EmailConfirmPage = () => {
       // Simulate API call to verify the code
       await new Promise(resolve => setTimeout(resolve, 1500));
       
+      // Mark email as confirmed and show success alert
+      localStorage.setItem('emailConfirmed', 'true');
       // Show alert in top-left corner
       setShowAlert(true);
       

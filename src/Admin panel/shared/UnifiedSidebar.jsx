@@ -22,7 +22,9 @@ import {
   CheckCircle,
   Shield,
   Receipt,
-  BarChart3
+  BarChart3,
+  LogOut,
+  History
 } from 'lucide-react';
 import logo from '../../assets/logo.png';
 import loginLogo from '../../assets/loginlogo.png';
