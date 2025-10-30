@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Bell, User, LogOut, Menu, X, Search } from 'lucide-react';
+import { Bell, User, LogOut, Menu, X, Search, Settings } from 'lucide-react';
 import ConsentIndicator from '../../components/shared/ConsentIndicator';
 
 const UnifiedNavbar = ({ 

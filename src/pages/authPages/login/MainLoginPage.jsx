@@ -24,7 +24,7 @@ const MainLoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   
-  const [selectedRole, setSelectedRole] = useState('user');
+  const [selectedRole, setSelectedRole] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
 
@@ -122,7 +122,7 @@ const MainLoginPage = () => {
                       id="email"
                       name="email"
                       type="email"
-                      defaultValue={selectedRole === 'user' ? 'user@cira.com' : selectedRole === 'admin' ? 'admin@cira.com' : selectedRole === 'doctor' ? 'doctor@cira.com' : 'company@cira.com'}
+                      defaultValue={''}
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="you@example.com"
                       required
@@ -141,7 +141,7 @@ const MainLoginPage = () => {
                       id="password"
                       name="password"
                       type={showPassword ? 'text' : 'password'}
-                      defaultValue={selectedRole === 'user' ? 'user123' : selectedRole === 'admin' ? 'admin123' : selectedRole === 'doctor' ? 'doctor123' : 'company123'}
+                      defaultValue={''}
                       className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter your password"
                       required
@@ -184,7 +184,10 @@ const MainLoginPage = () => {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 border border-transparent rounded-lg text-white font-medium bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                  disabled={!selectedRole}
+                  className={`w-full py-3 px-4 border border-transparent rounded-lg text-white font-medium transition-colors ${
+                    selectedRole ? 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500' : 'bg-blue-300 cursor-not-allowed'
+                  }`}
                 >
                   Sign in
                 </button>
@@ -200,7 +203,7 @@ const MainLoginPage = () => {
                   onClick={() => navigate('/doctor/login?mode=register')}
                   className="font-medium text-blue-600 hover:text-blue-500"
                 >
-                  Sign up
+                  Register as Doctor
                 </button>
               </p>
             </div>

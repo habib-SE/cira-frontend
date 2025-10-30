@@ -9,7 +9,8 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Stethoscope
+  Stethoscope,
+  Bell
 } from 'lucide-react';
 import { StatsCard } from '../../../components/shared';
 
@@ -17,9 +18,24 @@ const PatientDashboard = () => {
   const [dashboardData, setDashboardData] = useState({
     lastAIReport: null,
     upcomingAppointment: null,
-    subscriptionStatus: {},
+    subscriptionStatus: {
+      plan: '',
+      status: '',
+      usage: {
+        aiSessions: 0,
+        maxSessions: 0,
+        vitalsScans: 0,
+        maxScans: 0
+      }
+    },
     recentReports: [],
-    healthMetrics: {},
+    healthMetrics: {
+      bloodPressure: '-',
+      heartRate: '-',
+      temperature: '-',
+      weight: '-',
+      lastUpdated: new Date().toISOString()
+    },
     notifications: []
   });
 

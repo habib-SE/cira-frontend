@@ -53,23 +53,8 @@ export const AuthProvider = ({ children }) => {
       
       setUser(userData);
 
-      // Redirect based on role
-      switch (role) {
-        case 'admin':
-          navigate('/admin');
-          break;
-        case 'user':
-          navigate('/user');
-          break;
-        case 'doctor':
-          navigate('/doctor');
-          break;
-        case 'company':
-          navigate('/company');
-          break;
-        default:
-          navigate('/login');
-      }
+      // After login, force onboarding flow (email confirm → plus → plans)
+      navigate('/email-confirm');
 
       return { success: true, message: 'Login successful!' };
     } else {

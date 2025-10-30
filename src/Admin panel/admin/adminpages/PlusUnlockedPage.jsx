@@ -8,7 +8,8 @@ const PlusUnlockedPage = () => {
     const navigate = useNavigate();
 
     const handleUpgrade = () => {
-        // Navigate to subscription plans page
+        // Mark plus unlocked and go to subscription plans
+        localStorage.setItem('plusUnlocked', 'true');
         navigate('/subscription-plans');
     };
 
