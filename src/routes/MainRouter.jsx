@@ -22,6 +22,7 @@ import Users from '../Admin panel/admin/adminpages/Users';
 import Doctors from '../Admin panel/admin/adminpages/Doctors';
 import Approvals from '../Admin panel/admin/adminpages/Approvals';
 import AdminCompliance from '../Admin panel/admin/adminpages/AdminCompliance';
+// import ComplianceDetail from '../Admin panel/admin/adminpages/ComplianceDetail';
 import AdminPayouts from '../Admin panel/admin/adminpages/AdminPayouts';
 import AdminDoctorProfile from '../Admin panel/admin/adminpages/DoctorProfile';
 import DoctorProfileDetail from '../Admin panel/admin/adminpages/DoctorProfileDetail';
@@ -37,6 +38,7 @@ import ReferralProviderEdit from '../Admin panel/admin/adminpages/ReferralProvid
 import Plans from '../Admin panel/admin/adminpages/Plans';
 import PlanEditor from '../Admin panel/admin/adminpages/PlanEditor';
 import PlanDetail from '../Admin panel/admin/adminpages/PlanDetail';
+import AdminAnalytics from '../Admin panel/admin/adminpages/AdminAnalytics';
 
 // User Portal Imports
 import UserLayout from '../Admin panel/patient/patientcomponents/PatientLayout';
@@ -86,49 +88,6 @@ import DoctorPayouts from '../Admin panel/doctor/doctorpages/DoctorPayouts';
 import Analytics from '../Admin panel/doctor/doctorpages/Analytics';
 
 function MainRouter() {
-  // After-login flow for doctors: email confirm → plus unlock → subscription → dashboard
-  const DoctorIndex = () => {
-    const emailConfirmed = localStorage.getItem('emailConfirmed') === 'true';
-    const plusUnlocked = localStorage.getItem('plusUnlocked') === 'true';
-    const hasSubscription = localStorage.getItem('hasSubscription') === 'true';
-
-    if (!emailConfirmed) return <Navigate to="/email-confirm" replace />;
-    if (!plusUnlocked) return <Navigate to="/plus-unlocked" replace />;
-    if (!hasSubscription) return <Navigate to="/subscription-plans" replace />;
-    return <DoctorDashboard />;
-  };
-
-  // Apply the same gating flow for other roles
-  
-  const AdminIndex = () => {
-    const emailConfirmed = localStorage.getItem('emailConfirmed') === 'true';
-    const plusUnlocked = localStorage.getItem('plusUnlocked') === 'true';
-    const hasSubscription = localStorage.getItem('hasSubscription') === 'true';
-    if (!emailConfirmed) return <Navigate to="/email-confirm" replace />;
-    if (!plusUnlocked) return <Navigate to="/plus-unlocked" replace />;
-    if (!hasSubscription) return <Navigate to="/subscription-plans" replace />;
-    return <Dashboard />;
-  };
-
-  const UserIndex = () => {
-    const emailConfirmed = localStorage.getItem('emailConfirmed') === 'true';
-    const plusUnlocked = localStorage.getItem('plusUnlocked') === 'true';
-    const hasSubscription = localStorage.getItem('hasSubscription') === 'true';
-    if (!emailConfirmed) return <Navigate to="/email-confirm" replace />;
-    if (!plusUnlocked) return <Navigate to="/plus-unlocked" replace />;
-    if (!hasSubscription) return <Navigate to="/subscription-plans" replace />;
-    return <PatientDashboard />;
-  };
-
-  const CompanyIndex = () => {
-    const emailConfirmed = localStorage.getItem('emailConfirmed') === 'true';
-    const plusUnlocked = localStorage.getItem('plusUnlocked') === 'true';
-    const hasSubscription = localStorage.getItem('hasSubscription') === 'true';
-    if (!emailConfirmed) return <Navigate to="/email-confirm" replace />;
-    if (!plusUnlocked) return <Navigate to="/plus-unlocked" replace />;
-    if (!hasSubscription) return <Navigate to="/subscription-plans" replace />;
-    return <CompanyDashboard />;
-  };
   return (
     <Routes>
       {/* Public Routes */}
@@ -142,8 +101,11 @@ function MainRouter() {
       <Route path="/doctor/login" element={<DoctorLoginPage />} />
       <Route path="/company/login" element={<CompanyLoginPage />} />
       
+      
       {/* Email confirmation page */}
       <Route path="/email-confirm" element={<EmailConfirmPage />} />
+      
+     
       
       {/* Plus unlocked page */}
       <Route path="/plus-unlocked" element={<PlusUnlockedPage />} />
@@ -160,7 +122,7 @@ function MainRouter() {
           </ProtectedRoute>
         }
       >
-        <Route path="" element={<AdminIndex />} />
+        <Route path="" element={<Dashboard />} />
         <Route path="users" element={<Users />} />
         <Route path="users/add" element={<Users />} />
         <Route path="users/edit/:id" element={<Users />} />
@@ -170,6 +132,7 @@ function MainRouter() {
         <Route path="doctors/:id" element={<AdminDoctorProfile />} />
         <Route path="approvals" element={<Approvals />} />
         <Route path="compliance" element={<AdminCompliance />} />
+        <Route path="compliance/:type/:id" element={<AdminCompliance />} />
         <Route path="appointments" element={<Appointments />} />
         <Route path="appointments/add" element={<Appointments />} />
         <Route path="appointments/edit/:id" element={<Appointments />} />
@@ -182,6 +145,7 @@ function MainRouter() {
         <Route path="plans/create" element={<PlanEditor mode="create" />} />
         <Route path="plans/edit/:id" element={<PlanEditor mode="edit" />} />
         <Route path="plans/view/:id" element={<PlanDetail />} />
+        <Route path="analytics" element={<AdminAnalytics />} />
         <Route path="settings" element={<Settings />} />
         <Route path="referrals" element={<Referrals />} />
         <Route path="referrals/:id" element={<ReferralDetail />} />
@@ -199,7 +163,7 @@ function MainRouter() {
           </ProtectedRoute>
         }
       >
-        <Route path="" element={<UserIndex />} />
+        <Route path="" element={<PatientDashboard />} />
         <Route path="ai" element={<AI_Nurse />} />
         <Route path="reports" element={<PatientReports />} />
         <Route path="reports/:reportId" element={<PatientReportDetails />} />
@@ -223,7 +187,7 @@ function MainRouter() {
           </ProtectedRoute>
         }
       >
-        <Route path="" element={<DoctorIndex />} />
+        <Route path="" element={<DoctorDashboard />} />
         <Route path="profile" element={<ProfileWizard />} />
         <Route path="availability" element={<DoctorSchedule />} />
         <Route path="appointments" element={<DoctorSchedule />} />
@@ -253,7 +217,7 @@ function MainRouter() {
           </ProtectedRoute>
         }
       >
-        <Route path="" element={<CompanyIndex />} />
+        <Route path="" element={<CompanyDashboard />} />
         <Route path="users" element={<CompanyUsers />} />
         <Route path="users/create" element={<CompanyUserForm mode="create" />} />
         <Route path="users/edit/:id" element={<CompanyUserForm mode="edit" />} />

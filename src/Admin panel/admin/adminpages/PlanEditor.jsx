@@ -23,11 +23,25 @@ const PlanEditor = ({ mode = 'create' }) => {
 
   useEffect(() => {
     if (isEdit && id) {
-      // In real app, fetch by id
-      setForm({
-        name: 'Basic', tier: 'Basic', priceMonthly: 9, priceAnnual: 90,
-        aiSessions: 50, vitalsScans: 50, plusAI: true, vitals: true, chat: true, trial: true
-      });
+      const stored = localStorage.getItem('adminPlans');
+      if (stored) {
+        const plans = JSON.parse(stored);
+        const plan = plans.find(p => String(p.id) === String(id));
+        if (plan) {
+          setForm({
+            name: plan.name,
+            tier: plan.tier,
+            priceMonthly: plan.priceMonthly,
+            priceAnnual: plan.priceAnnual,
+            aiSessions: plan.limits?.aiSessions ?? '',
+            vitalsScans: plan.limits?.vitalsScans ?? '',
+            plusAI: plan.features?.plusAI ?? false,
+            vitals: plan.features?.vitals ?? true,
+            chat: plan.features?.chat ?? true,
+            trial: plan.trial ?? false
+          });
+        }
+      }
     }
   }, [isEdit, id]);
 
@@ -37,8 +51,39 @@ const PlanEditor = ({ mode = 'create' }) => {
   };
 
   const onSave = () => {
-    // validation minimal
     if (!form.name) return;
+    const stored = localStorage.getItem('adminPlans');
+    const plans = stored ? JSON.parse(stored) : [];
+    if (isEdit && id) {
+      const updated = plans.map(p =>
+        String(p.id) === String(id)
+          ? {
+              ...p,
+              name: form.name,
+              tier: form.tier,
+              priceMonthly: Number(form.priceMonthly) || 0,
+              priceAnnual: Number(form.priceAnnual) || 0,
+              limits: { aiSessions: Number(form.aiSessions) || 0, vitalsScans: Number(form.vitalsScans) || 0 },
+              features: { plusAI: !!form.plusAI, vitals: !!form.vitals, chat: !!form.chat },
+              trial: !!form.trial
+            }
+          : p
+      );
+      localStorage.setItem('adminPlans', JSON.stringify(updated));
+    } else {
+      const nextId = plans.reduce((m, p) => Math.max(m, Number(p.id)), 0) + 1;
+      const newPlan = {
+        id: nextId,
+        name: form.name,
+        tier: form.tier,
+        priceMonthly: Number(form.priceMonthly) || 0,
+        priceAnnual: Number(form.priceAnnual) || 0,
+        limits: { aiSessions: Number(form.aiSessions) || 0, vitalsScans: Number(form.vitalsScans) || 0 },
+        features: { plusAI: !!form.plusAI, vitals: !!form.vitals, chat: !!form.chat },
+        trial: !!form.trial
+      };
+      localStorage.setItem('adminPlans', JSON.stringify([...plans, newPlan]));
+    }
     navigate('/admin/plans');
   };
 

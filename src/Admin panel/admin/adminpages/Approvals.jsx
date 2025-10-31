@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CheckCircle, X, Clock, AlertCircle, Eye, FileText, User } from 'lucide-react';
+import { Clock, AlertCircle, User, Edit } from 'lucide-react';
 import Card from '../admincomponents/Card';
 import Breadcrumbs from '../../../components/shared/Breadcrumbs';
 import MetaChips from '../../../components/shared/MetaChips';
@@ -194,95 +194,78 @@ const Approvals = () => {
             </Card>
 
             {/* Pending Doctors List */}
-            <Card className="p-4">
+            <div className="p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Pending Approvals</h3>
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredDoctors.map((doctor) => (
-                        <div key={doctor.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                            <div className="flex items-start justify-between mb-3">
+                        <Card key={doctor.id} className="p-6 border-l-4 border-l-yellow-500">
+                            <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center space-x-3">
-                                    <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center">
-                                        <span className="text-pink-600 font-semibold text-sm">
-                                            {doctor.avatar}
-                                        </span>
+                                    <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                        {doctor.avatar}
                                     </div>
                                     <div>
-                                        <h4 className="font-semibold text-gray-900">{doctor.name}</h4>
+                                        <h3 className="font-semibold text-gray-900">{doctor.name}</h3>
                                         <p className="text-sm text-gray-600">{doctor.specialty}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                    <Clock className="w-4 h-4 text-yellow-500" />
-                                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                                        {doctor.verificationStatus}
-                                    </span>
+                                <button
+                                    onClick={() => navigate(`/admin/doctors/edit/${doctor.id}`)}
+                                    className="text-purple-600 hover:text-purple-800 p-1 hover:bg-purple-50 rounded transition-colors"
+                                    title="Edit Doctor"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-2 mb-4">
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Experience:</span>
+                                    <span className="font-medium">{doctor.experience}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Documents:</span>
+                                    <span className="font-medium">{doctor.documents.length}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Joined:</span>
+                                    <span className="font-medium">{doctor.submittedDate}</span>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                                <div className="text-sm">
-                                    <p className="text-gray-500">Email</p>
-                                    <p className="text-gray-900">{doctor.email}</p>
-                                </div>
-                                <div className="text-sm">
-                                    <p className="text-gray-500">Phone</p>
-                                    <p className="text-gray-900">{doctor.phone}</p>
-                                </div>
-                                <div className="text-sm">
-                                    <p className="text-gray-500">Experience</p>
-                                    <p className="text-gray-900">{doctor.experience}</p>
-                                </div>
-                                <div className="text-sm">
-                                    <p className="text-gray-500">Submitted</p>
-                                    <p className="text-gray-900">{doctor.submittedDate}</p>
-                                </div>
-                            </div>
-
-                            <div className="mb-3">
-                                <p className="text-sm text-gray-500 mb-1">Documents</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {doctor.documents.map((doc, idx) => (
-                                        <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                                            {doc}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="flex items-center space-x-2 pt-3 border-t border-gray-200">
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                                 <button
                                     onClick={() => handleView(doctor)}
-                                    className="flex items-center space-x-2 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                                 >
-                                    <Eye className="w-4 h-4" />
-                                    <span className="text-sm">View Details</span>
+                                    Review
                                 </button>
-                                <button
-                                    onClick={() => handleApprove(doctor.id)}
-                                    className="flex items-center space-x-2 px-3 py-2 bg-green-500 text-white hover:bg-green-600 rounded-lg transition-colors"
-                                >
-                                    <CheckCircle className="w-4 h-4" />
-                                    <span className="text-sm">Approve</span>
-                                </button>
-                                <button
-                                    onClick={() => handleReject(doctor.id)}
-                                    className="flex items-center space-x-2 px-3 py-2 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors"
-                                >
-                                    <X className="w-4 h-4" />
-                                    <span className="text-sm">Reject</span>
-                                </button>
+                                <div className="flex items-center space-x-2">
+                                    <button
+                                        onClick={() => handleApprove(doctor.id)}
+                                        className="px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors"
+                                    >
+                                        Approve
+                                    </button>
+                                    <button
+                                        onClick={() => handleReject(doctor.id)}
+                                        className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+                                    >
+                                        Reject
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        </Card>
                     ))}
 
                     {filteredDoctors.length === 0 && (
-                        <div className="text-center py-8">
+                        <div className="col-span-full text-center py-8">
                             <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                             <p className="text-gray-600">No pending approvals found</p>
                         </div>
                     )}
                 </div>
-            </Card>
+            </div>
         </div>
     );
 };
