@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     Clock, 
-    Clock as ClockIcon,
     Users, 
     DollarSign, 
     TrendingUp,
@@ -13,7 +12,8 @@ import {
     AlertCircle,
     Plus,
     Calendar as CalendarIcon,
-    Stethoscope
+    Stethoscope,
+    ClockIcon
 } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 

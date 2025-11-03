@@ -8,19 +8,8 @@ SubscriptionPlansPage = () => {
     const navigate = useNavigate();
 
     const handleUpgrade = () => {
-        // Complete onboarding gates for all roles and go to the correct panel
-        localStorage.setItem('emailConfirmed', 'true');
-        localStorage.setItem('plusUnlocked', 'true');
-        localStorage.setItem('hasSubscription', 'true');
-
-        try {
-            const role = JSON.parse(localStorage.getItem('userData'))?.role;
-            const roleToPath = { admin: '/admin', user: '/user', doctor: '/doctor', company: '/company' };
-            const target = roleToPath[role] || '/login';
-            navigate(target);
-        } catch {
-            navigate('/login');
-        }
+        // Navigate to login page after upgrade
+        navigate('/login');
     };
 
     const subscriptionPlans = [
