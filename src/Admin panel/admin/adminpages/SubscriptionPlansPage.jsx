@@ -1,15 +1,39 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import logo from '../../../assets/Logo.png';
 import loginLogo from '../../../assets/LoginLogo.png';
 
 const 
 SubscriptionPlansPage = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const handleUpgrade = () => {
-        // Navigate to login page after upgrade
-        navigate('/login');
+        // Mark subscription as active
+        localStorage.setItem('hasSubscription', 'true');
+        
+        // Navigate to user's dashboard based on role
+        if (user) {
+            switch (user.role) {
+                case 'admin':
+                    navigate('/admin');
+                    break;
+                case 'user':
+                    navigate('/user');
+                    break;
+                case 'doctor':
+                    navigate('/doctor');
+                    break;
+                case 'company':
+                    navigate('/company');
+                    break;
+                default:
+                    navigate('/login');
+            }
+        } else {
+            navigate('/login');
+        }
     };
 
     const subscriptionPlans = [
