@@ -27,6 +27,7 @@ const PatientProfile = () => {
   const [showAddAllergy, setShowAddAllergy] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
 
   // Personal Details State
   const [personalDetails, setPersonalDetails] = useState({
@@ -84,11 +85,50 @@ const PatientProfile = () => {
     return age;
   };
 
+  const validateEmail = (email) => {
+    if (!email) return 'Email is required';
+    if (email.length > 100) return 'Email must be less than 100 characters';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    return '';
+  };
+
+  const validatePhone = (phone) => {
+    if (!phone) return 'Phone is required';
+    if (phone.length > 20) return 'Phone must be less than 20 characters';
+    const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
+    if (!phoneRegex.test(phone)) return 'Please enter a valid phone number';
+    return '';
+  };
+
   const handlePersonalDetailsChange = (field, value) => {
+    // Enforce max length limits
+    let processedValue = value;
+    if (field === 'email' && value.length > 100) {
+      processedValue = value.slice(0, 100);
+    } else if (field === 'phone' && value.length > 20) {
+      processedValue = value.slice(0, 20);
+    }
+    
     setPersonalDetails(prev => ({
       ...prev,
-      [field]: value
+      [field]: processedValue
     }));
+    
+    // Validate email and phone fields
+    if (field === 'email') {
+      const error = validateEmail(processedValue);
+      setValidationErrors(prev => ({
+        ...prev,
+        email: error
+      }));
+    } else if (field === 'phone') {
+      const error = validatePhone(processedValue);
+      setValidationErrors(prev => ({
+        ...prev,
+        phone: error
+      }));
+    }
   };
 
   const handleConsentChange = (field) => {
@@ -113,6 +153,18 @@ const PatientProfile = () => {
   };
 
   const handleSaveProfile = async () => {
+    // Validate email and phone before saving
+    const emailError = validateEmail(personalDetails.email);
+    const phoneError = validatePhone(personalDetails.phone);
+    
+    if (emailError || phoneError) {
+      setValidationErrors({
+        email: emailError,
+        phone: phoneError
+      });
+      return;
+    }
+
     setIsSaving(true);
 
     // Simulate API call
@@ -121,6 +173,7 @@ const PatientProfile = () => {
     setIsSaving(false);
     setIsEditing(false);
     setShowAlert(true);
+    setValidationErrors({});
 
     // Hide alert after 3 seconds
     setTimeout(() => {
@@ -188,7 +241,12 @@ const PatientProfile = () => {
               <p className="text-gray-600">Manage your personal details and medical information</p>
             </div>
             <button
-              onClick={() => setIsEditing(!isEditing)}
+              onClick={() => {
+                setIsEditing(!isEditing);
+                if (isEditing) {
+                  setValidationErrors({});
+                }
+              }}
               className="flex items-center space-x-2 px-4 py-2 bg-[#f6339a] text-white rounded-lg cursor-pointer transition-colors mt-8 lg:mt-0"
             >
               <Edit3 className="h-4 w-4" />
@@ -242,9 +300,15 @@ const PatientProfile = () => {
                         value={personalDetails.email}
                         onChange={(e) => handlePersonalDetailsChange('email', e.target.value)}
                         disabled={!isEditing}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                        maxLength={100}
+                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 ${
+                          validationErrors.email ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       />
                     </div>
+                    {validationErrors.email && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
@@ -255,9 +319,15 @@ const PatientProfile = () => {
                         value={personalDetails.phone}
                         onChange={(e) => handlePersonalDetailsChange('phone', e.target.value)}
                         disabled={!isEditing}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                        maxLength={20}
+                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 ${
+                          validationErrors.phone ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       />
                     </div>
+                    {validationErrors.phone && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.phone}</p>
+                    )}
                   </div>
                 </div>
 
@@ -281,7 +351,7 @@ const PatientProfile = () => {
                       type="text"
                       value={`${calculateAge(personalDetails.dateOfBirth)} years old`}
                       disabled
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                     />
                   </div>
                 </div>

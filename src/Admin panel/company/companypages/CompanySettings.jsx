@@ -21,6 +21,7 @@ const CompanySettings = () => {
   const fileInputRef = useRef(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
   
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
@@ -78,11 +79,50 @@ const CompanySettings = () => {
     monthlyReports: true
   });
 
+  const validateEmail = (email) => {
+    if (!email) return 'Email is required';
+    if (email.length > 100) return 'Email must be less than 100 characters';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    return '';
+  };
+
+  const validatePhone = (phone) => {
+    if (!phone) return 'Phone is required';
+    if (phone.length > 20) return 'Phone must be less than 20 characters';
+    const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
+    if (!phoneRegex.test(phone)) return 'Please enter a valid phone number';
+    return '';
+  };
+
   const handleInputChange = (field, value) => {
+    // Enforce max length limits
+    let processedValue = value;
+    if (field === 'contactEmail' && value.length > 100) {
+      processedValue = value.slice(0, 100);
+    } else if (field === 'phone' && value.length > 20) {
+      processedValue = value.slice(0, 20);
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: processedValue
     }));
+    
+    // Validate email and phone fields
+    if (field === 'contactEmail') {
+      const error = validateEmail(processedValue);
+      setValidationErrors(prev => ({
+        ...prev,
+        contactEmail: error
+      }));
+    } else if (field === 'phone') {
+      const error = validatePhone(processedValue);
+      setValidationErrors(prev => ({
+        ...prev,
+        phone: error
+      }));
+    }
   };
 
   // Load saved settings on mount
@@ -103,6 +143,18 @@ const CompanySettings = () => {
 
   const handleSave = async () => {
     try {
+      // Validate email and phone before saving
+      const emailError = validateEmail(formData.contactEmail);
+      const phoneError = validatePhone(formData.phone);
+      
+      if (emailError || phoneError) {
+        setValidationErrors({
+          contactEmail: emailError,
+          phone: phoneError
+        });
+        return;
+      }
+      
       // Save company settings to localStorage
       const settingsToSave = {
         ...formData,
@@ -115,6 +167,7 @@ const CompanySettings = () => {
       // Show success message
       setShowSuccessMessage(true);
       setTimeout(() => setShowSuccessMessage(false), 3000);
+      setValidationErrors({});
       
       // Log for debugging
       console.log('Settings saved:', settingsToSave);
@@ -255,8 +308,14 @@ const CompanySettings = () => {
                         type="email"
                         value={formData.contactEmail}
                         onChange={(e) => handleInputChange('contactEmail', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                        maxLength={100}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                          validationErrors.contactEmail ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       />
+                      {validationErrors.contactEmail && (
+                        <p className="mt-1 text-sm text-red-600">{validationErrors.contactEmail}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
@@ -264,8 +323,14 @@ const CompanySettings = () => {
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                        maxLength={20}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                          validationErrors.phone ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       />
+                      {validationErrors.phone && (
+                        <p className="mt-1 text-sm text-red-600">{validationErrors.phone}</p>
+                      )}
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
