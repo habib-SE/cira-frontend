@@ -4,7 +4,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "three";
 
 /**
- * Nurse Avatar with lip sync + blinking
+ * Nurse Avatar with lip sync + blinking etc
  */
 export default function NurseAvatar({ isSpeaking, isConnected, phoneme }) {
   const avatar = useLoader(GLTFLoader, "/nurse6.glb");
