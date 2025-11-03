@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Users, Clock, Award, X, Star, Calendar, Edit } from 'lucide-react';
+import { Users, Award, X, Star, Calendar, Edit } from 'lucide-react';
 import Card from '../admincomponents/Card';
 import Breadcrumbs from '../../../components/shared/Breadcrumbs';
 import MetaChips from '../../../components/shared/MetaChips';
@@ -90,7 +90,6 @@ const Doctors = () => {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterSpecialty, setFilterSpecialty] = useState('');
-    const [filterStatus, setFilterStatus] = useState('');
     const [showEditFormInLayout, setShowEditFormInLayout] = useState(false);
     const [doctorToEdit, setDoctorToEdit] = useState(null);
     const [editFormData, setEditFormData] = useState({});
@@ -155,8 +154,10 @@ const Doctors = () => {
         }
     };
 
-    // Filter doctors
-    const filteredDoctors = doctors.filter(doctor => {
+    // Filter doctors - only show approved doctors
+    const approvedDoctorsList = doctors.filter(doctor => doctor.status === 'Approved');
+    
+    const filteredDoctors = approvedDoctorsList.filter(doctor => {
         const searchLower = searchTerm.toLowerCase();
         const doctorNameLower = doctor.name.toLowerCase();
         const specialtyLower = doctor.specialty.toLowerCase();
@@ -175,21 +176,16 @@ const Doctors = () => {
         }
         
         const matchesSpecialty = filterSpecialty === '' || doctor.specialty === filterSpecialty;
-        const matchesStatus = filterStatus === '' || doctor.status === filterStatus;
         
-        return matchesSearch && matchesSpecialty && matchesStatus;
+        return matchesSearch && matchesSpecialty;
     });
 
-    // Group doctors by status
-    const pendingDoctors = filteredDoctors.filter(d => d.status === 'Pending');
-    const approvedDoctors = filteredDoctors.filter(d => d.status === 'Approved');
-    const rejectedDoctors = filteredDoctors.filter(d => d.status === 'Rejected');
+    // Only approved doctors
+    const approvedDoctors = filteredDoctors;
 
-    // Calculate statistics
-    const totalDoctors = doctors.length;
-    const pendingCount = doctors.filter(d => d.status === 'Pending').length;
-    const approvedCount = doctors.filter(d => d.status === 'Approved').length;
-    const rejectedCount = doctors.filter(d => d.status === 'Rejected').length;
+    // Calculate statistics - only for approved doctors
+    const approvedCount = approvedDoctorsList.length;
+    const totalDoctors = approvedCount;
 
     const handleApproveDoctor = (doctor) => {
         setDoctors(prev => prev.map(d => 
@@ -326,8 +322,8 @@ const Doctors = () => {
         }
     }, [location.pathname, doctors]);
 
-    // Get unique specialties for filter dropdown
-    const specialties = [...new Set(doctors.map(doctor => doctor.specialty))];
+    // Get unique specialties for filter dropdown - only from approved doctors
+    const specialties = [...new Set(approvedDoctorsList.map(doctor => doctor.specialty))];
 
     return (
         <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
@@ -542,26 +538,15 @@ const Doctors = () => {
             <div className="relative min-h-[600px]">
                 <div className="space-y-6">
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="p-4">
                     <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
                             <Users className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
-                            <p className="text-sm text-gray-600">Total Doctors</p>
+                            <p className="text-sm text-gray-600">Total Approved Doctors</p>
                             <p className="text-xl font-bold text-gray-900">{totalDoctors}</p>
-                        </div>
-                    </div>
-                </Card>
-                <Card className="p-4">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
-                            <Clock className="w-5 h-5 text-yellow-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Pending</p>
-                            <p className="text-xl font-bold text-gray-900">{pendingCount}</p>
                         </div>
                     </div>
                 </Card>
@@ -571,19 +556,8 @@ const Doctors = () => {
                             <Award className="w-5 h-5 text-green-600" />
                         </div>
                         <div>
-                            <p className="text-sm text-gray-600">Approved</p>
+                            <p className="text-sm text-gray-600">Active</p>
                             <p className="text-xl font-bold text-gray-900">{approvedCount}</p>
-                        </div>
-                    </div>
-                </Card>
-                <Card className="p-4">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
-                            <X className="w-5 h-5 text-red-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Rejected</p>
-                            <p className="text-xl font-bold text-gray-900">{rejectedCount}</p>
                         </div>
                     </div>
                 </Card>
@@ -615,24 +589,13 @@ const Doctors = () => {
                                 <option key={specialty} value={specialty}>{specialty}</option>
                             ))}
                         </select>
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
-                        >
-                            <option value="">All Status</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Rejected">Rejected</option>
-                        </select>
                         
                         {/* Clear Filters Button */}
-                        {(searchTerm || filterSpecialty || filterStatus) && (
+                        {(searchTerm || filterSpecialty) && (
                             <button
                                 onClick={() => {
                                     setSearchTerm('');
                                     setFilterSpecialty('');
-                                    setFilterStatus('');
                                 }}
                                 className="px-4 py-2 text-pink-600 hover:bg-pink-50 rounded-xl transition-all duration-300 flex items-center space-x-2 border border-pink-200 hover:border-pink-300 hover:shadow-lg font-medium text-sm"
                             >
@@ -644,101 +607,26 @@ const Doctors = () => {
                 </div>
             </Card>
 
-            {/* Doctors by Status */}
+            {/* Approved Doctors */}
             <div className="space-y-8">
-                {filteredDoctors.length === 0 ? (
+                {approvedDoctors.length === 0 ? (
                     <Card className="p-12 text-center">
                         <div className="flex flex-col items-center space-y-4">
                             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
                                 <Users className="w-8 h-8 text-gray-400" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-2">No doctors found</h3>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">No approved doctors found</h3>
                                 <p className="text-gray-600">
-                                    {searchTerm || filterSpecialty || filterStatus 
-                                        ? 'No doctors match your current filters.'
-                                        : 'No doctors have been registered yet.'
+                                    {searchTerm || filterSpecialty 
+                                        ? 'No approved doctors match your current filters.'
+                                        : 'No approved doctors available.'
                                     }
                                 </p>
                             </div>
                         </div>
                     </Card>
                 ) : (
-                    <>
-                        {/* Pending Doctors */}
-                        {pendingDoctors.length > 0 && (
-                            <div>
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                                    <Clock className="w-5 h-5 text-yellow-600 mr-2" />
-                                    Pending Verification ({pendingDoctors.length})
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {pendingDoctors.map((doctor) => (
-                                        <Card key={doctor.id} className="p-6 border-l-4 border-l-yellow-500">
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="flex items-center space-x-3">
-                                                    <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                                        {doctor.avatar}
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-semibold text-gray-900">{doctor.name}</h3>
-                                                        <p className="text-sm text-gray-600">{doctor.specialty}</p>
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    onClick={() => handleEditDoctor(doctor)}
-                                                    className="text-purple-600 hover:text-purple-800 p-1 hover:bg-purple-50 rounded transition-colors"
-                                                    title="Edit Doctor"
-                                                >
-                                                    <Edit className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                            
-                                            <div className="space-y-2 mb-4">
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-gray-600">Experience:</span>
-                                                    <span className="font-medium">{doctor.experience}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-gray-600">Documents:</span>
-                                                    <span className="font-medium">{doctor.documents.length}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-gray-600">Joined:</span>
-                                                    <span className="font-medium">{doctor.joinDate}</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                                <button
-                                                    onClick={() => handleViewDoctorProfile(doctor)}
-                                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                                >
-                                                    Review
-                                                </button>
-                                                <div className="flex items-center space-x-2">
-                                                    <button
-                                                        onClick={() => handleApproveDoctor(doctor)}
-                                                        className="px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors"
-                                                    >
-                                                        Approve
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleRejectDoctor(doctor)}
-                                                        className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
-                                                    >
-                                                        Reject
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Approved Doctors */}
-                        {approvedDoctors.length > 0 && (
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
                                     <Award className="w-5 h-5 text-green-600 mr-2" />
@@ -800,74 +688,6 @@ const Doctors = () => {
                                     ))}
                                 </div>
                             </div>
-                        )}
-
-                        {/* Rejected Doctors */}
-                        {rejectedDoctors.length > 0 && (
-                            <div>
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                                    <X className="w-5 h-5 text-red-600 mr-2" />
-                                    Rejected Doctors ({rejectedDoctors.length})
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {rejectedDoctors.map((doctor) => (
-                                        <Card key={doctor.id} className="p-6 border-l-4 border-l-red-500">
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="flex items-center space-x-3">
-                                                    <div className="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center text-white font-semibold">
-                                                        {doctor.avatar}
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-semibold text-gray-900">{doctor.name}</h3>
-                                                        <p className="text-sm text-gray-600">{doctor.specialty}</p>
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    onClick={() => handleEditDoctor(doctor)}
-                                                    className="text-purple-600 hover:text-purple-800 p-1 hover:bg-purple-50 rounded transition-colors"
-                                                    title="Edit Doctor"
-                                                >
-                                                    <Edit className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                            
-                                            <div className="space-y-2 mb-4">
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-gray-600">Experience:</span>
-                                                    <span className="font-medium">{doctor.experience}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-gray-600">Documents:</span>
-                                                    <span className="font-medium">{doctor.documents.length}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-gray-600">Applied:</span>
-                                                    <span className="font-medium">{doctor.joinDate}</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                                <button
-                                                    onClick={() => handleViewDoctorProfile(doctor)}
-                                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                                >
-                                                    Review
-                                                </button>
-                                                <div className="flex items-center space-x-2">
-                                                    <button
-                                                        onClick={() => handleApproveDoctor(doctor)}
-                                                        className="px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors"
-                                                    >
-                                                        Approve
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </>
                 )}
             </div>
         </div>
