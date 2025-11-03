@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, Eye, Trash2, CheckCircle, XCircle, Search, Filter } from 'lucide-react';
 import Card from '../admincomponents/Card';
@@ -11,7 +11,7 @@ const Plans = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
 
-  const [plans, setPlans] = useState([
+  const defaultPlans = [
     {
       id: 1,
       name: 'Free',
@@ -31,18 +31,32 @@ const Plans = () => {
       limits: { aiSessions: 50, vitalsScans: 50 },
       features: { plusAI: true, vitals: true, chat: true },
       trial: true
-    },
-    {
-      id: 3,
-      name: 'Premium',
-      tier: 'Premium',
-      priceMonthly: 19,
-      priceAnnual: 190,
-      limits: { aiSessions: 200, vitalsScans: 200 },
-      features: { plusAI: true, vitals: true, chat: true },
-      trial: true
     }
-  ]);
+  ];
+
+  const [plans, setPlans] = useState(() => {
+    const stored = localStorage.getItem('adminPlans');
+    try {
+      return stored ? JSON.parse(stored) : defaultPlans;
+    } catch {
+      return defaultPlans;
+    }
+  });
+
+  // Persist on changes
+  useEffect(() => {
+    localStorage.setItem('adminPlans', JSON.stringify(plans));
+  }, [plans]);
+
+  // In case edits happened in another route/tab, refresh when storage changes
+  useEffect(() => {
+    const onStorage = () => {
+      const stored = localStorage.getItem('adminPlans');
+      if (stored) setPlans(JSON.parse(stored));
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const showToastNotification = (message, type = 'success') => {
     setToastMessage(message);

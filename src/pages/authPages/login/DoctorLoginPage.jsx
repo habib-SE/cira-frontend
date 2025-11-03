@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import logo from '../../../assets/Logo.png';
 import { 
@@ -47,6 +47,15 @@ const DoctorLoginPage = () => {
 
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // If navigated with ?mode=register, open registration by default
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (params.get('mode') === 'register') {
+            setIsLogin(false);
+        }
+    }, [location.search]);
 
     // Debug: Log modal state changes
     useEffect(() => {
@@ -405,10 +414,10 @@ const DoctorLoginPage = () => {
 
                                     {/* Step Indicator */}
                                     <div className="mb-8">
-                                        <div className="flex items-center justify-between">
+                                        <div className="flex items-center justify-center gap-6 md:gap-10">
                                             {[1, 2, 3, 4].map((step, index) => (
                                                 <React.Fragment key={step}>
-                                                    <div className="flex flex-col items-center flex-1 relative z-10">
+                                                    <div className="flex flex-col items-center relative z-10">
                                                         <div
                                                             className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 shadow-lg ${
                                                                 registrationStep === step
@@ -437,7 +446,7 @@ const DoctorLoginPage = () => {
                                                     </div>
                                                     {index < 3 && (
                                                         <div
-                                                            className={`flex-1 h-1 mx-4 transition-all duration-300 rounded-full ${
+                                                            className={`w-10 md:w-16 h-0.5 mx-2 transition-all duration-300 rounded-full ${
                                                                 registrationStep > step ? 'bg-green-500' : 'bg-gray-200'
                                                             }`}
                                                         />

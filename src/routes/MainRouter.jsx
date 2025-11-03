@@ -20,6 +20,10 @@ import AdminLayout from '../Admin panel/admin/admincomponents/AdminLayout';
 import Dashboard from '../Admin panel/admin/adminpages/Dashboard';
 import Users from '../Admin panel/admin/adminpages/Users';
 import Doctors from '../Admin panel/admin/adminpages/Doctors';
+import Approvals from '../Admin panel/admin/adminpages/Approvals';
+import AdminCompliance from '../Admin panel/admin/adminpages/AdminCompliance';
+// import ComplianceDetail from '../Admin panel/admin/adminpages/ComplianceDetail';
+import AdminPayouts from '../Admin panel/admin/adminpages/AdminPayouts';
 import AdminDoctorProfile from '../Admin panel/admin/adminpages/DoctorProfile';
 import DoctorProfileDetail from '../Admin panel/admin/adminpages/DoctorProfileDetail';
 import Appointments from '../Admin panel/admin/adminpages/Appointments';
@@ -34,6 +38,7 @@ import ReferralProviderEdit from '../Admin panel/admin/adminpages/ReferralProvid
 import Plans from '../Admin panel/admin/adminpages/Plans';
 import PlanEditor from '../Admin panel/admin/adminpages/PlanEditor';
 import PlanDetail from '../Admin panel/admin/adminpages/PlanDetail';
+import AdminAnalytics from '../Admin panel/admin/adminpages/AdminAnalytics';
 
 // User Portal Imports
 import UserLayout from '../Admin panel/patient/patientcomponents/PatientLayout';
@@ -125,6 +130,9 @@ function MainRouter() {
         <Route path="doctors" element={<Doctors />} />
         <Route path="doctors/edit/:id" element={<Doctors />} />
         <Route path="doctors/:id" element={<AdminDoctorProfile />} />
+        <Route path="approvals" element={<Approvals />} />
+        <Route path="compliance" element={<AdminCompliance />} />
+        <Route path="compliance/:type/:id" element={<AdminCompliance />} />
         <Route path="appointments" element={<Appointments />} />
         <Route path="appointments/add" element={<Appointments />} />
         <Route path="appointments/edit/:id" element={<Appointments />} />
@@ -132,10 +140,12 @@ function MainRouter() {
         <Route path="reports" element={<Reports />} />
         <Route path="payments" element={<Payments />} />
         <Route path="payments/:id" element={<PaymentDetail />} />
+        <Route path="payouts" element={<AdminPayouts />} />
         <Route path="plans" element={<Plans />} />
         <Route path="plans/create" element={<PlanEditor mode="create" />} />
         <Route path="plans/edit/:id" element={<PlanEditor mode="edit" />} />
         <Route path="plans/view/:id" element={<PlanDetail />} />
+        <Route path="analytics" element={<AdminAnalytics />} />
         <Route path="settings" element={<Settings />} />
         <Route path="referrals" element={<Referrals />} />
         <Route path="referrals/:id" element={<ReferralDetail />} />

@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 
 import { 
 
@@ -60,6 +62,8 @@ const DoctorSettings = () => {
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const location = useLocation();
+    const { user, updateUser } = useAuth();
 
     const [settings, setSettings] = useState({
 
@@ -212,6 +216,44 @@ const DoctorSettings = () => {
         }
 
     });
+
+    // Initialize from saved settings or current user name
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem('doctorSettings');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed && parsed.profile) {
+                    setSettings(parsed);
+                }
+            } else if (user?.name) {
+                const name = user.name.trim();
+                // Split into first and last (last token as last name)
+                const tokens = name.split(/\s+/);
+                const lastName = tokens.length > 1 ? tokens[tokens.length - 1] : '';
+                const firstName = tokens.length > 1 ? tokens.slice(0, -1).join(' ') : tokens[0];
+                setSettings(prev => ({
+                    ...prev,
+                    profile: {
+                        ...prev.profile,
+                        firstName: firstName,
+                        lastName: lastName,
+                        email: prev.profile.email
+                    }
+                }));
+            }
+        } catch {}
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Open specific tab via query param (?tab=profile)
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const tab = params.get('tab');
+        if (tab) {
+            setActiveTab(tab);
+        }
+    }, [location.search]);
 
 
 
@@ -376,6 +418,10 @@ const DoctorSettings = () => {
             
             // Save to localStorage for persistence
             localStorage.setItem('doctorSettings', JSON.stringify(settings));
+
+            // Update top-right name using auth context
+            const newDisplayName = `${settings.profile.firstName}${settings.profile.lastName ? ' ' + settings.profile.lastName : ''}`;
+            updateUser({ name: newDisplayName });
             
             setToastMessage('Settings saved successfully!');
             setShowToast(true);

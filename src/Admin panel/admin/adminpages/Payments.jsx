@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { 
     CreditCard, 
-    Search, 
     Filter, 
     Download, 
-    Send, 
     TrendingUp, 
     TrendingDown,
     DollarSign,
@@ -157,9 +155,7 @@ const Payments = () => {
     const totalPayouts = payments.filter(p => p.status === 'Completed').reduce((sum, payment) => sum + payment.doctorPayout, 0);
     const pendingPayouts = payments.filter(p => p.status === 'Pending Payout').reduce((sum, payment) => sum + payment.doctorPayout, 0);
 
-    const handleProcessPayout = (payment) => {
-        // Implement payout processing logic
-    };
+    // Removed inline actions from the table; payout processing is now handled elsewhere
 
     const handleDownloadReport = () => {
         try {
@@ -452,21 +448,9 @@ const Payments = () => {
                 </Card>
             </div>
 
-            {/* Search and Filter */}
+            {/* Filters */}
             <Card className="p-4">
                 <div className="space-y-4">
-                    {/* Search Bar */}
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search by patient, doctor, or transaction ID..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                        />
-                    </div>
-                    
                     {/* Filter Row */}
                     <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3">
                         <select
@@ -536,9 +520,6 @@ const Payments = () => {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -585,26 +566,7 @@ const Payments = () => {
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div className="flex items-center space-x-2">
-                                            {payment.status === 'Pending Payout' && (
-                                                <button
-                                                    onClick={() => handleProcessPayout(payment)}
-                                                    className="text-green-600 hover:text-green-900 p-1"
-                                                    title="Process Payout"
-                                                >
-                                                    <Send className="w-4 h-4" />
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={() => {}}
-                                                className="text-blue-600 hover:text-blue-900 p-1"
-                                                title="View Details"
-                                            >
-                                                <CreditCard className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </td>
+                                    
                                 </tr>
                             ))}
                         </tbody>
