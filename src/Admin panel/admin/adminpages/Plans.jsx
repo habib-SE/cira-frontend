@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Eye, Trash2, CheckCircle, XCircle, Search, Filter } from 'lucide-react';
+import { Plus, Edit, Eye, Trash2, CheckCircle, XCircle, Search, Filter, Shield, Star, Crown, Check } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const Plans = () => {
@@ -26,11 +26,21 @@ const Plans = () => {
       id: 2,
       name: 'Basic',
       tier: 'Basic',
-      priceMonthly: 9,
-      priceAnnual: 90,
-      limits: { aiSessions: 50, vitalsScans: 50 },
+      priceMonthly: 40,
+      priceAnnual: 190,
+      limits: { aiSessions: 10, vitalsScans: 10 },
       features: { plusAI: true, vitals: true, chat: true },
       trial: true
+    },
+    {
+      id: 3,
+      name: 'Premium',
+      tier: 'Premium',
+      priceMonthly: 200,
+      priceAnnual: 1998,
+      limits: { aiSessions: 20, vitalsScans: 20 },
+      features: { plusAI: true, vitals: true, chat: true },
+      trial: false
     }
   ];
 
@@ -77,6 +87,32 @@ const Plans = () => {
     showToastNotification('Plan deleted', 'warning');
   };
 
+  const getPlanIcon = (tier) => {
+    switch (tier) {
+      case 'Free':
+        return <Shield className="h-6 w-6" />;
+      case 'Basic':
+        return <Star className="h-6 w-6" />;
+      case 'Premium':
+        return <Crown className="h-6 w-6" />;
+      default:
+        return <Shield className="h-6 w-6" />;
+    }
+  };
+
+  const getPlanColor = (tier) => {
+    switch (tier) {
+      case 'Free':
+        return 'border-gray-200 bg-gray-50';
+      case 'Basic':
+        return 'border-blue-200 bg-blue-50';
+      case 'Premium':
+        return 'border-purple-200 bg-purple-50';
+      default:
+        return 'border-gray-200 bg-gray-50';
+    }
+  };
+
   return (
     <div className="p-4 sm:p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -121,26 +157,73 @@ const Plans = () => {
       </Card>
 
       {/* List */}
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {filtered.map(plan => (
-          <Card key={plan.id} className="p-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">{plan.name}</h3>
-                <p className="text-sm text-gray-600">Tier: {plan.tier}</p>
+          <Card 
+            key={plan.id} 
+            className="relative p-6 transition-all duration-200 hover:shadow-lg"
+          >
+            {/* Plan Header */}
+            <div className="text-center mb-6">
+              <div className={`w-16 h-16 ${getPlanColor(plan.tier)} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                <div className="text-gray-600">
+                  {getPlanIcon(plan.tier)}
+                </div>
               </div>
-              <span className="text-pink-600 font-semibold">${plan.priceMonthly}/mo</span>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+              <div className="mb-2">
+                <span className="text-3xl font-bold text-gray-900">${plan.priceMonthly}</span>
+                <span className="text-gray-600 ml-1">/mo</span>
+              </div>
+              <p className="text-sm text-gray-600">Tier: {plan.tier}</p>
             </div>
-            <div className="mt-4 space-y-1 text-sm text-gray-700">
-              <p>Annual: <span className="font-medium">${plan.priceAnnual}/yr</span></p>
-              <p>AI sessions: <span className="font-medium">{plan.limits.aiSessions}</span></p>
-              <p>Vitals scans: <span className="font-medium">{plan.limits.vitalsScans}</span></p>
-              <p>Trial: <span className="font-medium">{plan.trial ? 'Available' : 'No'}</span></p>
+
+            {/* Plan Details */}
+            <div className="mb-6">
+              <h4 className="font-semibold text-gray-900 mb-3">Plan Details:</h4>
+              <ul className="space-y-2">
+                <li className="flex items-start space-x-2">
+                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-gray-700">Annual: <span className="font-medium">${plan.priceAnnual}/yr</span></span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-gray-700">AI sessions: <span className="font-medium">{plan.limits.aiSessions}</span></span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-gray-700">Vitals scans: <span className="font-medium">{plan.limits.vitalsScans}</span></span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-gray-700">Trial: <span className="font-medium">{plan.trial ? 'Available' : 'No'}</span></span>
+                </li>
+              </ul>
             </div>
-            <div className="mt-4 flex items-center gap-2">
-              <button onClick={() => navigate(`/admin/plans/view/${plan.id}`)} className="px-3 py-1.5 border rounded-lg text-gray-700 hover:bg-gray-50"><Eye className="w-4 h-4" /></button>
-              <button onClick={() => navigate(`/admin/plans/edit/${plan.id}`)} className="px-3 py-1.5 border rounded-lg text-blue-600 hover:bg-blue-50"><Edit className="w-4 h-4" /></button>
-              <button onClick={() => handleDelete(plan.id)} className="px-3 py-1.5 border rounded-lg text-red-600 hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => navigate(`/admin/plans/view/${plan.id}`)} 
+                className="flex-1 px-3 py-2 border rounded-lg text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2"
+              >
+                <Eye className="w-4 h-4" />
+                <span className="text-sm">View</span>
+              </button>
+              <button 
+                onClick={() => navigate(`/admin/plans/edit/${plan.id}`)} 
+                className="flex-1 px-3 py-2 border rounded-lg text-blue-600 hover:bg-blue-50 flex items-center justify-center gap-2"
+              >
+                <Edit className="w-4 h-4" />
+                <span className="text-sm">Edit</span>
+              </button>
+              <button 
+                onClick={() => handleDelete(plan.id)} 
+                className="flex-1 px-3 py-2 border rounded-lg text-red-600 hover:bg-red-50 flex items-center justify-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="text-sm">Delete</span>
+              </button>
             </div>
           </Card>
         ))}

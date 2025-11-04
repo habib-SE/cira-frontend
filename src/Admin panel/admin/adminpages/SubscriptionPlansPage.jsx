@@ -59,6 +59,7 @@ SubscriptionPlansPage = () => {
             className="min-h-screen flex flex-col px-4 py-5 overflow-hidden relative"
             style={{ background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)' }}
         >
+        
             {/* Header - Logo in top left */}
             <div className="w-full flex justify-start items-center mb-2">
                 <div className="flex items-center pl-4">

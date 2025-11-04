@@ -46,7 +46,6 @@ const UnifiedSidebar = ({
           { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
           { id: 'doctors', label: 'Doctors', icon: Stethoscope, path: '/admin/doctors' },
           { id: 'approvals', label: 'Approvals', icon: CheckCircle, path: '/admin/approvals' },
-          { id: 'compliance', label: 'Compliance', icon: Shield, path: '/admin/compliance' },
           { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
           { id: 'payouts', label: 'Payouts', icon: Receipt, path: '/admin/payouts' },
           { id: 'reports', label: 'Reports', icon: FileText, path: '/admin/reports' },
