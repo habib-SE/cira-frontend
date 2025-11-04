@@ -53,6 +53,7 @@ const UnifiedSidebar = ({
           { id: 'subscriptions', label: 'Subscriptions', icon: User, path: '/admin/plans' },
           { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/admin/appointments' },
           { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
+          { id: 'compliance', label: 'Compliance', icon: Shield, path: '/admin/compliance' },
           { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
         ];
       case 'company':
