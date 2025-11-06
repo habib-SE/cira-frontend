@@ -59,6 +59,7 @@ const UnifiedSidebar = ({
       case 'company':
         return [
           { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/company' },
+          { id: 'profile', label: 'Profile', icon: User, path: '/company/profile' },
           { id: 'users', label: 'Users', icon: Users, path: '/company/users' },
           { id: 'reports', label: 'Reports', icon: FileText, path: '/company/reports' },
           { id: 'consultations', label: 'Consultations', icon: Stethoscope, path: '/company/consultations' },

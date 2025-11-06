@@ -6,7 +6,9 @@ import {
   FileText, 
   AlertCircle,
   CheckCircle,
-  Clock
+  Clock,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
 
 const FormTemplate = ({
@@ -27,6 +29,8 @@ const FormTemplate = ({
   const [activeSection, setActiveSection] = useState(sections[0]?.id || '');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [touchedFields, setTouchedFields] = useState({});
+  const [shouldValidate, setShouldValidate] = useState(false);
 
   // Auto-save functionality
   useEffect(() => {
@@ -47,14 +51,33 @@ const FormTemplate = ({
   }, [formData, hasUnsavedChanges, isSubmitting, onSave]);
 
   const handleInputChange = (sectionId, fieldId, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [sectionId]: {
-        ...prev[sectionId],
-        [fieldId]: value
+    setFormData(prev => {
+      // Support both nested (section-based) and flat data structures
+      if (prev[sectionId]) {
+        return {
+          ...prev,
+          [sectionId]: {
+            ...prev[sectionId],
+            [fieldId]: value
+          }
+        };
+      } else {
+        return {
+          ...prev,
+          [fieldId]: value
+        };
       }
-    }));
+    });
     setHasUnsavedChanges(true);
+  };
+
+  const handleFieldBlur = (sectionId, fieldId) => {
+    // Mark field as touched when user leaves it
+    const fieldKey = `${sectionId}_${fieldId}`;
+    setTouchedFields(prev => ({
+      ...prev,
+      [fieldKey]: true
+    }));
   };
 
   const handleFileUpload = (sectionId, fieldId, files) => {
@@ -62,12 +85,6 @@ const FormTemplate = ({
     handleInputChange(sectionId, fieldId, fileList);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (onSubmit) {
-      onSubmit(formData);
-    }
-  };
 
   const handleSave = () => {
     if (onSave) {
@@ -83,18 +100,139 @@ const FormTemplate = ({
     }
   };
 
+  const handleNext = () => {
+    // Mark all fields in current section as touched to show validation errors
+    const currentSection = sections.find(s => s.id === activeSection);
+    if (currentSection) {
+      const newTouched = { ...touchedFields };
+      currentSection.fields.forEach(field => {
+        const fieldId = field.id || field.name;
+        const fieldKey = `${activeSection}_${fieldId}`;
+        newTouched[fieldKey] = true;
+      });
+      setTouchedFields(newTouched);
+      setShouldValidate(true);
+    }
+
+    // Validate current section before moving
+    const currentSectionErrors = validationErrors[activeSection] || {};
+    const hasErrors = Object.keys(currentSectionErrors).length > 0;
+    
+    if (hasErrors) {
+      // Don't move if there are validation errors
+      return;
+    }
+
+    // Save current data before moving
+    if (onSave) {
+      onSave(formData);
+      setHasUnsavedChanges(false);
+    }
+    
+    // Reset validation state for next section
+    setShouldValidate(false);
+    
+    // Move to next section
+    const currentIndex = sections.findIndex(s => s.id === activeSection);
+    if (currentIndex < sections.length - 1) {
+      setActiveSection(sections[currentIndex + 1].id);
+    }
+  };
+
+  const handleBack = () => {
+    // Move to previous section
+    const currentIndex = sections.findIndex(s => s.id === activeSection);
+    if (currentIndex > 0) {
+      setActiveSection(sections[currentIndex - 1].id);
+    }
+  };
+
+  const handleSubmitForm = (e) => {
+    e.preventDefault();
+    
+    // Mark all fields as touched to show all validation errors
+    const newTouched = { ...touchedFields };
+    sections.forEach(section => {
+      section.fields.forEach(field => {
+        const fieldId = field.id || field.name;
+        const fieldKey = `${section.id}_${fieldId}`;
+        newTouched[fieldKey] = true;
+      });
+    });
+    setTouchedFields(newTouched);
+    setShouldValidate(true);
+
+    // Check if there are any validation errors
+    let hasErrors = false;
+    sections.forEach(section => {
+      const sectionErrors = validationErrors[section.id] || {};
+      if (Object.keys(sectionErrors).length > 0) {
+        hasErrors = true;
+      }
+    });
+
+    if (hasErrors) {
+      // Don't submit if there are validation errors
+      return;
+    }
+
+    if (onSubmit) {
+      onSubmit(formData);
+    }
+  };
+
+  const isLastSection = () => {
+    const currentIndex = sections.findIndex(s => s.id === activeSection);
+    return currentIndex === sections.length - 1;
+  };
+
+  const isFirstSection = () => {
+    const currentIndex = sections.findIndex(s => s.id === activeSection);
+    return currentIndex === 0;
+  };
+
   const renderField = (field, sectionId) => {
-    const fieldId = field.id;
-    const value = formData[sectionId]?.[fieldId] || '';
-    const error = validationErrors[sectionId]?.[fieldId];
+    const fieldId = field.id || field.name;
+    let value = formData[sectionId]?.[fieldId] || formData[fieldId] || '';
+    
+    // Handle number fields - ensure proper value format
+    if (field.type === 'number') {
+      if (value === '' || value === null || value === undefined) {
+        value = '';
+      } else {
+        value = Number(value);
+      }
+    }
+    
+    const error = validationErrors[sectionId]?.[fieldId] || validationErrors[fieldId];
+    const fieldKey = `${sectionId}_${fieldId}`;
+    const isTouched = touchedFields[fieldKey] || false;
+    const shouldShowError = isTouched || shouldValidate;
+    const showError = shouldShowError && error;
 
     const commonProps = {
       id: fieldId,
       name: fieldId,
       value: value,
-      onChange: (e) => handleInputChange(sectionId, fieldId, e.target.value),
+      onChange: (e) => {
+        let newValue = e.target.value;
+        // For number fields, calculate net amount if needed
+        if (fieldId === 'gross' || fieldId === 'commission') {
+          handleInputChange(sectionId, fieldId, newValue);
+          // Auto-calculate net amount
+          if (sectionId === 'financial') {
+            const gross = fieldId === 'gross' ? parseFloat(newValue) || 0 : parseFloat(formData.gross || formData[sectionId]?.gross || 0);
+            const commission = fieldId === 'commission' ? parseFloat(newValue) || 0 : parseFloat(formData.commission || formData[sectionId]?.commission || 0);
+            const net = gross - (gross * commission / 100);
+            handleInputChange(sectionId, 'net', net.toFixed(2));
+          }
+        } else {
+          handleInputChange(sectionId, fieldId, newValue);
+        }
+      },
+      onBlur: () => handleFieldBlur(sectionId, fieldId),
       className: `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 ${
-        error ? 'border-red-300' : 'border-gray-300'
+        showError ? 'border-red-300' : 'border-gray-300'
       }`,
       placeholder: field.placeholder,
       required: field.required
@@ -119,7 +257,58 @@ const FormTemplate = ({
             {field.helpText && (
               <p className="text-xs text-gray-500">{field.helpText}</p>
             )}
-            {error && (
+            {showError && (
+              <p className="text-xs text-red-600 flex items-center">
+                <AlertCircle className="w-3 h-3 mr-1" />
+                {error}
+              </p>
+            )}
+          </div>
+        );
+
+      case 'number':
+        return (
+          <div key={fieldId} className="space-y-1">
+            <label htmlFor={fieldId} className="block text-sm font-medium text-gray-700">
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
+            </label>
+            <input
+              id={fieldId}
+              name={fieldId}
+              type="number"
+              value={value}
+              onChange={(e) => {
+                let newValue = e.target.value;
+                handleInputChange(sectionId, fieldId, newValue);
+                
+                // Auto-calculate net amount for financial section
+                if (sectionId === 'financial') {
+                  const currentGross = fieldId === 'gross' ? parseFloat(newValue) || 0 : parseFloat(formData.gross || formData[sectionId]?.gross || 0);
+                  const currentCommission = fieldId === 'commission' ? parseFloat(newValue) || 0 : parseFloat(formData.commission || formData[sectionId]?.commission || 0);
+                  if (currentGross > 0 && currentCommission >= 0) {
+                    const commissionAmount = currentGross * (currentCommission / 100);
+                    const netAmount = currentGross - commissionAmount;
+                    handleInputChange(sectionId, 'net', netAmount.toFixed(2));
+                  }
+                }
+              }}
+              onBlur={() => handleFieldBlur(sectionId, fieldId)}
+              step={field.step || '1'}
+              min={field.min}
+              max={field.max}
+              readOnly={field.readOnly || false}
+              disabled={field.readOnly || false}
+              placeholder={field.placeholder}
+              required={field.required}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 ${
+                showError ? 'border-red-300' : 'border-gray-300'
+              } ${field.readOnly ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+            />
+            {field.helpText && (
+              <p className="text-xs text-gray-500">{field.helpText}</p>
+            )}
+            {showError && (
               <p className="text-xs text-red-600 flex items-center">
                 <AlertCircle className="w-3 h-3 mr-1" />
                 {error}
@@ -138,11 +327,12 @@ const FormTemplate = ({
             <textarea
               {...commonProps}
               rows={field.rows || 3}
+              onBlur={() => handleFieldBlur(sectionId, fieldId)}
             />
             {field.helpText && (
               <p className="text-xs text-gray-500">{field.helpText}</p>
             )}
-            {error && (
+            {showError && (
               <p className="text-xs text-red-600 flex items-center">
                 <AlertCircle className="w-3 h-3 mr-1" />
                 {error}
@@ -158,7 +348,10 @@ const FormTemplate = ({
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
-            <select {...commonProps}>
+            <select 
+              {...commonProps}
+              onBlur={() => handleFieldBlur(sectionId, fieldId)}
+            >
               <option value="">Select {field.label}</option>
               {field.options?.map(option => (
                 <option key={option.value} value={option.value}>
@@ -169,7 +362,7 @@ const FormTemplate = ({
             {field.helpText && (
               <p className="text-xs text-gray-500">{field.helpText}</p>
             )}
-            {error && (
+            {showError && (
               <p className="text-xs text-red-600 flex items-center">
                 <AlertCircle className="w-3 h-3 mr-1" />
                 {error}
@@ -214,7 +407,7 @@ const FormTemplate = ({
             {field.helpText && (
               <p className="text-xs text-gray-500">{field.helpText}</p>
             )}
-            {error && (
+            {showError && (
               <p className="text-xs text-red-600 flex items-center">
                 <AlertCircle className="w-3 h-3 mr-1" />
                 {error}
@@ -281,7 +474,7 @@ const FormTemplate = ({
 
         {/* Form Content */}
         <div className="flex-1 p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmitForm} className="space-y-6">
             {sections.map((section) => (
               <div
                 key={section.id}
@@ -312,50 +505,65 @@ const FormTemplate = ({
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="flex items-center justify-center px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 min-w-[120px]"
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </button>
 
               <div className="flex items-center space-x-3">
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save
-                </button>
+                {/* Back Button - Show on all pages except first */}
+                {!isFirstSection() && (
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    disabled={isSubmitting}
+                    className="flex items-center justify-center px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50 min-w-[120px]"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    Back
+                  </button>
+                )}
 
-                <button
-                  type="button"
-                  onClick={handleSaveAndClose}
-                  disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save & Close
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-pink-600 border border-transparent rounded-lg hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Clock className="w-4 h-4 mr-2 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Submit
-                    </>
-                  )}
-                </button>
+                {/* Next or Submit Button */}
+                {!isLastSection() ? (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    disabled={isSubmitting}
+                    className="flex items-center justify-center px-6 py-2.5 text-sm font-medium text-white bg-pink-600 border border-transparent rounded-lg hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50 min-w-[120px]"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Clock className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        Next
+                        <ChevronRight className="w-4 h-4 ml-2" />
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex items-center justify-center px-6 py-2.5 text-sm font-medium text-white bg-pink-600 border border-transparent rounded-lg hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50 min-w-[120px]"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Clock className="w-4 h-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Submit
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </form>

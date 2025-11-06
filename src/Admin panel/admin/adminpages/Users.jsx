@@ -30,6 +30,10 @@ const Users = () => {
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [userToSuspend, setUserToSuspend] = useState(null);
+    const [isSuspendModalOpen, setIsSuspendModalOpen] = useState(false);
+    const [userToActivate, setUserToActivate] = useState(null);
+    const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
     const [showEditFormInLayout, setShowEditFormInLayout] = useState(false);
     const [userToEdit, setUserToEdit] = useState(null);
     const [editFormData, setEditFormData] = useState({});
@@ -129,7 +133,7 @@ const Users = () => {
             email: 'mike.johnson@email.com',
             department: 'Sales',
             role: 'User',
-            status: 'Suspended',
+            status: 'Inactive',
             joinDate: '2024-01-10',
             lastActiveTimestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
             totalAppointments: 2,
@@ -142,7 +146,7 @@ const Users = () => {
             email: 'michael.chen@clinic.com',
             department: 'Medical',
             role: 'Doctor',
-            status: 'Pending',
+            status: 'Inactive',
             joinDate: '2024-01-20',
             lastActiveTimestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1 hour ago
             totalAppointments: 12,
@@ -355,6 +359,8 @@ const Users = () => {
                 return 'bg-blue-100 text-blue-800';
             case 'User':
                 return 'bg-purple-100 text-purple-800';
+            case 'Company':
+                return 'bg-green-100 text-green-800';
             case 'Admin':
                 return 'bg-pink-100 text-pink-800';
             default:
@@ -402,8 +408,7 @@ const Users = () => {
     // Calculate statistics
     const totalUsers = users.length;
     const activeUsers = users.filter(u => u.status === 'Active').length;
-    const suspendedUsers = users.filter(u => u.status === 'Suspended').length;
-    const pendingUsers = users.filter(u => u.status === 'Pending').length;
+    const inactiveUsers = users.filter(u => u.status === 'Inactive').length;
 
     // Helper function to save users to localStorage
     const saveUsersToStorage = (updatedUsers) => {
@@ -415,8 +420,8 @@ const Users = () => {
     };
 
     const handleViewUser = (user) => {
-        setSelectedUser(user);
-        setIsViewModalOpen(true);
+        // Navigate to user detail page instead of opening modal
+        navigate(`/admin/users/view/${user.id}`);
     };
 
     const handleCloseViewModal = () => {
@@ -425,12 +430,26 @@ const Users = () => {
     };
 
     const handleSuspendUser = (user) => {
-        const updatedUsers = users.map(u => 
-            u.id === user.id ? { ...u, status: 'Suspended' } : u
-        );
-        setUsers(updatedUsers);
-        saveUsersToStorage(updatedUsers);
-        showToast(`${user.name} has been suspended`, 'success');
+        setUserToSuspend(user);
+        setIsSuspendModalOpen(true);
+    };
+
+    const confirmSuspendUser = () => {
+        if (userToSuspend) {
+            const updatedUsers = users.map(u => 
+                u.id === userToSuspend.id ? { ...u, status: 'Inactive' } : u
+            );
+            setUsers(updatedUsers);
+            saveUsersToStorage(updatedUsers);
+            showToast(`${userToSuspend.name} has been set to inactive`, 'success');
+            setIsSuspendModalOpen(false);
+            setUserToSuspend(null);
+        }
+    };
+
+    const cancelSuspendUser = () => {
+        setIsSuspendModalOpen(false);
+        setUserToSuspend(null);
     };
 
     const handleDeleteUser = (user) => {
@@ -543,12 +562,26 @@ const Users = () => {
     };
 
     const handleActivateUser = (user) => {
-        const updatedUsers = users.map(u => 
-            u.id === user.id ? { ...u, status: 'Active' } : u
-        );
-        setUsers(updatedUsers);
-        saveUsersToStorage(updatedUsers);
-        showToast(`${user.name} has been activated`, 'success');
+        setUserToActivate(user);
+        setIsActivateModalOpen(true);
+    };
+
+    const confirmActivateUser = () => {
+        if (userToActivate) {
+            const updatedUsers = users.map(u => 
+                u.id === userToActivate.id ? { ...u, status: 'Active' } : u
+            );
+            setUsers(updatedUsers);
+            saveUsersToStorage(updatedUsers);
+            showToast(`${userToActivate.name} has been activated`, 'success');
+            setIsActivateModalOpen(false);
+            setUserToActivate(null);
+        }
+    };
+
+    const cancelActivateUser = () => {
+        setIsActivateModalOpen(false);
+        setUserToActivate(null);
     };
 
 
@@ -741,6 +774,8 @@ const Users = () => {
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                                 >
                                     <option value="User">User</option>
+                                    <option value="Doctor">Doctor</option>
+                                    <option value="Company">Company</option>
                                 </select>
                             </div>
 
@@ -756,8 +791,7 @@ const Users = () => {
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                                 >
                                     <option value="Active">Active</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Suspended">Suspended</option>
+                                    <option value="Inactive">Inactive</option>
                                 </select>
                             </div>
 
@@ -908,6 +942,8 @@ const Users = () => {
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                                 >
                                     <option value="User">User</option>
+                                    <option value="Doctor">Doctor</option>
+                                    <option value="Company">Company</option>
                                 </select>
                             </div>
 
@@ -923,8 +959,7 @@ const Users = () => {
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                                 >
                                     <option value="Active">Active</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Suspended">Suspended</option>
+                                    <option value="Inactive">Inactive</option>
                                 </select>
                             </div>
 
@@ -1079,23 +1114,12 @@ const Users = () => {
                 </Card>
                 <Card className="p-4">
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
-                            <UserCheck className="w-5 h-5 text-yellow-600" />
+                        <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
+                            <UserX className="w-5 h-5 text-gray-600" />
                         </div>
                         <div>
-                            <p className="text-sm text-gray-600">Pending</p>
-                            <p className="text-xl font-bold text-gray-900">{pendingUsers}</p>
-                        </div>
-                    </div>
-                </Card>
-                <Card className="p-4">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
-                            <UserX className="w-5 h-5 text-red-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Suspended</p>
-                            <p className="text-xl font-bold text-gray-900">{suspendedUsers}</p>
+                            <p className="text-sm text-gray-600">Inactive</p>
+                            <p className="text-xl font-bold text-gray-900">{inactiveUsers}</p>
                         </div>
                     </div>
                 </Card>
@@ -1109,7 +1133,7 @@ const Users = () => {
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search by name, email, ID, role, department, or status..."
+                            placeholder="Search by name, email, ID, role, or status..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
@@ -1144,13 +1168,7 @@ const Users = () => {
                                     Name
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Username
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Email
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Department
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Role
@@ -1170,13 +1188,7 @@ const Users = () => {
                                         <div className="text-sm font-medium text-gray-900">{user.name}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-600 font-medium">{user.username || 'N/A'}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-500">{user.email}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-700 font-medium">{user.department || 'N/A'}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
@@ -1370,15 +1382,15 @@ const Users = () => {
             {/* Delete Confirmation Modal */}
             {isDeleteModalOpen && userToDelete && (
                 <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                                    <AlertCircle className="w-5 h-5 text-red-600" />
+                        <div className="p-6 border-b border-gray-200">
+                            <div className="flex items-start space-x-4">
+                                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <AlertCircle className="w-6 h-6 text-white" />
                                 </div>
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-900">Delete User</h2>
+                                <div className="flex-1">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-1">Delete User</h2>
                                     <p className="text-sm text-gray-600">This action cannot be undone</p>
                                 </div>
                             </div>
@@ -1386,20 +1398,20 @@ const Users = () => {
 
                         {/* Modal Body */}
                         <div className="p-6">
-                            <p className="text-gray-700 mb-4">
-                                Are you sure you want to delete <span className="font-semibold">{userToDelete.name}</span>? 
+                            <p className="text-gray-700 mb-6">
+                                Are you sure you want to delete <span className="font-semibold text-gray-900">{userToDelete.name}</span>? 
                                 This will permanently remove the user and all associated data.
                             </p>
                             
                             {/* User Info Preview */}
-                            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                            <div className="bg-gray-50 rounded-lg p-4 mb-2">
                                 <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                    <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-base flex-shrink-0">
                                         {userToDelete.avatar}
                                     </div>
-                                    <div>
-                                        <p className="font-medium text-gray-900">{userToDelete.name}</p>
-                                        <p className="text-sm text-gray-600">{userToDelete.email}</p>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="font-semibold text-gray-900 text-base truncate">{userToDelete.name}</p>
+                                        <p className="text-sm text-gray-600 truncate">{userToDelete.email}</p>
                                     </div>
                                 </div>
                             </div>
@@ -1409,15 +1421,129 @@ const Users = () => {
                         <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
                             <button
                                 onClick={cancelDeleteUser}
-                                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmDeleteUser}
-                                className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors duration-200"
+                                className="px-6 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 font-medium"
                             >
                                 Delete User
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Suspend/Deactivate Confirmation Modal */}
+            {isSuspendModalOpen && userToSuspend && (
+                <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+                        {/* Modal Header */}
+                        <div className="p-6 border-b border-gray-200">
+                            <div className="flex items-start space-x-4">
+                                <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <AlertCircle className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-1">Deactivate User</h2>
+                                    <p className="text-sm text-gray-600">This will change the user's status to inactive</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6">
+                            <p className="text-gray-700 mb-6">
+                                Are you sure you want to deactivate <span className="font-semibold text-gray-900">{userToSuspend.name}</span>? 
+                                This will set the user's status to inactive. They will not be able to access the system.
+                            </p>
+                            
+                            {/* User Info Preview */}
+                            <div className="bg-gray-50 rounded-lg p-4 mb-2">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-base flex-shrink-0">
+                                        {userToSuspend.avatar}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="font-semibold text-gray-900 text-base truncate">{userToSuspend.name}</p>
+                                        <p className="text-sm text-gray-600 truncate">{userToSuspend.email}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+                            <button
+                                onClick={cancelSuspendUser}
+                                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmSuspendUser}
+                                className="px-6 py-2.5 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-200 font-medium"
+                            >
+                                Deactivate User
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Activate Confirmation Modal */}
+            {isActivateModalOpen && userToActivate && (
+                <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+                        {/* Modal Header */}
+                        <div className="p-6 border-b border-gray-200">
+                            <div className="flex items-start space-x-4">
+                                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <UserCheck className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-1">Activate User</h2>
+                                    <p className="text-sm text-gray-600">This will change the user's status to active</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6">
+                            <p className="text-gray-700 mb-6">
+                                Are you sure you want to activate <span className="font-semibold text-gray-900">{userToActivate.name}</span>? 
+                                This will set the user's status to active and restore their access to the system.
+                            </p>
+                            
+                            {/* User Info Preview */}
+                            <div className="bg-gray-50 rounded-lg p-4 mb-2">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-base flex-shrink-0">
+                                        {userToActivate.avatar}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="font-semibold text-gray-900 text-base truncate">{userToActivate.name}</p>
+                                        <p className="text-sm text-gray-600 truncate">{userToActivate.email}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+                            <button
+                                onClick={cancelActivateUser}
+                                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmActivateUser}
+                                className="px-6 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 font-medium"
+                            >
+                                Activate User
                             </button>
                         </div>
                     </div>
