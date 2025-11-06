@@ -45,6 +45,13 @@ SubscriptionPlansPage = () => {
             isPopular: true
         },
         {
+            id: 'standard',
+            title: 'Standard Plan',
+            description: 'Ideal for growing teams with enhanced features and 250 monthly messages.',
+            price: '$19.99/month',
+            isPopular: false
+        },
+        {
             id: 'pro',
             title: 'Pro Plan',
             description: 'Designed for small businesses with team features, analytics, and 500 messages per month.',
@@ -126,6 +133,26 @@ SubscriptionPlansPage = () => {
                                                 <div className="flex items-center gap-2 text-sm text-gray-600">
                                                     <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
                                                     <span>Email support</span>
+                                                </div>
+                                            </>
+                                        )}
+                                        {plan.id === 'standard' && (
+                                            <>
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                                                    <span>250 messages/month</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                                                    <span>Enhanced AI features</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                                                    <span>Priority support</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                                                    <span>Basic analytics</span>
                                                 </div>
                                             </>
                                         )}

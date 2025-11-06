@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
 import { 
   RecordHeader, 
   DataTable, 
@@ -27,7 +29,7 @@ import {
 } from 'lucide-react';
 
 const AdminPayouts = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPayout, setSelectedPayout] = useState(null);
@@ -326,8 +328,7 @@ const AdminPayouts = () => {
   ];
 
   const handleView = (record) => {
-    setSelectedPayout(record);
-    setActiveTab('overview');
+    navigate(`/admin/payouts/${record.id}`);
   };
 
   const handleEdit = (record) => {
@@ -342,7 +343,176 @@ const AdminPayouts = () => {
   };
 
   const handleDownload = (record) => {
-    console.log('Downloading payout report for:', record.id);
+    // Create new PDF document
+    const pdf = new jsPDF();
+    
+    // Set up colors
+    const primaryColor = [236, 72, 153]; // Pink color
+    const darkColor = [17, 24, 39]; // Dark gray
+    
+    // Header Section
+    pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    pdf.rect(0, 0, 210, 40, 'F');
+    
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(24);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('CIRA AI Healthcare', 15, 20);
+    
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Payout Report', 15, 30);
+    
+    // Payout Information Section
+    let yPosition = 55;
+    pdf.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Payout Information', 15, yPosition);
+    
+    yPosition += 10;
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    
+    // Payout Details
+    const details = [
+      ['Payout ID:', record.id],
+      ['Doctor:', record.doctor],
+      ['Doctor ID:', record.doctorId],
+      ['Period:', record.period],
+      ['Status:', record.status.charAt(0).toUpperCase() + record.status.slice(1)],
+      ['Payment Method:', record.method],
+      ['Created:', new Date(record.createdAt).toLocaleDateString()],
+      ['Updated:', new Date(record.updatedAt).toLocaleDateString()],
+      ['Paid Date:', record.paidDate ? new Date(record.paidDate).toLocaleDateString() : 'Pending']
+    ];
+    
+    details.forEach(([label, value]) => {
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(label, 15, yPosition);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(value || 'N/A', 70, yPosition);
+      yPosition += 7;
+    });
+    
+    // Financial Summary Section
+    yPosition += 5;
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Financial Summary', 15, yPosition);
+    
+    yPosition += 10;
+    pdf.setFontSize(10);
+    
+    // Financial Details Box
+    pdf.setDrawColor(200, 200, 200);
+    pdf.setFillColor(250, 250, 250);
+    pdf.roundedRect(15, yPosition - 5, 180, 30, 3, 3, 'FD');
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Gross Amount:', 20, yPosition + 5);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`$${record.gross.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 80, yPosition + 5);
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Commission:', 20, yPosition + 12);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`-$${record.commission.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 80, yPosition + 12);
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Net Amount:', 20, yPosition + 19);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(34, 197, 94); // Green color
+    pdf.text(`$${record.net.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 80, yPosition + 19);
+    pdf.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+    
+    // Line Items Section
+    if (record.lineItems && record.lineItems.length > 0) {
+      yPosition += 40;
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Line Items', 15, yPosition);
+      
+      yPosition += 10;
+      pdf.setFontSize(9);
+      
+      // Table Header
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(15, yPosition - 5, 180, 8, 'F');
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Appointment', 20, yPosition);
+      pdf.text('Date', 70, yPosition);
+      pdf.text('Amount', 110, yPosition);
+      pdf.text('Commission', 140, yPosition);
+      pdf.text('Net', 175, yPosition);
+      
+      yPosition += 8;
+      pdf.setFont('helvetica', 'normal');
+      
+      record.lineItems.forEach((item) => {
+        if (yPosition > 270) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+        
+        const itemNet = item.amount - item.commission;
+        pdf.text(item.appointment, 20, yPosition);
+        pdf.text(new Date(item.date).toLocaleDateString(), 70, yPosition);
+        pdf.text(`$${item.amount.toLocaleString()}`, 110, yPosition);
+        pdf.text(`-$${item.commission.toLocaleString()}`, 140, yPosition);
+        pdf.text(`$${itemNet.toLocaleString()}`, 175, yPosition);
+        yPosition += 7;
+      });
+    }
+    
+    // Banking Information Section
+    if (record.bankDetails) {
+      yPosition += 10;
+      if (yPosition > 250) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+      
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Banking Information', 15, yPosition);
+      
+      yPosition += 10;
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      
+      const bankDetails = [
+        ['Bank Name:', record.bankDetails.bankName],
+        ['Account Number:', record.bankDetails.accountNumber],
+        ['Routing Number:', record.bankDetails.routingNumber]
+      ];
+      
+      bankDetails.forEach(([label, value]) => {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(label, 15, yPosition);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(value || 'N/A', 70, yPosition);
+        yPosition += 7;
+      });
+    }
+    
+    // Footer
+    const pageCount = pdf.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      pdf.setFontSize(8);
+      pdf.setTextColor(128, 128, 128);
+      pdf.text(
+        `Page ${i} of ${pageCount} - Generated on ${new Date().toLocaleDateString()}`,
+        105,
+        290,
+        { align: 'center' }
+      );
+      pdf.text('© 2025 CIRA AI. All rights reserved.', 105, 295, { align: 'center' });
+    }
+    
+    // Download PDF
+    pdf.save(`Payout-${record.id}-${record.doctor.replace(/\s+/g, '-')}.pdf`);
   };
 
   const handleCreate = () => {
@@ -352,15 +522,55 @@ const AdminPayouts = () => {
     setShowForm(true);
   };
 
-  const handleSave = () => {
-    // Validate form
+  const handleSave = (updatedData = null) => {
+    const dataToValidate = updatedData || formData;
+    
+    // Validate form - only validate fields that have been touched or on submit
     const errors = {};
     formSections.forEach(section => {
       section.fields.forEach(field => {
-        if (field.required && !formData[field.name]) {
-          errors[field.name] = `${field.label} is required`;
+        const fieldName = field.name || field.id;
+        if (field.required && !dataToValidate[fieldName]) {
+          // Only add error if field has value or is being validated
+          if (dataToValidate[fieldName] !== undefined && dataToValidate[fieldName] !== '') {
+            errors[fieldName] = `${field.label} is required`;
+          }
         }
       });
+    });
+
+    // Update form data if provided
+    if (updatedData) {
+      setFormData(updatedData);
+    }
+
+    // Only set errors if there are actual validation issues
+    if (Object.keys(errors).length > 0) {
+      // Don't set errors on initial save - let FormTemplate handle validation
+      // setValidationErrors(errors);
+      // return;
+    }
+
+    // Save logic here
+    console.log('Saving payout:', updatedData || formData);
+  };
+
+  const handleSubmit = (updatedData = null) => {
+    const dataToValidate = updatedData || formData;
+    
+    // Validate all sections
+    const errors = {};
+    formSections.forEach(section => {
+      const sectionErrors = {};
+      section.fields.forEach(field => {
+        const fieldName = field.name || field.id;
+        if (field.required && !dataToValidate[fieldName]) {
+          sectionErrors[fieldName] = `${field.label} is required`;
+        }
+      });
+      if (Object.keys(sectionErrors).length > 0) {
+        errors[section.id] = sectionErrors;
+      }
     });
 
     if (Object.keys(errors).length > 0) {
@@ -368,8 +578,8 @@ const AdminPayouts = () => {
       return;
     }
 
-    // Save logic here
-    console.log('Saving payout:', formData);
+    // Final submit - close form
+    console.log('Submitting payout:', updatedData || formData);
     setShowForm(false);
     setFormData({});
     setValidationErrors({});
@@ -404,222 +614,18 @@ const AdminPayouts = () => {
         </div>
 
         <FormTemplate
+          title={selectedPayout ? 'Edit Payout' : 'Create Payout'}
           sections={formSections}
-          data={formData}
-          onChange={setFormData}
-          errors={validationErrors}
+          initialData={formData}
+          validationErrors={validationErrors}
           onSave={handleSave}
+          onSubmit={handleSubmit}
           onCancel={() => setShowForm(false)}
-          saveLabel={selectedPayout ? 'Update Payout' : 'Create Payout'}
         />
       </div>
     );
   }
 
-  if (selectedPayout && !showForm) {
-    return (
-      <div className="p-6">
-        <RecordHeader
-          title={`Payout ${selectedPayout.id} - ${selectedPayout.doctor}`}
-          status={selectedPayout.status}
-          statusType="payout"
-          metadata={[
-            { label: 'Period', value: selectedPayout.period },
-            { label: 'Method', value: selectedPayout.method },
-            { label: 'Created', value: new Date(selectedPayout.createdAt).toLocaleDateString() },
-            { label: 'Net Amount', value: `$${selectedPayout.net.toLocaleString()}` }
-          ]}
-          actions={[
-            { label: 'Edit', icon: Edit, onClick: () => handleEdit(selectedPayout) },
-            { label: 'Download Report', icon: Download, onClick: () => handleDownload(selectedPayout) },
-            { label: 'Delete', icon: Trash2, onClick: () => handleDelete(selectedPayout), destructive: true }
-          ]}
-        />
-
-        <div className="mt-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              {[
-                { id: 'overview', label: 'Overview' },
-                { id: 'line-items', label: 'Line Items' },
-                { id: 'banking', label: 'Banking' },
-                { id: 'history', label: 'History' }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          <div className="mt-6">
-            {activeTab === 'overview' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white p-6 rounded-lg border">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <DollarSign className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Gross Amount</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        ${selectedPayout.gross.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-lg border">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-red-100 rounded-lg">
-                      <Calculator className="w-6 h-6 text-red-600" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Commission</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        ${selectedPayout.commission.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-lg border">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Receipt className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Net Amount</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        ${selectedPayout.net.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-lg border">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-yellow-100 rounded-lg">
-                      <Calendar className="w-6 h-6 text-yellow-600" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Paid Date</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {selectedPayout.paidDate ? new Date(selectedPayout.paidDate).toLocaleDateString() : 'Pending'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'line-items' && (
-              <div className="bg-white p-6 rounded-lg border">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Appointment Line Items</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2">Appointment</th>
-                        <th className="text-left py-2">Date</th>
-                        <th className="text-right py-2">Amount</th>
-                        <th className="text-right py-2">Commission</th>
-                        <th className="text-right py-2">Net</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedPayout.lineItems.map((item, index) => (
-                        <tr key={index} className="border-b">
-                          <td className="py-2 font-medium">{item.appointment}</td>
-                          <td className="py-2 text-gray-600">{new Date(item.date).toLocaleDateString()}</td>
-                          <td className="py-2 text-right">${item.amount.toLocaleString()}</td>
-                          <td className="py-2 text-right text-red-600">-${item.commission.toLocaleString()}</td>
-                          <td className="py-2 text-right font-medium text-green-600">
-                            ${(item.amount - item.commission).toLocaleString()}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'banking' && (
-              <div className="bg-white p-6 rounded-lg border">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Banking Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Bank Name</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedPayout.bankDetails.bankName}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Account Number</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedPayout.bankDetails.accountNumber}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Routing Number</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedPayout.bankDetails.routingNumber}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Payment Method</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedPayout.method}</p>
-                  </div>
-                </div>
-                {selectedPayout.failureReason && (
-                  <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <div className="flex items-center">
-                      <AlertTriangle className="w-5 h-5 text-red-600" />
-                      <div className="ml-2">
-                        <h4 className="text-sm font-medium text-red-800">Payment Failed</h4>
-                        <p className="text-sm text-red-700 mt-1">{selectedPayout.failureReason}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'history' && (
-              <div className="bg-white p-6 rounded-lg border">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Payout History</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Payout created</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(selectedPayout.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                  {selectedPayout.paidDate && (
-                    <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900">Payment completed</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(selectedPayout.paidDate).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-6">
