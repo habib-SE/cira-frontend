@@ -179,8 +179,6 @@ function MainRouter() {
         <Route path="messages" element={<PatientMessages />} />
         <Route path="settings" element={<PatientSettings />} />
       </Route>
-
-
       {/* Doctor Portal Routes - Protected */}
       <Route 
         path="/doctor" 
