@@ -34,6 +34,36 @@ export const AuthProvider = ({ children }) => {
       company: { email: 'company@cira.com', password: 'company123', role: 'company', name: 'Company Admin' },
     };
 
+    // For company role, check stored credentials first
+    if (role === 'company') {
+      const storedCredentials = localStorage.getItem('companyCredentials');
+      if (storedCredentials) {
+        const credentials = JSON.parse(storedCredentials);
+        if (credentials.email === email && credentials.password === password) {
+          // Generate token
+          const token = `mock_token_${Date.now()}_${role}`;
+          
+          const userData = {
+            id: Math.random().toString(36).substr(2, 9),
+            email: credentials.email,
+            name: 'Company Admin',
+            role: 'company',
+          };
+
+          // Store in localStorage
+          localStorage.setItem('userToken', token);
+          localStorage.setItem('userData', JSON.stringify(userData));
+          
+          setUser(userData);
+
+          // After login, force onboarding flow (email confirm → plus → plans)
+          navigate('/email-confirm');
+
+          return { success: true, message: 'Login successful!' };
+        }
+      }
+    }
+
     const mockUser = mockUsers[role];
     
     if (mockUser && mockUser.email === email && mockUser.password === password) {

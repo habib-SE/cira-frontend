@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import { Check, X } from 'lucide-react';
 import LoginLogo from '../../../assets/LoginLogo.png';
 import logo from '../../../assets/Logo.png';
@@ -7,6 +8,7 @@ import '../../../styles/banner.css';
 
 const EmailConfirmPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [code, setCode] = useState(['', '', '', '']);
   const [countdown, setCountdown] = useState(10);
   const [canResend, setCanResend] = useState(false);
@@ -89,9 +91,18 @@ const EmailConfirmPage = () => {
       // Show alert in top-left corner
       setShowAlert(true);
       
-      // Wait a moment to show the alert, then navigate
+      // Wait a moment to show the alert, then navigate based on user role
       setTimeout(() => {
-        navigate('/plus-unlocked');
+        // Check user role - admin should go directly to admin panel
+        const userRole = user?.role || localStorage.getItem('userRole');
+        
+        if (userRole === 'admin') {
+          // Admin users skip the plus-unlocked page and go directly to admin panel
+          navigate('/admin');
+        } else {
+          // Other users go to plus-unlocked page
+          navigate('/plus-unlocked');
+        }
       }, 2000);
       
     } catch {

@@ -1,15 +1,39 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import logo from '../../../assets/Logo.png';
 import loginLogo from '../../../assets/LoginLogo.png';
 
 const 
 SubscriptionPlansPage = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const handleUpgrade = () => {
-        // Navigate to login page after upgrade
-        navigate('/login');
+        // Mark subscription as active
+        localStorage.setItem('hasSubscription', 'true');
+        
+        // Navigate to user's dashboard based on role
+        if (user) {
+            switch (user.role) {
+                case 'admin':
+                    navigate('/admin');
+                    break;
+                case 'user':
+                    navigate('/user');
+                    break;
+                case 'doctor':
+                    navigate('/doctor');
+                    break;
+                case 'company':
+                    navigate('/company');
+                    break;
+                default:
+                    navigate('/login');
+            }
+        } else {
+            navigate('/login');
+        }
     };
 
     const subscriptionPlans = [
@@ -19,6 +43,13 @@ SubscriptionPlansPage = () => {
             description: 'Perfect for personal use with basic features and 100 monthly messages.',
             price: '$9.99/month',
             isPopular: true
+        },
+        {
+            id: 'standard',
+            title: 'Standard Plan',
+            description: 'Ideal for growing teams with enhanced features and 250 monthly messages.',
+            price: '$19.99/month',
+            isPopular: false
         },
         {
             id: 'pro',
@@ -35,6 +66,7 @@ SubscriptionPlansPage = () => {
             className="min-h-screen flex flex-col px-4 py-5 overflow-hidden relative"
             style={{ background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)' }}
         >
+        
             {/* Header - Logo in top left */}
             <div className="w-full flex justify-start items-center mb-2">
                 <div className="flex items-center pl-4">
@@ -101,6 +133,26 @@ SubscriptionPlansPage = () => {
                                                 <div className="flex items-center gap-2 text-sm text-gray-600">
                                                     <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
                                                     <span>Email support</span>
+                                                </div>
+                                            </>
+                                        )}
+                                        {plan.id === 'standard' && (
+                                            <>
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                                                    <span>250 messages/month</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                                                    <span>Enhanced AI features</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                                                    <span>Priority support</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                    <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                                                    <span>Basic analytics</span>
                                                 </div>
                                             </>
                                         )}

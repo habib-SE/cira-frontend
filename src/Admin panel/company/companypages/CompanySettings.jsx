@@ -1,56 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Save, 
-  Upload, 
-  Building, 
   Users, 
   Shield, 
   Bell,
-  Globe,
-  Database,
-  Eye,
-  EyeOff,
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
 
 const CompanySettings = () => {
-  const [activeTab, setActiveTab] = useState('profile');
-  const [showPassword, setShowPassword] = useState(false);
-  const [logoPreview, setLogoPreview] = useState(null);
-  const fileInputRef = useRef(null);
+  const [activeTab, setActiveTab] = useState('users');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
-  
-  const handleLogoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        setShowErrorMessage(true);
-        setTimeout(() => setShowErrorMessage(false), 3000);
-        return;
-      }
-      
-      // Check file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setShowErrorMessage(true);
-        setTimeout(() => setShowErrorMessage(false), 3000);
-        return;
-      }
-
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleLogoButtonClick = () => {
-    fileInputRef.current?.click();
-  };
+  const [validationErrors, setValidationErrors] = useState({});
 
   const [formData, setFormData] = useState({
     // Company Profile
@@ -78,11 +40,50 @@ const CompanySettings = () => {
     monthlyReports: true
   });
 
+  const validateEmail = (email) => {
+    if (!email) return 'Email is required';
+    if (email.length > 100) return 'Email must be less than 100 characters';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    return '';
+  };
+
+  const validatePhone = (phone) => {
+    if (!phone) return 'Phone is required';
+    if (phone.length > 20) return 'Phone must be less than 20 characters';
+    const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
+    if (!phoneRegex.test(phone)) return 'Please enter a valid phone number';
+    return '';
+  };
+
   const handleInputChange = (field, value) => {
+    // Enforce max length limits
+    let processedValue = value;
+    if (field === 'contactEmail' && value.length > 100) {
+      processedValue = value.slice(0, 100);
+    } else if (field === 'phone' && value.length > 20) {
+      processedValue = value.slice(0, 20);
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: processedValue
     }));
+    
+    // Validate email and phone fields
+    if (field === 'contactEmail') {
+      const error = validateEmail(processedValue);
+      setValidationErrors(prev => ({
+        ...prev,
+        contactEmail: error
+      }));
+    } else if (field === 'phone') {
+      const error = validatePhone(processedValue);
+      setValidationErrors(prev => ({
+        ...prev,
+        phone: error
+      }));
+    }
   };
 
   // Load saved settings on mount
@@ -92,9 +93,6 @@ const CompanySettings = () => {
       try {
         const parsed = JSON.parse(savedSettings);
         setFormData(parsed);
-        if (parsed.logo) {
-          setLogoPreview(parsed.logo);
-        }
       } catch (error) {
         console.error('Error loading saved settings:', error);
       }
@@ -106,7 +104,6 @@ const CompanySettings = () => {
       // Save company settings to localStorage
       const settingsToSave = {
         ...formData,
-        logo: logoPreview, // Save the logo preview as base64
         lastUpdated: new Date().toISOString()
       };
       
@@ -115,6 +112,7 @@ const CompanySettings = () => {
       // Show success message
       setShowSuccessMessage(true);
       setTimeout(() => setShowSuccessMessage(false), 3000);
+      setValidationErrors({});
       
       // Log for debugging
       console.log('Settings saved:', settingsToSave);
@@ -134,7 +132,6 @@ const CompanySettings = () => {
   };
 
   const tabs = [
-    { id: 'profile', label: 'Company Profile', icon: Building },
     { id: 'users', label: 'User Management', icon: Users },
     { id: 'privacy', label: 'Privacy & Data', icon: Shield },
     { id: 'notifications', label: 'Notifications', icon: Bell }
@@ -184,112 +181,6 @@ const CompanySettings = () => {
         {/* Main Content */}
         <div className="flex-1">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            {/* Company Profile Tab */}
-            {activeTab === 'profile' && (
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Company Profile</h3>
-                <div className="space-y-6">
-                  {/* Company Logo */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Company Logo</label>
-                    <div className="flex items-center space-x-4">
-                      {logoPreview ? (
-                        <img 
-                          src={logoPreview} 
-                          alt="Company Logo" 
-                          className="w-16 h-16 rounded-lg object-cover border-2 border-gray-200"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <Building className="h-8 w-8 text-gray-400" />
-                        </div>
-                      )}
-                      <div>
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handleLogoUpload}
-                          accept="image/*"
-                          className="hidden"
-                        />
-                        <button 
-                          onClick={handleLogoButtonClick}
-                          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2"
-                        >
-                          <Upload className="h-4 w-4" />
-                          <span>Upload Logo</span>
-                        </button>
-                        <p className="text-xs text-gray-500 mt-1">JPG, PNG or GIF (max. 5MB)</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Company Information */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
-                      <input
-                        type="text"
-                        value={formData.companyName}
-                        onChange={(e) => handleInputChange('companyName', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Industry</label>
-                      <select
-                        value={formData.industry}
-                        onChange={(e) => handleInputChange('industry', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                      >
-                        <option value="Technology">Technology</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Finance">Finance</option>
-                        <option value="Education">Education</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
-                      <input
-                        type="email"
-                        value={formData.contactEmail}
-                        onChange={(e) => handleInputChange('contactEmail', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                      <textarea
-                        value={formData.address}
-                        onChange={(e) => handleInputChange('address', e.target.value)}
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
-                      <input
-                        type="url"
-                        value={formData.website}
-                        onChange={(e) => handleInputChange('website', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* User Management Tab */}
             {activeTab === 'users' && (
               <div className="p-6">

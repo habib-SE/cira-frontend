@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   User, 
@@ -14,7 +14,10 @@ import {
   Lock,
   Bell,
   Shield,
-  CreditCard
+  CreditCard,
+  Eye,
+  EyeOff,
+  CheckCircle
 } from 'lucide-react';
 
 const CompanyProfile = () => {
@@ -23,6 +26,10 @@ const CompanyProfile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [logoPreview, setLogoPreview] = useState(null);
   const fileInputRef = React.useRef(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   
   const [profileData, setProfileData] = useState({
     companyName: 'Acme Corporation',
@@ -35,8 +42,197 @@ const CompanyProfile = () => {
     country: 'United States',
     website: 'www.acmecorp.com',
     description: 'Leading healthcare technology company providing innovative solutions for modern healthcare needs.',
+    password: '',
+    confirmPassword: '',
     logo: null
   });
+
+  // Load saved profile data on mount
+  useEffect(() => {
+    const savedProfile = localStorage.getItem('companyProfile');
+    if (savedProfile) {
+      try {
+        const parsed = JSON.parse(savedProfile);
+        setProfileData(prev => ({ ...prev, ...parsed, password: '', confirmPassword: '' }));
+        if (parsed.logo) {
+          setLogoPreview(parsed.logo);
+        }
+      } catch (error) {
+        console.error('Error loading saved profile:', error);
+      }
+    }
+  }, []);
+
+  // Validation functions
+  const validateField = (name, value) => {
+    let error = '';
+    
+    switch (name) {
+      case 'companyName':
+        if (!value || value.trim() === '') {
+          error = 'Company name is required';
+        } else if (value.length < 2) {
+          error = 'Company name must be at least 2 characters';
+        } else if (value.length > 100) {
+          error = 'Company name must be less than 100 characters';
+        }
+        break;
+      
+      case 'email':
+        if (!value || value.trim() === '') {
+          error = 'Email is required';
+        } else {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value)) {
+            error = 'Please enter a valid email address';
+          } else if (value.length > 100) {
+            error = 'Email must be less than 100 characters';
+          }
+        }
+        break;
+      
+      case 'phone':
+        if (!value || value.trim() === '') {
+          error = 'Phone number is required';
+        } else {
+          const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
+          if (!phoneRegex.test(value)) {
+            error = 'Please enter a valid phone number';
+          } else if (value.length > 20) {
+            error = 'Phone number must be less than 20 characters';
+          }
+        }
+        break;
+      
+      case 'address':
+        if (!value || value.trim() === '') {
+          error = 'Address is required';
+        } else if (value.length < 5) {
+          error = 'Address must be at least 5 characters';
+        } else if (value.length > 200) {
+          error = 'Address must be less than 200 characters';
+        }
+        break;
+      
+      case 'city':
+        if (!value || value.trim() === '') {
+          error = 'City is required';
+        } else if (value.length < 2) {
+          error = 'City must be at least 2 characters';
+        } else if (value.length > 50) {
+          error = 'City must be less than 50 characters';
+        }
+        break;
+      
+      case 'state':
+        if (!value || value.trim() === '') {
+          error = 'State/Province is required';
+        } else if (value.length < 2) {
+          error = 'State/Province must be at least 2 characters';
+        } else if (value.length > 50) {
+          error = 'State/Province must be less than 50 characters';
+        }
+        break;
+      
+      case 'zipCode':
+        if (!value || value.trim() === '') {
+          error = 'ZIP/Postal Code is required';
+        } else if (value.length < 3) {
+          error = 'ZIP/Postal Code must be at least 3 characters';
+        } else if (value.length > 20) {
+          error = 'ZIP/Postal Code must be less than 20 characters';
+        }
+        break;
+      
+      case 'country':
+        if (!value || value.trim() === '') {
+          error = 'Country is required';
+        } else if (value.length < 2) {
+          error = 'Country must be at least 2 characters';
+        } else if (value.length > 50) {
+          error = 'Country must be less than 50 characters';
+        }
+        break;
+      
+      case 'website':
+        if (value && value.trim() !== '') {
+          try {
+            // Add protocol if missing
+            let url = value;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+              url = 'https://' + url;
+            }
+            new URL(url);
+          } catch {
+            error = 'Please enter a valid website URL';
+          }
+        }
+        break;
+      
+      case 'description':
+        if (value && value.length > 500) {
+          error = 'Description must be less than 500 characters';
+        }
+        break;
+      
+      case 'password':
+        if (isEditing && value && value.trim() !== '') {
+          if (value.length < 8) {
+            error = 'Password must be at least 8 characters';
+          } else if (value.length > 50) {
+            error = 'Password must be less than 50 characters';
+          } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
+            error = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+          }
+        }
+        break;
+      
+      case 'confirmPassword':
+        if (isEditing && profileData.password && value !== profileData.password) {
+          error = 'Passwords do not match';
+        }
+        break;
+      
+      default:
+        break;
+    }
+    
+    return error;
+  };
+
+  const validateAllFields = () => {
+    const errors = {};
+    let isValid = true;
+    
+    // Validate all fields
+    Object.keys(profileData).forEach(key => {
+      if (key !== 'logo' && key !== 'confirmPassword' && key !== 'password') {
+        const error = validateField(key, profileData[key]);
+        if (error) {
+          errors[key] = error;
+          isValid = false;
+        }
+      }
+    });
+    
+    // Validate password if provided
+    if (profileData.password) {
+      const passwordError = validateField('password', profileData.password);
+      if (passwordError) {
+        errors.password = passwordError;
+        isValid = false;
+      }
+      
+      const confirmPasswordError = validateField('confirmPassword', profileData.confirmPassword);
+      if (confirmPasswordError) {
+        errors.confirmPassword = confirmPasswordError;
+        isValid = false;
+      }
+    }
+    
+    setValidationErrors(errors);
+    return isValid;
+  };
 
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
@@ -69,23 +265,140 @@ const CompanyProfile = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Enforce max length limits
+    let processedValue = value;
+    if (name === 'email' && value.length > 100) {
+      processedValue = value.slice(0, 100);
+    } else if (name === 'phone' && value.length > 20) {
+      processedValue = value.slice(0, 20);
+    } else if (name === 'companyName' && value.length > 100) {
+      processedValue = value.slice(0, 100);
+    } else if (name === 'city' && value.length > 50) {
+      processedValue = value.slice(0, 50);
+    } else if (name === 'state' && value.length > 50) {
+      processedValue = value.slice(0, 50);
+    } else if (name === 'zipCode' && value.length > 20) {
+      processedValue = value.slice(0, 20);
+    } else if (name === 'country' && value.length > 50) {
+      processedValue = value.slice(0, 50);
+    } else if (name === 'address' && value.length > 200) {
+      processedValue = value.slice(0, 200);
+    } else if (name === 'description' && value.length > 500) {
+      processedValue = value.slice(0, 500);
+    } else if (name === 'password' && value.length > 50) {
+      processedValue = value.slice(0, 50);
+    }
+    
     setProfileData(prev => ({
       ...prev,
-      [name]: value
+      [name]: processedValue
     }));
+    
+    // Clear error for this field when user starts typing
+    if (validationErrors[name]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+    
+    // Validate field in real-time
+    if (isEditing) {
+      const error = validateField(name, processedValue);
+      if (error) {
+        setValidationErrors(prev => ({
+          ...prev,
+          [name]: error
+        }));
+      }
+    }
   };
 
   const handleSave = async () => {
+    // Validate all fields before saving
+    if (!validateAllFields()) {
+      return;
+    }
+    
     setIsSaving(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    setIsEditing(false);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Prepare data to save (exclude password fields from profile data, but store separately)
+      const profileToSave = {
+        ...profileData,
+        password: undefined,
+        confirmPassword: undefined
+      };
+      
+      // Save profile data
+      localStorage.setItem('companyProfile', JSON.stringify({
+        ...profileToSave,
+        logo: logoPreview
+      }));
+      
+      // Save credentials separately for login
+      if (profileData.password && profileData.password.trim() !== '') {
+        localStorage.setItem('companyCredentials', JSON.stringify({
+          email: profileData.email,
+          password: profileData.password
+        }));
+      } else {
+        // If password not changed, keep existing credentials
+        const existingCredentials = localStorage.getItem('companyCredentials');
+        if (!existingCredentials) {
+          // If no existing credentials, use current email with default password
+          localStorage.setItem('companyCredentials', JSON.stringify({
+            email: profileData.email,
+            password: 'company123' // Default password
+          }));
+        } else {
+          // Update email in existing credentials
+          const creds = JSON.parse(existingCredentials);
+          creds.email = profileData.email;
+          localStorage.setItem('companyCredentials', JSON.stringify(creds));
+        }
+      }
+      
+      setIsSaving(false);
+      setIsEditing(false);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+      
+      // Clear password fields after saving
+      setProfileData(prev => ({
+        ...prev,
+        password: '',
+        confirmPassword: ''
+      }));
+      
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    // Reset form data if needed
+    setValidationErrors({});
+    
+    // Reload original data
+    const savedProfile = localStorage.getItem('companyProfile');
+    if (savedProfile) {
+      try {
+        const parsed = JSON.parse(savedProfile);
+        setProfileData(prev => ({ ...prev, ...parsed, password: '', confirmPassword: '' }));
+        if (parsed.logo) {
+          setLogoPreview(parsed.logo);
+        }
+      } catch (error) {
+        console.error('Error loading saved profile:', error);
+      }
+    }
   };
 
   return (
@@ -193,10 +506,10 @@ const CompanyProfile = () => {
 
            {/* Form Fields */}
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             <div>
-               <label className="block text-sm font-medium text-gray-700 mb-2">
-                 Company Name
-               </label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Company Name <span className="text-red-500">*</span>
+              </label>
               <div className="relative">
                 <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -205,31 +518,20 @@ const CompanyProfile = () => {
                   value={profileData.companyName}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100"
+                  required
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                    validationErrors.companyName ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
               </div>
+              {validationErrors.companyName && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.companyName}</p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="email"
-                  name="email"
-                  value={profileData.email}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number
+                Phone Number <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -239,9 +541,16 @@ const CompanyProfile = () => {
                   value={profileData.phone}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100"
+                  required
+                  maxLength={20}
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                    validationErrors.phone ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
               </div>
+              {validationErrors.phone && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.phone}</p>
+              )}
             </div>
 
             <div>
@@ -256,14 +565,19 @@ const CompanyProfile = () => {
                   value={profileData.website}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100"
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                    validationErrors.website ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
               </div>
+              {validationErrors.website && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.website}</p>
+              )}
             </div>
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Address
+                Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -273,14 +587,21 @@ const CompanyProfile = () => {
                   value={profileData.address}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100"
+                  required
+                  maxLength={200}
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                    validationErrors.address ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
               </div>
+              {validationErrors.address && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.address}</p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                City
+                City <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -288,13 +609,20 @@ const CompanyProfile = () => {
                 value={profileData.city}
                 onChange={handleInputChange}
                 disabled={!isEditing}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100"
+                required
+                maxLength={50}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                  validationErrors.city ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
+              {validationErrors.city && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.city}</p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                State/Province
+                State/Province <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -302,13 +630,20 @@ const CompanyProfile = () => {
                 value={profileData.state}
                 onChange={handleInputChange}
                 disabled={!isEditing}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100"
+                required
+                maxLength={50}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                  validationErrors.state ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
+              {validationErrors.state && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.state}</p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                ZIP/Postal Code
+                ZIP/Postal Code <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -316,13 +651,20 @@ const CompanyProfile = () => {
                 value={profileData.zipCode}
                 onChange={handleInputChange}
                 disabled={!isEditing}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100"
+                required
+                maxLength={20}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                  validationErrors.zipCode ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
+              {validationErrors.zipCode && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.zipCode}</p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Country
+                Country <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -330,8 +672,15 @@ const CompanyProfile = () => {
                 value={profileData.country}
                 onChange={handleInputChange}
                 disabled={!isEditing}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100"
+                required
+                maxLength={50}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                  validationErrors.country ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
+              {validationErrors.country && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.country}</p>
+              )}
             </div>
 
             <div className="md:col-span-2">
@@ -344,11 +693,133 @@ const CompanyProfile = () => {
                 onChange={handleInputChange}
                 disabled={!isEditing}
                 rows={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 resize-none"
+                maxLength={500}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 resize-none ${
+                  validationErrors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
+              <div className="flex justify-between mt-1">
+                {validationErrors.description && (
+                  <p className="text-sm text-red-600">{validationErrors.description}</p>
+                )}
+                <p className="text-sm text-gray-500 ml-auto">
+                  {profileData.description.length}/500 characters
+                </p>
+              </div>
             </div>
+
+            {/* Login Credentials Section - Always Visible */}
+            <div className="md:col-span-2 border-t border-gray-200 pt-6 mt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Login Credentials</h3>
+              <p className="text-sm text-gray-600 mb-4">These credentials are used to login to the company panel</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Login Email <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="email"
+                  name="email"
+                  value={profileData.email}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  required
+                  maxLength={100}
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                    validationErrors.email ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Email for login"
+                />
+              </div>
+              {validationErrors.email && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">This email is used for company panel login</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Login Password <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={profileData.password}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  maxLength={50}
+                  className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                    validationErrors.password ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder={isEditing ? "Enter new password (leave blank to keep current)" : "••••••••"}
+                />
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                )}
+              </div>
+              {validationErrors.password && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+              )}
+              {!validationErrors.password && profileData.password && isEditing && (
+                <p className="mt-1 text-xs text-gray-500">Password must be at least 8 characters with uppercase, lowercase, and number</p>
+              )}
+              {!isEditing && (
+                <p className="mt-1 text-xs text-gray-500">Click "Edit Profile" to change password</p>
+              )}
+            </div>
+
+            {isEditing && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={profileData.confirmPassword}
+                    onChange={handleInputChange}
+                    maxLength={50}
+                    className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                      validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Confirm new password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+                {validationErrors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.confirmPassword}</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Success Message */}
+        {showSuccessMessage && (
+          <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 z-50 animate-slide-in">
+            <CheckCircle className="h-5 w-5" />
+            <span className="font-medium">Profile saved successfully!</span>
+          </div>
+        )}
 
         {/* Settings Sections */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

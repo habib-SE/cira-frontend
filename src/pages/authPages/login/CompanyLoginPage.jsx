@@ -30,12 +30,52 @@ const CompanyLoginPage = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Mock authentication - replace with actual API call
-      if (formData.email === 'company@example.com' && formData.password === 'password') {
+      // Check against stored company credentials
+      const storedCredentials = localStorage.getItem('companyCredentials');
+      
+      if (storedCredentials) {
+        const credentials = JSON.parse(storedCredentials);
+        if (credentials.email === formData.email && credentials.password === formData.password) {
+          // Store company authentication
+          localStorage.setItem('userRole', 'company');
+          localStorage.setItem('userEmail', formData.email);
+          localStorage.setItem('isAuthenticated', 'true');
+          
+          // Create user token and data for AuthContext
+          const token = `mock_token_${Date.now()}_company`;
+          const userData = {
+            id: Math.random().toString(36).substr(2, 9),
+            email: credentials.email,
+            name: 'Company Admin',
+            role: 'company',
+          };
+          
+          localStorage.setItem('userToken', token);
+          localStorage.setItem('userData', JSON.stringify(userData));
+          
+          navigate('/company');
+          return;
+        }
+      }
+      
+      // Fallback to default credentials if no stored credentials
+      if (formData.email === 'admin@acmecorp.com' && formData.password === 'company123') {
         // Store company authentication
         localStorage.setItem('userRole', 'company');
         localStorage.setItem('userEmail', formData.email);
         localStorage.setItem('isAuthenticated', 'true');
+        
+        // Create user token and data for AuthContext
+        const token = `mock_token_${Date.now()}_company`;
+        const userData = {
+          id: Math.random().toString(36).substr(2, 9),
+          email: formData.email,
+          name: 'Company Admin',
+          role: 'company',
+        };
+        
+        localStorage.setItem('userToken', token);
+        localStorage.setItem('userData', JSON.stringify(userData));
         
         navigate('/company');
       } else {
