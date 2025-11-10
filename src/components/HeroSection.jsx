@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export default function HeroSection() {
   return (
     <section style={{
-      background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)'}} className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+      background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)'}} className="flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
       {/* Tagline */}
       <div className="text-center mt-20">
         <span className="text-pink-400 text-lg font-medium">

@@ -5,7 +5,6 @@ import { X, Check, Star, Calendar1 } from "lucide-react";
 const AppointmentModal = ({ doctor, onBookingSuccess, onBack, onClose }) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
 
-  // Mock available time slots
   const timeSlots = [
     { id: 1, time: "09:00 AM", date: "Today", available: true },
     { id: 2, time: "10:30 AM", date: "Today", available: true },
@@ -16,11 +15,10 @@ const AppointmentModal = ({ doctor, onBookingSuccess, onBack, onClose }) => {
     { id: 7, time: "04:00 PM", date: "Tomorrow", available: true },
   ];
 
-  // Default doctor data in case prop is undefined
   const defaultDoctor = {
     name: "Dr. Ahmed Raza",
     specialty: "General Physician",
-    rating: "4.6"
+    rating: "4.6",
   };
 
   const currentDoctor = doctor || defaultDoctor;
@@ -42,27 +40,36 @@ const AppointmentModal = ({ doctor, onBookingSuccess, onBack, onClose }) => {
       exit={{ opacity: 0, scale: 0.9 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
     >
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full flex flex-col max-h-[90vh]">
+      {/* Glassmorphism Modal */}
+      <motion.div
+        initial={{ scale: 0.9, y: 20, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="relative bg-white/40 backdrop-blur-md rounded-3xl p-6 max-w-md w-full max-h-[90vh] border border-white/30 shadow-2xl flex flex-col overflow-hidden"
+      >
         {/* Header */}
-        <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-6 text-white rounded-t-2xl flex justify-between items-center">
+        <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="text-2xl font-bold">📅 Book Appointment</h2>
-            <p className="text-pink-100 mt-1">
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              📅 Book Appointment
+            </h2>
+            <p className="text-gray-700 mt-1">
               {currentDoctor.name} - {currentDoctor.specialty}
             </p>
           </div>
           <button
             onClick={onClose || onBack}
-            className="text-white hover:text-pink-200 transition-colors"
+            className="text-pink-600 hover:text-pink-700 transition-colors"
           >
             <X size={24} />
           </button>
         </div>
 
         {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-6">
           {/* Doctor Info */}
-          <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-4 mb-6 p-4 bg-white/60 rounded-lg">
             <div className="w-12 h-12 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
               {currentDoctor.name
                 .split(" ")
@@ -89,23 +96,23 @@ const AppointmentModal = ({ doctor, onBookingSuccess, onBack, onClose }) => {
             <div className="grid grid-cols-2 gap-3">
               {timeSlots.map((slot) => (
                 <button
-                  key={slot.id}
-                  onClick={() => slot.available && setSelectedSlot(slot)}
-                  disabled={!slot.available}
-                  className={`p-3 border rounded-lg text-center transition-all ${
-                    selectedSlot?.id === slot.id
-                      ? "border-pink-500 bg-pink-50 text-pink-700"
-                      : slot.available
-                      ? "border-gray-200 hover:border-pink-300 hover:bg-pink-25 text-gray-700"
-                      : "border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  <div className="font-medium text-sm">{slot.time}</div>
-                  <div className="text-xs mt-1">{slot.date}</div>
-                  {selectedSlot?.id === slot.id && (
-                    <Check className="w-4 h-4 mx-auto mt-1" />
-                  )}
-                </button>
+  key={slot.id}
+  onClick={() => slot.available && setSelectedSlot(slot)}
+  disabled={!slot.available}
+  className={`p-3 border-2 rounded-lg text-center transition-all duration-200 ${
+    selectedSlot?.id === slot.id
+      ? "border-pink-500 bg-pink-50 shadow-md text-pink-700"
+      : slot.available
+      ? "border-gray-200 bg-white hover:border-pink-400 hover:bg-pink-50 hover:shadow-sm text-gray-800"
+      : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+  }`}
+>
+  <div className="font-medium text-sm">{slot.time}</div>
+  <div className="text-xs mt-1 text-gray-600">{slot.date}</div>
+  {selectedSlot?.id === slot.id && (
+    <Check className="w-4 h-4 mx-auto mt-1 text-pink-500" />
+  )}
+</button>
               ))}
             </div>
           </div>
@@ -120,11 +127,11 @@ const AppointmentModal = ({ doctor, onBookingSuccess, onBack, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-6 rounded-b-2xl">
+        <div className="mt-4 flex-shrink-0">
           <button
             onClick={handleBookAppointment}
             disabled={!selectedSlot}
-            className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all ${
+            className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition-all ${
               !selectedSlot
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
@@ -133,7 +140,7 @@ const AppointmentModal = ({ doctor, onBookingSuccess, onBack, onClose }) => {
             Confirm Appointment
           </button>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };
