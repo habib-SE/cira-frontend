@@ -95,29 +95,29 @@ function MainRouter() {
       {/* Public Routes */}
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/welcome" element={<WelcomePage />} />
-      
+
 
       {/* Authentication Routes - Using centralized login pages */}
       <Route path="/login" element={<MainLoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/doctor/login" element={<DoctorLoginPage />} />
       <Route path="/company/login" element={<CompanyLoginPage />} />
-      
-      
+
+
       {/* Email confirmation page */}
       <Route path="/email-confirm" element={<EmailConfirmPage />} />
-      
-     
-      
+
+
+
       {/* Plus unlocked page */}
       <Route path="/plus-unlocked" element={<PlusUnlockedPage />} />
-      
+
       {/* Subscription plans page */}
       <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
-      
+
       {/* Admin Panel Routes - Protected */}
-      <Route 
-        path="/admin" 
+      <Route
+        path="/admin"
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminLayout />
@@ -140,6 +140,7 @@ function MainRouter() {
         <Route path="appointments/edit/:id" element={<Appointments />} />
         <Route path="appointments/view/:id" element={<Appointments />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="reports/:id" element={<Reports />} />
         <Route path="payments" element={<Payments />} />
         <Route path="payments/:id" element={<PaymentDetail />} />
         <Route path="payouts" element={<AdminPayouts />} />
@@ -158,8 +159,8 @@ function MainRouter() {
       </Route>
 
       {/* User Portal Routes - Protected */}
-      <Route 
-        path="/user" 
+      <Route
+        path="/user"
         element={
           <ProtectedRoute allowedRoles={['user']}>
             <UserLayout />
@@ -170,20 +171,18 @@ function MainRouter() {
         <Route path="ai" element={<AI_Nurse />} />
         <Route path="reports" element={<PatientReports />} />
         <Route path="reports/:reportId" element={<PatientReportDetails />} />
-        <Route path="book-doctor" element={<MyDoctors/>} />
-        <Route path="Referralcheckout" element={<ReferralCheckout/>} />
-        <Route path="profile" element={<PatientProfile/>} />
+        <Route path="book-doctor" element={<MyDoctors />} />
+        <Route path="Referralcheckout" element={<ReferralCheckout />} />
+        <Route path="profile" element={<PatientProfile />} />
         <Route path="history" element={<History />} />
         <Route path="subscriptions" element={<PatientSubscriptions />} />
         <Route path="billing" element={<Billing />} />
         <Route path="messages" element={<PatientMessages />} />
         <Route path="settings" element={<PatientSettings />} />
       </Route>
-
-
       {/* Doctor Portal Routes - Protected */}
-      <Route 
-        path="/doctor" 
+      <Route
+        path="/doctor"
         element={
           <ProtectedRoute allowedRoles={['doctor']}>
             <DoctorLayout />
@@ -212,8 +211,8 @@ function MainRouter() {
       </Route>
 
       {/* Company Portal Routes - Protected */}
-      <Route 
-        path="/company" 
+      <Route
+        path="/company"
         element={
           <ProtectedRoute allowedRoles={['company']}>
             <CompanyLayout />

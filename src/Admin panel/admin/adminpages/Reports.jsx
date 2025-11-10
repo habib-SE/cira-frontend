@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { 
     FileText, 
     Search, 
@@ -12,20 +12,19 @@ import {
     Clock,
     AlertTriangle,
     CheckCircle,
-    File,
-    X
+    File
 } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const Reports = () => {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { id: reportIdParam } = useParams();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterDoctor, setFilterDoctor] = useState('');
     const [filterDate, setFilterDate] = useState('');
     const [filterType, setFilterType] = useState('');
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
-    const [selectedReport, setSelectedReport] = useState(null);
-    const [showReportModal, setShowReportModal] = useState(false);
 
     // Toast notification helper
     const showToast = (message, type = 'success') => {
@@ -525,7 +524,7 @@ const Reports = () => {
     };
 
     // Filter reports
-    const filteredReports = reports.filter(report => {
+    const filteredReports = useMemo(() => reports.filter(report => {
         const matchesSearch = searchTerm === '' || 
             report.patient.toLowerCase().includes(searchTerm.toLowerCase()) ||
             report.doctor.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -537,7 +536,12 @@ const Reports = () => {
         const matchesType = filterType === '' || report.reportType === filterType;
         
         return matchesSearch && matchesDoctor && matchesDate && matchesType;
-    });
+    }), [reports, searchTerm, filterDoctor, filterDate, filterType]);
+
+    const detailReport = useMemo(
+        () => (reportIdParam ? reports.find(r => r.id === Number(reportIdParam)) : null),
+        [reportIdParam, reports]
+    );
 
     // Calculate statistics
     const totalReports = reports.length;
@@ -546,8 +550,7 @@ const Reports = () => {
     const urgentReports = reports.filter(r => r.priority === 'Urgent').length;
 
     const handleViewReport = (report) => {
-        setSelectedReport(report);
-        setShowReportModal(true);
+        navigate(`/admin/reports/${report.id}`);
     };
 
     const handleDownloadReport = (report) => {
@@ -848,10 +851,11 @@ const Reports = () => {
         }
     };
 
-    const closeReportModal = () => {
-        setShowReportModal(false);
-        setSelectedReport(null);
-    };
+    useEffect(() => {
+        if (reportIdParam && !detailReport) {
+            navigate('/admin/reports');
+        }
+    }, [reportIdParam, detailReport, navigate]);
 
     return (
         <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
@@ -884,433 +888,350 @@ const Reports = () => {
                     </div>
                 </div>
             )}
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">AI Nurse Reports</h1>
-                    <p className="text-sm sm:text-base text-gray-600">Central archive of AI-generated healthcare reports</p>
+            {!detailReport && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">AI Nurse Reports</h1>
+                        <p className="text-sm sm:text-base text-gray-600">Central archive of AI-generated healthcare reports</p>
+                    </div>
+                    <div className="flex items-center space-x-2 sm:space-x-3">
+                        <button
+                            onClick={handleExportAll}
+                            className="flex items-center space-x-2 px-3 sm:px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 text-sm sm:text-base whitespace-nowrap"
+                        >
+                            <Download className="w-4 h-4" />
+                            <span className="hidden sm:inline">Export All</span>
+                            <span className="sm:hidden">Export</span>
+                        </button>
+                    </div>
                 </div>
-                <div className="flex items-center space-x-2 sm:space-x-3">
-                    <button
-                        onClick={handleExportAll}
-                        className="flex items-center space-x-2 px-3 sm:px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 text-sm sm:text-base whitespace-nowrap"
-                    >
-                        <Download className="w-4 h-4" />
-                        <span className="hidden sm:inline">Export All</span>
-                        <span className="sm:hidden">Export</span>
-                    </button>
+            )}
+
+      {/* Main Content Area */}
+      <div className="relative min-h-[600px]">
+        {detailReport ? (
+          <div className="space-y-6 mt-6">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-xl">
+              <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-start sm:items-center gap-3">
+                  <div className="w-12 h-12 bg-pink-100 text-pink-600 rounded-xl flex items-center justify-center">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center flex-wrap gap-2 mb-1">
+                      <h2 className="text-2xl font-bold text-gray-900">{detailReport.reportType}</h2>
+                      <span className="text-sm text-gray-500">#{detailReport.id}</span>
+                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getPriorityColor(detailReport.priority)}`}>
+                        {detailReport.priority}
+                      </span>
+                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(detailReport.status)}`}>
+                        {detailReport.status}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">Generated on {detailReport.generatedDate}</p>
+                  </div>
                 </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => navigate('/admin/reports')}
+                    className="inline-flex items-center px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={() => handleDownloadReport(detailReport)}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors duration-200 shadow-lg shadow-pink-200/60"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="rounded-xl border border-gray-100 bg-gray-50 p-5">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <User className="w-5 h-5 text-gray-500" />
+                      Patient Information
+                    </h3>
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium text-gray-600">Name:</span> {detailReport.patient}
+                    </p>
+                    <p className="text-sm text-gray-700 mt-2 flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-500" />
+                      <span>
+                        <span className="font-medium text-gray-600">Generated:</span> {detailReport.generatedDate}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-gray-100 bg-gray-50 p-5">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <Stethoscope className="w-5 h-5 text-gray-500" />
+                      Doctor Information
+                    </h3>
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium text-gray-600">Doctor:</span> {detailReport.doctor}
+                    </p>
+                    <p className="text-sm text-gray-700 mt-2 flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-gray-500" />
+                      <span>
+                        <span className="font-medium text-gray-600">Appointment:</span> {detailReport.appointmentDate}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                {detailReport.summary && (
+                  <div className="rounded-xl border border-gray-100 bg-gray-50 p-5">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Summary</h3>
+                    <p className="text-gray-700 leading-relaxed">{detailReport.summary}</p>
+                  </div>
+                )}
+
+                {detailReport.keyFindings && (
+                  <div className="rounded-xl border border-gray-100 bg-gray-50 p-5">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Key Findings</h3>
+                    <ul className="space-y-2 text-gray-700">
+                      {detailReport.keyFindings.map((finding, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="w-2 h-2 bg-pink-500 rounded-full mt-2" />
+                          <span>{finding}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {detailReport.recommendations && (
+                  <div className="rounded-xl border border-gray-100 bg-gray-50 p-5">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Recommendations</h3>
+                    <ul className="space-y-2 text-gray-700">
+                      {detailReport.recommendations.map((recommendation, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="w-2 h-2 bg-green-500 rounded-full mt-2" />
+                          <span>{recommendation}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
+                  <div>
+                    <span className="font-medium text-gray-600">File Size:</span> {detailReport.fileSize || 'N/A'}
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-600">Downloads:</span> {detailReport.downloadCount || 0}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Total Reports</p>
+                    <p className="text-xl font-bold text-gray-900">{totalReports}</p>
+                  </div>
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Completed</p>
+                    <p className="text-xl font-bold text-gray-900">{completedReports}</p>
+                  </div>
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-yellow-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Pending Review</p>
+                    <p className="text-xl font-bold text-gray-900">{pendingReports}</p>
+                  </div>
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                    <AlertTriangle className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Urgent</p>
+                    <p className="text-xl font-bold text-gray-900">{urgentReports}</p>
+                  </div>
+                </div>
+              </Card>
             </div>
 
-            {/* Main Content Area */}
-            <div className="relative min-h-[600px]">
-                <div className="space-y-6">
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="p-4">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Total Reports</p>
-                            <p className="text-xl font-bold text-gray-900">{totalReports}</p>
-                        </div>
-                    </div>
-                </Card>
-                <Card className="p-4">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                            <CheckCircle className="w-5 h-5 text-green-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Completed</p>
-                            <p className="text-xl font-bold text-gray-900">{completedReports}</p>
-                        </div>
-                    </div>
-                </Card>
-                <Card className="p-4">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
-                            <Clock className="w-5 h-5 text-yellow-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Pending Review</p>
-                            <p className="text-xl font-bold text-gray-900">{pendingReports}</p>
-                        </div>
-                    </div>
-                </Card>
-                <Card className="p-4">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
-                            <AlertTriangle className="w-5 h-5 text-red-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Urgent</p>
-                            <p className="text-xl font-bold text-gray-900">{urgentReports}</p>
-                        </div>
-                    </div>
-                </Card>
-            </div>
-
-            {/* Search and Filter */}
             <Card className="p-4">
-                <div className="space-y-3 sm:space-y-4">
-                    {/* Search Bar */}
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search reports by patient, doctor, type, or content..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                        />
-                    </div>
-                    
-                    {/* Filter Row */}
-                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3">
-                        <select
-                            value={filterDoctor}
-                            onChange={(e) => setFilterDoctor(e.target.value)}
-                            className="w-full sm:w-auto px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
-                        >
-                            <option value="">All Doctors</option>
-                            <option value="Dr. Sarah Johnson">Dr. Sarah Johnson</option>
-                            <option value="Dr. Michael Chen">Dr. Michael Chen</option>
-                            <option value="Dr. Emily Rodriguez">Dr. Emily Rodriguez</option>
-                            <option value="Dr. David Kim">Dr. David Kim</option>
-                        </select>
-                        <select
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value)}
-                            className="w-full sm:w-auto px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
-                        >
-                            <option value="">All Types</option>
-                            <option value="Health Assessment">Health Assessment</option>
-                            <option value="Risk Assessment">Risk Assessment</option>
-                            <option value="Treatment Plan">Treatment Plan</option>
-                            <option value="Emergency Assessment">Emergency Assessment</option>
-                            <option value="Follow-up Report">Follow-up Report</option>
-                        </select>
-                        <input
-                            type="date"
-                            value={filterDate}
-                            onChange={(e) => setFilterDate(e.target.value)}
-                            className="w-full sm:w-auto px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
-                            placeholder="Filter by date"
-                        />
-                        
-                        {/* Clear Filters Button */}
-                        {(searchTerm || filterDoctor || filterType || filterDate) && (
-                            <button
-                                onClick={() => {
-                                    setSearchTerm('');
-                                    setFilterDoctor('');
-                                    setFilterType('');
-                                    setFilterDate('');
-                                }}
-                                className="w-full sm:w-auto px-3 py-2 text-pink-600 hover:bg-pink-50 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 border border-pink-200 hover:border-pink-300 hover:shadow-lg font-medium text-sm whitespace-nowrap"
-                            >
-                                <Filter className="w-4 h-4" />
-                                <span>Clear All</span>
-                            </button>
-                        )}
-                    </div>
+              <div className="space-y-3 sm:space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search reports by patient, doctor, type, or content..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  />
                 </div>
+
+                <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3">
+                  <select
+                    value={filterDoctor}
+                    onChange={(e) => setFilterDoctor(e.target.value)}
+                    className="w-full sm:w-auto px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                  >
+                    <option value="">All Doctors</option>
+                    <option value="Dr. Sarah Johnson">Dr. Sarah Johnson</option>
+                    <option value="Dr. Michael Chen">Dr. Michael Chen</option>
+                    <option value="Dr. Emily Rodriguez">Dr. Emily Rodriguez</option>
+                    <option value="Dr. David Kim">Dr. David Kim</option>
+                  </select>
+                  <select
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                    className="w-full sm:w-auto px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                  >
+                    <option value="">All Types</option>
+                    <option value="Health Assessment">Health Assessment</option>
+                    <option value="Risk Assessment">Risk Assessment</option>
+                    <option value="Treatment Plan">Treatment Plan</option>
+                    <option value="Emergency Assessment">Emergency Assessment</option>
+                    <option value="Follow-up Report">Follow-up Report</option>
+                  </select>
+                  <input
+                    type="date"
+                    value={filterDate}
+                    onChange={(e) => setFilterDate(e.target.value)}
+                    className="w-full sm:w-auto px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                    placeholder="Filter by date"
+                  />
+                  {(searchTerm || filterDoctor || filterType || filterDate) && (
+                    <button
+                      onClick={() => {
+                        setSearchTerm('');
+                        setFilterDoctor('');
+                        setFilterType('');
+                        setFilterDate('');
+                      }}
+                      className="w-full sm:w-auto px-3 py-2 text-pink-600 hover:bg-pink-50 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 border border-pink-200 hover:border-pink-300 hover:shadow-lg font-medium text-sm whitespace-nowrap"
+                    >
+                      <Filter className="w-4 h-4" />
+                      <span>Clear All</span>
+                    </button>
+                  )}
+                </div>
+              </div>
             </Card>
 
-            {/* Reports List */}
             <div className="space-y-3 sm:space-y-4">
-                {filteredReports.map((report) => (
-                    <Card key={report.id} className="p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200">
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
-                                    <div className="flex items-center space-x-2 min-w-0">
-                                        <File className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
-                                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{report.reportType}</h3>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                    <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(report.priority)}`}>
-                                        {getPriorityIcon(report.priority)}
-                                        <span className="ml-1">{report.priority}</span>
-                                    </span>
-                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(report.status)}`}>
-                                        {report.status}
-                                    </span>
-                                    </div>
-                                </div>
-                                
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
-                                    <div>
-                                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Patient</p>
-                                        <div className="flex items-center space-x-2">
-                                            <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                            <span className="font-medium text-gray-900 text-sm sm:text-base truncate">{report.patient}</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Doctor</p>
-                                        <div className="flex items-center space-x-2">
-                                            <Stethoscope className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                            <span className="font-medium text-gray-900 text-sm sm:text-base truncate">{report.doctor}</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Generated</p>
-                                        <div className="flex items-center space-x-2">
-                                            <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                            <span className="text-gray-900 text-sm sm:text-base">{report.generatedDate}</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Appointment</p>
-                                        <div className="flex items-center space-x-2">
-                                            <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                            <span className="text-gray-900 text-sm sm:text-base">{report.appointmentDate}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mb-4">
-                                    <p className="text-xs sm:text-sm text-gray-600 mb-2">Summary</p>
-                                    <p className="text-sm sm:text-base text-gray-900">{report.summary}</p>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
-                                    <div>
-                                        <p className="text-xs sm:text-sm text-gray-600 mb-2">Key Findings</p>
-                                        <ul className="text-xs sm:text-sm text-gray-700 space-y-1">
-                                            {report.findings.slice(0, 2).map((finding, index) => (
-                                                <li key={index} className="flex items-start space-x-2">
-                                                    <span className="text-blue-500 mt-1 flex-shrink-0">•</span>
-                                                    <span className="break-words">{finding}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs sm:text-sm text-gray-600 mb-2">Recommendations</p>
-                                        <ul className="text-xs sm:text-sm text-gray-700 space-y-1">
-                                            {report.recommendations.slice(0, 2).map((rec, index) => (
-                                                <li key={index} className="flex items-start space-x-2">
-                                                    <span className="text-green-500 mt-1 flex-shrink-0">•</span>
-                                                    <span className="break-words">{rec}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
-                                    <span>File Size: {report.fileSize}</span>
-                                    <span>Downloads: {report.downloadCount}</span>
-                                </div>
-                            </div>
-                            
-                            <div className="flex items-center justify-end sm:justify-start space-x-2 mt-3 sm:mt-0">
-                                <button
-                                    onClick={() => handleViewReport(report)}
-                                    className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200"
-                                    title="View Report"
-                                >
-                                    <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
-                                </button>
-                                <button
-                                    onClick={() => handleDownloadReport(report)}
-                                    className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors duration-200"
-                                    title="Download Report"
-                                >
-                                    <Download className="w-4 h-4 sm:w-5 sm:h-5" />
-                                </button>
-                            </div>
+              {filteredReports.map((report) => (
+                <Card key={report.id} className="p-4 sm:p-5 hover:shadow-lg transition-shadow duration-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center text-pink-600 flex-shrink-0">
+                        <File className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate max-w-xs sm:max-w-md">
+                            {report.reportType}
+                          </h3>
+                          <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(report.priority)}`}>
+                            {getPriorityIcon(report.priority)}
+                            <span className="ml-1">{report.priority}</span>
+                          </span>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(report.status)}`}>
+                            {report.status}
+                          </span>
                         </div>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Empty State */}
-            {filteredReports.length === 0 && (
-                <Card className="p-12 text-center">
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                            <FileText className="w-8 h-8 text-gray-400" />
+                        <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-500 gap-3">
+                          <span className="flex items-center gap-1">
+                            <User className="w-4 h-4" />
+                            {report.patient}
+                          </span>
+                          <span className="hidden sm:inline text-gray-300">•</span>
+                          <span className="flex items-center gap-1">
+                            <Stethoscope className="w-4 h-4" />
+                            {report.doctor}
+                          </span>
+                          <span className="hidden sm:inline text-gray-300">•</span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            {report.generatedDate}
+                          </span>
                         </div>
-                        <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No reports found</h3>
-                            <p className="text-gray-600">
-                                {searchTerm || filterDoctor || filterType || filterDate
-                                    ? 'No reports match your current filters.'
-                                    : 'No AI reports have been generated yet.'
-                                }
-                            </p>
-                        </div>
+                        <p className="mt-3 text-sm text-gray-700 line-clamp-2">{report.summary}</p>
+                      </div>
                     </div>
+                    <div className="flex items-center gap-2 sm:flex-col sm:items-end sm:gap-3 flex-shrink-0">
+                      <div className="text-xs sm:text-sm text-gray-500 sm:text-right">
+                        <p>
+                          File Size: <span className="font-medium text-gray-700">{report.fileSize}</span>
+                        </p>
+                        <p>
+                          Downloads: <span className="font-medium text-gray-700">{report.downloadCount}</span>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleViewReport(report)}
+                          className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View
+                        </button>
+                        <button
+                          onClick={() => handleDownloadReport(report)}
+                          className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors duration-200"
+                        >
+                          <Download className="w-4 h-4" />
+                          Download
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </Card>
-            )}
-                </div>
+              ))}
             </div>
 
-            {/* Report View Modal */}
-            {showReportModal && selectedReport && (
-                <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-                        <div className="p-6 border-b border-gray-200">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
-                                        <FileText className="w-5 h-5 text-pink-600" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-xl font-bold text-gray-900">{selectedReport.reportType}</h2>
-                                        <p className="text-sm text-gray-600">Report #{selectedReport.id}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center space-x-3">
-                                    <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
-                                        selectedReport.priority === 'Urgent' ? 'bg-red-100 text-red-800' :
-                                        selectedReport.priority === 'High' ? 'bg-orange-100 text-orange-800' :
-                                        'bg-blue-100 text-blue-800'
-                                    }`}>
-                                        {selectedReport.priority}
-                                    </span>
-                                    <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
-                                        selectedReport.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                                        selectedReport.status === 'Pending Review' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-gray-100 text-gray-800'
-                                    }`}>
-                                        {selectedReport.status}
-                                    </span>
-                                    <button
-                                        onClick={closeReportModal}
-                                        className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
-                                    >
-                                        <X className="w-5 h-5 text-gray-500" />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-                            <div className="space-y-6">
-                                {/* Patient & Doctor Info */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="bg-gray-50 rounded-xl p-4">
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                            <User className="w-5 h-5 text-gray-600 mr-2" />
-                                            Patient Information
-                                        </h3>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center space-x-2">
-                                                <span className="text-sm font-medium text-gray-600">Name:</span>
-                                                <span className="text-gray-900">{selectedReport.patient}</span>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <Calendar className="w-4 h-4 text-gray-500" />
-                                                <span className="text-sm font-medium text-gray-600">Generated:</span>
-                                                <span className="text-gray-900">{selectedReport.generatedDate}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-gray-50 rounded-xl p-4">
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                            <Stethoscope className="w-5 h-5 text-gray-600 mr-2" />
-                                            Doctor Information
-                                        </h3>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center space-x-2">
-                                                <span className="text-sm font-medium text-gray-600">Doctor:</span>
-                                                <span className="text-gray-900">{selectedReport.doctor}</span>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <Clock className="w-4 h-4 text-gray-500" />
-                                                <span className="text-sm font-medium text-gray-600">Appointment:</span>
-                                                <span className="text-gray-900">{selectedReport.appointmentDate}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Summary */}
-                                <div className="bg-gray-50 rounded-xl p-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Summary</h3>
-                                    <p className="text-gray-700 leading-relaxed">{selectedReport.summary}</p>
-                                </div>
-
-                                {/* Key Findings */}
-                                {selectedReport.keyFindings && (
-                                    <div className="bg-gray-50 rounded-xl p-4">
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Key Findings</h3>
-                                        <ul className="space-y-2">
-                                            {selectedReport.keyFindings.map((finding, index) => (
-                                                <li key={index} className="flex items-start space-x-2">
-                                                    <span className="w-2 h-2 bg-pink-500 rounded-full mt-2 flex-shrink-0"></span>
-                                                    <span className="text-gray-700">{finding}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-
-                                {/* Recommendations */}
-                                {selectedReport.recommendations && (
-                                    <div className="bg-gray-50 rounded-xl p-4">
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recommendations</h3>
-                                        <ul className="space-y-2">
-                                            {selectedReport.recommendations.map((recommendation, index) => (
-                                                <li key={index} className="flex items-start space-x-2">
-                                                    <span className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
-                                                    <span className="text-gray-700">{recommendation}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-
-                                {/* File Info */}
-                                <div className="bg-gray-50 rounded-xl p-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">File Information</h3>
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                            <span className="font-medium text-gray-600">File Size:</span>
-                                            <span className="ml-2 text-gray-900">{selectedReport.fileSize || 'N/A'}</span>
-                                        </div>
-                                        <div>
-                                            <span className="font-medium text-gray-600">Downloads:</span>
-                                            <span className="ml-2 text-gray-900">{selectedReport.downloads || 0}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="p-6 border-t border-gray-200 bg-gray-50">
-                            <div className="flex items-center justify-end space-x-4">
-                                <button
-                                    onClick={closeReportModal}
-                                    className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors duration-200"
-                                >
-                                    Close
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        handleDownloadReport(selectedReport);
-                                        closeReportModal();
-                                    }}
-                                    className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
-                                >
-                                    <Download className="w-4 h-4" />
-                                    <span>Download Report</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+            {filteredReports.length === 0 && (
+              <Card className="p-12 text-center">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                    <FileText className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No reports found</h3>
+                    <p className="text-gray-600">
+                      {searchTerm || filterDoctor || filterType || filterDate
+                        ? 'No reports match your current filters.'
+                        : 'No AI reports have been generated yet.'}
+                    </p>
+                  </div>
                 </div>
+              </Card>
             )}
-        </div>
-    );
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default Reports;
