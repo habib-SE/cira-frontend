@@ -21,7 +21,7 @@ function VitalSignsDisplay({ vitals, onClose, onStartConversation }) {
         className="relative bg-white/40 backdrop-blur-md rounded-xl p-6 max-w-md w-full border border-white/30 shadow-2xl"
       >
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-pink-500">Vital Signs Scan</h3>
+          <h3 className="text-xl font-bold text-gray-800">Vital Signs Scan</h3>
           <button
             onClick={onClose}
             className="text-pink-600 hover:text-pink-700 transition-colors"
@@ -55,9 +55,9 @@ function VitalSignsDisplay({ vitals, onClose, onStartConversation }) {
 
         <button
           onClick={onStartConversation}
-          className="w-full bg-pink-400 text-white py-3 rounded-lg font-semibold hover:bg-pink-500 transition-colors shadow-md"
+          className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all bg-pink-400 text-white py-3 rounded-lg font-semibold hover:bg-pink-500 shadow-md"
         >
-          Continue to confirm a doctor
+          Continue to Book Appointment
         </button>
       </motion.div>
     </motion.div>

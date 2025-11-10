@@ -1,13 +1,12 @@
-// modal/modalHooks.js - UPDATED
+// modal/modalHooks.js - CLEANED UP
 import { useState } from 'react';
 
 export function useModalLogic() {
-  // Pop-up states (NEW)
+  // Pop-up states
   const [showDoctorRecommendationPopUp, setShowDoctorRecommendationPopUp] = useState(false);
   const [showFacialScanPopUp, setShowFacialScanPopUp] = useState(false);
   
   // Existing modal states
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [showVitals, setShowVitals] = useState(false);
   const [vitalsData, setVitalsData] = useState(null);
@@ -30,106 +29,77 @@ export function useModalLogic() {
     bloodPressure: `${Math.floor(Math.random() * 30) + 110}/${Math.floor(Math.random() * 20) + 70}`
   });
 
-  // NEW: Show doctor recommendation pop-up (first step) - FIXED NAME
+  // Show doctor recommendation pop-up (first step)
   const triggerDoctorRecommendationPopUp = (condition, specialty) => {
     setDoctorRecommendationData({ condition, specialty });
     setShowDoctorRecommendationPopUp(true);
   };
 
-  // NEW: Handle "Find Specialist Doctor" click
+  // Handle "Find Specialist Doctor" click
   const handleFindSpecialistDoctor = () => {
     setShowDoctorRecommendationPopUp(false);
     setShowVitals(false);
-    // Show facial scan pop-up next
     setShowFacialScanPopUp(true);
   };
 
-  // NEW: Handle skip doctor recommendation
+  // Handle skip doctor recommendation
   const handleSkipDoctorRecommendation = () => {
     setShowDoctorRecommendationPopUp(false);
     setDoctorRecommendationData(null);
   };
 
-  // NEW: Handle start facial scan
+  // Handle start facial scan
   const handleStartFacialScan = () => {
-    setShowWelcomeModal(false);
     setIsScanning(true);
     
     // Simulate scanning process
     setTimeout(() => {
       const dummyVitals = generateDummyVitals();
       setVitalsData(dummyVitals);
-         setIsScanning(false);
-      setShowWelcomeModal(false);
+      setIsScanning(false);
+      setShowFacialScanPopUp(false); // Hide facial scan popup after completion
       setShowVitals(true);
-
     }, 3000);
   };
 
-  // NEW: Handle continue from vitals (when user clicks "Continue" in vitals modal)
+  // Handle continue from vitals
   const handleContinueFromVitals = () => {
     setShowVitals(false);
-    // Show doctor list after vitals
     setShowDoctorRecommendation(true);
   };
 
-
-  // NEW: Handle skip facial scan
+  // Handle skip facial scan
   const handleSkipFacialScan = () => {
     setShowFacialScanPopUp(false);
-    // Skip to doctor list directly
     setShowDoctorRecommendation(true);
   };
 
-  // Existing handlers (updated)
-  const handleScanAccept = (onScanComplete) => {
-    setIsScanning(true);
-    setTimeout(() => {
-      const dummyVitals = generateDummyVitals();
-      setVitalsData(dummyVitals);
-      setIsScanning(false);
-      setShowWelcomeModal(false);
-      setShowVitals(true);
-      if (onScanComplete) onScanComplete(dummyVitals);
-    }, 3000);
-  };
-
-  const handleScanDecline = (onConversationStart) => {
-    setShowWelcomeModal(false);
-    if (onConversationStart) onConversationStart();
-  };
-
-  const handleCloseVitals = () => {
-    setShowVitals(false);
-
-  };
-
-  const handleStartFromVitals = (onConversationStart) => {
-    setShowVitals(false);
-    if (onConversationStart) onConversationStart();
-  };
-
+  // Handle select doctor
   const handleSelectDoctor = (doctor) => {
     setSelectedDoctor(doctor);
     setShowDoctorRecommendation(false);
     setShowPayment(true);
   };
 
+  // Handle skip doctor
   const handleSkipDoctor = () => {
     setShowDoctorRecommendation(false);
     setDoctorRecommendationData(null);
   };
 
+  // Handle payment success
   const handlePaymentSuccess = () => {
     setShowPayment(false);
     setShowAppointment(true);
   };
 
+  // Handle payment back
   const handlePaymentBack = () => {
     setShowPayment(false);
     setShowDoctorRecommendation(true);
   };
 
+  // Handle booking success
   const handleBookingSuccess = (details) => {
     setBookingDetails({
       ...details,
@@ -140,11 +110,13 @@ export function useModalLogic() {
     setShowConfirmation(true);
   };
 
+  // Handle appointment back
   const handleAppointmentBack = () => {
     setShowAppointment(false);
     setShowPayment(true);
   };
 
+  // Handle confirmation close
   const handleConfirmationClose = () => {
     setShowConfirmation(false);
     setBookingDetails(null);
@@ -152,14 +124,15 @@ export function useModalLogic() {
     setDoctorRecommendationData(null);
   };
 
+  // Check if any modal is open
   const isAnyModalOpen = () => {
-    return showWelcomeModal || showVitals || showDoctorRecommendation || 
+    return showVitals || showDoctorRecommendation || 
            showPayment || showAppointment || showConfirmation ||
-           showDoctorRecommendationPopUp || showFacialScanPopUp; // NEW
+           showDoctorRecommendationPopUp || showFacialScanPopUp;
   };
 
+  // Reset all modal states
   const resetModalStates = () => {
-    setShowWelcomeModal(false);
     setIsScanning(false);
     setShowVitals(false);
     setVitalsData(null);
@@ -170,14 +143,12 @@ export function useModalLogic() {
     setSelectedDoctor(null);
     setBookingDetails(null);
     setDoctorRecommendationData(null);
-    // NEW: Reset pop-ups
     setShowDoctorRecommendationPopUp(false);
     setShowFacialScanPopUp(false);
   };
 
   return {
     // States
-    showWelcomeModal,
     isScanning,
     showVitals,
     vitalsData,
@@ -188,40 +159,16 @@ export function useModalLogic() {
     selectedDoctor,
     bookingDetails,
     doctorRecommendationData,
-    // NEW: Pop-up states
     showDoctorRecommendationPopUp,
     showFacialScanPopUp,
     
-    // State setters
-    setShowWelcomeModal,
-    setIsScanning,
-    setShowVitals,
-    setVitalsData,
-    setShowDoctorRecommendation,
-    setShowPayment,
-    setShowAppointment,
-    setShowConfirmation,
-    setSelectedDoctor,
-    setBookingDetails,
-    setDoctorRecommendationData,
-    
     // Actions
-    generateDummyVitals,
-    handleScanAccept,
-    handleScanDecline,
-    handleCloseVitals,
-    handleStartFromVitals,
-    resetModalStates,
-    
-    // NEW: Pop-up actions - FIXED NAMES
-    triggerDoctorRecommendationPopUp, // Changed from showDoctorRecommendationPopUp
+    triggerDoctorRecommendationPopUp,
     handleFindSpecialistDoctor,
     handleSkipDoctorRecommendation,
     handleStartFacialScan,
     handleSkipFacialScan,
     handleContinueFromVitals,
-    
-    // Doctor flow actions
     handleSelectDoctor,
     handleSkipDoctor,
     handlePaymentSuccess,
@@ -229,6 +176,7 @@ export function useModalLogic() {
     handleBookingSuccess,
     handleAppointmentBack,
     handleConfirmationClose,
+    resetModalStates,
     
     // Utility functions
     isAnyModalOpen,
