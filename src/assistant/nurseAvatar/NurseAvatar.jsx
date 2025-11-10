@@ -10,7 +10,7 @@ export default function NurseAvatar({ isSpeaking, isConnected, phoneme }) {
   // const avatar = useLoader(GLTFLoader, "/nurse6.glb");
   const avatar = useLoader(
   GLTFLoader,
-  import.meta.env.BASE_URL + "nurse6.glb"
+  import.meta.env.VITE_API_BASE_URL + "nurse6.glb"
 );
 
   const headRef = useRef();
