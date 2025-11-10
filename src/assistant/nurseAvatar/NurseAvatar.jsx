@@ -7,12 +7,7 @@ import * as THREE from "three";
  * Nurse Avatar with lip sync + blinking etc
  */
 export default function NurseAvatar({ isSpeaking, isConnected, phoneme }) {
-  // const avatar = useLoader(GLTFLoader, "/nurse6.glb");
-  const avatar = useLoader(
-  GLTFLoader,
-  import.meta.env.VITE_API_BASE_URL + "/nurse6.glb"
-);
-
+   const avatar = useLoader(GLTFLoader, "/nurse6.glb");
   const headRef = useRef();
   const blinkTimer = useRef(0);
   const isBlinking = useRef(false);
