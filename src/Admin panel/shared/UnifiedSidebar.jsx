@@ -46,7 +46,6 @@ const UnifiedSidebar = ({
           { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
           { id: 'doctors', label: 'Doctors', icon: Stethoscope, path: '/admin/doctors' },
           { id: 'approvals', label: 'Approvals', icon: CheckCircle, path: '/admin/approvals' },
-          { id: 'compliance', label: 'Compliance', icon: Shield, path: '/admin/compliance' },
           { id: 'payments', label: 'Payments', icon: CreditCard, path: '/admin/payments' },
           { id: 'payouts', label: 'Payouts', icon: Receipt, path: '/admin/payouts' },
           { id: 'reports', label: 'Reports', icon: FileText, path: '/admin/reports' },
@@ -54,6 +53,7 @@ const UnifiedSidebar = ({
           { id: 'subscriptions', label: 'Subscriptions', icon: User, path: '/admin/plans' },
           { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/admin/appointments' },
           { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
+          { id: 'compliance', label: 'Compliance', icon: Shield, path: '/admin/compliance' },
           { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
         ];
       case 'company':
@@ -61,8 +61,8 @@ const UnifiedSidebar = ({
           { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/company' },
           { id: 'profile', label: 'Profile', icon: User, path: '/company/profile' },
           { id: 'users', label: 'Users', icon: Users, path: '/company/users' },
-          { id: 'reports', label: 'Reports', icon: FileText, path: '/company/reports' },
-          { id: 'consultations', label: 'Consultations', icon: Stethoscope, path: '/company/consultations' },
+          // { id: 'reports', label: 'Reports', icon: FileText, path: '/company/reports' },
+          // { id: 'consultations', label: 'Consultations', icon: Stethoscope, path: '/company/consultations' },
           { id: 'billing', label: 'Billing & Subscription', icon: CreditCard, path: '/company/billing' },
           { id: 'settings', label: 'Settings', icon: Settings, path: '/company/settings' },
         ];

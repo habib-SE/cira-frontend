@@ -57,7 +57,7 @@ function VitalSignsDisplay({ vitals, onClose, onStartConversation }) {
           onClick={onStartConversation}
           className="w-full bg-pink-400 text-white py-3 rounded-lg font-semibold hover:bg-pink-500 transition-colors shadow-md"
         >
-          Start Conversation
+          Continue to confirm a doctor
         </button>
       </motion.div>
     </motion.div>
