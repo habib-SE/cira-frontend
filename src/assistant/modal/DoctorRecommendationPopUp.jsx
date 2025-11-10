@@ -18,12 +18,12 @@ const DoctorRecommendationPopUp = ({ condition, recommendedSpecialty, onFindDoct
             <Stethoscope className="w-5 h-5 text-pink-600" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900">Doctor Recommendation</h3>
+            <h3 className="font-semibold text-gray-800">Doctor Recommendation</h3>
             <p className="text-sm text-gray-600">Based on your symptoms</p>
           </div>
           <button
             onClick={onSkip}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-pink-600 hover:text-pink-700 transition-colors"
           >
             <X size={18} />
           </button>

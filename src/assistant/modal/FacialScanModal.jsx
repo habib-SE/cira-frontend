@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 /**
  * Welcome Scan Modal - Shows immediately when route loads
  */
-function WelcomeScanModal({ onAccept, onDecline, isScanning }) {
+function FacialScanModal({ onStartScan, onSkipScan, isScanning  }) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -26,29 +26,30 @@ function WelcomeScanModal({ onAccept, onDecline, isScanning }) {
             <Scan className="w-10 h-10 text-pink-700" />
           </div>
           <h3 className="text-2xl font-bold text-gray-800 mb-3 drop-shadow-sm">
-            {isScanning ? "Health Scan in Progress" : "Welcome to Cira Health Assistant"}
+            {isScanning ? "Facial Scan in Progress" : " Facial Scan – Get Your Personalized Health Analysis"}
           </h3>
           <p className="text-gray-700 text-lg">
             {isScanning
               ? "Please remain still while we analyze your vital signs through facial recognition..."
-              : "I can perform a quick facial scan to check your vital signs and provide personalized recommendations. Would you like to proceed?"}
+              : "Before connecting you with the doctor, let's perform a quick facial scan to measure your vitals. Would you like to proceed?"}
           </p>
         </div>
 
         {!isScanning && (
           <div className="flex flex-col gap-3">
             <button
-              onClick={onAccept}
-              className="bg-pink-400 text-white py-4 rounded-xl font-semibold hover:bg-pink-500 transition-colors flex items-center justify-center gap-3 text-lg shadow-md"
+            onClick={onStartScan}
+            disabled={isScanning}
+              className="bg-gradient-to-r from-pink-500 to-purple-600  hover:from-pink-600 hover:to-purple-700 transition-allbg-pink-400 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-3 text-lg shadow-md"
             >
               <Scan size={24} />
               Yes, Scan My Vitals
             </button>
             <button
-              onClick={onDecline}
+              onClick={onSkipScan}
               className="bg-white/40 backdrop-blur-sm text-gray-800 py-4 rounded-xl font-semibold hover:bg-white/90 border border-gray-300 transition-colors text-lg"
             >
-              Skip Scan & Start Conversation
+              No, Skip Scan For Now
             </button>
           </div>
         )}
@@ -73,4 +74,4 @@ function WelcomeScanModal({ onAccept, onDecline, isScanning }) {
   );
 }
 
-export default WelcomeScanModal;
+export default FacialScanModal;
