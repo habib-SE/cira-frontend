@@ -27,6 +27,7 @@ export default function CiraAssistant() {
   const [conversationEnded, setConversationEnded] = useState(false);
   const [showEndOfConversationPopup, setShowEndOfConversationPopup] =
     useState(false);
+    const [isAutoStarting, setIsAutoStarting] = useState(false);
 
   const lastSpokenText = useRef("");
 
@@ -308,22 +309,21 @@ export default function CiraAssistant() {
 
       {/* Buttons */}
       <div className="flex flex-col items-center gap-3 mt-4">
-        {!isConnected && (
-          <button
-            onClick={handleStartConversation}
-            disabled={!hasPermission}
-            className={`flex items-center gap-2 rounded-full px-4 py-3 text-white font-medium transition-all duration-300 ${
-              hasPermission
-                ? "bg-gradient-to-r from-pink-500 to-pink-600 hover:scale-105 hover:shadow-lg active:scale-95"
-                : "bg-gray-400 cursor-not-allowed"
-            }`}
-          >
-            <Play className="w-6 h-6" />
-            <span className="text-lg">
-              {conversationEnded ? "Start New Conversation" : "Start Conversation"}
-            </span>
-          </button>
-        )}
+       {/* Start Conversation Button */}
+{!isConnected && hasAgreed && !conversationEnded && !isAutoStarting && (
+  <button
+    onClick={handleStartConversation}
+    disabled={!hasPermission}
+    className={`flex items-center gap-2 rounded-full px-4 py-3 text-white font-medium transition-all duration-300 ${
+      hasPermission
+        ? "bg-gradient-to-r from-pink-500 to-pink-600 hover:scale-105 hover:shadow-lg active:scale-95"
+        : "bg-gray-400 cursor-not-allowed"
+    }`}
+  >
+    <Play className="w-5 h-5" />
+    <span className="text-lg">Start Conversation</span>
+  </button>
+)}
 
         <button
           onClick={handleTestFlow}
@@ -338,8 +338,18 @@ export default function CiraAssistant() {
       {/* 🪟 Transparent Terms Modal appears on top */}
       <AnimatePresence>
         {!hasAgreed && (
-          <TermsAndConditionsModal onAccept={() => setHasAgreed(true)} />
-        )}
+ <TermsAndConditionsModal
+  onAccept={() => {
+    setHasAgreed(true);
+    setIsAutoStarting(true); 
+  }}
+  onStartConversation={async () => {
+    await handleStartConversationDirectly();
+    setIsAutoStarting(false); 
+  }}
+/>
+
+)}
         {showDoctorRecommendationPopUp && (
           <DoctorRecommendationPopUp
             condition={doctorRecommendationData?.condition || "your health concerns"}

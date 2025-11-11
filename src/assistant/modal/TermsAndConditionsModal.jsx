@@ -2,8 +2,16 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ShieldCheck, ScrollText } from "lucide-react";
 
-export default function TermsAndConditionsModal({ onAccept }) {
+export default function TermsAndConditionsModal({ onAccept, onStartConversation }) {
   const [checked, setChecked] = useState(false);
+
+   const handleAgree = () => {
+    if (!checked) return;
+    onAccept(); // mark agreement
+    if (onStartConversation) {
+      onStartConversation(); // start the conversation immediately
+    }
+  };
 
   return (
     <motion.div
@@ -96,7 +104,7 @@ export default function TermsAndConditionsModal({ onAccept }) {
         <div className="mt-6">
           <button
             disabled={!checked}
-            onClick={onAccept}
+            onClick={handleAgree}
             className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition-all duration-300 ${
               checked
                 ? "bg-gradient-to-r from-pink-500 to-purple-600 hover:scale-105 hover:shadow-lg"
