@@ -266,7 +266,10 @@ const MainLoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-br from-[#fff0fb] via-[#fdfbff] to-[#e4f0ff] flex items-center justify-center px-4">
+    <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-br flex items-center justify-center px-4" 
+    style={{
+      background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)'}}
+    >
       {/* soft glow blobs */}
       <div className="pointer-events-none absolute -top-32 -left-10 h-72 w-72 bg-pink-400/20 blur-3xl rounded-full" />
       <div className="pointer-events-none absolute -bottom-32 -right-10 h-72 w-72 bg-purple-400/20 blur-3xl rounded-full" />
@@ -274,8 +277,12 @@ const MainLoginPage = () => {
       <div className="relative z-10 w-full max-w-6xl grid lg:grid-cols-2 gap-10 items-center">
         {/* Left Hero Side */}
         <div className="flex flex-col gap-6 text-center lg:text-left">
+           <div className=''>
+             <img src={logo} alt="Cira Logo" className="h-24 w-auto" />
+           </div> 
+            
           <div className="flex items-center justify-center lg:justify-start gap-3">
-            <img src={logo} alt="Cira Logo" className="h-20 w-auto" />
+  
             <span className="px-3 py-1 rounded-full bg-white/70 shadow-sm text-xs font-semibold text-pink-500">
               Cira Health • Secure & Simple
             </span>
@@ -335,8 +342,8 @@ const MainLoginPage = () => {
         </div>
 
         {/* Right Login Card */}
-        <div className="flex justify-center">
-          <div className="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/70 shadow-[0_18px_60px_rgba(15,23,42,0.12)] rounded-3xl p-6 sm:p-8">
+        <div className="flex justify-end">
+          <div className="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/70 shadow-[0_18px_60px_rgba(15,23,42,0.12)] rounded-3xl p-2 sm:p-8">
             {/* playful header */}
             <div className="mb-5">
               <p className="text-xs font-medium text-pink-500 mb-1">
