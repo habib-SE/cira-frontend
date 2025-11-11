@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck, ScrollText } from "lucide-react";
+// import { ShieldCheck, ScrollText } from "lucide-react";
+import { ShieldCheck, ScrollText, ArrowRight } from "lucide-react";
 
 export default function TermsAndConditionsModal({ onAccept, onStartConversation }) {
   const [checked, setChecked] = useState(false);
@@ -25,7 +26,7 @@ export default function TermsAndConditionsModal({ onAccept, onStartConversation 
         initial={{ scale: 0.9, y: 20, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="relative bg-white/40 backdrop-blur-md rounded-3xl p-6 max-w-lg w-full max-h-[90vh] border border-white/30 shadow-2xl flex flex-col overflow-hidden"
+       className="relative bg-white/40 backdrop-blur-md rounded-3xl p-6 w-full max-w-600px] md:max-w-[700px] max-h-[90vh] border border-white/30 shadow-2xl flex flex-col overflow-hidden"
       >
         {/* Header */}
         <div className="text-center mb-5">
@@ -101,17 +102,18 @@ export default function TermsAndConditionsModal({ onAccept, onStartConversation 
         </div>
 
         {/* Footer Button */}
-        <div className="mt-6">
+        <div className="mt-6 flex justify-center items-center">
           <button
             disabled={!checked}
             onClick={handleAgree}
-            className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition-all duration-300 ${
+            className={` py-3 flex justify-center items-center text-nowrap px-4 rounded-xl font-semibold text-white transition-all duration-300 ${
               checked
                 ? "bg-gradient-to-r from-pink-500 to-purple-600 hover:scale-105 hover:shadow-lg"
                 : "bg-gray-400 cursor-not-allowed"
             }`}
           >
-            Agree & Continue
+             <span>Agree & Continue</span>
+             <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
           </button>
         </div>
       </motion.div>
