@@ -135,32 +135,3 @@ export default function NurseAvatar({ isSpeaking, isConnected, phoneme }) {
     />
   );
 }
-
-// import React, { useRef } from "react";
-// import { useFrame } from "@react-three/fiber";
-// import * as THREE from "three";
-
-// export default function AnimatedOrb() {
-//   const orbRef = useRef();
-
-//   // Rotation animation
-//   useFrame(() => {
-//     if (orbRef.current) {
-//       orbRef.current.rotation.y += 0.005;
-//       orbRef.current.rotation.x += 0.002;
-//     }
-//   });
-
-//   return (
-//     <mesh ref={orbRef}>
-//       <sphereGeometry args={[1.5, 64, 64]} />
-//       <meshStandardMaterial
-//         color="#ff69b4"
-//         emissive="#8a8af1"
-//         emissiveIntensity={1.5}
-//         metalness={0.4}
-//         roughness={0.2}
-//       />
-//     </mesh>
-//   );
-// }
