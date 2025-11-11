@@ -1156,26 +1156,35 @@ const Reports = () => {
             {showReportModal && selectedReport && (
                 <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-                        <div className="p-6 border-b border-gray-200">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                        <div className="p-4 sm:p-6 border-b border-gray-200">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div className="flex items-center justify-between sm:justify-start space-x-3">
+                                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                                        <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                         <FileText className="w-5 h-5 text-pink-600" />
                                     </div>
-                                    <div>
-                                        <h2 className="text-xl font-bold text-gray-900">{selectedReport.reportType}</h2>
-                                        <p className="text-sm text-gray-600">Report #{selectedReport.id}</p>
+                                        <div className="flex-1 min-w-0">
+                                            <h2 className="text-base sm:text-xl font-bold text-gray-900 truncate">{selectedReport.reportType}</h2>
+                                            <p className="text-xs sm:text-sm text-gray-600">Report #{selectedReport.id}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center space-x-3">
-                                    <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
+                                    <button
+                                        onClick={closeReportModal}
+                                        className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 flex-shrink-0 sm:hidden"
+                                        title="Close"
+                                    >
+                                        <X className="w-5 h-5 text-gray-500" />
+                                    </button>
+                                </div>
+                                <div className="flex items-center justify-start sm:justify-end space-x-2 sm:space-x-3">
+                                    <span className={`inline-flex px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold rounded-full ${
                                         selectedReport.priority === 'Urgent' ? 'bg-red-100 text-red-800' :
                                         selectedReport.priority === 'High' ? 'bg-orange-100 text-orange-800' :
                                         'bg-blue-100 text-blue-800'
                                     }`}>
                                         {selectedReport.priority}
                                     </span>
-                                    <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
+                                    <span className={`inline-flex px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold rounded-full ${
                                         selectedReport.status === 'Completed' ? 'bg-green-100 text-green-800' :
                                         selectedReport.status === 'Pending Review' ? 'bg-yellow-100 text-yellow-800' :
                                         'bg-gray-100 text-gray-800'
@@ -1184,7 +1193,8 @@ const Reports = () => {
                                     </span>
                                     <button
                                         onClick={closeReportModal}
-                                        className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                                        className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 flex-shrink-0 hidden sm:block"
+                                        title="Close"
                                     >
                                         <X className="w-5 h-5 text-gray-500" />
                                     </button>

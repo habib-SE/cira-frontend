@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings as SettingsIcon, User, Bell, Shield, Database, Palette, Save, Users, FileText, CreditCard, Key, Globe, AlertTriangle, CheckCircle } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const Settings = () => {
-
-    
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
     const [settings, setSettings] = useState({
         roles: {
@@ -39,6 +38,26 @@ const Settings = () => {
         }
     });
 
+    // Load settings from localStorage on mount
+    useEffect(() => {
+        const savedSettings = localStorage.getItem('adminSettings');
+        if (savedSettings) {
+            try {
+                setSettings(JSON.parse(savedSettings));
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+    }, []);
+
+    // Show toast notification
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => {
+            setToast({ show: false, message: '', type: '' });
+        }, 3000);
+    };
+
     const handleSettingChange = (category, key, value) => {
         setSettings(prev => ({
             ...prev,
@@ -50,11 +69,48 @@ const Settings = () => {
     };
 
     const handleSave = () => {
-        // Save settings logic here
+        try {
+            // Save settings to localStorage
+            localStorage.setItem('adminSettings', JSON.stringify(settings));
+            showToast('Settings saved successfully!', 'success');
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            showToast('Failed to save settings. Please try again.', 'error');
+        }
     };
 
     return (
         <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
+            {/* Toast Notification */}
+            {toast.show && (
+                <div className="fixed top-4 right-4 z-50 animate-slide-in">
+                    <div className={`flex items-center space-x-3 px-4 py-3 rounded-xl shadow-lg border max-w-sm ${
+                        toast.type === 'success' 
+                            ? 'bg-green-50 border-green-500 text-green-800' 
+                            : 'bg-red-50 border-red-500 text-red-800'
+                    }`}>
+                        <div className={`w-5 h-5 flex-shrink-0 ${
+                            toast.type === 'success' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                            {toast.type === 'success' ? (
+                                <CheckCircle className="w-5 h-5" />
+                            ) : (
+                                <AlertTriangle className="w-5 h-5" />
+                            )}
+                        </div>
+                        <span className="text-sm font-medium">{toast.message}</span>
+                        <button
+                            onClick={() => setToast({ show: false, message: '', type: '' })}
+                            className={`ml-2 text-sm ${
+                                toast.type === 'success' ? 'text-green-600' : 'text-red-600'
+                            } hover:opacity-70`}
+                        >
+                            ×
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">

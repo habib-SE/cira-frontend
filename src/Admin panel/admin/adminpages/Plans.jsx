@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, Edit, Eye, Trash2, CheckCircle, XCircle, Search, Filter, Shield, Star, Crown, Check } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const Plans = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [search, setSearch] = useState('');
   const [tierFilter, setTierFilter] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -58,15 +59,37 @@ const Plans = () => {
     localStorage.setItem('adminPlans', JSON.stringify(plans));
   }, [plans]);
 
-  // In case edits happened in another route/tab, refresh when storage changes
+  // Reload plans when component mounts/becomes visible or location changes
   useEffect(() => {
-    const onStorage = () => {
+    const loadPlans = () => {
       const stored = localStorage.getItem('adminPlans');
-      if (stored) setPlans(JSON.parse(stored));
+      if (stored) {
+        try {
+          setPlans(JSON.parse(stored));
+        } catch {
+          // If parsing fails, keep current state
+        }
+      }
     };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
+    
+    // Load whenever we navigate to this page
+    loadPlans();
+    
+    // Also load when page becomes visible (e.g., after navigating back)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadPlans();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', loadPlans);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', loadPlans);
+    };
+  }, [location.pathname]); // Reload when pathname changes
 
   const showToastNotification = (message, type = 'success') => {
     setToastMessage(message);
@@ -157,11 +180,11 @@ const Plans = () => {
       </Card>
 
       {/* List */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         {filtered.map(plan => (
           <Card 
             key={plan.id} 
-            className="relative p-6 transition-all duration-200 hover:shadow-lg"
+            className="relative p-4 transition-all duration-200 hover:shadow-lg"
           >
             {/* Plan Header */}
             <div className="text-center mb-6">
@@ -202,7 +225,7 @@ const Plans = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <button 
                 onClick={() => navigate(`/admin/plans/view/${plan.id}`)} 
                 className="flex-1 px-3 py-2 border rounded-lg text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2"
@@ -222,7 +245,7 @@ const Plans = () => {
                 className="flex-1 px-3 py-2 border rounded-lg text-red-600 hover:bg-red-50 flex items-center justify-center gap-2"
               >
                 <Trash2 className="w-4 h-4" />
-                <span className="text-sm">Delete</span>
+                <span className="text-[13px]">Delete</span>
               </button>
             </div>
           </Card>

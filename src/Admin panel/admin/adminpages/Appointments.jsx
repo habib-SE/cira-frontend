@@ -1051,13 +1051,13 @@ const Appointments = () => {
                             <button
                                 type="button"
                                 onClick={closeForm}
-                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200 whitespace-nowrap"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl whitespace-nowrap"
                             >
                                 <Save className="w-4 h-4" />
                                 <span>Schedule Appointment</span>
@@ -1322,13 +1322,13 @@ const Appointments = () => {
                             <button
                                 type="button"
                                 onClick={closeEditForm}
-                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200 whitespace-nowrap"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="flex items-center space-x-2 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl whitespace-nowrap"
                             >
                                 <Save className="w-4 h-4" />
                                 <span>Update Appointment</span>
@@ -1446,7 +1446,7 @@ const Appointments = () => {
                         <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
                             <button
                                 onClick={handleSaveViewForm}
-                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl whitespace-nowrap"
                             >
                                 <Save className="w-4 h-4" />
                                 <span>Save</span>
@@ -1481,7 +1481,8 @@ const Appointments = () => {
                     >
                         <Plus className="w-4 h-4" />
                         <span className="hidden sm:inline">Schedule Appointment</span>
-                        <span className="sm:hidden">Add</span>
+                        <span className="sm:hidden">Schedule Appointment</span>
+                        
                     </button>
                 </div>
             </div>

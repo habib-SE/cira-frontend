@@ -71,9 +71,9 @@ const DoctorMessages = () => {
   return (
     <div className="p-4 lg:p-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Messages</h1>
-        <p className="text-gray-600">Communicate with your patients securely</p>
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Messages</h1>
+        <p className="text-sm sm:text-base text-gray-600">Communicate with your patients securely</p>
       </div>
 
       {/* Main Content Area with Loader */}
@@ -94,9 +94,9 @@ const DoctorMessages = () => {
             <div className="flex h-[70vh] min-h-[600px]">
               {/* Chat List Sidebar */}
               <div className="w-full sm:w-1/3 lg:w-1/4 border-r border-gray-200 flex flex-col">
-                <div className="p-4 border-b border-gray-200 bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-900">
+                <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-semibold text-sm sm:text-base text-gray-900 truncate">
                       {selectedPatient ? `${selectedPatient.name}'s Conversation` : 'Patient Conversations'}
                     </h3>
                     {selectedPatient && (
@@ -105,7 +105,7 @@ const DoctorMessages = () => {
                           setSelectedPatient(null);
                           setSelectedChat(1);
                         }}
-                        className="text-sm text-pink-600 hover:text-pink-700 transition-colors"
+                        className="text-xs sm:text-sm text-pink-600 hover:text-pink-700 transition-colors whitespace-nowrap flex-shrink-0"
                       >
                         View All
                       </button>
@@ -121,29 +121,31 @@ const DoctorMessages = () => {
                         <div
                           key={chat.id}
                           onClick={() => setSelectedChat(chat.id)}
-                          className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
+                          className={`p-3 sm:p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
                             selectedChat === chat.id ? 'bg-pink-50 border-r-2 border-pink-500' : ''
                           }`}
                         >
-                          <div className="flex items-center space-x-3">
-                            <div className="relative flex-shrink-0">
+                          <div className="flex items-start gap-2 sm:gap-3">
+                            <div className="relative flex-shrink-0 hidden sm:block">
                               <div className="bg-pink-100 p-2 rounded-lg">
                                 <MessageCircle className="h-5 w-5 text-pink-600" />
                               </div>
                               <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${getStatusColor(chat.status)} rounded-full border-2 border-white`}></div>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-medium text-gray-900 truncate">{chat.patient}</h4>
-                              <p className="text-sm text-gray-600 truncate">{chat.condition}</p>
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <h4 className="font-medium text-sm sm:text-base text-gray-900 truncate flex-1">{chat.patient}</h4>
+                                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                                  <p className="text-xs text-gray-500 whitespace-nowrap">{chat.time}</p>
+                                  {chat.unread > 0 && (
+                                    <span className="inline-flex items-center justify-center bg-pink-600 text-white text-xs font-medium rounded-full min-w-[20px] h-5 px-2">
+                                      {chat.unread}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <p className="text-xs sm:text-sm text-gray-600 truncate mb-1">{chat.condition}</p>
                               <p className="text-xs text-gray-500 truncate">{chat.lastMessage}</p>
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-xs text-gray-500">{chat.time}</p>
-                              {chat.unread > 0 && (
-                                <span className="inline-flex items-center justify-center bg-pink-600 text-white text-xs font-medium rounded-full min-w-[20px] h-5 px-2 mt-1">
-                                  {chat.unread}
-                                </span>
-                              )}
                             </div>
                           </div>
                         </div>
@@ -160,29 +162,31 @@ const DoctorMessages = () => {
                       <div
                         key={chat.id}
                         onClick={() => setSelectedChat(chat.id)}
-                        className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
+                        className={`p-3 sm:p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
                           selectedChat === chat.id ? 'bg-pink-50 border-r-2 border-pink-500' : ''
                         }`}
                       >
-                        <div className="flex items-center space-x-3">
-                          <div className="relative flex-shrink-0">
+                        <div className="flex items-start gap-2 sm:gap-3">
+                          <div className="relative flex-shrink-0 hidden sm:block">
                             <div className="bg-pink-100 p-2 rounded-lg">
                               <MessageCircle className="h-5 w-5 text-pink-600" />
                             </div>
                             <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${getStatusColor(chat.status)} rounded-full border-2 border-white`}></div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-gray-900 truncate">{chat.patient}</h4>
-                            <p className="text-sm text-gray-600 truncate">{chat.condition}</p>
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <h4 className="font-medium text-sm sm:text-base text-gray-900 truncate flex-1">{chat.patient}</h4>
+                              <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                                <p className="text-xs text-gray-500 whitespace-nowrap">{chat.time}</p>
+                                {chat.unread > 0 && (
+                                  <span className="inline-flex items-center justify-center bg-pink-600 text-white text-xs font-medium rounded-full min-w-[20px] h-5 px-2">
+                                    {chat.unread}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-xs sm:text-sm text-gray-600 truncate mb-1">{chat.condition}</p>
                             <p className="text-xs text-gray-500 truncate">{chat.lastMessage}</p>
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            <p className="text-xs text-gray-500">{chat.time}</p>
-                            {chat.unread > 0 && (
-                              <span className="inline-flex items-center justify-center bg-pink-600 text-white text-xs font-medium rounded-full min-w-[20px] h-5 px-2 mt-1">
-                                {chat.unread}
-                              </span>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -266,8 +270,8 @@ const DoctorMessages = () => {
                 </div>
               </div>
 
-              {/* Mobile Chat Messages - Show when no chat selected on mobile */}
-              <div className="flex-1 flex flex-col sm:hidden">
+              {/* Mobile Chat Messages - Hidden */}
+              <div className="hidden">
                 <div className="flex items-center justify-center h-full bg-gray-50">
                   <div className="text-center p-6">
                     <MessageCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
