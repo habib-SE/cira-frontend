@@ -73,6 +73,20 @@
   .card, [class*="card"] {
     overflow-x: hidden;
   }
+
+  /* Ensure all interactive elements show pointer cursor */
+  button:not(:disabled),
+  [role="button"],
+  [data-clickable="true"],
+  a,
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
 }
 
 /* Use Poppins only for paragraphs */
