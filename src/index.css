@@ -2,8 +2,8 @@
    1. Import Google Fonts FIRST
    ================================ */
 /* Commented out to avoid network errors - using system fonts instead */
-/* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap'); */
-/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
 @import "./styles/forms.css";
@@ -27,8 +27,8 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Inter', system-ui, sans-serif;
-  }
+    font-family: 'Poppins', sans-serif;
+  } */
   
   #root {
     min-height: 100%;
@@ -72,12 +72,26 @@
   .card, [class*="card"] {
     overflow-x: hidden;
   }
+
+  /* Ensure all interactive elements show pointer cursor */
+  button:not(:disabled),
+  [role="button"],
+  [data-clickable="true"],
+  a,
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
 }
 
 /* Use Poppins only for paragraphs */
-p {
-  font-family: 'Poppins', sans-serif;
-}
+/* p {
+  font-family: 'Inter', system-ui, sans-serif;
+} */
 
 /* ================================
    4. Responsive Design Utilities

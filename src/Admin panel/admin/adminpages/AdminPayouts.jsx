@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import { 
-  RecordHeader, 
   DataTable, 
   FormTemplate, 
   ConfirmationModal,
@@ -15,17 +14,11 @@ import {
   CheckCircle,
   Clock,
   Download,
-  FileText,
-  Calculator,
   Eye,
   Edit,
   Trash2,
   Plus,
-  RefreshCw,
-  Calendar,
-  User,
-  TrendingUp,
-  AlertTriangle
+  TrendingUp
 } from 'lucide-react';
 
 const AdminPayouts = () => {
@@ -40,7 +33,14 @@ const AdminPayouts = () => {
 
   // Sample payout data
   useEffect(() => {
-    setPayouts([
+    const defaultActions = [
+      { label: 'View', type: 'view', icon: Eye },
+      { label: 'Edit', type: 'edit', icon: Edit },
+      { label: 'Download', type: 'download', icon: Download },
+      { label: 'Delete', type: 'delete', icon: Trash2, variant: 'danger' }
+    ];
+
+    const baseData = [
       {
         id: 'PAYOUT-001',
         doctor: 'Dr. Jane Smith',
@@ -135,7 +135,14 @@ const AdminPayouts = () => {
         },
         failureReason: 'Invalid bank account details'
       }
-    ]);
+    ];
+
+    setPayouts(
+      baseData.map(payout => ({
+        ...payout,
+        actions: defaultActions.map(action => ({ ...action }))
+      }))
+    );
   }, []);
 
   const columns = [
@@ -586,7 +593,14 @@ const AdminPayouts = () => {
   };
 
   const handleDeleteConfirm = () => {
-    console.log('Deleting payout:', selectedPayout.id);
+    if (selectedPayout) {
+      setPayouts(prev => prev.filter(payout => payout.id !== selectedPayout.id));
+    }
+    setShowDeleteModal(false);
+    setSelectedPayout(null);
+  };
+
+  const handleDeleteCancel = () => {
     setShowDeleteModal(false);
     setSelectedPayout(null);
   };
@@ -752,16 +766,40 @@ const AdminPayouts = () => {
       />
 
       {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Payout"
-        message={`Are you sure you want to delete payout ${selectedPayout?.id} for ${selectedPayout?.doctor}? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        destructive={true}
-      />
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Delete Payout</h2>
+              <p className="text-sm text-gray-600">
+                Are you sure you want to delete payout{' '}
+                <span className="font-medium text-gray-900">
+                  {selectedPayout?.id}
+                </span>{' '}
+                for{' '}
+                <span className="font-medium text-gray-900">
+                  {selectedPayout?.doctor}
+                </span>
+                ? This action cannot be undone.
+              </p>
+            </div>
+            <div className="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+              <button
+                onClick={handleDeleteCancel}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

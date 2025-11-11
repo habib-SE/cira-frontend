@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   AlertTriangle, 
   X, 
@@ -19,11 +19,17 @@ const ConfirmationModal = ({
   impact = '',
   isDestructive = true,
   confirmText = '',
+  requireInput = true,
   isLoading = false,
   className = ''
 }) => {
   const [inputValue, setInputValue] = useState('');
-  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(!requireInput);
+
+  useEffect(() => {
+    setInputValue('');
+    setIsConfirmed(!requireInput);
+  }, [requireInput, isOpen]);
 
   const getModalConfig = () => {
     switch (type) {
@@ -77,6 +83,7 @@ const ConfirmationModal = ({
 
   const config = getModalConfig();
   const requiredText = confirmText || config.confirmText.split('"')[1];
+  const shouldRenderInput = requireInput && requiredText;
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -164,20 +171,22 @@ const ConfirmationModal = ({
                 </div>
 
                 {/* Confirmation input */}
-                <div className="mt-4">
-                  <label htmlFor="confirm-input" className="block text-sm font-medium text-gray-700 mb-2">
-                    {config.confirmText}
-                  </label>
-                  <input
-                    id="confirm-input"
-                    type="text"
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    placeholder={requiredText}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                    autoComplete="off"
-                  />
-                </div>
+                {shouldRenderInput && (
+                  <div className="mt-4">
+                    <label htmlFor="confirm-input" className="block text-sm font-medium text-gray-700 mb-2">
+                      {config.confirmText}
+                    </label>
+                    <input
+                      id="confirm-input"
+                      type="text"
+                      value={inputValue}
+                      onChange={handleInputChange}
+                      placeholder={requiredText}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                      autoComplete="off"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>

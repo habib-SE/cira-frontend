@@ -121,19 +121,22 @@ const Dashboard = () => {
                     <div className="text-sm font-semibold text-gray-500 mb-3">
                         • Quick actions:
                     </div>
-                    <div className="flex gap-2 sm:gap-3">
+                    <div className="flex flex-row gap-2 sm:gap-3">
                         <button
                             onClick={() => navigate('/admin/appointments/add')}
-                            className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm whitespace-nowrap"
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 
+                            rounded-lg hover:bg-pink-100 transition-colors font-medium text-xs whitespace-nowrap"
                         >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-4 h-4 flex-shrink-0" />
                             New Appointment
                         </button>
                         <button
                             onClick={() => navigate('/admin/doctors')}
-                            className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm whitespace-nowrap"
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-pink-50
+                             text-pink-600 rounded-lg hover:bg-pink-100 transition-colors 
+                             font-medium text-xs whitespace-nowrap"
                         >
-                            <Stethoscope className="w-4 h-4" />
+                            <Stethoscope className="w-4 h-4 flex-shrink-0" />
                             Manage Doctors
                         </button>
                     </div>

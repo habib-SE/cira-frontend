@@ -1,16 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Plus, Edit, Eye, Trash2, CheckCircle, XCircle, Search, Filter, Shield, Star, Crown, Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Edit, Eye, CheckCircle, Search, Filter, Shield, Star, Crown } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const Plans = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [search, setSearch] = useState('');
   const [tierFilter, setTierFilter] = useState('');
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastType, setToastType] = useState('success');
 
   const defaultPlans = [
     {
@@ -59,44 +55,15 @@ const Plans = () => {
     localStorage.setItem('adminPlans', JSON.stringify(plans));
   }, [plans]);
 
-  // Reload plans when component mounts/becomes visible or location changes
+  // In case edits happened in another route/tab, refresh when storage changes
   useEffect(() => {
-    const loadPlans = () => {
+    const onStorage = () => {
       const stored = localStorage.getItem('adminPlans');
-      if (stored) {
-        try {
-          setPlans(JSON.parse(stored));
-        } catch {
-          // If parsing fails, keep current state
-        }
-      }
+      if (stored) setPlans(JSON.parse(stored));
     };
-    
-    // Load whenever we navigate to this page
-    loadPlans();
-    
-    // Also load when page becomes visible (e.g., after navigating back)
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        loadPlans();
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', loadPlans);
-    
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', loadPlans);
-    };
-  }, [location.pathname]); // Reload when pathname changes
-
-  const showToastNotification = (message, type = 'success') => {
-    setToastMessage(message);
-    setToastType(type);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
-  };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const filtered = useMemo(() => {
     return plans.filter(p => (
@@ -104,11 +71,6 @@ const Plans = () => {
       (!search || p.name.toLowerCase().includes(search.toLowerCase()))
     ));
   }, [plans, search, tierFilter]);
-
-  const handleDelete = (id) => {
-    setPlans(prev => prev.filter(p => p.id !== id));
-    showToastNotification('Plan deleted', 'warning');
-  };
 
   const getPlanIcon = (tier) => {
     switch (tier) {
@@ -134,6 +96,57 @@ const Plans = () => {
       default:
         return 'border-gray-200 bg-gray-50';
     }
+  };
+
+  const getPlanAccent = (tier) => {
+    switch (tier) {
+      case 'Free':
+        return 'from-gray-50 via-white to-slate-100';
+      case 'Basic':
+        return 'from-blue-50 via-white to-pink-50';
+      case 'Premium':
+        return 'from-purple-50 via-white to-amber-50';
+      default:
+        return 'from-gray-50 via-white to-slate-100';
+    }
+  };
+
+  const getIconBackground = (tier) => {
+    switch (tier) {
+      case 'Free':
+        return 'bg-white text-gray-500 border border-gray-200';
+      case 'Basic':
+        return 'bg-gradient-to-br from-pink-500 to-pink-400 text-white shadow-lg shadow-pink-200/60';
+      case 'Premium':
+        return 'bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-200/60';
+      default:
+        return 'bg-white text-gray-500 border border-gray-200';
+    }
+  };
+
+  const getPlanTagline = (tier) => {
+    switch (tier) {
+      case 'Free':
+        return 'Start exploring core features without cost';
+      case 'Basic':
+        return 'Scale your team with enhanced automation';
+      case 'Premium':
+        return 'Unlock enterprise-grade intelligence and care';
+      default:
+        return '';
+    }
+  };
+
+  const buildHighlights = (plan) => {
+    const highlights = [
+      `${plan.limits.aiSessions} AI sessions each month`,
+      `${plan.limits.vitalsScans} vitals scans included`,
+      plan.features.plusAI ? 'CIRA Plus AI workflows' : 'Core assistant features',
+      plan.features.chat ? '24/7 priority chat support' : 'Email support',
+      plan.trial ? 'Guided onboarding trial included' : 'On-demand onboarding'
+    ];
+
+    return highlights;
   };
 
   return (
@@ -180,89 +193,63 @@ const Plans = () => {
       </Card>
 
       {/* List */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {filtered.map(plan => (
-          <Card 
-            key={plan.id} 
-            className="relative p-4 transition-all duration-200 hover:shadow-lg"
+          <div
+            key={plan.id}
+            className={`relative group rounded-3xl p-6 md:p-8 bg-white/70 backdrop-blur-lg border border-white/60 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 bg-gradient-to-br ${getPlanAccent(plan.tier)}`}
           >
-            {/* Plan Header */}
-            <div className="text-center mb-6">
-              <div className={`w-16 h-16 ${getPlanColor(plan.tier)} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                <div className="text-gray-600">
+            {plan.tier === 'Basic' && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow-lg">
+                ⭐ Most Popular
+              </div>
+            )}
+            <div className="flex flex-col h-full">
+              <div className="text-center mb-6">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${getIconBackground(plan.tier)}`}>
                   {getPlanIcon(plan.tier)}
                 </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-1">{plan.name}</h3>
+                <p className="text-sm text-gray-500 mb-4">{getPlanTagline(plan.tier)}</p>
+                <div className="flex flex-col items-center gap-1">
+                  <div>
+                    <span className="text-4xl font-extrabold text-gray-900">${plan.priceMonthly}</span>
+                    <span className="text-gray-600 ml-1 text-base font-medium">/mo</span>
+                  </div>
+                  <span className="text-xs font-medium text-gray-500">
+                    or ${plan.priceAnnual}/yr billed annually
+                  </span>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-              <div className="mb-2">
-                <span className="text-3xl font-bold text-gray-900">${plan.priceMonthly}</span>
-                <span className="text-gray-600 ml-1">/mo</span>
+
+              <div className="space-y-3 flex-1">
+                {buildHighlights(plan).map((item, index) => (
+                  <div key={index} className="flex items-start gap-2 text-sm text-gray-700">
+                    <CheckCircle className="w-4 h-4 text-pink-500 mt-0.5 flex-shrink-0" />
+                    <span>{item}</span>
+                  </div>
+                ))}
               </div>
-              <p className="text-sm text-gray-600">Tier: {plan.tier}</p>
-            </div>
 
-            {/* Plan Details */}
-            <div className="mb-6">
-              <h4 className="font-semibold text-gray-900 mb-3">Plan Details:</h4>
-              <ul className="space-y-2">
-                <li className="flex items-start space-x-2">
-                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-700">Annual: <span className="font-medium">${plan.priceAnnual}/yr</span></span>
-                </li>
-                <li className="flex items-start space-x-2">
-                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-700">AI sessions: <span className="font-medium">{plan.limits.aiSessions}</span></span>
-                </li>
-                <li className="flex items-start space-x-2">
-                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-700">Vitals scans: <span className="font-medium">{plan.limits.vitalsScans}</span></span>
-                </li>
-                <li className="flex items-start space-x-2">
-                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-gray-700">Trial: <span className="font-medium">{plan.trial ? 'Available' : 'No'}</span></span>
-                </li>
-              </ul>
+              <div className="mt-6 space-y-3">
+                <button
+                  onClick={() => navigate(`/admin/plans/view/${plan.id}`)}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 text-gray-700 font-medium hover:bg-white hover:border-pink-200 transition-colors duration-200 flex items-center justify-center gap-2"
+                >
+                  <Eye className="w-4 h-4" />
+                  View plan
+                </button>
+                <button
+                  onClick={() => navigate(`/admin/plans/edit/${plan.id}`)}
+                  className="w-full px-4 py-2.5 rounded-2xl text-white font-semibold bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 shadow-lg shadow-pink-200/60 transition-transform duration-200 hover:-translate-y-0.5"
+                >
+                  Edit plan
+                </button>
+              </div>
             </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-1">
-              <button 
-                onClick={() => navigate(`/admin/plans/view/${plan.id}`)} 
-                className="flex-1 px-3 py-2 border rounded-lg text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2"
-              >
-                <Eye className="w-4 h-4" />
-                <span className="text-sm">View</span>
-              </button>
-              <button 
-                onClick={() => navigate(`/admin/plans/edit/${plan.id}`)} 
-                className="flex-1 px-3 py-2 border rounded-lg text-blue-600 hover:bg-blue-50 flex items-center justify-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                <span className="text-sm">Edit</span>
-              </button>
-              <button 
-                onClick={() => handleDelete(plan.id)} 
-                className="flex-1 px-3 py-2 border rounded-lg text-red-600 hover:bg-red-50 flex items-center justify-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span className="text-[13px]">Delete</span>
-              </button>
-            </div>
-          </Card>
+          </div>
         ))}
       </div>
-
-      {showToast && (
-        <div className="fixed top-4 right-4 z-50" style={{ animation: 'slideInRight 0.3s ease-out' }}>
-          <div className={`flex items-center space-x-3 px-4 py-3 rounded-lg shadow-lg min-w-[300px] ${toastType === 'warning' ? 'bg-pink-50 border border-pink-200' : 'bg-green-50 border border-green-200'}`}>
-            <CheckCircle className={`w-5 h-5 ${toastType === 'warning' ? 'text-pink-600' : 'text-green-600'}`} />
-            <p className={`text-sm font-medium ${toastType === 'warning' ? 'text-pink-800' : 'text-green-800'}`}>{toastMessage}</p>
-            <button onClick={() => setShowToast(false)} className={`${toastType === 'warning' ? 'text-pink-600 hover:text-pink-800' : 'text-green-600 hover:text-green-800'}`}>
-              <XCircle className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
