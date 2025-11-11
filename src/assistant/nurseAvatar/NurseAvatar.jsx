@@ -6,8 +6,8 @@ import * as THREE from "three";
 /**
  * Nurse Avatar with lip sync + blinking etc
  */
-export default function NurseAvatar({ isSpeaking, isConnected, phoneme }) {
-   const avatar = useLoader(GLTFLoader, "/nurse6.glb");
+export default function NurseAvatar({ isSpeaking, isConnected, phoneme, isMuted }) {
+  const avatar = useLoader(GLTFLoader, "/nurse6.glb");
   const headRef = useRef();
   const blinkTimer = useRef(0);
   const isBlinking = useRef(false);
@@ -68,6 +68,7 @@ export default function NurseAvatar({ isSpeaking, isConnected, phoneme }) {
     if (headRef.current && headRef.current.morphTargetInfluences) {
       const morphs = headRef.current.morphTargetInfluences;
 
+      // If disconnected, reset mouth
       if (!isConnected) {
         morphs[0] = THREE.MathUtils.lerp(morphs[0], 0, 0.3);
         morphs[1] = THREE.MathUtils.lerp(morphs[1], 0, 0.3);
@@ -75,10 +76,19 @@ export default function NurseAvatar({ isSpeaking, isConnected, phoneme }) {
         return;
       }
 
+      // Always reset morphs to neutral before animating
       for (let i = 0; i < morphs.length; i++) {
         morphs[i] = THREE.MathUtils.lerp(morphs[i], 0, 0.5);
       }
 
+      // ❌ If muted, stop all mouth movement
+      if (isMuted) {
+        morphs[0] = THREE.MathUtils.lerp(morphs[0], 0, 0.6);
+        morphs[1] = THREE.MathUtils.lerp(morphs[1], 0, 0.6);
+        return;
+      }
+
+      // 🎤 Active lip sync (speaking)
       if (phoneme && visemeMap[phoneme]) {
         const { open, smile } = visemeMap[phoneme];
         morphs[0] = THREE.MathUtils.lerp(morphs[0], open, 0.6);
@@ -88,21 +98,21 @@ export default function NurseAvatar({ isSpeaking, isConnected, phoneme }) {
           speechIntensity.current + delta * 2,
           1
         );
-        mouthOpenRef.current =
-          0.5 + Math.sin(Date.now() * 0.018) * 0.25;
+        mouthOpenRef.current = 0.5 + Math.sin(Date.now() * 0.018) * 0.25;
         morphs[0] = THREE.MathUtils.lerp(
           morphs[0],
           mouthOpenRef.current * speechIntensity.current,
           0.6
         );
       } else {
+        // idle mouth close
         speechIntensity.current = Math.max(speechIntensity.current - delta * 3, 0);
         morphs[0] = THREE.MathUtils.lerp(morphs[0], 0, 0.6);
         morphs[1] = THREE.MathUtils.lerp(morphs[1], 0, 0.6);
       }
     }
 
-    // Blinking
+    // Blinking (always runs)
     blinkTimer.current += delta;
     const eyeLeft = avatar.scene.getObjectByName("EyeLeft");
     const eyeRight = avatar.scene.getObjectByName("EyeRight");
