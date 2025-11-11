@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import Doctor from '../assets/doctorImage.png'
 
 export default function HeroSection() {
   return (
@@ -48,7 +49,7 @@ export default function HeroSection() {
       <div className="relative max-w-2xl w-full">
         <div className="relative overflow-hidden rounded-lg ">
           <img
-            src="/src/assets/doctorImage.png"
+            src={Doctor}
             alt="Doctor"
             className="w-full h-auto"
           />
