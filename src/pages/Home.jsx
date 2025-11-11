@@ -5,7 +5,7 @@ import TrustedSection from "../components/TrustedSection";
 
 function LandingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-y-hidden">
       <HeroSection />
       <TrustedSection />
     </div>
