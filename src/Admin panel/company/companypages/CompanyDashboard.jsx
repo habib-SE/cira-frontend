@@ -6,7 +6,6 @@ import {
   Activity, 
   TrendingUp,
   Calendar,
-  FileText,
   CreditCard,
   Settings,
   RefreshCw,
@@ -30,9 +29,6 @@ const CompanyDashboard = () => {
     switch (action) {
       case 'addUser':
         navigate('/company/users/create');
-        break;
-      case 'viewReports':
-        navigate('/company/reports');
         break;
       case 'billing':
         navigate('/company/billing');
@@ -152,13 +148,6 @@ const CompanyDashboard = () => {
             New User
           </button>
           <button
-            onClick={() => navigate('/company/reports')}
-            className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
-          >
-            <FileText className="w-4 h-4" />
-            View Reports
-          </button>
-          <button
             onClick={() => navigate('/company/billing')}
             className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
           >
@@ -250,13 +239,6 @@ const CompanyDashboard = () => {
               >
                 <Users className="h-6 w-6 text-gray-600 mb-2" />
                 <p className="text-sm font-medium text-gray-900">Add User</p>
-              </button>
-              <button 
-                onClick={() => handleQuickAction('viewReports')}
-                className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <FileText className="h-6 w-6 text-gray-600 mb-2" />
-                <p className="text-sm font-medium text-gray-900">View Reports</p>
               </button>
               <button 
                 onClick={() => handleQuickAction('billing')}

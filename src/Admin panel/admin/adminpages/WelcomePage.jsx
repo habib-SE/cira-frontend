@@ -8,7 +8,7 @@ const WelcomePage = () => {
     const navigate = useNavigate();
     return (
         <div
-            className="min-h-screen flex flex-col px-4 py-5 overflow-hidden relative"
+            className="min-h-screen flex flex-col px-4 py-5 relative"
             style={{ background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)' }}
         >
             {/* Header - Logo in top left */}
