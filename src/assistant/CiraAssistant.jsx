@@ -383,8 +383,10 @@ import BookingConfirmationModal from "./modal/BookingConfirmationModal";
 import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
 import { useModalLogic } from "./modal/modalHooks";
 import FacialScanModal from "./modal/FacialScanModal";
+import TermsAndConditionsModal from "./modal/TermsAndConditionsModal";
 
 export default function CiraAssistant() {
+  const [hasAgreed, setHasAgreed] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -700,7 +702,11 @@ export default function CiraAssistant() {
       </div>
 
       {/* Modals */}
+      {/* 🪟 Transparent Terms Modal appears on top */}
       <AnimatePresence>
+        {!hasAgreed && (
+          <TermsAndConditionsModal onAccept={() => setHasAgreed(true)} />
+        )}
         {showDoctorRecommendationPopUp && (
           <DoctorRecommendationPopUp
             condition={doctorRecommendationData?.condition || "your health concerns"}
