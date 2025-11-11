@@ -372,8 +372,8 @@ import { MicOff, PhoneOff, Volume2, VolumeX, TestTube } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
-// import NurseAvatar from "./nurseAvatar/NurseAvatar";
-import AnimatedOrb from "./nurseAvatar/NurseAvatar";
+import NurseAvatar from "./nurseAvatar/NurseAvatar";
+// import AnimatedOrb from "./nurseAvatar/NurseAvatar";
 
 // Import modals and pop-ups
 import VitalSignsDisplay from "./modal/VitalSignsDisplay";
@@ -631,7 +631,12 @@ export default function CiraAssistant() {
             />
             <directionalLight position={[3, 5, 2]} intensity={1.2} />
             <OrbitControls enableZoom={false} />
-           <AnimatedOrb />
+           <NurseAvatar
+  isSpeaking={isSpeaking}
+  isConnected={isConnected}
+  phoneme={phoneme}
+/>
+
           </Canvas>
         </div>
       </div>
