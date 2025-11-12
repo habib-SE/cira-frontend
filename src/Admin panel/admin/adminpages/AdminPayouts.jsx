@@ -730,7 +730,6 @@ const AdminPayouts = () => {
         loading={loading}
         searchable={true}
         searchPlaceholder="Search by doctor, ID, period, or status..."
-        onRefresh={() => setLoading(true)}
         onRowAction={(action, record) => {
           switch (action) {
             case 'view':

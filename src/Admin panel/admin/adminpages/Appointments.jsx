@@ -562,7 +562,7 @@ const Appointments = () => {
         );
         setAppointments(updatedAppointments);
         saveAppointmentsToStorage(updatedAppointments);
-
+        
         setToast({
             show: true,
             message: 'Appointment deleted successfully!',
@@ -1117,13 +1117,14 @@ const Appointments = () => {
                             <button
                                 type="button"
                                 onClick={closeForm}
-                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200 whitespace-nowrap"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl
+                                 hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl whitespace-nowrap text-[12px]"
                             >
                                 <Save className="w-4 h-4" />
                                 <span>Schedule Appointment</span>
@@ -1388,13 +1389,13 @@ const Appointments = () => {
                             <button
                                 type="button"
                                 onClick={closeEditForm}
-                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                                className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200 whitespace-nowrap"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="flex items-center space-x-2 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl whitespace-nowrap"
                             >
                                 <Save className="w-4 h-4" />
                                 <span>Update Appointment</span>
@@ -1448,49 +1449,49 @@ const Appointments = () => {
                                     <Edit className="w-4 h-4" />
                                     Edit appointment
                                 </button>
-                                <button
-                                    onClick={closeViewForm}
+                        <button
+                            onClick={closeViewForm}
                                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-pink-500 text-white hover:bg-pink-600 transition-colors duration-200 shadow-lg shadow-pink-200/60"
-                                >
+                        >
                                     Back to list
-                                </button>
-                            </div>
-                        </div>
+                        </button>
+                    </div>
+                                </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6 space-y-4">
                                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                                     <User className="w-5 h-5 text-pink-500" />
-                                    Patient Information
-                                </h3>
+                                Patient Information
+                            </h3>
                                 <div className="space-y-3 text-sm text-gray-600">
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium text-gray-500">Email</span>
                                         <span className="text-gray-900">{viewingAppointment.patientEmail}</span>
-                                    </div>
+                                </div>
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium text-gray-500">Phone</span>
                                         <span className="text-gray-900">{viewingAppointment.patientPhone}</span>
-                                    </div>
                                 </div>
                             </div>
+                        </div>
 
                             <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6 space-y-4">
                                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                                     <Stethoscope className="w-5 h-5 text-blue-500" />
                                     Care Team
-                                </h3>
+                            </h3>
                                 <div className="space-y-3 text-sm text-gray-600">
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium text-gray-500">Doctor</span>
                                         <span className="text-gray-900">{viewingAppointment.doctor}</span>
-                                    </div>
+                                </div>
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium text-gray-500">Specialty</span>
                                         <span className="text-gray-900">{viewingAppointment.specialty}</span>
-                                    </div>
                                 </div>
-                            </div>
+                                </div>
+                                </div>
 
                             <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6 space-y-4">
                                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -1501,7 +1502,7 @@ const Appointments = () => {
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium text-gray-500">Date</span>
                                         <span className="text-gray-900">{viewingAppointment.date}</span>
-                                    </div>
+                                </div>
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium text-gray-500">Time</span>
                                         <span className="text-gray-900">{viewingAppointment.time}</span>
@@ -1518,16 +1519,16 @@ const Appointments = () => {
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium text-gray-500">Appointment Status</span>
                                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(viewingAppointment.status)}`}>
-                                            {viewingAppointment.status}
-                                        </span>
-                                    </div>
+                                        {viewingAppointment.status}
+                                    </span>
+                                </div>
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium text-gray-500">Priority</span>
                                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getPriorityColor(viewingAppointment.priority)}`}>
-                                            {getPriorityIcon(viewingAppointment.priority)}
-                                            <span className="ml-2">{viewingAppointment.priority}</span>
-                                        </span>
-                                    </div>
+                                        {getPriorityIcon(viewingAppointment.priority)}
+                                        <span className="ml-2">{viewingAppointment.priority}</span>
+                                    </span>
+                                </div>
                                 </div>
                             </div>
                         </div>
@@ -1543,7 +1544,7 @@ const Appointments = () => {
                                 </div>
                             </div>
                         )}
-                    </Card>
+                </Card>
                 </div>
             )}
 
@@ -1572,7 +1573,8 @@ const Appointments = () => {
                     >
                         <Plus className="w-4 h-4" />
                         <span className="hidden sm:inline">Schedule Appointment</span>
-                        <span className="sm:hidden">Add</span>
+                        <span className="sm:hidden">Schedule Appointment</span>
+                        
                     </button>
                 </div>
             </div>

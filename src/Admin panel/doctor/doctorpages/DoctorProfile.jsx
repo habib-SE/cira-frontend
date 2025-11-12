@@ -154,7 +154,7 @@ const DoctorProfile = () => {
     return (
         <div className="p-6 space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
                     <p className="text-gray-600">Manage your professional profile and practice information</p>
@@ -163,25 +163,25 @@ const DoctorProfile = () => {
                     {!isEditing ? (
                         <button
                             onClick={handleEdit}
-                            className="flex items-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors"
+                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors whitespace-nowrap"
                         >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-4 h-4 flex-shrink-0" />
                             <span>Edit Profile</span>
                         </button>
                     ) : (
                         <div className="flex items-center space-x-2">
                             <button
                                 onClick={handleSave}
-                                className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors"
+                                className="flex items-center justify-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors whitespace-nowrap"
                             >
-                                <Save className="w-4 h-4" />
+                                <Save className="w-4 h-4 flex-shrink-0" />
                                 <span>Save Changes</span>
                             </button>
                             <button
                                 onClick={handleCancel}
-                                className="flex items-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors"
+                                className="flex items-center justify-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors whitespace-nowrap"
                             >
-                                <XCircle className="w-4 h-4" />
+                                <XCircle className="w-4 h-4 flex-shrink-0" />
                                 <span>Cancel</span>
                             </button>
                         </div>
@@ -227,8 +227,8 @@ const DoctorProfile = () => {
                                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                     }`}
                                 >
-                                    <Icon className="w-5 h-5" />
-                                    <span className="font-medium">{tab.label}</span>
+                                    <Icon className="w-5 h-5 flex-shrink-0" />
+                                    <span className="font-medium text-sm whitespace-nowrap">{tab.label}</span>
                                 </button>
                             );
                         })}
@@ -365,26 +365,26 @@ const DoctorProfile = () => {
 
                     {activeTab === 'documents' && (
                         <Card className="p-6">
-                            <div className="flex items-center justify-between mb-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                                 <h3 className="text-lg font-semibold text-gray-900">Documents</h3>
-                                <button className="flex items-center space-x-2 px-4 py-2 bg-pink-400 text-white rounded-xl hover:bg-pink-500 transition-colors">
-                                    <Upload className="w-4 h-4" />
+                                <button className="flex items-center justify-center space-x-2 px-4 py-2 bg-pink-400 text-white rounded-xl hover:bg-pink-500 transition-colors whitespace-nowrap">
+                                    <Upload className="w-4 h-4 flex-shrink-0" />
                                     <span>Upload Document</span>
                                 </button>
                             </div>
                             <div className="space-y-4">
                                 {doctor.documents.map((doc, index) => (
-                                    <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                        <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+                                            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                                 <FileText className="w-5 h-5 text-red-600" />
                                             </div>
-                                            <div>
-                                                <h4 className="font-medium text-gray-900">{doc.name}</h4>
-                                                <p className="text-sm text-gray-500">{doc.type} • {doc.size} • Uploaded {doc.uploaded}</p>
+                                            <div className="min-w-0 flex-1">
+                                                <h4 className="font-medium text-gray-900 truncate">{doc.name}</h4>
+                                                <p className="text-xs sm:text-sm text-gray-500 truncate">{doc.type} • {doc.size} • Uploaded {doc.uploaded}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center space-x-3">
+                                        <div className="flex items-center space-x-3 flex-shrink-0">
                                             <span className={`inline-flex items-center space-x-1 px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(doc.status)}`}>
                                                 {getStatusIcon(doc.status)}
                                                 <span>{doc.status}</span>
@@ -404,29 +404,29 @@ const DoctorProfile = () => {
                             <h3 className="text-lg font-semibold text-gray-900 mb-6">Weekly Schedule</h3>
                             <div className="space-y-4">
                                 {Object.entries(doctor.availability).map(([day, schedule]) => (
-                                    <div key={day} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="w-12 text-sm font-medium text-gray-900 capitalize">
+                                    <div key={day} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border border-gray-200 rounded-xl">
+                                        <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4 flex-1">
+                                            <div className="text-sm font-medium text-gray-900 capitalize whitespace-nowrap flex-shrink-0">
                                                 {day}
                                             </div>
-                                            <div className="flex items-center space-x-2">
+                                            <div className="flex items-center gap-2 flex-shrink-0">
                                                 {schedule.available ? (
                                                     <>
-                                                        <Clock className="w-4 h-4 text-green-500" />
-                                                        <span className="text-sm text-gray-900">
+                                                        <Clock className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                                        <span className="text-sm text-gray-900 whitespace-nowrap">
                                                             {schedule.start} - {schedule.end}
                                                         </span>
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <XCircle className="w-4 h-4 text-red-500" />
-                                                        <span className="text-sm text-gray-500">Not Available</span>
+                                                        <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                                                        <span className="text-sm text-gray-500 whitespace-nowrap">Not Available</span>
                                                     </>
                                                 )}
                                             </div>
                                         </div>
                                         {isEditing && (
-                                            <button className="text-pink-600 hover:text-pink-800">
+                                            <button className="text-pink-600 hover:text-pink-800 self-end sm:self-auto flex-shrink-0">
                                                 <Edit className="w-4 h-4" />
                                             </button>
                                         )}

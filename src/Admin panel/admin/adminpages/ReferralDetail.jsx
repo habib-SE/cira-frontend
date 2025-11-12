@@ -409,18 +409,18 @@ const ReferralDetail = () => {
                     )}
 
                     {/* Action Buttons */}
-                    <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:space-x-4 sm:gap-0 pt-6 border-t border-gray-200">
                         <button
                             onClick={() => navigate('/admin/referrals')}
-                            className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+                            className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200 whitespace-nowrap"
                         >
                             Back to Referrals
                         </button>
                         <button
                             onClick={() => navigate('/admin/referral-providers')}
-                            className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                            className="flex items-center justify-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl whitespace-nowrap"
                         >
-                            <Building2 className="w-4 h-4" />
+                            <Building2 className="w-4 h-4 flex-shrink-0" />
                             <span>Manage Providers</span>
                         </button>
                     </div>

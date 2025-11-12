@@ -439,7 +439,7 @@ const DoctorSchedule = () => {
                     >
                         <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                         <span className="hidden sm:inline">Add Appointment</span>
-                        <span className="sm:hidden">Add</span>
+                        <span className="sm:hidden">Add Appointment</span>
                     </button>
                 </div>
             </div>
@@ -596,8 +596,8 @@ const DoctorSchedule = () => {
                                                     <div className="border-t border-gray-200 pt-3">
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center space-x-2">
-                                                                <FileText className="w-4 h-4 text-blue-500" />
-                                                                <span className="text-sm font-medium text-gray-700">AI Report</span>
+                                                                <FileText className="w-4 h-4 text-blue-500 sm:inline hidden" />
+                                                                <span className="text-sm font-medium text-gray-700 hidden sm:inline">AI Report</span>
                                                                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getAIReportStatusColor(appointment.aiReport.status)}`}>
                                                                     {appointment.aiReport.status}
                                                                 </span>

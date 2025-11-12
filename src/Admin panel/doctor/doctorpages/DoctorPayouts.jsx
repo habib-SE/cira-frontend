@@ -213,12 +213,12 @@ Platform: CIRA AI Healthcare Platform`;
               {isExporting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  <span className="hidden sm:inline">Exporting...</span>
+                  <span>Exporting...</span>
                 </>
               ) : (
                 <>
-                  <Download className="w-4 h-4" />
-                  <span className="hidden sm:inline">Export</span>
+                  <Download className="w-4 h-4 flex-shrink-0" />
+                  <span>Export</span>
                 </>
               )}
             </button>

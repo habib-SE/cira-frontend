@@ -121,23 +121,6 @@ const DoctorDashboard = () => {
         }
     };
 
-    // Quick Actions handlers
-    const handleScheduleAppointment = () => {
-        navigate('/doctor/appointments/create');
-    };
-
-    const handleViewPatients = () => {
-        navigate('/doctor/patients');
-    };
-
-    const handleViewEarnings = () => {
-        navigate('/doctor/earnings');
-    };
-
-    const handleViewAnalytics = () => {
-        navigate('/doctor/analytics');
-    };
-
     const handleViewAppointmentDetails = (appointmentId) => {
         navigate(`/doctor/appointments/${appointmentId}`);
     };
@@ -197,9 +180,6 @@ const DoctorDashboard = () => {
                         View Earnings
                     </button>
                 </div>
-                <div className="mt-3 text-xs text-gray-400">
-                    (Doctor)
-                </div>
             </Card>
 
                     {/* Stats Cards */}
@@ -236,8 +216,8 @@ const DoctorDashboard = () => {
                         <div className="space-y-3 sm:space-y-4">
                             {todaysAppointments.map((appointment) => (
                                 <div key={appointment.id} className="border border-gray-200 rounded-xl p-3 sm:p-4 hover:bg-gray-50 transition-colors">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2">
-                                        <div className="flex items-center space-x-3">
+                                    <div className="flex items-center justify-between mb-3 gap-2">
+                                        <div className="flex items-center space-x-3 min-w-0 flex-1">
                                             <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
                                                 <span className="text-pink-600 font-semibold text-xs sm:text-sm">
                                                     {appointment.patient.split(' ').map(n => n[0]).join('')}
@@ -248,20 +228,26 @@ const DoctorDashboard = () => {
                                                 <p className="text-xs sm:text-sm text-gray-600 truncate">{appointment.type}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center space-x-2 flex-shrink-0">
-                                            {getStatusIcon(appointment.status)}
-                                            <span className={`text-xs px-2 py-1 rounded-full ${
-                                                appointment.status === 'confirmed' 
-                                                    ? 'bg-green-100 text-green-800' 
-                                                    : 'bg-yellow-100 text-yellow-800'
-                                            }`}>
-                                                {appointment.status}
-                                            </span>
-                                        </div>
+                                        <button 
+                                            onClick={() => handleViewAppointmentDetails(appointment.id)}
+                                            className="text-pink-600 hover:text-pink-700 font-medium text-xs sm:text-sm whitespace-nowrap flex-shrink-0 sm:hidden"
+                                        >
+                                            View Details
+                                        </button>
                                     </div>
                                     
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs sm:text-sm text-gray-600 gap-2">
                                         <div className="flex items-center flex-wrap gap-3 sm:gap-4">
+                                            <div className="flex items-center space-x-2">
+                                                {getStatusIcon(appointment.status)}
+                                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                                    appointment.status === 'confirmed' 
+                                                        ? 'bg-green-100 text-green-800' 
+                                                        : 'bg-yellow-100 text-yellow-800'
+                                                }`}>
+                                                    {appointment.status}
+                                                </span>
+                                            </div>
                                             <div className="flex items-center space-x-1">
                                                 <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                                                 <span>{appointment.time}</span>
@@ -277,7 +263,7 @@ const DoctorDashboard = () => {
                                         </div>
                                         <button 
                                             onClick={() => handleViewAppointmentDetails(appointment.id)}
-                                            className="text-pink-600 hover:text-pink-700 font-medium text-xs sm:text-sm whitespace-nowrap"
+                                            className="text-pink-600 hover:text-pink-700 font-medium text-xs sm:text-sm whitespace-nowrap hidden sm:block"
                                         >
                                             View Details
                                         </button>
@@ -288,41 +274,8 @@ const DoctorDashboard = () => {
                     </Card>
                 </div>
 
-                {/* Quick Actions */}
+                {/* Quick Actions Removed */}
                 <div className="space-y-4 sm:space-y-6">
-                    <Card className="p-4 sm:p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                        <div className="space-y-3">
-                            <button 
-                                onClick={handleScheduleAppointment}
-                                className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                            >
-                                <Clock className="w-5 h-5 text-blue-500" />
-                                <span>Schedule Appointment</span>
-                            </button>
-                            <button 
-                                onClick={handleViewPatients}
-                                className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                            >
-                                <Users className="w-5 h-5 text-green-500" />
-                                <span>View Patients</span>
-                            </button>
-                            <button 
-                                onClick={handleViewEarnings}
-                                className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                            >
-                                <DollarSign className="w-5 h-5 text-purple-500" />
-                                <span>View Earnings</span>
-                            </button>
-                            <button 
-                                onClick={handleViewAnalytics}
-                                className="w-full flex items-center space-x-3 p-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                            >
-                                <TrendingUp className="w-5 h-5 text-orange-500" />
-                                <span>Analytics</span>
-                            </button>
-                        </div>
-                    </Card>
                     
                     {/* Additional Info Card */}
                     <Card className="p-4 sm:p-6">
