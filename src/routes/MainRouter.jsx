@@ -140,6 +140,7 @@ function MainRouter() {
         <Route path="appointments/edit/:id" element={<Appointments />} />
         <Route path="appointments/view/:id" element={<Appointments />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="reports/:id" element={<Reports />} />
         <Route path="payments" element={<Payments />} />
         <Route path="payments/:id" element={<PaymentDetail />} />
         <Route path="payouts" element={<AdminPayouts />} />

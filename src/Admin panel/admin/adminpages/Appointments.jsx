@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, Plus, Search, Filter, Clock, User, Stethoscope, X, Save, Edit, Trash2, Eye, Phone, Mail, MapPin, AlertCircle, CheckCircle, FileText, TrendingUp, BarChart3, PieChart, Activity, Bell, Star, Award, Target, Zap, Users, Calendar as CalendarIcon, Clock as ClockIcon, DollarSign, MessageSquare, Video, MapPin as LocationIcon } from 'lucide-react';
 import Card from '../admincomponents/Card';
@@ -11,6 +12,8 @@ const Appointments = () => {
     
     // State management
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [appointmentToDelete, setAppointmentToDelete] = useState(null);
     const [_isContentLoading, _setIsContentLoading] = useState(false);
 
     // Check for search term from URL query parameters
@@ -547,18 +550,44 @@ const Appointments = () => {
     };
 
     const handleDeleteAppointment = (appointment) => {
-        // Delete immediately and show pink toast
-        const updatedAppointments = appointments.filter(apt => apt.id !== appointment.id);
+        setAppointmentToDelete(appointment);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDeleteAppointment = () => {
+        if (!appointmentToDelete) return;
+
+        const updatedAppointments = appointments.filter(
+            apt => apt.id !== appointmentToDelete.id
+        );
         setAppointments(updatedAppointments);
         saveAppointmentsToStorage(updatedAppointments);
-        
-        // Show pink toast notification
+
         setToast({
             show: true,
             message: 'Appointment deleted successfully!',
             type: 'warning'
         });
+
+        setAppointmentToDelete(null);
+        setShowDeleteModal(false);
     };
+
+    const cancelDeleteAppointment = () => {
+        setAppointmentToDelete(null);
+        setShowDeleteModal(false);
+    };
+
+    useEffect(() => {
+        if (!showDeleteModal) return;
+
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = originalOverflow;
+        };
+    }, [showDeleteModal]);
 
     const handleSendReminders = () => {
         // Get upcoming appointments (next 24 hours)
@@ -632,23 +661,6 @@ const Appointments = () => {
         setShowViewFormInLayout(false);
         setViewingAppointment(null);
         navigate('/admin/appointments');
-    };
-
-    const handleSaveViewForm = () => {
-        // In a real app, this would save the appointment data
-        console.log('Saving appointment:', viewingAppointment);
-        
-        // Show success toast
-        setToast({
-            show: true,
-            message: 'Appointment saved successfully!',
-            type: 'success'
-        });
-        
-        // Close the form after a short delay
-        setTimeout(() => {
-            closeViewForm();
-        }, 1500);
     };
 
     const closeEditForm = () => {
@@ -764,8 +776,62 @@ const Appointments = () => {
         }
     };
 
+    const deleteModal = showDeleteModal && appointmentToDelete
+        ? createPortal(
+            <div className="fixed inset-0 z-[1000] flex min-h-screen items-center justify-center bg-black/50 backdrop-blur-sm px-4 py-6">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+                    <div className="p-6">
+                        <div className="flex items-center space-x-3 mb-4">
+                            <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                                <Trash2 className="w-5 h-5 text-red-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900">Delete Appointment</h3>
+                                <p className="text-sm text-gray-500">
+                                    This action cannot be undone.
+                                </p>
+                            </div>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                            Are you sure you want to delete the appointment for{' '}
+                            <span className="font-semibold text-gray-900">
+                                {appointmentToDelete.patient}
+                            </span>{' '}
+                            with{' '}
+                            <span className="font-semibold text-gray-900">
+                                {appointmentToDelete.doctor}
+                            </span>{' '}
+                            scheduled on{' '}
+                            <span className="font-semibold text-gray-900">
+                                {appointmentToDelete.date} at {appointmentToDelete.time}
+                            </span>
+                            ?
+                        </p>
+                    </div>
+                    <div className="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+                        <button
+                            onClick={cancelDeleteAppointment}
+                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100 transition-colors duration-200"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={confirmDeleteAppointment}
+                            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors duration-200"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>,
+            document.body
+        )
+        : null;
+
     return (
         <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
+            {deleteModal}
+
             {/* Toast Notification */}
             {toast.show && (
                 <div className="fixed top-4 right-4 z-50 animate-slide-in">
@@ -1340,120 +1406,145 @@ const Appointments = () => {
 
             {/* View Appointment Form in Layout - At the top when visible */}
             {showViewFormInLayout && viewingAppointment && (
-                <Card className="p-8">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-gray-900">Appointment Details</h2>
-                        <button
-                            onClick={closeViewForm}
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
-                        >
-                            <X className="w-5 h-5 text-gray-500" />
-                        </button>
-                    </div>
-
-                    <div className="space-y-6">
-                        {/* Patient Information */}
-                        <div className="bg-gray-50 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center mr-3">
-                                    <User className="w-4 h-4 text-pink-600" />
+                <div className="space-y-6">
+                    <Card className="p-6 sm:p-8 space-y-6">
+                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                            <div>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 text-white flex items-center justify-center text-xl font-semibold shadow-lg shadow-pink-200/50">
+                                        {viewingAppointment.patient.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-900">
+                                            {viewingAppointment.patient}
+                                        </h2>
+                                        <p className="text-sm text-gray-500">
+                                            Booked with {viewingAppointment.doctor} · {viewingAppointment.date} at {viewingAppointment.time}
+                                        </p>
+                                    </div>
                                 </div>
-                                Patient Information
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-2">Name</label>
-                                    <p className="text-gray-900 font-medium">{viewingAppointment.patient}</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-2">Email</label>
-                                    <p className="text-gray-900">{viewingAppointment.patientEmail}</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-2">Phone</label>
-                                    <p className="text-gray-900">{viewingAppointment.patientPhone}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Appointment Information */}
-                        <div className="bg-gray-50 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                    <Calendar className="w-4 h-4 text-blue-600" />
-                                </div>
-                                Appointment Information
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-2">Doctor</label>
-                                    <p className="text-gray-900 font-medium">{viewingAppointment.doctor}</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-2">Department</label>
-                                    <p className="text-gray-900">{viewingAppointment.specialty}</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-2">Date</label>
-                                    <p className="text-gray-900">{viewingAppointment.date}</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-2">Time</label>
-                                    <p className="text-gray-900">{viewingAppointment.time}</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-2">Type</label>
-                                    <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getTypeColor(viewingAppointment.type)}`}>
+                                <div className="mt-4 flex flex-wrap items-center gap-2">
+                                    <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${getTypeColor(viewingAppointment.type)}`}>
                                         {viewingAppointment.type}
                                     </span>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-2">Status</label>
-                                    <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(viewingAppointment.status)}`}>
+                                    <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(viewingAppointment.status)}`}>
                                         {viewingAppointment.status}
                                     </span>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-2">Priority</label>
                                     <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${getPriorityColor(viewingAppointment.priority)}`}>
                                         {getPriorityIcon(viewingAppointment.priority)}
                                         <span className="ml-2">{viewingAppointment.priority}</span>
                                     </span>
+                                    <span className="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-700">
+                                        <Clock className="w-4 h-4 mr-1 text-gray-500" />
+                                        {viewingAppointment.duration}
+                                    </span>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-2">Duration</label>
-                                    <p className="text-gray-900">{viewingAppointment.duration}</p>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                <button
+                                    onClick={() => navigate(`/admin/appointments/edit/${viewingAppointment.id}`)}
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                    Edit appointment
+                                </button>
+                                <button
+                                    onClick={closeViewForm}
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-pink-500 text-white hover:bg-pink-600 transition-colors duration-200 shadow-lg shadow-pink-200/60"
+                                >
+                                    Back to list
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6 space-y-4">
+                                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                    <User className="w-5 h-5 text-pink-500" />
+                                    Patient Information
+                                </h3>
+                                <div className="space-y-3 text-sm text-gray-600">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium text-gray-500">Email</span>
+                                        <span className="text-gray-900">{viewingAppointment.patientEmail}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium text-gray-500">Phone</span>
+                                        <span className="text-gray-900">{viewingAppointment.patientPhone}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6 space-y-4">
+                                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                    <Stethoscope className="w-5 h-5 text-blue-500" />
+                                    Care Team
+                                </h3>
+                                <div className="space-y-3 text-sm text-gray-600">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium text-gray-500">Doctor</span>
+                                        <span className="text-gray-900">{viewingAppointment.doctor}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium text-gray-500">Specialty</span>
+                                        <span className="text-gray-900">{viewingAppointment.specialty}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6 space-y-4">
+                                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                    <Calendar className="w-5 h-5 text-amber-500" />
+                                    Schedule
+                                </h3>
+                                <div className="space-y-3 text-sm text-gray-600">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium text-gray-500">Date</span>
+                                        <span className="text-gray-900">{viewingAppointment.date}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium text-gray-500">Time</span>
+                                        <span className="text-gray-900">{viewingAppointment.time}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6 space-y-4">
+                                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                    <AlertCircle className="w-5 h-5 text-purple-500" />
+                                    Status Overview
+                                </h3>
+                                <div className="space-y-3 text-sm text-gray-600">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium text-gray-500">Appointment Status</span>
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(viewingAppointment.status)}`}>
+                                            {viewingAppointment.status}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium text-gray-500">Priority</span>
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getPriorityColor(viewingAppointment.priority)}`}>
+                                            {getPriorityIcon(viewingAppointment.priority)}
+                                            <span className="ml-2">{viewingAppointment.priority}</span>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Notes */}
                         {viewingAppointment.notes && (
-                            <div className="bg-gray-50 rounded-xl p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                    <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
-                                        <FileText className="w-4 h-4 text-yellow-600" />
-                                    </div>
+                            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-3">
+                                    <FileText className="w-5 h-5 text-yellow-500" />
                                     Notes
                                 </h3>
-                                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                                    <p className="text-gray-700 italic">"{viewingAppointment.notes}"</p>
+                                <div className="bg-white rounded-xl border border-gray-200 p-4 text-gray-700 leading-relaxed">
+                                    {viewingAppointment.notes}
                                 </div>
                             </div>
                         )}
-
-                        {/* Action Buttons */}
-                        <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
-                            <button
-                                onClick={handleSaveViewForm}
-                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
-                            >
-                                <Save className="w-4 h-4" />
-                                <span>Save</span>
-                            </button>
-                        </div>
-                    </div>
-                </Card>
+                    </Card>
+                </div>
             )}
 
             {/* Breadcrumbs */}
