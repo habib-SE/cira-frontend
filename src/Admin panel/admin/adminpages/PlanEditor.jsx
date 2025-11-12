@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, X } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
 const PlanEditor = ({ mode = 'create' }) => {
@@ -308,17 +308,11 @@ const PlanEditor = ({ mode = 'create' }) => {
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg"><ArrowLeft className="w-5 h-5" /></button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{isEdit ? 'Edit Plan' : 'Create Plan'}</h1>
-            <p className="text-gray-600">Configure pricing, limits and features</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate('/admin/plans')} className="px-4 py-2 border rounded-lg"><X className="w-4 h-4" /></button>
-          <button onClick={onSave} className="px-4 py-2 bg-pink-400 text-white rounded-lg hover:bg-pink-500"><Save className="w-4 h-4 mr-2 inline" /> Save</button>
+      <div className="flex items-center gap-2">
+        <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg"><ArrowLeft className="w-5 h-5" /></button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{isEdit ? 'Edit Plan' : 'Create Plan'}</h1>
+          <p className="text-gray-600">Configure pricing, limits and features</p>
         </div>
       </div>
 
@@ -477,6 +471,23 @@ const PlanEditor = ({ mode = 'create' }) => {
             </div>
           </Card>
         </div>
+      </div>
+
+      {/* Bottom Save Button */}
+      <div className="flex items-center justify-end gap-3 pt-6 border-t">
+        <button 
+          onClick={() => navigate('/admin/plans')} 
+          className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+        >
+          Cancel
+        </button>
+        <button 
+          onClick={onSave} 
+          className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+        >
+          <Save className="w-4 h-4" />
+          <span>Save Plan</span>
+        </button>
       </div>
     </div>
   );

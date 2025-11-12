@@ -345,45 +345,94 @@ const Referrals = () => {
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Referral Providers</h3>
                 <div className="space-y-3 sm:space-y-4">
                     {filteredProviders.map((provider) => (
-                        <div key={provider.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg gap-3">
-                            <div className="flex items-center space-x-3 sm:space-x-4">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-sm sm:text-base flex-shrink-0">
-                                    {provider.logo}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{provider.name}</h4>
-                                    <p className="text-xs sm:text-sm text-gray-600 truncate">{provider.type}</p>
-                                    <p className="text-xs text-gray-500">Last activity: {provider.lastActivity}</p>
-                                </div>
-                            </div>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
-                                    <div className="text-center">
-                                        <p className="text-xs sm:text-sm font-medium text-gray-900">{provider.totalReferrals}</p>
-                                        <p className="text-xs text-gray-500">Referrals</p>
+                        <div key={provider.id} className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+                            {/* Mobile View: Logo + Name on left, Status + Preview on right at top */}
+                            <div className="flex sm:hidden items-start justify-between mb-3">
+                                <div className="flex items-center space-x-2 flex-1 min-w-0">
+                                    <div className="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                                        {provider.logo}
                                     </div>
-                                    <div className="text-center">
-                                        <p className="text-xs sm:text-sm font-medium text-gray-900">{provider.successfulBookings}</p>
-                                        <p className="text-xs text-gray-500">Bookings</p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-xs sm:text-sm font-medium text-gray-900">{provider.conversionRate}%</p>
-                                        <p className="text-xs text-gray-500">Conversion</p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-xs sm:text-sm font-medium text-gray-900">${provider.commissionEarned.toFixed(2)}</p>
-                                        <p className="text-xs text-gray-500">Commission</p>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-semibold text-gray-900 text-sm truncate">{provider.name}</h4>
+                                        <p className="text-xs text-gray-600 truncate">{provider.type}</p>
+                                        <p className="text-xs text-gray-500 mt-0.5">Last activity: {provider.lastActivity}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center justify-center sm:justify-end space-x-2">
-                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(provider.status)}`}>
+                                <div className="flex items-center space-x-2 ml-2 flex-shrink-0">
+                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${getStatusColor(provider.status)}`}>
                                         {provider.status}
                                     </span>
-                                    <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
-                                    onClick={() => navigate(`/admin/referrals/${provider.id}`)}
+                                    <button 
+                                        className="p-1.5 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors duration-200 cursor-pointer"
+                                        onClick={() => navigate(`/admin/referrals/${provider.id}`)}
+                                        title="View Details"
                                     >
                                         <ExternalLink className="w-4 h-4" />
                                     </button>
+                                </div>
+                            </div>
+                            
+                            {/* Desktop View: Original Layout */}
+                            <div className="hidden sm:flex sm:items-center justify-between">
+                                <div className="flex items-center space-x-4">
+                                    <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                                        {provider.logo}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h4 className="font-semibold text-gray-900 text-base truncate">{provider.name}</h4>
+                                        <p className="text-sm text-gray-600 truncate">{provider.type}</p>
+                                        <p className="text-xs text-gray-500">Last activity: {provider.lastActivity}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-6">
+                                    <div className="grid grid-cols-4 gap-6">
+                                        <div className="text-center">
+                                            <p className="text-sm font-medium text-gray-900">{provider.totalReferrals}</p>
+                                            <p className="text-xs text-gray-500">Referrals</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-sm font-medium text-gray-900">{provider.successfulBookings}</p>
+                                            <p className="text-xs text-gray-500">Bookings</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-sm font-medium text-gray-900">{provider.conversionRate}%</p>
+                                            <p className="text-xs text-gray-500">Conversion</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-sm font-medium text-gray-900">${provider.commissionEarned.toFixed(2)}</p>
+                                            <p className="text-xs text-gray-500">Commission</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(provider.status)}`}>
+                                            {provider.status}
+                                        </span>
+                                        <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
+                                        onClick={() => navigate(`/admin/referrals/${provider.id}`)}
+                                        >
+                                            <ExternalLink className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Mobile Stats Grid - 2x2 */}
+                            <div className="grid grid-cols-2 gap-3 sm:hidden">
+                                <div className="text-center p-2 bg-white rounded-lg">
+                                    <p className="text-base font-bold text-gray-900">{provider.totalReferrals}</p>
+                                    <p className="text-xs text-gray-600">Referrals</p>
+                                </div>
+                                <div className="text-center p-2 bg-white rounded-lg">
+                                    <p className="text-base font-bold text-gray-900">{provider.successfulBookings}</p>
+                                    <p className="text-xs text-gray-600">Bookings</p>
+                                </div>
+                                <div className="text-center p-2 bg-white rounded-lg">
+                                    <p className="text-base font-bold text-gray-900">{provider.conversionRate}%</p>
+                                    <p className="text-xs text-gray-600">Conversion</p>
+                                </div>
+                                <div className="text-center p-2 bg-white rounded-lg">
+                                    <p className="text-base font-bold text-gray-900">${provider.commissionEarned.toFixed(2)}</p>
+                                    <p className="text-xs text-gray-600">Commission</p>
                                 </div>
                             </div>
                         </div>

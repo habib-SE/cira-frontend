@@ -480,7 +480,7 @@ startxref
                         >
                         <Download className="w-4 h-4" />
                             <span className="hidden sm:inline">Export</span>
-                            <span className="sm:hidden">↓</span>
+                            <span className="sm:hidden">Export</span>
                     </button>
                     </div>
                 </div>
@@ -649,8 +649,8 @@ startxref
 
             {selectedView === 'transactions' && (
                 <Card className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                        <div className="flex-1">
                         <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
                             <p className="text-sm text-gray-600 mt-1">
                                 {searchQuery.trim() 
@@ -659,13 +659,13 @@ startxref
                                 }
                             </p>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 w-full sm:w-auto">
                             <input
                                 type="text"
                                 placeholder="Search transactions..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                             />
                         </div>
                     </div>
@@ -729,8 +729,8 @@ startxref
 
             {selectedView === 'payouts' && (
                 <Card className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                        <div className="flex-1">
                         <h3 className="text-lg font-semibold text-gray-900">Payout History</h3>
                             <p className="text-sm text-gray-600 mt-1">
                                 Showing {filteredData.payouts.length} payouts for {periods.find(p => p.value === selectedPeriod)?.label}
@@ -738,7 +738,7 @@ startxref
                         </div>
                         <button 
                             onClick={handleDownloadStatement}
-                            className="flex items-center space-x-2 px-4 py-2 bg-pink-400 text-white rounded-xl hover:bg-pink-500 transition-colors"
+                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-pink-400 text-white rounded-xl hover:bg-pink-500 transition-colors w-full sm:w-auto whitespace-nowrap"
                         >
                             <Download className="w-4 h-4" />
                             <span>Download Statement</span>

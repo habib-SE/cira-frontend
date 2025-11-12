@@ -1043,7 +1043,7 @@ const Users = () => {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                             >
                                 {isSubmitting ? (
                                     <>
@@ -1066,7 +1066,7 @@ const Users = () => {
             <Breadcrumbs />
             
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="sm:flex sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Users</h1>
                     <p className="text-gray-600">Manage all platform users and their access</p>
@@ -1079,7 +1079,7 @@ const Users = () => {
                 </div>
                 <button
                     onClick={handleCreateUser}
-                    className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 flex items-center space-x-2"
+                    className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 inline-flex items-center space-x-2 whitespace-nowrap"
                 >
                     <UserPlus className="w-4 h-4" />
                     <span>Create User</span>

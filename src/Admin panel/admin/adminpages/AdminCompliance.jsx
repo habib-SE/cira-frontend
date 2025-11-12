@@ -3,7 +3,6 @@ import {
   RecordHeader, 
   DataTable, 
   FormTemplate, 
-  ConfirmationModal,
   StatusChip 
 } from '../../../components/shared';
 import Card from '../admincomponents/Card';
@@ -30,7 +29,6 @@ import {
 const AdminCompliance = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showForm, setShowForm] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [formData, setFormData] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
@@ -38,10 +36,16 @@ const AdminCompliance = () => {
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-  // Sample compliance data
+  // Load compliance data from localStorage
   useEffect(() => {
-    setComplianceRecords([
+    const savedRecords = localStorage.getItem('adminComplianceRecords');
+    if (savedRecords) {
+      setComplianceRecords(JSON.parse(savedRecords));
+    } else {
+      // Default sample data
+      const defaultRecords = [
       {
         id: 'COMP-001',
         type: 'HIPAA Audit',
@@ -102,8 +106,24 @@ const AdminCompliance = () => {
         recommendations: 3,
         documents: ['consent-audit.pdf']
       }
-    ]);
+      ];
+      setComplianceRecords(defaultRecords);
+      localStorage.setItem('adminComplianceRecords', JSON.stringify(defaultRecords));
+    }
   }, []);
+
+  // Save to localStorage whenever records change
+  const saveToLocalStorage = (records) => {
+    localStorage.setItem('adminComplianceRecords', JSON.stringify(records));
+  };
+
+  // Show toast notification
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: '' });
+    }, 3000);
+  };
 
   const columns = [
     { 
@@ -322,13 +342,62 @@ const AdminCompliance = () => {
   };
 
   const handleDelete = (record) => {
-    setSelectedRecord(record);
-    setShowDeleteModal(true);
+    // Delete the record directly
+    const updatedRecords = complianceRecords.filter(r => r.id !== record.id);
+    setComplianceRecords(updatedRecords);
+    saveToLocalStorage(updatedRecords);
+    showToast('Compliance record deleted successfully', 'success');
+    
+    // If we're viewing this record in detail, go back to list
+    if (selectedRecord && selectedRecord.id === record.id) {
+      setSelectedRecord(null);
+    }
   };
 
   const handleDownload = (record) => {
-    // Simulate download
-    console.log('Downloading compliance report for:', record.id);
+    // Generate downloadable report
+    const reportContent = `
+COMPLIANCE AUDIT REPORT
+========================
+
+Audit ID: ${record.id}
+Type: ${record.type}
+Entity: ${record.entity}
+Entity Type: ${record.entityType}
+
+Audit Details:
+--------------
+Status: ${record.status}
+Score: ${record.score ? record.score + '%' : 'N/A'}
+Audit Date: ${new Date(record.auditDate).toLocaleString()}
+Next Audit: ${new Date(record.nextAudit).toLocaleString()}
+Auditor: ${record.auditor}
+
+Findings Summary:
+-----------------
+Total Findings: ${record.findings || 0}
+Critical Issues: ${record.criticalIssues || 0}
+Recommendations: ${record.recommendations || 0}
+
+Documents:
+----------
+${record.documents?.join('\n') || 'No documents attached'}
+
+Generated: ${new Date().toLocaleString()}
+    `.trim();
+
+    // Create download
+    const blob = new Blob([reportContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `compliance-report-${record.id}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    showToast('Report downloaded successfully', 'success');
   };
 
   const handleCreate = () => {
@@ -338,35 +407,64 @@ const AdminCompliance = () => {
     setShowForm(true);
   };
 
-  const handleSave = () => {
-    // Validate form
+  const validateForm = (dataToValidate = formData) => {
     const errors = {};
     formSections.forEach(section => {
+      const sectionErrors = {};
       section.fields.forEach(field => {
-        if (field.required && !formData[field.name]) {
-          errors[field.name] = `${field.label} is required`;
+        if (field.required && !dataToValidate[field.name]) {
+          sectionErrors[field.name] = `${field.label} is required`;
         }
       });
+      if (Object.keys(sectionErrors).length > 0) {
+        errors[section.id] = sectionErrors;
+      }
     });
+    return errors;
+  };
+
+  const handleFormChange = (newData) => {
+    setFormData(newData);
+    // Validate on change to show real-time errors
+    const errors = validateForm(newData);
+    setValidationErrors(errors);
+  };
+
+  const handleSave = (data = formData) => {
+    // Validate form
+    const errors = validateForm(data);
 
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
     }
 
-    // Save logic here
-    console.log('Saving compliance record:', formData);
+    let updatedRecords;
+    if (selectedRecord) {
+      // Update existing record
+      updatedRecords = complianceRecords.map(record =>
+        record.id === selectedRecord.id ? { ...record, ...data } : record
+      );
+      showToast('Compliance record updated successfully', 'success');
+    } else {
+      // Create new record
+      const newRecord = {
+        ...data,
+        id: `COMP-${String(complianceRecords.length + 1).padStart(3, '0')}`,
+        documents: []
+      };
+      updatedRecords = [...complianceRecords, newRecord];
+      showToast('Compliance record created successfully', 'success');
+    }
+
+    setComplianceRecords(updatedRecords);
+    saveToLocalStorage(updatedRecords);
     setShowForm(false);
     setFormData({});
     setValidationErrors({});
-  };
-
-  const handleDeleteConfirm = () => {
-    // Delete logic here
-    console.log('Deleting compliance record:', selectedRecord.id);
-    setShowDeleteModal(false);
     setSelectedRecord(null);
   };
+
 
   const filteredRecords = complianceRecords.filter(record => {
     const matchesStatus = statusFilter === 'all' || record.status === statusFilter;
@@ -386,6 +484,36 @@ const AdminCompliance = () => {
   if (showForm) {
     return (
       <div className="p-6">
+        {/* Toast Notification */}
+        {toast.show && (
+          <div className="fixed top-4 right-4 z-50 animate-slide-in">
+            <div className={`flex items-center space-x-3 px-4 py-3 rounded-xl shadow-lg border max-w-sm ${
+              toast.type === 'success' 
+                ? 'bg-green-50 border-green-500 text-green-800' 
+                : 'bg-red-50 border-red-500 text-red-800'
+            }`}>
+              <div className={`w-5 h-5 flex-shrink-0 ${
+                toast.type === 'success' ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {toast.type === 'success' ? (
+                  <CheckCircle className="w-5 h-5" />
+                ) : (
+                  <XCircle className="w-5 h-5" />
+                )}
+              </div>
+              <span className="text-sm font-medium">{toast.message}</span>
+              <button
+                onClick={() => setToast({ show: false, message: '', type: '' })}
+                className={`ml-2 text-sm ${
+                  toast.type === 'success' ? 'text-green-600' : 'text-red-600'
+                } hover:opacity-70`}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
             {selectedRecord ? 'Edit Compliance Record' : 'Create Compliance Record'}
@@ -397,11 +525,17 @@ const AdminCompliance = () => {
 
         <FormTemplate
           sections={formSections}
+          initialData={formData}
           data={formData}
-          onChange={setFormData}
-          errors={validationErrors}
+          onChange={handleFormChange}
+          validationErrors={validationErrors}
           onSave={handleSave}
-          onCancel={() => setShowForm(false)}
+          onSubmit={() => handleSave(formData)}
+          onCancel={() => {
+            setShowForm(false);
+            setFormData({});
+            setValidationErrors({});
+          }}
           saveLabel={selectedRecord ? 'Update Record' : 'Create Record'}
         />
       </div>
@@ -411,6 +545,46 @@ const AdminCompliance = () => {
   if (selectedRecord && !showForm) {
     return (
       <div className="p-6">
+        {/* Toast Notification */}
+        {toast.show && (
+          <div className="fixed top-4 right-4 z-50 animate-slide-in">
+            <div className={`flex items-center space-x-3 px-4 py-3 rounded-xl shadow-lg border max-w-sm ${
+              toast.type === 'success' 
+                ? 'bg-green-50 border-green-500 text-green-800' 
+                : 'bg-red-50 border-red-500 text-red-800'
+            }`}>
+              <div className={`w-5 h-5 flex-shrink-0 ${
+                toast.type === 'success' ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {toast.type === 'success' ? (
+                  <CheckCircle className="w-5 h-5" />
+                ) : (
+                  <XCircle className="w-5 h-5" />
+                )}
+              </div>
+              <span className="text-sm font-medium">{toast.message}</span>
+              <button
+                onClick={() => setToast({ show: false, message: '', type: '' })}
+                className={`ml-2 text-sm ${
+                  toast.type === 'success' ? 'text-green-600' : 'text-red-600'
+                } hover:opacity-70`}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={() => setSelectedRecord(null)}
+          className="mb-4 flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to list
+        </button>
+
         <RecordHeader
           title={`${selectedRecord.type} - ${selectedRecord.entity}`}
           status={selectedRecord.status}
@@ -421,10 +595,10 @@ const AdminCompliance = () => {
             { label: 'Audit Date', value: new Date(selectedRecord.auditDate).toLocaleDateString() },
             { label: 'Score', value: selectedRecord.score ? `${selectedRecord.score}%` : 'N/A' }
           ]}
-          actions={[
+          secondaryActions={[
             { label: 'Edit', icon: Edit, onClick: () => handleEdit(selectedRecord) },
             { label: 'Download Report', icon: Download, onClick: () => handleDownload(selectedRecord) },
-            { label: 'Delete', icon: Trash2, onClick: () => handleDelete(selectedRecord), destructive: true }
+            { label: 'Delete', icon: Trash2, onClick: () => handleDelete(selectedRecord), variant: 'danger' }
           ]}
         />
 
@@ -546,16 +720,29 @@ const AdminCompliance = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Audit Documents</h3>
                 <div className="space-y-3">
                   {selectedRecord.documents?.map((doc, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                       <div className="flex items-center space-x-3">
                         <FileText className="w-5 h-5 text-gray-400" />
                         <span className="text-sm font-medium text-gray-900">{doc}</span>
                       </div>
-                      <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                        Download
+                      <button 
+                        onClick={() => {
+                          // Simulate document download
+                          const link = document.createElement('a');
+                          link.href = '#';
+                          link.download = doc;
+                          showToast(`Downloading ${doc}`, 'success');
+                        }}
+                        className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>Download</span>
                       </button>
                     </div>
                   ))}
+                  {(!selectedRecord.documents || selectedRecord.documents.length === 0) && (
+                    <p className="text-gray-500 text-sm text-center py-4">No documents available</p>
+                  )}
                 </div>
               </div>
             )}
@@ -584,6 +771,36 @@ const AdminCompliance = () => {
 
   return (
     <div className="p-6">
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+          <div className={`flex items-center space-x-3 px-4 py-3 rounded-xl shadow-lg border max-w-sm ${
+            toast.type === 'success' 
+              ? 'bg-green-50 border-green-500 text-green-800' 
+              : 'bg-red-50 border-red-500 text-red-800'
+          }`}>
+            <div className={`w-5 h-5 flex-shrink-0 ${
+              toast.type === 'success' ? 'text-green-600' : 'text-red-600'
+            }`}>
+              {toast.type === 'success' ? (
+                <CheckCircle className="w-5 h-5" />
+              ) : (
+                <XCircle className="w-5 h-5" />
+              )}
+            </div>
+            <span className="text-sm font-medium">{toast.message}</span>
+            <button
+              onClick={() => setToast({ show: false, message: '', type: '' })}
+              className={`ml-2 text-sm ${
+                toast.type === 'success' ? 'text-green-600' : 'text-red-600'
+              } hover:opacity-70`}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Compliance Management</h1>
         <p className="text-gray-600 mt-1">
@@ -700,18 +917,6 @@ const AdminCompliance = () => {
         showPageSize={false}
         emptyMessage="No compliance records found"
         emptyDescription="Get started by creating a new compliance audit record"
-      />
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Compliance Record"
-        message={`Are you sure you want to delete the compliance record "${selectedRecord?.type}" for "${selectedRecord?.entity}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        destructive={true}
       />
     </div>
   );
