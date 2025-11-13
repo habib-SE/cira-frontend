@@ -26,7 +26,7 @@ const DoctorRecommendationPopUp = ({
 
           {/* Text Content */}
           <div className="flex-1 text-left">
-            <h3 className="font-bold text-gray-800 text-xl leading-tight mb-3 mt-1">
+            <h3 className="font-bold text-gray-800 text-lg leading-tight mb-3 mt-1">
               Doctor Recommendation
             </h3>
 

@@ -429,6 +429,7 @@ const toggleMute = async () => {
           <VitalSignsDisplay
             vitals={vitalsData}
             onClose={handleContinueFromVitals}
+             onStartConversation={handleContinueFromVitals}
           />
         )}
 

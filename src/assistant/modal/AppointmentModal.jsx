@@ -54,7 +54,7 @@ const AppointmentModal = ({ doctor, onBookingSuccess, onBack, onClose }) => {
             <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
               📅 Book Appointment
             </h2>
-            <p className="text-gray-700 mt-1">
+            <p className="text-gray-700 mt-1 ml-8">
               {currentDoctor.name} - {currentDoctor.specialty}
             </p>
           </div>
