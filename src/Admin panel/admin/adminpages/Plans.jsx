@@ -152,13 +152,13 @@ const Plans = () => {
   return (
     <div className="p-4 sm:p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
+        <div className="text-center sm:text-left">
           <h1 className="text-2xl font-bold text-gray-900">Subscriptions & Plans</h1>
           <p className="text-gray-600">Manage plan tiers, pricing, limits and features</p>
         </div>
         <button
           onClick={() => navigate('/admin/plans/create')}
-          className="inline-flex items-center px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600"
+          className="inline-flex items-center justify-center px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 self-center sm:self-auto"
         >
           <Plus className="w-4 h-4 mr-2" /> New Plan
         </button>
