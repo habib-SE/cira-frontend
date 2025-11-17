@@ -1139,71 +1139,72 @@ const Reports = () => {
                 </div>
             </Card>
 
-            <div className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredReports.map((report) => (
-                <Card key={report.id} className="p-4 sm:p-5 hover:shadow-lg transition-shadow duration-200">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center text-pink-600 flex-shrink-0">
-                        <File className="w-5 h-5" />
+                    <Card key={report.id} className="p-5 flex flex-col h-full hover:shadow-xl transition-shadow duration-300">
+                        <div className="flex items-start gap-3">
+                            <div className="w-11 h-11 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center flex-shrink-0">
+                                <File className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0 space-y-3">
+                                <div className="space-y-2">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                                            {report.reportType}
+                                        </h3>
+                                        <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full ${getPriorityColor(report.priority)}`}>
+                                            {getPriorityIcon(report.priority)}
+                                            <span className="ml-1">{report.priority}</span>
+                                        </span>
+                                        <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${getStatusColor(report.status)}`}>
+                                            {report.status}
+                                        </span>
                                     </div>
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate max-w-xs sm:max-w-md">
-                            {report.reportType}
-                          </h3>
-                                    <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(report.priority)}`}>
-                                        {getPriorityIcon(report.priority)}
-                                        <span className="ml-1">{report.priority}</span>
-                                    </span>
-                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(report.status)}`}>
-                                        {report.status}
-                                    </span>
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-gray-500">
+                                        <span className="flex items-center gap-1">
+                                            <User className="w-4 h-4" />
+                                            {report.patient}
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <Stethoscope className="w-4 h-4" />
+                                            {report.doctor}
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <Calendar className="w-4 h-4" />
+                                            {report.generatedDate}
+                                        </span>
                                     </div>
-                        <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-500 gap-3">
-                          <span className="flex items-center gap-1">
-                            <User className="w-4 h-4" />
-                            {report.patient}
-                          </span>
-                          <span className="hidden sm:inline text-gray-300">•</span>
-                          <span className="flex items-center gap-1">
-                            <Stethoscope className="w-4 h-4" />
-                            {report.doctor}
-                          </span>
-                          <span className="hidden sm:inline text-gray-300">•</span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {report.generatedDate}
-                          </span>
                                 </div>
-                        <p className="mt-3 text-sm text-gray-700 line-clamp-2">{report.summary}</p>
-                                        </div>
-                                    </div>
-                    <div className="flex items-center gap-2 sm:flex-col sm:items-end sm:gap-3 flex-shrink-0">
-                      <div className="text-xs sm:text-sm text-gray-500 sm:text-right">
-                        <p>
-                          File Size: <span className="font-medium text-gray-700">{report.fileSize}</span>
-                        </p>
-                        <p>
-                          Downloads: <span className="font-medium text-gray-700">{report.downloadCount}</span>
-                        </p>
-                                        </div>
-                      <div className="flex items-center gap-2">
+                                <p className="text-sm text-gray-700 line-clamp-3">{report.summary}</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-4">
+                            <div className="grid grid-cols-2 gap-3 text-xs font-medium text-gray-600">
+                                <div className="bg-gray-50 rounded-lg px-3 py-2">
+                                    <p className="text-gray-500">File Size</p>
+                                    <p className="text-gray-900 text-sm">{report.fileSize}</p>
+                                </div>
+                                <div className="bg-gray-50 rounded-lg px-3 py-2">
+                                    <p className="text-gray-500">Downloads</p>
+                                    <p className="text-gray-900 text-sm">{report.downloadCount}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => handleViewReport(report)}
-                          className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200"
+                                    className="inline-flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200 w-full"
                                 >
-                          <Eye className="w-4 h-4" />
-                          View
+                                    <Eye className="w-4 h-4" />
+                                    View
                                 </button>
                                 <button
                                     onClick={() => handleDownloadReport(report)}
-                          className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors duration-200"
+                                    className="inline-flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors duration-200 w-full"
                                 >
-                          <Download className="w-4 h-4" />
-                          Download
+                                    <Download className="w-4 h-4" />
+                                    Download
                                 </button>
-                      </div>
                             </div>
                         </div>
                     </Card>

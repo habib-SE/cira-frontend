@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, Plus, Search, Filter, Clock, User, Stethoscope, X, Save, Edit, Trash2, Eye, Phone, Mail, MapPin, AlertCircle, CheckCircle, FileText, TrendingUp, BarChart3, PieChart, Activity, Bell, Star, Award, Target, Zap, Users, Calendar as CalendarIcon, Clock as ClockIcon, DollarSign, MessageSquare, Video, MapPin as LocationIcon } from 'lucide-react';
+import { Calendar, Plus, Search, Filter, Clock, User, Stethoscope, X, Save, Edit, Trash2, Eye, Phone, Mail, MapPin, AlertCircle, CheckCircle, FileText, TrendingUp, BarChart3, PieChart, Activity, Bell, Star, Award, Target, Zap, Users, Calendar as CalendarIcon, Clock as ClockIcon, DollarSign, MessageSquare, Video, MapPin as LocationIcon, ArrowLeft } from 'lucide-react';
 import Card from '../admincomponents/Card';
 import Breadcrumbs from '../../../components/shared/Breadcrumbs';
 import MetaChips from '../../../components/shared/MetaChips';
@@ -1409,54 +1409,47 @@ const Appointments = () => {
             {showViewFormInLayout && viewingAppointment && (
                 <div className="space-y-6">
                     <Card className="p-6 sm:p-8 space-y-6">
-                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-                            <div>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 text-white flex items-center justify-center text-xl font-semibold shadow-lg shadow-pink-200/50">
-                                        {viewingAppointment.patient.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                                    </div>
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-gray-900">
-                                            {viewingAppointment.patient}
-                                        </h2>
-                                        <p className="text-sm text-gray-500">
-                                            Booked with {viewingAppointment.doctor} · {viewingAppointment.date} at {viewingAppointment.time}
-                                        </p>
-                                    </div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={closeViewForm}
+                                className="p-2 rounded-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                            >
+                                <ArrowLeft className="w-5 h-5" />
+                            </button>
+                            <h2 className="text-3xl font-bold text-pink-600">View Page</h2>
+                        </div>
+
+                        <div className="border-t border-pink-100 pt-6 flex flex-col gap-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 text-white flex items-center justify-center text-xl font-semibold shadow-lg shadow-pink-200/50">
+                                    {viewingAppointment.patient.split(' ').map(n => n[0]).join('').slice(0, 2)}
                                 </div>
-                                <div className="mt-4 flex flex-wrap items-center gap-2">
-                                    <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${getTypeColor(viewingAppointment.type)}`}>
-                                        {viewingAppointment.type}
-                                    </span>
-                                    <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(viewingAppointment.status)}`}>
-                                        {viewingAppointment.status}
-                                    </span>
-                                    <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${getPriorityColor(viewingAppointment.priority)}`}>
-                                        {getPriorityIcon(viewingAppointment.priority)}
-                                        <span className="ml-2">{viewingAppointment.priority}</span>
-                                    </span>
-                                    <span className="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-700">
-                                        <Clock className="w-4 h-4 mr-1 text-gray-500" />
-                                        {viewingAppointment.duration}
-                                    </span>
+                                <div className="space-y-1">
+                                    <h3 className="text-2xl font-bold text-gray-900 leading-tight">
+                                        {viewingAppointment.patient}
+                                    </h3>
+                                    <p className="text-sm text-gray-500">
+                                        Booked with {viewingAppointment.doctor} · {viewingAppointment.date} at {viewingAppointment.time}
+                                    </p>
                                 </div>
                             </div>
-                            <div className="flex flex-wrap gap-3">
-                                <button
-                                    onClick={() => navigate(`/admin/appointments/edit/${viewingAppointment.id}`)}
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                    Edit appointment
-                                </button>
-                        <button
-                            onClick={closeViewForm}
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-pink-500 text-white hover:bg-pink-600 transition-colors duration-200 shadow-lg shadow-pink-200/60"
-                        >
-                                    Back to list
-                        </button>
-                    </div>
-                                </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${getTypeColor(viewingAppointment.type)}`}>
+                                    {viewingAppointment.type}
+                                </span>
+                                <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(viewingAppointment.status)}`}>
+                                    {viewingAppointment.status}
+                                </span>
+                                <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${getPriorityColor(viewingAppointment.priority)}`}>
+                                    {getPriorityIcon(viewingAppointment.priority)}
+                                    <span className="ml-2">{viewingAppointment.priority}</span>
+                                </span>
+                                <span className="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-700">
+                                    <Clock className="w-4 h-4 mr-1 text-gray-500" />
+                                    {viewingAppointment.duration}
+                                </span>
+                            </div>
+                        </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6 space-y-4">
