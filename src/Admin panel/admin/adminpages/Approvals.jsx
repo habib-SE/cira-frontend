@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Clock, AlertCircle, User, Edit } from 'lucide-react';
+import { Clock, AlertCircle, User, Edit, XCircle } from 'lucide-react';
 import Card from '../admincomponents/Card';
 import Breadcrumbs from '../../../components/shared/Breadcrumbs';
 import MetaChips from '../../../components/shared/MetaChips';
@@ -11,49 +11,111 @@ const Approvals = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterSpecialty, setFilterSpecialty] = useState('');
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+    const [activeTab, setActiveTab] = useState('pending'); // 'pending' or 'rejected'
 
     // Sample pending doctors data
-    const [pendingDoctors, setPendingDoctors] = useState([
-        {
-            id: 1,
-            name: 'Dr. Michael Chen',
-            specialty: 'Neurology',
-            experience: '12 years',
-            email: 'michael.chen@email.com',
-            phone: '+1 (555) 123-4567',
-            status: 'Pending',
-            avatar: 'MC',
-            documents: ['License', 'Certification'],
-            submittedDate: '2024-01-10',
-            verificationStatus: 'Under Review'
-        },
-        {
-            id: 2,
-            name: 'Dr. Lisa Wang',
-            specialty: 'Pediatrics',
-            experience: '5 years',
-            email: 'lisa.wang@email.com',
-            phone: '+1 (555) 234-5678',
-            status: 'Pending',
-            avatar: 'LW',
-            documents: ['License', 'Certification'],
-            submittedDate: '2024-01-12',
-            verificationStatus: 'Under Review'
-        },
-        {
-            id: 3,
-            name: 'Dr. Robert Martinez',
-            specialty: 'Dermatology',
-            experience: '7 years',
-            email: 'robert.martinez@email.com',
-            phone: '+1 (555) 345-6789',
-            status: 'Pending',
-            avatar: 'RM',
-            documents: ['License'],
-            submittedDate: '2024-01-15',
-            verificationStatus: 'Under Review'
+    const [pendingDoctors, setPendingDoctors] = useState(() => {
+        const stored = localStorage.getItem('adminPendingDoctors');
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch {
+                return [];
+            }
         }
-    ]);
+        return [
+            {
+                id: 1,
+                name: 'Dr. Michael Chen',
+                specialty: 'Neurology',
+                experience: '12 years',
+                email: 'michael.chen@email.com',
+                phone: '+1 (555) 123-4567',
+                status: 'Pending',
+                avatar: 'MC',
+                documents: ['License', 'Certification'],
+                submittedDate: '2024-01-10',
+                verificationStatus: 'Under Review'
+            },
+            {
+                id: 2,
+                name: 'Dr. Lisa Wang',
+                specialty: 'Pediatrics',
+                experience: '5 years',
+                email: 'lisa.wang@email.com',
+                phone: '+1 (555) 234-5678',
+                status: 'Pending',
+                avatar: 'LW',
+                documents: ['License', 'Certification'],
+                submittedDate: '2024-01-12',
+                verificationStatus: 'Under Review'
+            },
+            {
+                id: 3,
+                name: 'Dr. Robert Martinez',
+                specialty: 'Dermatology',
+                experience: '7 years',
+                email: 'robert.martinez@email.com',
+                phone: '+1 (555) 345-6789',
+                status: 'Pending',
+                avatar: 'RM',
+                documents: ['License'],
+                submittedDate: '2024-01-15',
+                verificationStatus: 'Under Review'
+            }
+        ];
+    });
+
+    // Rejected doctors data
+    const [rejectedDoctors, setRejectedDoctors] = useState(() => {
+        const stored = localStorage.getItem('adminRejectedDoctors');
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch {
+                return [];
+            }
+        }
+        return [
+            {
+                id: 101,
+                name: 'Dr. James Wilson',
+                specialty: 'Cardiology',
+                experience: '8 years',
+                email: 'james.wilson@email.com',
+                phone: '+1 (555) 456-7890',
+                status: 'Rejected',
+                avatar: 'JW',
+                documents: ['License'],
+                submittedDate: '2024-01-08',
+                rejectedDate: '2024-01-10',
+                verificationStatus: 'Rejected - Incomplete Documentation'
+            },
+            {
+                id: 102,
+                name: 'Dr. Maria Garcia',
+                specialty: 'Oncology',
+                experience: '15 years',
+                email: 'maria.garcia@email.com',
+                phone: '+1 (555) 567-8901',
+                status: 'Rejected',
+                avatar: 'MG',
+                documents: ['License', 'Certification'],
+                submittedDate: '2024-01-05',
+                rejectedDate: '2024-01-09',
+                verificationStatus: 'Rejected - Credential Verification Failed'
+            }
+        ];
+    });
+
+    // Save to localStorage when state changes
+    useEffect(() => {
+        localStorage.setItem('adminPendingDoctors', JSON.stringify(pendingDoctors));
+    }, [pendingDoctors]);
+
+    useEffect(() => {
+        localStorage.setItem('adminRejectedDoctors', JSON.stringify(rejectedDoctors));
+    }, [rejectedDoctors]);
 
     const filteredDoctors = pendingDoctors.filter(doctor => {
         const matchesSearch = !searchTerm || 
@@ -66,7 +128,19 @@ const Approvals = () => {
         return matchesSearch && matchesSpecialty;
     });
 
-    const specialties = [...new Set(pendingDoctors.map(d => d.specialty))];
+    const filteredRejectedDoctors = rejectedDoctors.filter(doctor => {
+        const matchesSearch = !searchTerm || 
+            doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            doctor.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            doctor.email.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const matchesSpecialty = !filterSpecialty || doctor.specialty === filterSpecialty;
+        
+        return matchesSearch && matchesSpecialty;
+    });
+
+    const allDoctors = [...pendingDoctors, ...rejectedDoctors];
+    const specialties = [...new Set(allDoctors.map(d => d.specialty))];
 
     const handleApprove = (doctorId) => {
         setPendingDoctors(prev => prev.filter(d => d.id !== doctorId));
@@ -76,9 +150,14 @@ const Approvals = () => {
     };
 
     const handleReject = (doctorId) => {
-        setPendingDoctors(prev => prev.filter(d => d.id !== doctorId));
-        setToast({ show: true, message: 'Doctor rejected', type: 'error' });
-        setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
+        const doctor = pendingDoctors.find(d => d.id === doctorId);
+        if (doctor) {
+            const rejectedDoctor = { ...doctor, status: 'Rejected', rejectedDate: new Date().toISOString().split('T')[0] };
+            setPendingDoctors(prev => prev.filter(d => d.id !== doctorId));
+            setRejectedDoctors(prev => [...prev, rejectedDoctor]);
+            setToast({ show: true, message: 'Doctor rejected', type: 'error' });
+            setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
+        }
     };
 
     const handleView = (doctor) => {
@@ -87,6 +166,7 @@ const Approvals = () => {
 
     const stats = {
         total: pendingDoctors.length,
+        rejected: rejectedDoctors.length,
         neurology: pendingDoctors.filter(d => d.specialty === 'Neurology').length,
         pediatrics: pendingDoctors.filter(d => d.specialty === 'Pediatrics').length,
         dermatology: pendingDoctors.filter(d => d.specialty === 'Dermatology').length
@@ -193,7 +273,32 @@ const Approvals = () => {
                 </div>
             </Card>
 
+            {/* Tab Switcher */}
+            <div className="flex space-x-2 border-b border-gray-200">
+                <button
+                    onClick={() => setActiveTab('pending')}
+                    className={`px-4 py-2 font-medium text-sm transition-colors ${
+                        activeTab === 'pending'
+                            ? 'text-pink-600 border-b-2 border-pink-600'
+                            : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                >
+                    Pending Approvals ({pendingDoctors.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('rejected')}
+                    className={`px-4 py-2 font-medium text-sm transition-colors ${
+                        activeTab === 'rejected'
+                            ? 'text-pink-600 border-b-2 border-pink-600'
+                            : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                >
+                    Rejected Doctors ({rejectedDoctors.length})
+                </button>
+            </div>
+
             {/* Pending Doctors List */}
+            {activeTab === 'pending' && (
             <div className="p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Pending Approvals</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -266,6 +371,68 @@ const Approvals = () => {
                     )}
                 </div>
             </div>
+            )}
+
+            {/* Rejected Doctors List */}
+            {activeTab === 'rejected' && (
+            <div className="p-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Rejected Doctors</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredRejectedDoctors.map((doctor) => (
+                        <Card key={doctor.id} className="p-6 border-l-4 border-l-red-500">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                        {doctor.avatar}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900">{doctor.name}</h3>
+                                        <p className="text-sm text-gray-600">{doctor.specialty}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                    <XCircle className="w-5 h-5 text-red-500" />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 mb-4">
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Experience:</span>
+                                    <span className="font-medium">{doctor.experience}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Documents:</span>
+                                    <span className="font-medium">{doctor.documents.length}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Rejected:</span>
+                                    <span className="font-medium">{doctor.rejectedDate || doctor.submittedDate}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <button
+                                    onClick={() => handleView(doctor)}
+                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                >
+                                    View Details
+                                </button>
+                                <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                                    Rejected
+                                </span>
+                            </div>
+                        </Card>
+                    ))}
+
+                    {filteredRejectedDoctors.length === 0 && (
+                        <div className="col-span-full text-center py-8">
+                            <XCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                            <p className="text-gray-600">No rejected doctors found</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+            )}
         </div>
     );
 };

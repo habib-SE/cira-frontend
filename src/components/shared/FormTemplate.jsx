@@ -454,7 +454,18 @@ const FormTemplate = ({
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+          <div className="flex items-center gap-3">
+            {/* Back Button */}
+            <button
+              type="button"
+              onClick={!isFirstSection() ? handleBack : onCancel}
+              className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              title={!isFirstSection() ? "Go back" : "Close"}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+          </div>
           
           {/* Auto-save indicator */}
           <div className="flex items-center space-x-2 text-sm text-gray-500">
@@ -529,29 +540,8 @@ const FormTemplate = ({
             ))}
 
             {/* Form Actions */}
-            <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="flex items-center justify-center px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 min-w-[120px]"
-              >
-                <X className="w-4 h-4 mr-2" />
-                Cancel
-              </button>
-
+            <div className="flex items-center justify-end pt-6 border-t border-gray-200">
               <div className="flex items-center space-x-3">
-                {/* Back Button - Show on all pages except first */}
-                {!isFirstSection() && (
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    disabled={isSubmitting}
-                    className="flex items-center justify-center px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50 min-w-[120px]"
-                  >
-                    <ChevronLeft className="w-4 h-4 mr-2" />
-                    Back
-                  </button>
-                )}
 
                 {/* Next or Submit Button */}
                 {!isLastSection() ? (
