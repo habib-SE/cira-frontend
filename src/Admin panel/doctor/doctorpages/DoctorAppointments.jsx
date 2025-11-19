@@ -98,13 +98,13 @@ const DoctorAppointments = () => {
         <div className={`space-y-6 transition-opacity duration-300 ${isContentLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           {/* Tabs */}
           <Card className="p-0">
-        <div className="border-b border-gray-200">
-          <div className="flex">
+        <div className="border-b border-gray-200 overflow-x-auto">
+          <div className="flex min-w-max sm:min-w-0">
             {Object.keys(appointments).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-4 font-medium transition-colors capitalize ${
+                className={`px-3 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium transition-colors capitalize whitespace-nowrap ${
                   activeTab === tab
                     ? 'text-pink-600 border-b-2 border-pink-600'
                     : 'text-gray-600 hover:text-gray-800'
@@ -116,7 +116,7 @@ const DoctorAppointments = () => {
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Search and Filter */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6">
             <div className="flex-1 relative min-w-0">

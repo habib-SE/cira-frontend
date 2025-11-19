@@ -85,7 +85,7 @@ const BaseLayout = ({
 
         {/* Page content */}
         <main 
-          className={`flex-1 overflow-y-auto overflow-x-hidden relative min-h-0 px-4 sm:px-6 lg:px-10 ${pageBackground ? `bg-${pageBackground}` : ''}`}
+          className={`flex-1 overflow-y-auto overflow-x-hidden relative min-h-0 px-2 sm:px-3 lg:px-4 ${pageBackground ? `bg-${pageBackground}` : ''}`}
         >
           <PageLoader isLoading={isLoading}>    
             <div className="min-h-full flex flex-col min-w-0">
