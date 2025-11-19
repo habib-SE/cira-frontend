@@ -271,25 +271,23 @@ const MainLoginPage = () => {
       background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)'}}
     >
       {/* soft glow blobs */}
-      <div className="pointer-events-none absolute -top-32 -left-10 h-72 w-72 bg-pink-400/20 blur-3xl rounded-full" />
+      <div className="pointer-events-none absolute -top-32 -left-10 h-72 w-72  blur-3xl rounded-full" />
       <div className="pointer-events-none absolute -bottom-32 -right-10 h-72 w-72 bg-purple-400/20 blur-3xl rounded-full" />
 
       <div className="relative z-10 w-full max-w-6xl grid lg:grid-cols-2 gap-10 items-center">
         {/* Left Hero Side */}
         <div className="flex flex-col gap-6 text-center lg:text-left">
-           <div className=''>
-             <img src={logo} alt="Cira Logo" className="h-24 w-auto" />
-           </div> 
-            
-          <div className="flex items-center justify-center lg:justify-start gap-3">
-  
-            <span className="px-3 py-1 rounded-full bg-white/70 shadow-sm text-xs font-semibold text-pink-500">
-              Cira Health • Secure & Simple
-            </span>
-          </div>
+            {/* Logo in top-left corner */}
+  <div className="absolute top-4 -left-10 z-20 flex items-center gap-3">
+    <img src={logo} alt="Cira Logo" className="h-16 w-auto" />
+    
+  </div>
 
           <div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900">
+            <span className="px-3 py-1 rounded-full bg-white/70 shadow-sm text-xs font-semibold text-pink-500">
+      Cira Health • Secure & Simple
+    </span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mt-7">
               Welcome back,
               <span className="bg-[linear-gradient(to_right,#ec4899_0%,#f472b6_30%,#a855f7_60%,#3b82f6_100%)] bg-clip-text text-transparent">
                 {' '}let&apos;s get you in.
@@ -343,7 +341,7 @@ const MainLoginPage = () => {
 
         {/* Right Login Card */}
         <div className="flex justify-end">
-          <div className="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/70 shadow-[0_18px_60px_rgba(15,23,42,0.12)] rounded-3xl p-2 sm:p-8">
+          <div className="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/70  rounded-3xl p-2 sm:p-8">
             {/* playful header */}
             <div className="mb-5">
               <p className="text-xs font-medium text-pink-500 mb-1">

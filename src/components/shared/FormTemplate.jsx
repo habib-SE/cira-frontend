@@ -540,10 +540,24 @@ const FormTemplate = ({
             ))}
 
             {/* Form Actions */}
-            <div className="flex items-center justify-end pt-6 border-t border-gray-200">
-              <div className="flex items-center space-x-3">
+            <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+              {/* Previous Button - Left Side */}
+              <div>
+                {!isFirstSection() && (
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    disabled={isSubmitting}
+                    className="flex items-center justify-center px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50 min-w-[120px]"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    Previous
+                  </button>
+                )}
+              </div>
 
-                {/* Next or Submit Button */}
+              {/* Next or Submit Button - Right Side */}
+              <div className="flex items-center space-x-3">
                 {!isLastSection() ? (
                   <button
                     type="button"

@@ -1,4 +1,3 @@
-// modal/DoctorRecommendationPopUp.jsx
 import React from "react";
 import { motion } from "framer-motion";
 import { Stethoscope, X } from "lucide-react";
@@ -8,7 +7,19 @@ const DoctorRecommendationPopUp = ({
   recommendedSpecialty,
   onFindDoctor,
   onSkip,
+  stopConversation,   // <-- NEW PROP
 }) => {
+
+  const handleFindDoctorClick = async () => {
+    // 1️⃣ Stop the assistant conversation safely
+    if (stopConversation) {
+      await stopConversation();
+    }
+
+    // 2️⃣ Then run your doctor recommendation handler
+    onFindDoctor();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -26,7 +37,7 @@ const DoctorRecommendationPopUp = ({
 
           {/* Text Content */}
           <div className="flex-1 text-left">
-            <h3 className="font-bold text-gray-800 text-xl leading-tight mb-3 mt-1">
+            <h3 className="font-bold text-gray-800 text-lg leading-tight mb-3 mt-1">
               Doctor Recommendation
             </h3>
 
@@ -38,8 +49,7 @@ const DoctorRecommendationPopUp = ({
               I recommend seeing a{" "}
               <span className="font-semibold text-pink-600">
                 {recommendedSpecialty}
-              </span>
-              .
+              </span>.
             </p>
           </div>
 
@@ -55,7 +65,7 @@ const DoctorRecommendationPopUp = ({
         {/* Buttons */}
         <div className="flex gap-2">
           <button
-            onClick={onFindDoctor}
+            onClick={handleFindDoctorClick}
             className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 px-4 rounded-lg font-semibold text-sm hover:from-pink-600 hover:to-purple-700 transition-all flex items-center justify-center gap-2"
           >
             <Stethoscope size={16} />

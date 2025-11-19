@@ -152,34 +152,34 @@ const DoctorProfile = () => {
     }
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
-                    <p className="text-gray-600">Manage your professional profile and practice information</p>
+                <div className="flex-1 min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
+                    <p className="text-sm sm:text-base text-gray-600">Manage your professional profile and practice information</p>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                     {!isEditing ? (
                         <button
                             onClick={handleEdit}
-                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors whitespace-nowrap"
+                            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors whitespace-nowrap text-sm sm:text-base"
                         >
                             <Edit className="w-4 h-4 flex-shrink-0" />
                             <span>Edit Profile</span>
                         </button>
                     ) : (
-                        <div className="flex items-center space-x-2">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                             <button
                                 onClick={handleSave}
-                                className="flex items-center justify-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors whitespace-nowrap"
+                                className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors whitespace-nowrap text-sm sm:text-base"
                             >
                                 <Save className="w-4 h-4 flex-shrink-0" />
                                 <span>Save Changes</span>
                             </button>
                             <button
                                 onClick={handleCancel}
-                                className="flex items-center justify-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors whitespace-nowrap"
+                                className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors whitespace-nowrap text-sm sm:text-base"
                             >
                                 <XCircle className="w-4 h-4 flex-shrink-0" />
                                 <span>Cancel</span>
@@ -189,22 +189,22 @@ const DoctorProfile = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
                 {/* Profile Sidebar */}
                 <Card className="p-0">
-                    <div className="p-6 text-center border-b border-gray-200">
+                    <div className="p-4 sm:p-6 text-center border-b border-gray-200">
                         <div className="relative inline-block">
-                            <div className="w-24 h-24 bg-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-pink-500 rounded-full flex items-center justify-center text-white text-lg sm:text-xl lg:text-2xl font-bold mx-auto mb-3 sm:mb-4">
                                 {doctor.name.split(' ').map(n => n[0]).join('')}
                             </div>
                             {isEditing && (
-                                <button className="absolute bottom-0 right-0 w-8 h-8 bg-pink-400 text-white rounded-full flex items-center justify-center hover:bg-pink-500 transition-colors">
-                                    <Camera className="w-4 h-4" />
+                                <button className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 bg-pink-400 text-white rounded-full flex items-center justify-center hover:bg-pink-500 transition-colors">
+                                    <Camera className="w-3 h-3 sm:w-4 sm:h-4" />
                                 </button>
                             )}
                         </div>
-                        <h2 className="text-xl font-bold text-gray-900 mb-1">{doctor.name}</h2>
-                        <p className="text-gray-600 mb-2">{doctor.specialty}</p>
+                        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 truncate">{doctor.name}</h2>
+                        <p className="text-sm sm:text-base text-gray-600 mb-2 truncate">{doctor.specialty}</p>
                         <div className="flex items-center justify-center space-x-1 mb-2">
                             <Star className="w-4 h-4 text-yellow-500 fill-current" />
                             <span className="text-sm font-medium text-gray-900">{doctor.rating}</span>
@@ -215,34 +215,36 @@ const DoctorProfile = () => {
                     </div>
                     
                     <nav className="p-2">
-                        {tabs.map((tab) => {
-                            const Icon = tab.icon;
-                            return (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
-                                        activeTab === tab.id
-                                            ? 'bg-pink-50 text-pink-600 border border-pink-200'
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                    }`}
-                                >
-                                    <Icon className="w-5 h-5 flex-shrink-0" />
-                                    <span className="font-medium text-sm whitespace-nowrap">{tab.label}</span>
-                                </button>
-                            );
-                        })}
+                        <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible">
+                            {tabs.map((tab) => {
+                                const Icon = tab.icon;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`flex items-center space-x-2 sm:space-x-3 px-3 py-2 sm:py-2.5 rounded-xl transition-all duration-200 whitespace-nowrap lg:w-full ${
+                                            activeTab === tab.id
+                                                ? 'bg-pink-50 text-pink-600 border border-pink-200'
+                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                        }`}
+                                    >
+                                        <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                                        <span className="font-medium text-xs sm:text-sm">{tab.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </nav>
                 </Card>
 
                 {/* Main Content */}
                 <div className="lg:col-span-3">
                     {activeTab === 'overview' && (
-                        <div className="space-y-6">
+                        <div className="space-y-4 sm:space-y-6">
                             {/* Basic Information */}
-                            <Card className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Card className="p-4 sm:p-6">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                                         {isEditing ? (
