@@ -636,112 +636,6 @@ import TermsAndConditionsModal from "./modal/TermsAndConditionsModal";
 import { useModalLogic } from "./modal/modalHooks";
 
 /* ─────────────────────────────
-   Conversation Summary Modal
-   ───────────────────────────── */
-function ConversationSummaryModal({ open, onClose, summary }) {
-  if (!open) return null;
-
-  const {
-    medication = [],
-    selfCareTips = [],
-    otherAdvice = [],
-  } = summary || {};
-
-  const hasAnything =
-    medication.length || selfCareTips.length || otherAdvice.length;
-
-  return (
-    <motion.div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <motion.div
-        className="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl p-6 md:p-8 text-left"
-        initial={{ scale: 0.9, y: 20, opacity: 0 }}
-        animate={{ scale: 1, y: 0, opacity: 1 }}
-        exit={{ scale: 0.9, y: 20, opacity: 0 }}
-      >
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 hover:bg-gray-100"
-        >
-          <X className="w-5 h-5 text-gray-500" />
-        </button>
-
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
-          Your consultation summary
-        </h2>
-        <p className="text-sm text-gray-500 mb-4">
-          Here’s a quick recap of the key points from your conversation with
-          Cira. This is for information only and is not a medical diagnosis.
-        </p>
-
-        {!hasAnything && (
-          <p className="text-sm text-gray-600">
-            No medication or self-care advice could be extracted from this
-            consultation yet.
-          </p>
-        )}
-
-        {medication.length > 0 && (
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-1.5">
-              <Pill className="w-4 h-4 text-pink-500" />
-              <h3 className="font-semibold text-gray-900 text-sm md:text-base">
-                Medication mentioned
-              </h3>
-            </div>
-            <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
-              {medication.map((line, idx) => (
-                <li key={`med-${idx}`}>{line}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {selfCareTips.length > 0 && (
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-1.5">
-              <HeartPulse className="w-4 h-4 text-emerald-500" />
-              <h3 className="font-semibold text-gray-900 text-sm md:text-base">
-                Self-care & lifestyle tips
-              </h3>
-            </div>
-            <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
-              {selfCareTips.map((line, idx) => (
-                <li key={`self-${idx}`}>{line}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {otherAdvice.length > 0 && (
-          <div className="mb-2">
-            <h3 className="font-semibold text-gray-900 text-sm md:text-base mb-1.5">
-              Other important advice
-            </h3>
-            <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
-              {otherAdvice.map((line, idx) => (
-                <li key={`other-${idx}`}>{line}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <p className="text-[11px] text-gray-400 mt-3">
-          This summary is informational only and should not replace professional
-          medical advice. Always follow instructions from your doctor or
-          pharmacist.
-        </p>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-/* ─────────────────────────────
    Main component
    ───────────────────────────── */
 export default function CiraAssistant() {
@@ -759,8 +653,7 @@ export default function CiraAssistant() {
   const lastSpokenText = useRef("");
   const conversationLogRef = useRef([]);
 
-  // 🔹 Summary modal state
-  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  // 🔹 Summary state
   const [conversationSummary, setConversationSummary] = useState(null);
 
   const {
@@ -793,187 +686,42 @@ export default function CiraAssistant() {
     isAnyModalOpen,
   } = useModalLogic();
 
-  /* ─────────────────────────────
-     Helper: build summary from log
-     ───────────────────────────── */
-  // const buildSummaryFromConversation = (log) => {
-  //   const assistantLines = log
-  //     .filter((e) => e.role === "assistant" || e.rawRole === "ai")
-  //     .map((e) => e.message.trim())
-  //     .filter(Boolean);
+  // NEW: Extract clinical summary from conversation
+  const extractClinicalSummaryFromConversation = (log) => {
+    // Look for the clinical summary in the assistant's last messages
+    const assistantMessages = log
+      .filter((e) => e.role === "assistant")
+      .map((e) => e.message.trim());
 
-  //   const containsKeyword = (text, keywords) =>
-  //     keywords.some((k) => text.toLowerCase().includes(k));
+    // The clinical summary should be in the last few messages from the assistant
+    // Look for the professional clinical summary format described in the prompt
+    for (let i = assistantMessages.length - 1; i >= Math.max(0, assistantMessages.length - 5); i--) {
+      const message = assistantMessages[i];
+      
+      // Check if this message matches the clinical summary format
+      if (message && 
+          (message.includes("presented with") || 
+           message.includes("year-old") ||
+           message.includes("Seek medical attention if symptoms worsen"))) {
+        return {
+          clinicalSummary: message
+        };
+      }
+    }
 
-  //   const medicationKeywords = [
-  //     "tablet",
-  //     "medicine",
-  //     "medication",
-  //     "mg",
-  //     "dose",
-  //     "pill",
-  //     "capsule",
-  //     "syrup",
-  //     "take this",
-  //     "take one",
-  //     "take two",
-  //   ];
+    // Fallback: if no clinical summary found, create a basic one
+    const userMessages = log
+      .filter((e) => e.role === "user")
+      .map((e) => e.message.trim());
 
-  //   const selfCareKeywords = [
-  //     "rest",
-  //     "sleep",
-  //     "hydrated",
-  //     "drink plenty of water",
-  //     "drink water",
-  //     "fluids",
-  //     "exercise",
-  //     "light exercise",
-  //     "gentle exercise",
-  //     "healthy diet",
-  //     "avoid",
-  //     "self care",
-  //     "self-care",
-  //     "home care",
-  //     "at home you can",
-  //   ];
-
-  //   const medication = [];
-  //   const selfCareTips = [];
-  //   const otherAdvice = [];
-
-  //   assistantLines.forEach((line) => {
-  //     if (containsKeyword(line, medicationKeywords)) {
-  //       medication.push(line);
-  //     } else if (containsKeyword(line, selfCareKeywords)) {
-  //       selfCareTips.push(line);
-  //     } else {
-  //       otherAdvice.push(line);
-  //     }
-  //   });
-
-  //   return {
-  //     medication: [...new Set(medication)],
-  //     selfCareTips: [...new Set(selfCareTips)],
-  //     otherAdvice: [...new Set(otherAdvice)],
-  //   };
-  // };
-
-  // 🧠 Setup conversation with ElevenLabs
-  // Turn a full sentence into a short phrase
-const toShortPhrase = (line) => {
-  if (!line) return "";
-  const firstSentence = line.split(/[.?!;]/)[0].trim();
-  const phrase = firstSentence || line.trim();
-  return phrase.length > 120 ? phrase.slice(0, 117).trim() + "…" : phrase;
-};
-
-const buildSummaryFromConversation = (log) => {
-  const userLines = log
-    .filter((e) => e.role === "user")
-    .map((e) => e.message.trim())
-    .filter(Boolean);
-
-  const assistantLines = log
-    .filter((e) => e.role === "assistant")
-    .map((e) => e.message.trim())
-    .filter(Boolean);
-
-  // Very simple keyword buckets – you can tune these
-  const symptomKeywords = [
-    "pain",
-    "ache",
-    "fever",
-    "cough",
-    "vomit",
-    "nausea",
-    "headache",
-    "dizzy",
-    "fatigue",
-    "tired",
-    "short of breath",
-    "chest",
-    "throat",
-    "stomach",
-  ];
-
-  const medicationKeywords = [
-    "tablet",
-    "medicine",
-    "medication",
-    "pill",
-    "capsule",
-    "mg",
-    "take one",
-    "take two",
-    "take this",
-    "antibiotic",
-    "paracetamol",
-    "ibuprofen",
-  ];
-
-  const selfCareKeywords = [
-    "rest",
-    "sleep",
-    "hydrated",
-    "drink water",
-    "plenty of fluids",
-    "fluids",
-    "exercise",
-    "light exercise",
-    "healthy diet",
-    "avoid",
-    "self-care",
-    "home care",
-    "at home you can",
-  ];
-
-  const containsAny = (text, keywords) =>
-    keywords.some((k) => text.toLowerCase().includes(k));
-
-  // ---- Symptoms conclusion (from user lines) ----
-  const symptomSentences = userLines
-    .filter((line) => containsAny(line, symptomKeywords))
-    .map(toShortPhrase);
-
-  const symptoms =
-    symptomSentences.length > 0
-      ? [
-          `Main symptoms discussed: ${symptomSentences
-            .slice(0, 3)
-            .join("; ")}.`,
-        ]
-      : [];
-
-  // ---- Medication conclusion (from assistant lines) ----
-  const medicationSentences = assistantLines
-    .filter((line) => containsAny(line, medicationKeywords))
-    .map(toShortPhrase);
-
-  const medications =
-    medicationSentences.length > 0
-      ? [
-          `Medication advice: ${medicationSentences
-            .slice(0, 3)
-            .join("; ")}.`,
-        ]
-      : [];
-
-  // ---- Self-care conclusion (from assistant lines) ----
-  const selfCareSentences = assistantLines
-    .filter((line) => containsAny(line, selfCareKeywords))
-    .map(toShortPhrase);
-
-  const selfCareTips =
-    selfCareSentences.length > 0
-      ? [
-          `Self-care tips: ${selfCareSentences
-            .slice(0, 3)
-            .join("; ")}.`,
-        ]
-      : [];
-
-  return { symptoms, medications, selfCareTips };
-};
+    const symptoms = userMessages.slice(-3).join(", ");
+    
+    return {
+      clinicalSummary: symptoms ? 
+        `Based on your symptoms including ${symptoms}, it's recommended to consult with a healthcare professional for proper evaluation and treatment.` 
+        : "No clinical summary available from the consultation."
+    };
+  };
 
   const conversation = useConversation({
     clientTools: {
@@ -1063,12 +811,18 @@ const buildSummaryFromConversation = (log) => {
         conversationLogRef.current
       );
 
-      // 🔹 Build and show summary when consultation ends
-      const summary = buildSummaryFromConversation(
+      // 🔹 Build clinical summary when consultation ends
+      const summary = extractClinicalSummaryFromConversation(
         conversationLogRef.current
       );
       setConversationSummary(summary);
-      setShowSummaryModal(true);
+      
+      // Trigger doctor recommendation popup instead of showing summary modal
+      triggerDoctorRecommendationPopUp(
+        "your health concerns", 
+        "General Physician"
+      );
+      setShowEndOfConversationPopup(true);
     },
 
     onSpeakStart: (data) => {
@@ -1211,9 +965,11 @@ const buildSummaryFromConversation = (log) => {
 
   // Manual button to open summary again
   const handleOpenSummaryManually = () => {
-    const summary = buildSummaryFromConversation(conversationLogRef.current);
+    const summary = extractClinicalSummaryFromConversation(conversationLogRef.current);
     setConversationSummary(summary);
-    setShowSummaryModal(true);
+    // This will now trigger the doctor popup with the clinical summary
+    triggerDoctorRecommendationPopUp("your health concerns", "General Physician");
+    setShowEndOfConversationPopup(true);
   };
 
   return (
@@ -1372,8 +1128,8 @@ const buildSummaryFromConversation = (log) => {
           <span className="text-lg">Test Modal Flow</span>
         </button>
 
-        {/* Manual summary button (optional) */}
-        {!isConnected &&
+        {/* Manual summary button (optional) - REMOVED */}
+        {/* {!isConnected &&
           conversationLogRef.current.length > 0 && (
             <button
               onClick={handleOpenSummaryManually}
@@ -1381,7 +1137,7 @@ const buildSummaryFromConversation = (log) => {
             >
               View consultation summary
             </button>
-          )}
+          )} */}
       </div>
 
       {/* Modals */}
@@ -1405,6 +1161,7 @@ const buildSummaryFromConversation = (log) => {
             }
             onFindDoctor={handleFindSpecialistDoctorClick}
             onSkip={handleSkipDoctorRecommendation}
+            conversationSummary={conversationSummary}
           />
         )}
 
@@ -1456,14 +1213,14 @@ const buildSummaryFromConversation = (log) => {
           />
         )}
 
-        {/* NEW: Conversation Summary Modal */}
-        {showSummaryModal && (
+        {/* OLD: Conversation Summary Modal - REMOVED */}
+        {/* {showSummaryModal && (
           <ConversationSummaryModal
             open={showSummaryModal}
             summary={conversationSummary}
             onClose={() => setShowSummaryModal(false)}
           />
-        )}
+        )} */}
       </AnimatePresence>
     </div>
   );
