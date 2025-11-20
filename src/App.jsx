@@ -7,6 +7,7 @@ import CiraAssistant from "./assistant/CiraAssistant";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import CiraRealtimeAssistant from "./agent/realtime/CiraRealtimeAssistant";
 import { AuthProvider } from "./context/AuthContext";
+import CiraChatAssistant from "./assistant/CiraChatAssistant";
 
 function App() {
   return (
@@ -15,39 +16,40 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route
-          path="/assistant"
-          element={
-            <>
-              <Header />
-              <CiraAssistant />
-            </>
-          }
-        />
-          <Route
-          path="/ai-assistant"
-          element={
-            <>
-              <Header />
-              <CiraRealtimeAssistant />
-            </>
-          }
-        />
-        <Route
-          path="/home"
-          element={
+            path="/assistant"
+            element={
               <>
                 <Header />
-                <LandingPage />
+                <CiraAssistant />
               </>
             }
-        />
-  
-          {/* Admin routes */}
-          <Route path="/*" element={<MainRouter />} />
-  
-          {/* Default redirect to home */}
-          <Route path="/" element={<Navigate to="/home" replace />} />
-        </Routes>
+          />
+            <Route path="/cira-chat-assistant" element={<CiraChatAssistant />} />
+            <Route
+              path="/ai-assistant"
+              element={
+                <>
+                  <Header />
+                  <CiraRealtimeAssistant />
+                </>
+              }
+            />
+            <Route
+              path="/home"
+              element={
+                <>
+                  <Header />
+                  <LandingPage />
+                </>
+              }
+            />
+
+            {/* Admin routes */}
+            <Route path="/*" element={<MainRouter />} />
+
+            {/* Default redirect to home */}
+            <Route path="/" element={<Navigate to="/home" replace />} />
+          </Routes>
       </AuthProvider>
     </Router>
   );

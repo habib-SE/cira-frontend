@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-
+import Stars from "../assets/stars.svg"
 export default function Header() {
   const location = useLocation();
   const isAssistantPage = location.pathname === "/login";
@@ -11,8 +11,8 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo - Left Side */}
-          <div className="flex-shrink-0 flex items-center">
-            <div
+          <div className="flex-shrink-0 flex gap-2 items-center">
+            {/* <div
               className="w-8 h-8 rounded-full flex items-center justify-center mr-3 shadow-lg"
               style={{
                 background:
@@ -20,8 +20,10 @@ export default function Header() {
               }}
             >
               <span className="text-white font-bold text-lg">C</span>
-            </div>
-            <Link to="/" className="text-2xl font-bold text-gray-900">
+            </div> */}
+
+            <img src={Stars} alt="stars logo" />
+            <Link to="/" className="text-2xl font-semibold text-gray-900">
               Cira
             </Link>
           </div>
