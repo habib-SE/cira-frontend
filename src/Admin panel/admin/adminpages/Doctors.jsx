@@ -15,8 +15,9 @@ const Doctors = () => {
 
     // Sample doctors data with new status system
     const [doctors, setDoctors] = useState(() => {
-        // Load pending doctors from localStorage and merge with sample data
+        // Load pending doctors and rejected doctors from localStorage and merge with sample data
         const pendingDoctors = JSON.parse(localStorage.getItem('pendingDoctors') || '[]');
+        const rejectedDoctors = JSON.parse(localStorage.getItem('rejectedDoctors') || '[]');
         return [
         {
             id: 1,
@@ -68,7 +69,36 @@ const Doctors = () => {
             avatar: 'DK',
             verificationStatus: 'Failed',
             documents: ['License'],
-            joinDate: '2024-01-05'
+            joinDate: '2024-01-05',
+            rejectedDate: '2024-01-10'
+        },
+        {
+            id: 6,
+            name: 'Dr. James Wilson',
+            specialty: 'Cardiology',
+            experience: '8 years',
+            patients: 0,
+            rating: 0,
+            status: 'Rejected',
+            avatar: 'JW',
+            verificationStatus: 'Failed',
+            documents: ['License'],
+            joinDate: '2024-01-08',
+            rejectedDate: '2024-01-10'
+        },
+        {
+            id: 7,
+            name: 'Dr. Maria Garcia',
+            specialty: 'Oncology',
+            experience: '15 years',
+            patients: 0,
+            rating: 0,
+            status: 'Rejected',
+            avatar: 'MG',
+            verificationStatus: 'Failed',
+            documents: ['License', 'Certification'],
+            joinDate: '2024-01-05',
+            rejectedDate: '2024-01-09'
         },
         {
             id: 5,
@@ -83,13 +113,15 @@ const Doctors = () => {
             documents: ['License', 'Certification'],
             joinDate: '2024-01-12'
         },
-        // Merge pending doctors from localStorage
-        ...pendingDoctors
+        // Merge pending doctors and rejected doctors from localStorage
+        ...pendingDoctors,
+        ...rejectedDoctors
     ];
     });
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterSpecialty, setFilterSpecialty] = useState('');
+    const [activeTab, setActiveTab] = useState('approved'); // 'approved' or 'rejected'
     const [showEditFormInLayout, setShowEditFormInLayout] = useState(false);
     const [doctorToEdit, setDoctorToEdit] = useState(null);
     const [editFormData, setEditFormData] = useState({});
@@ -109,21 +141,30 @@ const Doctors = () => {
     useEffect(() => {
         const handleStorageChange = () => {
             const pendingDoctors = JSON.parse(localStorage.getItem('pendingDoctors') || '[]');
+            const rejectedDoctors = JSON.parse(localStorage.getItem('rejectedDoctors') || '[]');
             setDoctors(prev => {
-                // Remove old pending doctors and add new ones
+                // Remove old pending and rejected doctors (those from localStorage) and add new ones
                 const withoutPending = prev.filter(d => d.status !== 'Pending' || !d.createdAt);
-                return [...withoutPending, ...pendingDoctors];
+                const withoutRejected = withoutPending.filter(d => {
+                    // Keep only hardcoded rejected doctors or those not from localStorage
+                    return d.status !== 'Rejected' || !rejectedDoctors.find(rd => rd.id === d.id);
+                });
+                return [...withoutRejected, ...pendingDoctors, ...rejectedDoctors];
             });
         };
 
-        // Listen for storage changes
+        // Listen for storage changes (works across tabs)
         window.addEventListener('storage', handleStorageChange);
         
-        // Also check localStorage on mount
+        // Listen for custom event (works in same tab)
+        window.addEventListener('doctorsUpdated', handleStorageChange);
+        
+        // Check localStorage on mount
         handleStorageChange();
 
         return () => {
             window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('doctorsUpdated', handleStorageChange);
         };
     }, []);
 
@@ -154,37 +195,41 @@ const Doctors = () => {
         }
     };
 
-    // Filter doctors - only show approved doctors
+    // Filter doctors by status
     const approvedDoctorsList = doctors.filter(doctor => doctor.status === 'Approved');
+    const rejectedDoctorsList = doctors.filter(doctor => doctor.status === 'Rejected');
     
-    const filteredDoctors = approvedDoctorsList.filter(doctor => {
-        const searchLower = searchTerm.toLowerCase();
-        const doctorNameLower = doctor.name.toLowerCase();
-        const specialtyLower = doctor.specialty.toLowerCase();
-        
-        // Normal search match
-        let matchesSearch = searchTerm === '' || 
-            doctorNameLower.includes(searchLower) ||
-            specialtyLower.includes(searchLower);
-        
-        // Handle "Michael" vs "Micheal" typo variation
-        if (!matchesSearch && searchLower.includes('micheal')) {
-            matchesSearch = doctorNameLower.includes('michael');
-        }
-        if (!matchesSearch && searchLower.includes('michael')) {
-            matchesSearch = doctorNameLower.includes('micheal');
-        }
-        
-        const matchesSpecialty = filterSpecialty === '' || doctor.specialty === filterSpecialty;
-        
-        return matchesSearch && matchesSpecialty;
-    });
+    const filterDoctors = (doctorsList) => {
+        return doctorsList.filter(doctor => {
+            const searchLower = searchTerm.toLowerCase();
+            const doctorNameLower = doctor.name.toLowerCase();
+            const specialtyLower = doctor.specialty.toLowerCase();
+            
+            // Normal search match
+            let matchesSearch = searchTerm === '' || 
+                doctorNameLower.includes(searchLower) ||
+                specialtyLower.includes(searchLower);
+            
+            // Handle "Michael" vs "Micheal" typo variation
+            if (!matchesSearch && searchLower.includes('micheal')) {
+                matchesSearch = doctorNameLower.includes('michael');
+            }
+            if (!matchesSearch && searchLower.includes('michael')) {
+                matchesSearch = doctorNameLower.includes('micheal');
+            }
+            
+            const matchesSpecialty = filterSpecialty === '' || doctor.specialty === filterSpecialty;
+            
+            return matchesSearch && matchesSpecialty;
+        });
+    };
 
-    // Only approved doctors
-    const approvedDoctors = filteredDoctors;
+    const filteredApprovedDoctors = filterDoctors(approvedDoctorsList);
+    const filteredRejectedDoctors = filterDoctors(rejectedDoctorsList);
 
-    // Calculate statistics - only for approved doctors
+    // Calculate statistics
     const approvedCount = approvedDoctorsList.length;
+    const rejectedCount = rejectedDoctorsList.length;
     const totalDoctors = approvedCount;
 
     const handleApproveDoctor = (doctor) => {
@@ -322,8 +367,9 @@ const Doctors = () => {
         }
     }, [location.pathname, doctors]);
 
-    // Get unique specialties for filter dropdown - only from approved doctors
-    const specialties = [...new Set(approvedDoctorsList.map(doctor => doctor.specialty))];
+    // Get unique specialties for filter dropdown - from all doctors
+    const allDoctorsForSpecialties = [...approvedDoctorsList, ...rejectedDoctorsList];
+    const specialties = [...new Set(allDoctorsForSpecialties.map(doctor => doctor.specialty))];
 
     return (
         <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
@@ -538,7 +584,7 @@ const Doctors = () => {
             <div className="relative min-h-[600px]">
                 <div className="space-y-6">
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card className="p-4">
                     <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
@@ -558,6 +604,17 @@ const Doctors = () => {
                         <div>
                             <p className="text-sm text-gray-600">Active</p>
                             <p className="text-xl font-bold text-gray-900">{approvedCount}</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                            <X className="w-5 h-5 text-red-600" />
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-600">Rejected</p>
+                            <p className="text-xl font-bold text-gray-900">{rejectedCount}</p>
                         </div>
                     </div>
                 </Card>
@@ -607,9 +664,34 @@ const Doctors = () => {
                 </div>
             </Card>
 
+            {/* Tab Switcher */}
+            <div className="flex space-x-2 border-b border-gray-200">
+                <button
+                    onClick={() => setActiveTab('approved')}
+                    className={`px-4 py-2 font-medium text-sm transition-colors ${
+                        activeTab === 'approved'
+                            ? 'text-pink-600 border-b-2 border-pink-600'
+                            : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                >
+                    Approved Doctors ({approvedCount})
+                </button>
+                <button
+                    onClick={() => setActiveTab('rejected')}
+                    className={`px-4 py-2 font-medium text-sm transition-colors ${
+                        activeTab === 'rejected'
+                            ? 'text-pink-600 border-b-2 border-pink-600'
+                            : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                >
+                    Rejected Doctors ({rejectedCount})
+                </button>
+            </div>
+
             {/* Approved Doctors */}
+            {activeTab === 'approved' && (
             <div className="space-y-8">
-                {approvedDoctors.length === 0 ? (
+                {filteredApprovedDoctors.length === 0 ? (
                     <Card className="p-12 text-center">
                         <div className="flex flex-col items-center space-y-4">
                             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
@@ -630,10 +712,10 @@ const Doctors = () => {
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
                                     <Award className="w-5 h-5 text-green-600 mr-2" />
-                                    Approved Doctors ({approvedDoctors.length})
+                                    Approved Doctors ({filteredApprovedDoctors.length})
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {approvedDoctors.map((doctor) => (
+                                    {filteredApprovedDoctors.map((doctor) => (
                                         <Card key={doctor.id} className="p-6 border-l-4 border-l-green-500">
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="flex items-center space-x-3">
@@ -690,6 +772,97 @@ const Doctors = () => {
                             </div>
                 )}
             </div>
+            )}
+
+            {/* Rejected Doctors */}
+            {activeTab === 'rejected' && (
+            <div className="space-y-8">
+                {filteredRejectedDoctors.length === 0 ? (
+                    <Card className="p-12 text-center">
+                        <div className="flex flex-col items-center space-y-4">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                <Users className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">No rejected doctors found</h3>
+                                <p className="text-gray-600">
+                                    {searchTerm || filterSpecialty 
+                                        ? 'No rejected doctors match your current filters.'
+                                        : 'No rejected doctors available.'
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </Card>
+                ) : (
+                    <div>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                            <X className="w-5 h-5 text-red-600 mr-2" />
+                            Rejected Doctors ({filteredRejectedDoctors.length})
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredRejectedDoctors.map((doctor) => (
+                                <Card key={doctor.id} className="p-6 border-l-4 border-l-red-500">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                                {doctor.avatar}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold text-gray-900">{doctor.name}</h3>
+                                                <p className="text-sm text-gray-600">{doctor.specialty}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleEditDoctor(doctor)}
+                                            className="text-purple-600 hover:text-purple-800 p-1 hover:bg-purple-50 rounded transition-colors"
+                                            title="Edit Doctor"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-4 mb-4">
+                                        {doctor.rating > 0 && (
+                                            <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                                <Star className="w-4 h-4 text-yellow-500" />
+                                                <span>{doctor.rating}</span>
+                                            </div>
+                                        )}
+                                        {doctor.patients > 0 && (
+                                            <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                                <Users className="w-4 h-4 text-blue-500" />
+                                                <span>{doctor.patients}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                            <Award className="w-4 h-4 text-purple-500" />
+                                            <span>{doctor.experience}</span>
+                                        </div>
+                                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                            <Calendar className="w-4 h-4 text-red-500" />
+                                            <span>{doctor.rejectedDate || doctor.joinDate}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(doctor.status)}`}>
+                                            {doctor.status}
+                                        </span>
+                                        <button
+                                            onClick={() => handleViewDoctorProfile(doctor)}
+                                            className="text-pink-600 hover:text-pink-800 text-sm font-medium"
+                                        >
+                                            View Profile
+                                        </button>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+            )}
         </div>
     </div>
     </>
