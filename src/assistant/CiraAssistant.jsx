@@ -1075,11 +1075,6 @@ export default function CiraAssistant() {
         </motion.div>
       )}
 
-      {showEndOfConversationPopup && (
-        <div className="absolute top-4 right-4 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-          Consultation Complete
-        </div>
-      )}
 
       {/* Controls */}
       {isConnected && !showEndOfConversationPopup && (
