@@ -64,6 +64,7 @@ import DoctorDashboard from '../Admin panel/doctor/doctorpages/DoctorDashboard';
 import ProfileWizard from '../Admin panel/doctor/doctorpages/ProfileWizard';
 import DoctorSchedule from '../Admin panel/doctor/doctorpages/DoctorSchedule';
 import AppointmentDetail from '../Admin panel/doctor/doctorpages/AppointmentDetail';
+import DoctorAvailability from '../Admin panel/doctor/doctorpages/DoctorAvailability';
 import CreateAppointment from '../Admin panel/doctor/doctorpages/CreateAppointment';
 
 // Company Portal Imports
@@ -191,7 +192,7 @@ function MainRouter() {
       >
         <Route path="" element={<DoctorDashboard />} />
         <Route path="profile" element={<ProfileWizard />} />
-        <Route path="availability" element={<DoctorSchedule />} />
+        <Route path="availability" element={<DoctorAvailability />} />
         <Route path="appointments" element={<DoctorSchedule />} />
         <Route path="appointments/create" element={<CreateAppointment />} />
         <Route path="appointment-detail" element={<AppointmentDetail />} />
