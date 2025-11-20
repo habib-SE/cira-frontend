@@ -402,116 +402,116 @@ const CompanyProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <button
             onClick={() => navigate('/company')}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-4"
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             <span>Back to Dashboard</span>
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">Company Profile Settings</h1>
-          <p className="text-gray-600 mt-2">Manage your company profile information</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Company Profile Settings</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">Manage your company profile information</p>
         </div>
 
         {/* Profile Card */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-6">
-                     <div className="flex items-center justify-between mb-8">
-             <div className="flex items-center space-x-6">
-               <div className="relative">
-                 {logoPreview ? (
-                   <img 
-                     src={logoPreview} 
-                     alt="Company Logo" 
-                     className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
-                   />
-                 ) : (
-                   <div className="w-24 h-24 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center text-white text-3xl font-bold">
-                     {profileData.companyName.charAt(0)}
-                   </div>
-                 )}
-               </div>
-               <div>
-                 <h2 className="text-2xl font-bold text-gray-900">{profileData.companyName}</h2>
-                 <p className="text-gray-600">{profileData.email}</p>
-               </div>
-             </div>
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+            <div className="flex items-center space-x-3 sm:space-x-4 lg:space-x-6">
+              <div className="relative flex-shrink-0">
+                {logoPreview ? (
+                  <img 
+                    src={logoPreview} 
+                    alt="Company Logo" 
+                    className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                  />
+                ) : (
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl lg:text-3xl font-bold">
+                    {profileData.companyName.charAt(0)}
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">{profileData.companyName}</h2>
+                <p className="text-sm sm:text-base text-gray-600 truncate">{profileData.email}</p>
+              </div>
+            </div>
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center space-x-2 bg-pink-600 text-white px-6 py-3 rounded-lg hover:bg-pink-700 transition-colors"
+                className="flex items-center justify-center space-x-2 bg-pink-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-pink-700 transition-colors w-full sm:w-auto text-sm sm:text-base"
               >
-                <Edit2 className="h-5 w-5" />
+                <Edit2 className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span>Edit Profile</span>
               </button>
             ) : (
-              <div className="flex items-center space-x-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 <button
                   onClick={handleCancel}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base w-full sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex items-center space-x-2 bg-pink-600 text-white px-6 py-3 rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
+                  className="flex items-center justify-center space-x-2 bg-pink-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 text-sm sm:text-base w-full sm:w-auto"
                 >
-                  <Save className="h-5 w-5" />
+                  <Save className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
                 </button>
               </div>
             )}
           </div>
 
-                     {/* Company Logo Section */}
-           <div className="mb-8 pb-8 border-b border-gray-200">
-             <h3 className="text-lg font-semibold text-gray-900 mb-4">Company Logo</h3>
-             <div className="flex items-center space-x-4">
-               <div className="relative">
-                 {logoPreview ? (
-                   <img 
-                     src={logoPreview} 
-                     alt="Company Logo" 
-                     className="w-24 h-24 rounded-lg object-cover border-2 border-gray-200"
-                   />
-                 ) : (
-                   <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-gray-200">
-                     <Building className="h-10 w-10 text-gray-400" />
-                   </div>
-                 )}
-               </div>
-               <div>
-                 <input
-                   type="file"
-                   ref={fileInputRef}
-                   onChange={handleLogoUpload}
-                   accept="image/*"
-                   className="hidden"
-                 />
-                 <button 
-                   onClick={handleLogoButtonClick}
-                   className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 text-sm font-medium"
-                 >
-                   <Camera className="h-4 w-4" />
-                   <span>Upload Logo</span>
-                 </button>
-                 <p className="text-xs text-gray-500 mt-1">JPG, PNG or GIF (max. 5MB)</p>
-               </div>
-             </div>
-           </div>
+          {/* Company Logo Section */}
+          <div className="mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Company Logo</h3>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+              <div className="relative flex-shrink-0">
+                {logoPreview ? (
+                  <img 
+                    src={logoPreview} 
+                    alt="Company Logo" 
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover border-2 border-gray-200"
+                  />
+                ) : (
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-gray-200">
+                    <Building className="h-8 w-8 sm:h-10 sm:w-10 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleLogoUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <button 
+                  onClick={handleLogoButtonClick}
+                  className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 text-sm font-medium w-full sm:w-auto"
+                >
+                  <Camera className="h-4 w-4" />
+                  <span>Upload Logo</span>
+                </button>
+                <p className="text-xs text-gray-500 mt-1">JPG, PNG or GIF (max. 5MB)</p>
+              </div>
+            </div>
+          </div>
 
-           {/* Form Fields */}
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Form Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 Company Name <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                 <input
                   type="text"
                   name="companyName"
@@ -519,22 +519,22 @@ const CompanyProfile = () => {
                   onChange={handleInputChange}
                   disabled={!isEditing}
                   required
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                  className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
                     validationErrors.companyName ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />
               </div>
               {validationErrors.companyName && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.companyName}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{validationErrors.companyName}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 Phone Number <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                 <input
                   type="tel"
                   name="phone"
@@ -543,44 +543,44 @@ const CompanyProfile = () => {
                   disabled={!isEditing}
                   required
                   maxLength={20}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                  className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
                     validationErrors.phone ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />
               </div>
               {validationErrors.phone && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.phone}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{validationErrors.phone}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 Website
               </label>
               <div className="relative">
-                <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                 <input
                   type="url"
                   name="website"
                   value={profileData.website}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                  className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
                     validationErrors.website ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />
               </div>
               {validationErrors.website && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.website}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{validationErrors.website}</p>
               )}
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <MapPin className="absolute left-3 top-2.5 sm:top-3 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                 <input
                   type="text"
                   name="address"
@@ -589,18 +589,18 @@ const CompanyProfile = () => {
                   disabled={!isEditing}
                   required
                   maxLength={200}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                  className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
                     validationErrors.address ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />
               </div>
               {validationErrors.address && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.address}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{validationErrors.address}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 City <span className="text-red-500">*</span>
               </label>
               <input
@@ -611,17 +611,17 @@ const CompanyProfile = () => {
                 disabled={!isEditing}
                 required
                 maxLength={50}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
                   validationErrors.city ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
               {validationErrors.city && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.city}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{validationErrors.city}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 State/Province <span className="text-red-500">*</span>
               </label>
               <input
@@ -632,17 +632,17 @@ const CompanyProfile = () => {
                 disabled={!isEditing}
                 required
                 maxLength={50}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
                   validationErrors.state ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
               {validationErrors.state && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.state}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{validationErrors.state}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 ZIP/Postal Code <span className="text-red-500">*</span>
               </label>
               <input
@@ -653,17 +653,17 @@ const CompanyProfile = () => {
                 disabled={!isEditing}
                 required
                 maxLength={20}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
                   validationErrors.zipCode ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
               {validationErrors.zipCode && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.zipCode}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{validationErrors.zipCode}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 Country <span className="text-red-500">*</span>
               </label>
               <input
@@ -674,17 +674,17 @@ const CompanyProfile = () => {
                 disabled={!isEditing}
                 required
                 maxLength={50}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
                   validationErrors.country ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
               {validationErrors.country && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.country}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{validationErrors.country}</p>
               )}
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 Company Description
               </label>
               <textarea
@@ -694,32 +694,32 @@ const CompanyProfile = () => {
                 disabled={!isEditing}
                 rows={4}
                 maxLength={500}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 resize-none ${
+                className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 resize-none ${
                   validationErrors.description ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
               <div className="flex justify-between mt-1">
                 {validationErrors.description && (
-                  <p className="text-sm text-red-600">{validationErrors.description}</p>
+                  <p className="text-xs sm:text-sm text-red-600">{validationErrors.description}</p>
                 )}
-                <p className="text-sm text-gray-500 ml-auto">
+                <p className="text-xs sm:text-sm text-gray-500 ml-auto">
                   {profileData.description.length}/500 characters
                 </p>
               </div>
             </div>
 
             {/* Login Credentials Section - Always Visible */}
-            <div className="md:col-span-2 border-t border-gray-200 pt-6 mt-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Login Credentials</h3>
-              <p className="text-sm text-gray-600 mb-4">These credentials are used to login to the company panel</p>
+            <div className="md:col-span-2 border-t border-gray-200 pt-4 sm:pt-6 mt-3 sm:mt-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Login Credentials</h3>
+              <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">These credentials are used to login to the company panel</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 Login Email <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                 <input
                   type="email"
                   name="email"
@@ -728,24 +728,24 @@ const CompanyProfile = () => {
                   disabled={!isEditing}
                   required
                   maxLength={100}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                  className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
                     validationErrors.email ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Email for login"
                 />
               </div>
               {validationErrors.email && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{validationErrors.email}</p>
               )}
               <p className="mt-1 text-xs text-gray-500">This email is used for company panel login</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 Login Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
@@ -753,7 +753,7 @@ const CompanyProfile = () => {
                   onChange={handleInputChange}
                   disabled={!isEditing}
                   maxLength={50}
-                  className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
+                  className={`w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent disabled:bg-gray-100 ${
                     validationErrors.password ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder={isEditing ? "Enter new password (leave blank to keep current)" : "••••••••"}
@@ -764,12 +764,12 @@ const CompanyProfile = () => {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                   </button>
                 )}
               </div>
               {validationErrors.password && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-600">{validationErrors.password}</p>
               )}
               {!validationErrors.password && profileData.password && isEditing && (
                 <p className="mt-1 text-xs text-gray-500">Password must be at least 8 characters with uppercase, lowercase, and number</p>
@@ -781,18 +781,18 @@ const CompanyProfile = () => {
 
             {isEditing && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     name="confirmPassword"
                     value={profileData.confirmPassword}
                     onChange={handleInputChange}
                     maxLength={50}
-                    className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                    className={`w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2 sm:py-3 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
                       validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="Confirm new password"
@@ -802,11 +802,11 @@ const CompanyProfile = () => {
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                   </button>
                 </div>
                 {validationErrors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600">{validationErrors.confirmPassword}</p>
+                  <p className="mt-1 text-xs sm:text-sm text-red-600">{validationErrors.confirmPassword}</p>
                 )}
               </div>
             )}
@@ -815,54 +815,54 @@ const CompanyProfile = () => {
 
         {/* Success Message */}
         {showSuccessMessage && (
-          <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 z-50 animate-slide-in">
-            <CheckCircle className="h-5 w-5" />
+          <div className="fixed top-4 right-2 sm:right-4 bg-green-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-lg flex items-center space-x-2 z-50 animate-slide-in text-sm sm:text-base">
+            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="font-medium">Profile saved successfully!</span>
           </div>
         )}
 
         {/* Settings Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Security Settings */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-red-100 p-3 rounded-lg">
-                <Lock className="h-6 w-6 text-red-600" />
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 hover:shadow-xl transition-shadow">
+            <div className="flex items-center space-x-3 mb-3 sm:mb-4">
+              <div className="bg-red-100 p-2 sm:p-3 rounded-lg">
+                <Lock className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Security</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">Security</h3>
             </div>
-            <p className="text-sm text-gray-600 mb-4">Manage your password and security settings</p>
-            <button className="text-pink-600 font-medium text-sm hover:text-pink-700">
+            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Manage your password and security settings</p>
+            <button className="text-pink-600 font-medium text-xs sm:text-sm hover:text-pink-700">
               Manage Security →
             </button>
           </div>
 
           {/* Notification Settings */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <Bell className="h-6 w-6 text-blue-600" />
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 hover:shadow-xl transition-shadow">
+            <div className="flex items-center space-x-3 mb-3 sm:mb-4">
+              <div className="bg-blue-100 p-2 sm:p-3 rounded-lg">
+                <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">Notifications</h3>
             </div>
-            <p className="text-sm text-gray-600 mb-4">Control your notification preferences</p>
-            <button className="text-pink-600 font-medium text-sm hover:text-pink-700">
+            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Control your notification preferences</p>
+            <button className="text-pink-600 font-medium text-xs sm:text-sm hover:text-pink-700">
               Configure →
             </button>
           </div>
 
           {/* Billing Settings */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-green-100 p-3 rounded-lg">
-                <CreditCard className="h-6 w-6 text-green-600" />
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 hover:shadow-xl transition-shadow sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center space-x-3 mb-3 sm:mb-4">
+              <div className="bg-green-100 p-2 sm:p-3 rounded-lg">
+                <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Billing</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">Billing</h3>
             </div>
-            <p className="text-sm text-gray-600 mb-4">Manage your subscription and billing</p>
+            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Manage your subscription and billing</p>
             <button 
               onClick={() => navigate('/company/billing')}
-              className="text-pink-600 font-medium text-sm hover:text-pink-700"
+              className="text-pink-600 font-medium text-xs sm:text-sm hover:text-pink-700"
             >
               View Billing →
             </button>

@@ -178,7 +178,7 @@ const PatientSubscriptions = () => {
             {plans.map((plan) => (
               <Card 
                 key={plan.id} 
-                className={`relative p-6 transition-all duration-200 hover:shadow-lg ${
+                className={`relative p-6 transition-all duration-200 hover:shadow-lg flex flex-col h-full ${
                   plan.popular ? 'ring-2 ring-blue-500' : ''
                 } ${plan.current ? 'ring-2 ring-green-500' : ''}`}
               >
@@ -217,41 +217,44 @@ const PatientSubscriptions = () => {
                   <p className="text-sm text-gray-600">{plan.description}</p>
                 </div>
 
-                {/* Features List */}
-                <div className="mb-6">
-                  <h4 className="font-semibold text-gray-900 mb-3">Features included:</h4>
-                  <ul className="space-y-2">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start space-x-2">
-                        <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Limitations */}
-                {plan.limitations.length > 0 && (
+                {/* Content Area - Flex grow to push button down */}
+                <div className="flex-grow flex flex-col">
+                  {/* Features List */}
                   <div className="mb-6">
-                    <h4 className="font-semibold text-gray-900 mb-3">Limitations:</h4>
+                    <h4 className="font-semibold text-gray-900 mb-3">Features included:</h4>
                     <ul className="space-y-2">
-                      {plan.limitations.map((limitation, index) => (
+                      {plan.features.map((feature, index) => (
                         <li key={index} className="flex items-start space-x-2">
-                          <div className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0 flex items-center justify-center">
-                            <div className="h-1 w-1 bg-red-500 rounded-full"></div>
-                          </div>
-                          <span className="text-sm text-gray-600">{limitation}</span>
+                          <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-gray-700">{feature}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
-                )}
 
-                {/* Action Button */}
+                  {/* Limitations */}
+                  {plan.limitations.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="font-semibold text-gray-900 mb-3">Limitations:</h4>
+                      <ul className="space-y-2">
+                        {plan.limitations.map((limitation, index) => (
+                          <li key={index} className="flex items-start space-x-2">
+                            <div className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0 flex items-center justify-center">
+                              <div className="h-1 w-1 bg-red-500 rounded-full"></div>
+                            </div>
+                            <span className="text-sm text-gray-600">{limitation}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Button - Pushed to bottom with mt-auto */}
                 <button
                   onClick={() => handlePlanSelect(plan.id)}
                   disabled={plan.current || isUpgrading}
-                  className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${getPlanButtonColor(plan.id)}`}
+                  className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-auto ${getPlanButtonColor(plan.id)}`}
                 >
                   {isUpgrading ? (
                     <div className="flex items-center justify-center space-x-2">

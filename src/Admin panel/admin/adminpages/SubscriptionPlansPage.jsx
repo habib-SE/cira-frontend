@@ -1,17 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import logo from '../../../assets/Logo.png';
-import loginLogo from '../../../assets/LoginLogo.png';
+import { Check } from 'lucide-react';
+import { Logo } from '../../../components/shared';
 
 const 
 SubscriptionPlansPage = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const [selectedPlan, setSelectedPlan] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    const handleUpgrade = () => {
-        // Mark subscription as active
+    const handlePlanSelect = (planId) => {
+        setSelectedPlan(planId);
+    };
+
+    const handleContinue = async () => {
+        if (!selectedPlan) return;
+        
+        setIsProcessing(true);
+        
+        // Store selected plan
+        localStorage.setItem('selectedPlan', selectedPlan);
         localStorage.setItem('hasSubscription', 'true');
+        
+        // Simulate processing delay
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         // Navigate to user's dashboard based on role
         if (user) {
@@ -34,6 +48,8 @@ SubscriptionPlansPage = () => {
         } else {
             navigate('/login');
         }
+        
+        setIsProcessing(false);
     };
 
     const subscriptionPlans = [
@@ -70,7 +86,7 @@ SubscriptionPlansPage = () => {
             {/* Header - Logo in top left */}
             <div className="w-full flex justify-start items-center mb-2 sm:mb-2">
                 <div className="flex items-center pl-2 sm:pl-4">
-                    <img src={logo} alt="Cira Logo" className="h-6 sm:h-7 w-auto" />
+                    <Logo variant="default" alt="Cira Logo" className="h-6 sm:h-7 w-auto" />
                 </div>
             </div>
 
@@ -79,8 +95,8 @@ SubscriptionPlansPage = () => {
                 <div className="w-full max-w-6xl text-center px-2">
                  {/* Main Logo */}
                  <div className="flex justify-center mb-3 sm:mb-1">
-                        <img
-                            src={loginLogo}
+                        <Logo
+                            variant="login"
                             alt="Login Logo"
                             className="w-20 h-20 sm:w-28 sm:h-28"
                         />
@@ -97,17 +113,29 @@ SubscriptionPlansPage = () => {
 
                                      {/* Subscription Plans */}
                     <div className="flex flex-col sm:flex-row justify-center items-center sm:items-start gap-4 mb-4 sm:mb-3">
-                         {subscriptionPlans.map((plan) => (
+                         {subscriptionPlans.map((plan) => {
+                             const isSelected = selectedPlan === plan.id;
+                             return (
                              <div
                                  key={plan.id}
-                                className={`bg-white/60 backdrop-blur-sm rounded-3xl p-5 sm:p-6 shadow-lg border-2 relative transition-all duration-300 hover:shadow-xl hover:scale-[1.02] w-full max-w-sm sm:w-80 min-h-[320px] sm:h-80 ${
-                                    plan.isPopular 
+                                 onClick={() => handlePlanSelect(plan.id)}
+                                className={`bg-white/60 backdrop-blur-sm rounded-3xl p-5 sm:p-6 shadow-lg border-2 relative transition-all duration-300 hover:shadow-xl hover:scale-[1.02] w-full max-w-sm sm:w-80 min-h-[320px] sm:h-80 cursor-pointer ${
+                                    isSelected
+                                        ? 'border-pink-500 ring-4 ring-pink-200 shadow-2xl scale-[1.03]'
+                                        : plan.isPopular 
                                         ? 'border-pink-300 ring-2 ring-pink-100' 
                                         : 'border-gray-200 hover:border-pink-200'
                                 }`}
                              >
+                                 {/* Selection Indicator */}
+                                 {isSelected && (
+                                    <div className="absolute top-4 right-4 w-6 h-6 sm:w-7 sm:h-7 bg-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                                        <Check className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                                    </div>
+                                 )}
+                                 
                                  {/* Popular Badge */}
-                                 {plan.isPopular && (
+                                 {plan.isPopular && !isSelected && (
                                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-xs font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-lg whitespace-nowrap">
                                         ⭐ Most Popular
                                      </div>
@@ -180,16 +208,31 @@ SubscriptionPlansPage = () => {
                                     </div>
                                  </div>
                              </div>
-                         ))}
+                             );
+                         })}
                      </div>
 
-                    {/* Upgrade Button */}
+                    {/* Continue Button */}
                     <div className="w-full max-w-md mx-auto px-2">
                     <button
-                        onClick={handleUpgrade}
-                            className="w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl sm:rounded-3xl font-bold text-base sm:text-lg bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700 active:from-pink-700 active:to-pink-800 transform active:scale-95 transition-all duration-200 shadow-xl hover:shadow-2xl"
+                        onClick={handleContinue}
+                        disabled={!selectedPlan || isProcessing}
+                            className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-2xl sm:rounded-3xl font-bold text-base sm:text-lg transform active:scale-95 transition-all duration-200 shadow-xl ${
+                                selectedPlan && !isProcessing
+                                    ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700 active:from-pink-700 active:to-pink-800 hover:shadow-2xl cursor-pointer'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            }`}
                     >
-                            Start Your Journey
+                            {isProcessing ? (
+                                <div className="flex items-center justify-center">
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                    Processing...
+                                </div>
+                            ) : selectedPlan ? (
+                                'Continue'
+                            ) : (
+                                'Select a Plan to Continue'
+                            )}
                     </button>
                     </div>
                 </div>

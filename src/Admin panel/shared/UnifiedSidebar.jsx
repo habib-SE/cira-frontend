@@ -26,8 +26,7 @@ import {
   LogOut,
   History
 } from 'lucide-react';
-import logo from '../../assets/logo.png';
-import loginLogo from '../../assets/loginlogo.png';
+import { Logo } from '../../components/shared';
 
 const UnifiedSidebar = ({ 
   isCollapsed, 
@@ -139,8 +138,8 @@ const UnifiedSidebar = ({
             pointerEvents: !isCollapsed ? 'auto' : 'none'
           }}
         >
-          <img 
-            src={logo} 
+          <Logo 
+            variant="default"
             alt="CIRA Logo" 
             className="h-11 py-1 w-auto"
           />
@@ -155,8 +154,8 @@ const UnifiedSidebar = ({
             pointerEvents: 'none'
           }}
         >
-          <img 
-            src={loginLogo} 
+          <Logo 
+            variant="login"
             alt="CIRA Logo" 
             className="h-12"
           />
