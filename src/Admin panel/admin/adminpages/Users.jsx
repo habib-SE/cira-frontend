@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Users as UsersIcon, Search, Filter, Eye, Ban, Trash2, MoreVertical, UserCheck, UserX, UserPlus, X, CheckCircle, AlertCircle, EyeOff, Edit } from 'lucide-react';
+import { Users as UsersIcon, Search, Filter, Eye, Ban, Trash2, MoreVertical, UserCheck, UserX, UserPlus, X, CheckCircle, AlertCircle, EyeOff, Edit, Stethoscope } from 'lucide-react';
 import Card from '../admincomponents/Card';
 import Breadcrumbs from '../../../components/shared/Breadcrumbs';
 import MetaChips from '../../../components/shared/MetaChips';
@@ -409,6 +409,7 @@ const Users = () => {
     const totalUsers = users.length;
     const activeUsers = users.filter(u => u.status === 'Active').length;
     const inactiveUsers = users.filter(u => u.status === 'Inactive').length;
+    const doctorsCount = users.filter(u => u.role === 'Doctor').length;
 
     // Helper function to save users to localStorage
     const saveUsersToStorage = (updatedUsers) => {
@@ -1043,7 +1044,7 @@ const Users = () => {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                             >
                                 {isSubmitting ? (
                                     <>
@@ -1066,10 +1067,10 @@ const Users = () => {
             <Breadcrumbs />
             
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Users</h1>
-                    <p className="text-gray-600">Manage all platform users and their access</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Users</h1>
+                    <p className="text-sm sm:text-base text-gray-600">Manage all platform users and their access</p>
                     <MetaChips 
                         status="Active" 
                         id={`Total: ${totalUsers}`}
@@ -1079,7 +1080,7 @@ const Users = () => {
                 </div>
                 <button
                     onClick={handleCreateUser}
-                    className="px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 flex items-center space-x-2"
+                    className="w-full sm:w-auto px-4 py-2 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-colors duration-200 inline-flex items-center justify-center space-x-2 whitespace-nowrap"
                 >
                     <UserPlus className="w-4 h-4" />
                     <span>Create User</span>
@@ -1089,7 +1090,7 @@ const Users = () => {
             {/* Main Content Area */}
             <div className="space-y-6">
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <Card className="p-4">
                     <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
@@ -1120,6 +1121,17 @@ const Users = () => {
                         <div>
                             <p className="text-sm text-gray-600">Inactive</p>
                             <p className="text-xl font-bold text-gray-900">{inactiveUsers}</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                            <Stethoscope className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-600">Doctors</p>
+                            <p className="text-xl font-bold text-gray-900">{doctorsCount}</p>
                         </div>
                     </div>
                 </Card>
@@ -1157,23 +1169,23 @@ const Users = () => {
 
             {/* Users Table */}
             <Card className="overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
+                <div className="overflow-x-auto -mx-3 sm:mx-0">
+                    <table className="w-full min-w-[640px]">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     ID
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Name
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                                     Email
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Role
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
@@ -1181,22 +1193,23 @@ const Users = () => {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {filteredUsers.map((user) => (
                                 <tr key={user.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-mono text-gray-600 font-medium">CIRA-{String(user.id).padStart(4, '0')}</div>
+                                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                                        <div className="text-xs sm:text-sm font-mono text-gray-600 font-medium">CIRA-{String(user.id).padStart(4, '0')}</div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                    <td className="px-3 sm:px-6 py-3 sm:py-4">
+                                        <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">{user.name}</div>
+                                        <div className="text-xs text-gray-500 truncate sm:hidden">{user.email}</div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-500">{user.email}</div>
+                                    <td className="px-3 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">
+                                        <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[200px]">{user.email}</div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-3 sm:px-6 py-3 sm:py-4">
                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
                                             {user.role}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div className="flex items-center space-x-2">
+                                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm font-medium">
+                                        <div className="flex items-center space-x-1 sm:space-x-2">
                                             <button 
                                                 onClick={() => handleViewUser(user)}
                                                 className="text-blue-600 hover:text-blue-900 p-1"

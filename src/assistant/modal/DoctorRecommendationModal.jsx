@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { X, Star, Clock, DollarSign, Stethoscope } from "lucide-react";
+import { X, Star, Clock, DollarSign, Stethoscope, Info } from "lucide-react";
 
 const DoctorRecommendationModal = ({
   condition,
@@ -59,7 +59,7 @@ const DoctorRecommendationModal = ({
               <Stethoscope className="w-6 h-6 text-pink-600" />
               Doctor Recommendation
             </h2>
-            <p className="text-gray-700 mt-1">
+            <p className="text-gray-700 mt-1 ml-8">
              We recommend consulting a{" "} 
               <span className="font-semibold text-pink-600">
                 {recommendedSpecialty}
@@ -76,13 +76,31 @@ const DoctorRecommendationModal = ({
 
         {/* Content */}
         <div className="overflow-y-auto overflow-x-hidden max-h-[60vh] space-y-6 px-6">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Summary</h3>
-            <p className="text-gray-700">
-              Based on your symptoms, this may relate to <span className="font-semibold">{condition}</span>.
-              Consulting a specialist can provide proper diagnosis and treatment.
-            </p>
-          </div>
+ {/* Summary Section */}
+<motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.1 }}
+  className="bg-transparent border border-pink-100 rounded-2xl p-4 mb-6 flex gap-3 items-start"
+>
+  <div className="bg-white/30 p-2 rounded-full shadow-sm">
+    <Info className="w-5 h-5 text-pink-600" />
+  </div>
+  <div className="text-left">
+    <h3 className="text-lg font-semibold text-gray-800 mb-1">
+      Summary
+    </h3>
+    <p className="text-gray-700 text-sm leading-relaxed">
+      Based on your symptoms, this may relate to{" "}
+      <span className="font-semibold">{condition}</span>. Consulting a{" "}
+      <span className="font-semibold text-pink-600">
+        {recommendedSpecialty}
+      </span>{" "}
+      can help ensure accurate diagnosis and effective treatment.
+    </p>
+  </div>
+</motion.div>
+
 
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800">Available Doctors</h3>

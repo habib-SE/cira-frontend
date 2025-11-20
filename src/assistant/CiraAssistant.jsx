@@ -1,33 +1,43 @@
 // import React, { useEffect, useState, useRef } from "react";
 // import { useConversation } from "@11labs/react";
-// import { MicOff, PhoneOff, Volume2, VolumeX } from "lucide-react";
+// import {
+//   TestTube,
+//   StopCircle,
+//   Play,
+//   Pause,
+//   Rocket,
+// } from "lucide-react";
 // import { Canvas } from "@react-three/fiber";
 // import { OrbitControls } from "@react-three/drei";
 // import { motion, AnimatePresence } from "framer-motion";
 // import NurseAvatar from "./nurseAvatar/NurseAvatar";
 
-// // Import modals and pop-ups
+// // Import modals
 // import VitalSignsDisplay from "./modal/VitalSignsDisplay";
 // import DoctorRecommendationModal from "./modal/DoctorRecommendationModal";
 // import PaymentModal from "./modal/PaymentModal";
 // import AppointmentModal from "./modal/AppointmentModal";
 // import BookingConfirmationModal from "./modal/BookingConfirmationModal";
 // import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
-// import FacialScanPopUp from "./modal/FacialScanPopUp";
+// import FacialScanModal from "./modal/FacialScanModal";
+// import TermsAndConditionsModal from "./modal/TermsAndConditionsModal";
+
 // import { useModalLogic } from "./modal/modalHooks";
 
 // export default function CiraAssistant() {
+//   const [hasAgreed, setHasAgreed] = useState(false);
 //   const [hasPermission, setHasPermission] = useState(false);
 //   const [isMuted, setIsMuted] = useState(false);
 //   const [isConnected, setIsConnected] = useState(false);
 //   const [errorMessage, setErrorMessage] = useState("");
 //   const [phoneme, setPhoneme] = useState(null);
 //   const [conversationEnded, setConversationEnded] = useState(false);
-//   const [showEndOfConversationPopup, setShowEndOfConversationPopup] = useState(false);
+//   const [showEndOfConversationPopup, setShowEndOfConversationPopup] =
+//     useState(false);
+//   const [isAutoStarting, setIsAutoStarting] = useState(false);
 
-//   // Ref to store the last spoken text (for fallback detection)
 //   const lastSpokenText = useRef("");
-
+//   const conversationLogRef = useRef([]);
 //   const {
 //     showDoctorRecommendationPopUp,
 //     showFacialScanPopUp,
@@ -58,74 +68,187 @@
 //     isAnyModalOpen,
 //   } = useModalLogic();
 
-//   const conversation = useConversation({
-//     clientTools: {
-//       openModal: async (params) => {
-//         const {
-//           showDoctorRecommendationPopup,
-//           condition = "your health concerns",
-//           specialty = "General Physician",
-//         } = params || {};
+//   // 🧠 Setup conversation with ElevenLabs
+//   // const conversation = useConversation({
+//   //   clientTools: {
+//   //     openModal: async (params) => {
+//   //       const {
+//   //         showDoctorRecommendationPopup,
+//   //         condition = "your health concerns",
+//   //         specialty = "General Physician",
+//   //       } = params || {};
 
-//         if (showDoctorRecommendationPopup) {
-//           await conversation.endSession();
-//           // await conversation.interrupt();
-//       setIsConnected(false);
-//       setConversationEnded(true);
-//           setShowEndOfConversationPopup(true);
-//           triggerDoctorRecommendationPopUp(condition, specialty);
-//           return { success: true, opened: "doctor_popup" };
-//         }
-//         return { success: true, opened: null };
-//       },
-//     },
-//     onConnect: () => {
-//       console.log("✅ Connected");
-//       setConversationEnded(false);
-//       setShowEndOfConversationPopup(false);
-//       lastSpokenText.current = "";
-//     },
-//     onDisconnect: () => {
-//       console.log("🔌 Disconnected");
-//       setIsConnected(false);
-//       setConversationEnded(true);
-//     },
-//     onSpeakStart: (data) => {
-//       if (data?.text) {
-//         lastSpokenText.current = data.text;
-//         console.log("🗣 Speaking:", data.text);
-//       }
-//     },
-//     onSpeakEnd: async () => {
-//       console.log("🔇 Speaking ended. Last phrase:", lastSpokenText.current);
+//   //       if (showDoctorRecommendationPopup) {
+//   //         // Trigger popup only — DO NOT stop conversation here
+//   //         triggerDoctorRecommendationPopUp(condition, specialty);
+//   //         setShowEndOfConversationPopup(true);
 
-//       // 🔥 Fallback: if last spoken phrase includes doctor recommendation cue
-//       const phrase = lastSpokenText.current.toLowerCase();
-//       if (
-//         phrase.includes("please book an appointment with a doctor") ||
-//         phrase.includes("book an appointment with a doctor") ||
-//         phrase.includes("see a doctor") ||
-//         phrase.includes("visit a doctor")
-//       ) {
-//         console.log("🩺 Auto-triggering Doctor Recommendation Popup (fallback triggered)");
+//   //         // Return without ending the session
+//   //         return { success: true, opened: "doctor_popup" };
+//   //       }
+
+//   //       return { success: true, opened: null };
+//   //     },
+//   //   },
+//   //   onConnect: () => {
+//   //     console.log("✅ Connected");
+//   //     setConversationEnded(false);
+//   //     setShowEndOfConversationPopup(false);
+//   //     lastSpokenText.current = "";
+//   //   },
+//   //   onDisconnect: () => {
+//   //     console.log("🔌 Disconnected");
+//   //     setIsConnected(false);
+//   //     setConversationEnded(true);
+//   //   },
+//   //   onSpeakStart: (data) => {
+//   //     if (data?.text) lastSpokenText.current = data.text;
+//   //   },
+//   //   onSpeakEnd: async () => {
+//   //     // Only trigger the popup suggestion — do NOT end the session automatically.
+//   //     const phrase = lastSpokenText.current.toLowerCase();
+//   //     if (
+//   //       phrase.includes("book an appointment") ||
+//   //       phrase.includes("see a doctor") ||
+//   //       phrase.includes("visit a doctor")
+//   //     ) {
+//   //       // Show popup suggestion but keep conversation alive
+//   //       triggerDoctorRecommendationPopUp("your health concerns", "General Physician");
+//   //       setShowEndOfConversationPopup(true);
+//   //       // <-- removed automatic endSession() here intentionally
+//   //     }
+//   //   },
+//   //   onPhoneme: (p) => {
+//   //     setPhoneme(p);
+//   //     setTimeout(() => setPhoneme(null), 80);
+//   //   },
+//   //   onError: (err) => {
+//   //     console.error("Conversation error:", err);
+//   //     setErrorMessage("Conversation error occurred");
+//   //   },
+//   // });
+// // 🧠 Setup conversation with ElevenLabs
+// const conversation = useConversation({
+//   clientTools: {
+//     openModal: async (params) => {
+//       const {
+//         showDoctorRecommendationPopup,
+//         condition = "your health concerns",
+//         specialty = "General Physician",
+//       } = params || {};
+
+//       if (showDoctorRecommendationPopup) {
+//         triggerDoctorRecommendationPopUp(condition, specialty);
 //         setShowEndOfConversationPopup(true);
-//         triggerDoctorRecommendationPopUp("your health concerns", "General Physician");
-//         await conversation.stopSpeaking();
+//         return { success: true, opened: "doctor_popup" };
 //       }
+
+//       return { success: true, opened: null };
 //     },
-//     onPhoneme: (p) => {
-//       setPhoneme(p);
-//       setTimeout(() => setPhoneme(null), 80);
-//     },
-//     onError: (error) => {
-//       console.error("Conversation error:", error);
-//       setErrorMessage("Conversation error occurred");
-//     },
-//   });
+//   },
+
+//   // 🔍 Robust logging for both old & new SDK shapes
+//   onMessage: (payload) => {
+//     let text = "";
+//     let role = "unknown";
+
+//     if (typeof payload === "string") {
+//       // Most recent React SDK: plain string
+//       text = payload;
+//     } else if (payload && typeof payload === "object") {
+//       // Some examples / future versions: { message, source } or similar
+//       text =
+//         payload.message ||
+//         payload.text ||
+//         payload.formatted?.text ||
+//         payload.formatted?.transcript ||
+//         "";
+//       role =
+//         payload.source ||
+//         payload.role ||
+//         payload.author ||
+//         "unknown";
+//     }
+
+//     if (!text || !text.trim()) return;
+
+//     const normalizedRole =
+//       role === "ai" || role === "assistant"
+//         ? "assistant"
+//         : role === "user"
+//         ? "user"
+//         : "unknown";
+
+//     const logEntry = {
+//       role: normalizedRole,
+//       rawRole: role,
+//       message: text,
+//       timestamp: new Date().toISOString(),
+//     };
+
+//     conversationLogRef.current.push(logEntry);
+
+//     // Console logs
+//     if (normalizedRole === "user") {
+//       console.log("👤 User said:", text);
+//     } else if (normalizedRole === "assistant") {
+//       console.log("🤖 Cira replied:", text);
+//     } else {
+//       console.log("💬 Message:", logEntry);
+//     }
+
+//     console.log("🧾 Conversation log so far:", conversationLogRef.current);
+//   },
+
+//   onConnect: () => {
+//     console.log("✅ Connected");
+//     setConversationEnded(false);
+//     setShowEndOfConversationPopup(false);
+//     lastSpokenText.current = "";
+//     conversationLogRef.current = [];
+//     console.log("🧾 Conversation log reset (new session started).");
+//   },
+
+//   onDisconnect: () => {
+//     console.log("🔌 Disconnected");
+//     setIsConnected(false);
+//     setConversationEnded(true);
+//     console.log(
+//       "🧾 Final conversation log:",
+//       conversationLogRef.current
+//     );
+//   },
+
+//   onSpeakStart: (data) => {
+//     if (data?.text) lastSpokenText.current = data.text;
+//   },
+//   onSpeakEnd: async () => {
+//     const phrase = lastSpokenText.current.toLowerCase();
+//     if (
+//       phrase.includes("book an appointment") ||
+//       phrase.includes("see a doctor") ||
+//       phrase.includes("visit a doctor")
+//     ) {
+//       triggerDoctorRecommendationPopUp(
+//         "your health concerns",
+//         "General Physician"
+//       );
+//       setShowEndOfConversationPopup(true);
+//     }
+//   },
+//   onPhoneme: (p) => {
+//     setPhoneme(p);
+//     setTimeout(() => setPhoneme(null), 80);
+//   },
+//   onError: (err) => {
+//     console.error("Conversation error:", err);
+//     setErrorMessage("Conversation error occurred");
+//   },
+// });
 
 //   const { status, isSpeaking } = conversation;
 
-//   // Microphone access check
+//   // 🎤 Microphone permission
 //   useEffect(() => {
 //     (async () => {
 //       try {
@@ -137,9 +260,11 @@
 //     })();
 //   }, []);
 
+//   // 🚀 Start conversation
 //   const handleStartConversationDirectly = async () => {
 //     try {
-//       console.log("Starting conversation...");
+//       setIsMuted(false);
+//       console.log("🎬 Starting conversation...");
 //       await conversation.startSession({
 //         agentId: import.meta.env.VITE_ELEVENLABS_AGENT_ID,
 //       });
@@ -147,47 +272,96 @@
 //       setIsConnected(true);
 //       setShowEndOfConversationPopup(false);
 //     } catch (err) {
-//       console.error("Failed to start conversation:", err);
+//       console.error("❌ Failed to start conversation:", err);
 //       setErrorMessage("Failed to start conversation");
 //     }
 //   };
 
-//   const handleStartConversation = async () => {
-//     resetModalStates();
-//     setShowEndOfConversationPopup(false);
-//     await handleStartConversationDirectly();
+//   // 🔇 Mute toggle (simulate pause/resume behavior)
+//   const toggleMute = async () => {
+//     try {
+//       const newMuteState = !isMuted;
+
+//       if (newMuteState) {
+//         // Stop listening + mute voice output
+//         await conversation.setVolume({ volume: 0 });
+//         if (conversation?.stopListening) await conversation.stopListening();
+//         console.log("🔇 Conversation muted (paused)");
+//       } else {
+//         // Resume listening + unmute
+//         await conversation.setVolume({ volume: 1 });
+//         if (conversation?.startListening) await conversation.startListening();
+//         console.log("🔊 Conversation resumed");
+//       }
+
+//       setIsMuted(newMuteState);
+//     } catch (err) {
+//       console.error("Failed to toggle mute:", err);
+//     }
 //   };
 
+//   // 🛑 End conversation manually
 //   const handleEndConversation = async () => {
 //     try {
-//       console.log("Ending conversation...");
 //       await conversation.endSession();
 //       setIsConnected(false);
 //       setConversationEnded(false);
 //       setShowEndOfConversationPopup(false);
 //     } catch (err) {
-//       console.error("Failed to end conversation:", err);
+//       console.error("❌ Failed to end conversation:", err);
 //       setErrorMessage("Failed to end conversation");
 //     }
 //   };
 
-//   const toggleMute = async () => {
+//   // IMPORTANT: Called when user clicks "Find Specialist Doctor" in the pop-up.
+//   // This will stop the conversation and then proceed to the doctor flow.
+//   const handleFindSpecialistDoctorClick = async () => {
 //     try {
-//       await conversation.setVolume({ volume: isMuted ? 1 : 0 });
-//       setIsMuted(!isMuted);
-//     } catch (err) {
-//       console.error("Failed to change volume:", err);
+//       // End the conversation gracefully if it's active
+//       if (conversation?.endSession && isConnected) {
+//         try {
+//           await conversation.endSession();
+//           setIsConnected(false);
+//           // keep conversationEnded false if you prefer current behavior; adjust if needed
+//           setConversationEnded(false);
+//           setShowEndOfConversationPopup(false);
+//         } catch (err) {
+//           // Log but continue to open doctor workflow
+//           console.warn("Failed to end session before opening doctor flow:", err);
+//         }
+//       }
+//     } finally {
+//       // Proceed to the doctor selection/booking logic
+//       try {
+//         handleFindSpecialistDoctor();
+//       } catch (err) {
+//         console.error("Failed to trigger doctor flow:", err);
+//       }
 //     }
 //   };
 
-//   const handleFindSpecialistDoctorOverride = () => {
-//     setShowEndOfConversationPopup(false);
-//     handleFindSpecialistDoctor();
-//   };
+//   // Auto-start conversation immediately after accepting terms
+//   useEffect(() => {
+//     if (hasAgreed && isAutoStarting) {
+//       const start = async () => {
+//         await handleStartConversationDirectly();
+//         setIsAutoStarting(false);
+//       };
+//       start();
+//     }
+//   }, [hasAgreed, isAutoStarting]);
 
-//   const handleSkipDoctorRecommendationOverride = () => {
-//     setShowEndOfConversationPopup(false);
-//     handleSkipDoctorRecommendation();
+//   // 🧪 Test modal manually
+//   const handleTestFlow = () => {
+//     resetModalStates();
+//     triggerDoctorRecommendationPopUp("test condition", "Test Specialist");
+//     setShowEndOfConversationPopup(true);
+
+//     setTimeout(() => {
+//       setIsConnected(false);
+//       setConversationEnded(false);
+//       setShowEndOfConversationPopup(false);
+//     }, 3000);
 //   };
 
 //   return (
@@ -196,30 +370,72 @@
 //         background:
 //           "linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)",
 //       }}
-//       className="flex flex-col items-center justify-center min-h-screen text-center p-6 relative"
+//       className="flex flex-col items-center justify-center min-h-screen text-center p-6 relative overflow-x-hidden"
 //     >
-//       <AnimatePresence>
-//         {isAnyModalOpen() && (
-//           <motion.div
-//             initial={{ opacity: 0 }}
-//             animate={{ opacity: 1 }}
-//             exit={{ opacity: 0 }}
-//             className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
-//           />
-//         )}
-//       </AnimatePresence>
-
+//       {/* Avatar */}
 //       <div className="relative h-[290px] w-[290px] mb-6 flex items-center justify-center">
 //         <motion.div
 //           className="absolute inset-0 rounded-full p-[4px]"
-//           animate={{ rotate: 360 }}
-//           transition={{ repeat: Infinity, duration: 12, ease: "linear" }}
+//           animate={
+//             isMuted
+//               ? {
+//                   scale: [1.0, 0.95],
+//                   opacity: [0.9, 0.7],
+//                 }
+//               : !isConnected
+//               ? {
+//                   scale: [0.95, 1.02, 0.95],
+//                   opacity: [1, 0.85, 0],
+//                 }
+//               : {
+//                   rotate: 360,
+//                   opacity: 1,
+//                   scale: 1,
+//                 }
+//           }
+//           transition={
+//             isMuted
+//               ? {
+//                   duration: 4,
+//                   ease: "easeInOut",
+//                   repeat: Infinity,
+//                   repeatType: "mirror",
+//                 }
+//               : !isConnected
+//               ? {
+//                   duration: 8,
+//                   ease: "easeInOut",
+//                   repeat: Infinity,
+//                 }
+//               : {
+//                   rotate: {
+//                     repeat: Infinity,
+//                     duration: 12,
+//                     ease: "linear",
+//                   },
+//                 }
+//           }
 //           style={{
-//             background:
-//               "conic-gradient(from 0deg,#ff69b4,#8a8af1,#f5cba7,#ff69b4)",
+//             background: isMuted
+//               ? "conic-gradient(from 0deg, #b399ff, #d4c8ff, #b399ff)"
+//               : !isConnected
+//               ? "conic-gradient(from 0deg, #b3d8ff, #f3b7ff, #b3d8ff)"
+//               : isSpeaking
+//               ? "conic-gradient(from 0deg, #ff4fa3, #ff9ed8, #ff4fa3)"
+//               : "conic-gradient(from 0deg, #00c88f, #72f0c7, #00c88f)",
+//             filter: "blur(0.5px)",
+//             opacity: 1,
+//             boxShadow: !isConnected
+//               ? "0 0 25px rgba(255, 200, 255, 0.5)"
+//               : "0 0 15px rgba(255, 255, 255, 0.5)",
 //           }}
 //         />
-//         <div className="relative h-[280px] w-[280px] rounded-full overflow-hidden bg-pink-50 shadow-lg">
+
+//         <div
+//           className={`relative h-[280px] w-[280px] rounded-full overflow-hidden shadow-xl transition-all duration-700 ${
+//             isMuted ? "bg-gray-100" : "bg-pink-50"
+//           }`}
+//         >
 //           <Canvas camera={{ position: [0, 1.5, 3], fov: 20 }}>
 //             <directionalLight position={[2, 5, 3]} intensity={1.2} />
 //             <hemisphereLight
@@ -230,20 +446,39 @@
 //             <directionalLight position={[3, 5, 2]} intensity={1.2} />
 //             <OrbitControls enableZoom={false} />
 //             <NurseAvatar
-//               isSpeaking={isSpeaking}
+//               isSpeaking={isSpeaking && !isMuted}
 //               isConnected={isConnected}
 //               phoneme={phoneme}
+//               isMuted={isMuted}
 //             />
 //           </Canvas>
 //         </div>
 //       </div>
 
-//       {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
-
+//       {/* Assistant Status Indicator */}
 //       {status === "connected" && (
-//         <p className="text-green-600 mb-2">
-//           {isSpeaking ? "Cira is speaking..." : "Cira is listening..."}
-//         </p>
+//         <motion.div
+//           initial={{ opacity: 0 }}
+//           animate={{ opacity: 1 }}
+//           exit={{ opacity: 0 }}
+//           key={isMuted ? "paused" : isSpeaking ? "speaking" : "listening"}
+//           transition={{ duration: 0.5, ease: "easeInOut" }}
+//           className="mb-2"
+//         >
+//           {isMuted ? (
+//             <p className="text-gray-600 font-medium flex items-center justify-center gap-2 transition-colors duration-500">
+//               🔇 <span>Cira is paused</span>
+//             </p>
+//           ) : isSpeaking ? (
+//             <p className="text-pink-600 font-medium flex items-center justify-center gap-2 animate-pulse transition-colors duration-500">
+//               🗣️ <span>Cira is speaking...</span>
+//             </p>
+//           ) : (
+//             <p className="text-green-600 font-medium flex items-center justify-center gap-2 transition-colors duration-500">
+//               🎧 <span>Cira is listening...</span>
+//             </p>
+//           )}
+//         </motion.div>
 //       )}
 
 //       {showEndOfConversationPopup && (
@@ -252,13 +487,14 @@
 //         </div>
 //       )}
 
+//       {/* Controls */}
 //       {isConnected && !showEndOfConversationPopup && (
 //         <div className="flex gap-4 mt-2">
 //           <button
 //             onClick={handleEndConversation}
 //             className="bg-red-600 text-white p-3 rounded-full hover:bg-red-700 transition-colors"
 //           >
-//             <MicOff />
+//             <StopCircle />
 //           </button>
 //           <button
 //             onClick={toggleMute}
@@ -266,55 +502,59 @@
 //               isMuted ? "bg-red-500" : "bg-green-500"
 //             } text-white hover:opacity-90 transition-colors`}
 //           >
-//             {isMuted ? <VolumeX /> : <Volume2 />}
+//             {isMuted ? <Play /> : <Pause />}
 //           </button>
 //         </div>
 //       )}
 
-//       {!isConnected && !conversationEnded && (
-//         <button
-//           onClick={handleStartConversation}
-//           disabled={!hasPermission}
-//           className={`flex items-center gap-2 rounded-full px-4 py-3 text-white font-medium transition-all duration-300 ${
-//             hasPermission
-//               ? "bg-gradient-to-r from-pink-500 to-pink-600 hover:scale-105 hover:shadow-lg active:scale-95"
-//               : "bg-gray-400 cursor-not-allowed"
-//           }`}
-//         >
-//           <PhoneOff className="w-5 h-5" />
-//           <span className="text-lg">Start Conversation</span>
-//         </button>
-//       )}
+//       {/* Buttons */}
+//       <div className="flex flex-col items-center gap-3 mt-4">
+//         {!isConnected && hasAgreed && !conversationEnded && !isAutoStarting && (
+//           <button
+//             onClick={handleStartConversationDirectly}
+//             disabled={!hasPermission}
+//             className={`flex items-center gap-2 rounded-full px-4 py-3 text-white font-medium transition-all duration-300 ${
+//               hasPermission
+//                 ? "bg-gradient-to-r from-pink-500 to-pink-600 hover:scale-105 hover:shadow-lg active:scale-95"
+//                 : "bg-gray-400 cursor-not-allowed"
+//             }`}
+//           >
+//             <Rocket className="w-5 h-5" />
+//             <span className="text-lg">Start Conversation</span>
+//           </button>
+//         )}
 
-//       {showEndOfConversationPopup && (
 //         <button
-//           onClick={handleStartConversation}
-//           disabled={!hasPermission}
-//           className={`flex items-center gap-2 rounded-full px-4 py-3 text-white font-medium transition-all duration-300 ${
-//             hasPermission
-//               ? "bg-gradient-to-r from-green-500 to-green-600 hover:scale-105 hover:shadow-lg active:scale-95"
-//               : "bg-gray-400 cursor-not-allowed"
-//           }`}
+//           onClick={handleTestFlow}
+//           className="flex items-center gap-2 rounded-full px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95"
 //         >
-//           <PhoneOff className="w-5 h-5" />
-//           <span className="text-lg">Start New Conversation</span>
+//           <TestTube className="w-5 h-5" />
+//           <span className="text-lg">Test Modal Flow</span>
 //         </button>
-//       )}
+//       </div>
 
+//       {/* Modals */}
 //       <AnimatePresence>
-//        {/* STEP 1: Doctor Recommendation Pop-up */}
-// {showDoctorRecommendationPopUp && (
-//   <DoctorRecommendationPopUp
-//     condition={doctorRecommendationData?.condition || "your health concerns"}
-//     recommendedSpecialty={doctorRecommendationData?.specialty || "General Physician"}
-//     onFindDoctor={handleFindSpecialistDoctorOverride}
-//     onSkip={handleSkipDoctorRecommendationOverride}
-//   />
-// )}
+//         {!hasAgreed && (
+//           <TermsAndConditionsModal
+//             onAccept={() => {
+//               setHasAgreed(true);
+//               setIsAutoStarting(true);
+//             }}
+//           />
+//         )}
 
+//         {showDoctorRecommendationPopUp && (
+//           <DoctorRecommendationPopUp
+//             condition={doctorRecommendationData?.condition || "your health concerns"}
+//             recommendedSpecialty={doctorRecommendationData?.specialty || "General Physician"}
+//             onFindDoctor={handleFindSpecialistDoctorClick} // <-- uses click handler that ends session
+//             onSkip={handleSkipDoctorRecommendation}
+//           />
+//         )}
 
 //         {showFacialScanPopUp && (
-//           <FacialScanPopUp
+//           <FacialScanModal
 //             onStartScan={handleStartFacialScan}
 //             onSkipScan={handleSkipFacialScan}
 //             isScanning={isScanning}
@@ -325,7 +565,7 @@
 //           <VitalSignsDisplay
 //             vitals={vitalsData}
 //             onClose={handleContinueFromVitals}
-//             onStartConversation={handleContinueFromVitals}
+//              onStartConversation={handleContinueFromVitals}
 //           />
 //         )}
 
@@ -368,24 +608,142 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useConversation } from "@11labs/react";
-import { MicOff, PhoneOff, Volume2, VolumeX, TestTube } from "lucide-react";
+import {
+  TestTube,
+  StopCircle,
+  Play,
+  Pause,
+  Rocket,
+  X,
+  Pill,
+  HeartPulse,
+} from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
-// import NurseAvatar from "./nurseAvatar/NurseAvatar";
-import AnimatedOrb from "./nurseAvatar/NurseAvatar";
+import NurseAvatar from "./nurseAvatar/NurseAvatar";
 
-// Import modals and pop-ups
+// Import modals
 import VitalSignsDisplay from "./modal/VitalSignsDisplay";
 import DoctorRecommendationModal from "./modal/DoctorRecommendationModal";
 import PaymentModal from "./modal/PaymentModal";
 import AppointmentModal from "./modal/AppointmentModal";
 import BookingConfirmationModal from "./modal/BookingConfirmationModal";
 import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
-import { useModalLogic } from "./modal/modalHooks";
 import FacialScanModal from "./modal/FacialScanModal";
 import TermsAndConditionsModal from "./modal/TermsAndConditionsModal";
 
+import { useModalLogic } from "./modal/modalHooks";
+
+/* ─────────────────────────────
+   Conversation Summary Modal
+   ───────────────────────────── */
+function ConversationSummaryModal({ open, onClose, summary }) {
+  if (!open) return null;
+
+  const {
+    medication = [],
+    selfCareTips = [],
+    otherAdvice = [],
+  } = summary || {};
+
+  const hasAnything =
+    medication.length || selfCareTips.length || otherAdvice.length;
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl p-6 md:p-8 text-left"
+        initial={{ scale: 0.9, y: 20, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.9, y: 20, opacity: 0 }}
+      >
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-full p-1.5 hover:bg-gray-100"
+        >
+          <X className="w-5 h-5 text-gray-500" />
+        </button>
+
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
+          Your consultation summary
+        </h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Here’s a quick recap of the key points from your conversation with
+          Cira. This is for information only and is not a medical diagnosis.
+        </p>
+
+        {!hasAnything && (
+          <p className="text-sm text-gray-600">
+            No medication or self-care advice could be extracted from this
+            consultation yet.
+          </p>
+        )}
+
+        {medication.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Pill className="w-4 h-4 text-pink-500" />
+              <h3 className="font-semibold text-gray-900 text-sm md:text-base">
+                Medication mentioned
+              </h3>
+            </div>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+              {medication.map((line, idx) => (
+                <li key={`med-${idx}`}>{line}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {selfCareTips.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-1.5">
+              <HeartPulse className="w-4 h-4 text-emerald-500" />
+              <h3 className="font-semibold text-gray-900 text-sm md:text-base">
+                Self-care & lifestyle tips
+              </h3>
+            </div>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+              {selfCareTips.map((line, idx) => (
+                <li key={`self-${idx}`}>{line}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {otherAdvice.length > 0 && (
+          <div className="mb-2">
+            <h3 className="font-semibold text-gray-900 text-sm md:text-base mb-1.5">
+              Other important advice
+            </h3>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+              {otherAdvice.map((line, idx) => (
+                <li key={`other-${idx}`}>{line}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <p className="text-[11px] text-gray-400 mt-3">
+          This summary is informational only and should not replace professional
+          medical advice. Always follow instructions from your doctor or
+          pharmacist.
+        </p>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────
+   Main component
+   ───────────────────────────── */
 export default function CiraAssistant() {
   const [hasAgreed, setHasAgreed] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
@@ -396,8 +754,14 @@ export default function CiraAssistant() {
   const [conversationEnded, setConversationEnded] = useState(false);
   const [showEndOfConversationPopup, setShowEndOfConversationPopup] =
     useState(false);
+  const [isAutoStarting, setIsAutoStarting] = useState(false);
 
   const lastSpokenText = useRef("");
+  const conversationLogRef = useRef([]);
+
+  // 🔹 Summary modal state
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [conversationSummary, setConversationSummary] = useState(null);
 
   const {
     showDoctorRecommendationPopUp,
@@ -429,7 +793,188 @@ export default function CiraAssistant() {
     isAnyModalOpen,
   } = useModalLogic();
 
-  // 🧠 Conversation setup
+  /* ─────────────────────────────
+     Helper: build summary from log
+     ───────────────────────────── */
+  // const buildSummaryFromConversation = (log) => {
+  //   const assistantLines = log
+  //     .filter((e) => e.role === "assistant" || e.rawRole === "ai")
+  //     .map((e) => e.message.trim())
+  //     .filter(Boolean);
+
+  //   const containsKeyword = (text, keywords) =>
+  //     keywords.some((k) => text.toLowerCase().includes(k));
+
+  //   const medicationKeywords = [
+  //     "tablet",
+  //     "medicine",
+  //     "medication",
+  //     "mg",
+  //     "dose",
+  //     "pill",
+  //     "capsule",
+  //     "syrup",
+  //     "take this",
+  //     "take one",
+  //     "take two",
+  //   ];
+
+  //   const selfCareKeywords = [
+  //     "rest",
+  //     "sleep",
+  //     "hydrated",
+  //     "drink plenty of water",
+  //     "drink water",
+  //     "fluids",
+  //     "exercise",
+  //     "light exercise",
+  //     "gentle exercise",
+  //     "healthy diet",
+  //     "avoid",
+  //     "self care",
+  //     "self-care",
+  //     "home care",
+  //     "at home you can",
+  //   ];
+
+  //   const medication = [];
+  //   const selfCareTips = [];
+  //   const otherAdvice = [];
+
+  //   assistantLines.forEach((line) => {
+  //     if (containsKeyword(line, medicationKeywords)) {
+  //       medication.push(line);
+  //     } else if (containsKeyword(line, selfCareKeywords)) {
+  //       selfCareTips.push(line);
+  //     } else {
+  //       otherAdvice.push(line);
+  //     }
+  //   });
+
+  //   return {
+  //     medication: [...new Set(medication)],
+  //     selfCareTips: [...new Set(selfCareTips)],
+  //     otherAdvice: [...new Set(otherAdvice)],
+  //   };
+  // };
+
+  // 🧠 Setup conversation with ElevenLabs
+  // Turn a full sentence into a short phrase
+const toShortPhrase = (line) => {
+  if (!line) return "";
+  const firstSentence = line.split(/[.?!;]/)[0].trim();
+  const phrase = firstSentence || line.trim();
+  return phrase.length > 120 ? phrase.slice(0, 117).trim() + "…" : phrase;
+};
+
+const buildSummaryFromConversation = (log) => {
+  const userLines = log
+    .filter((e) => e.role === "user")
+    .map((e) => e.message.trim())
+    .filter(Boolean);
+
+  const assistantLines = log
+    .filter((e) => e.role === "assistant")
+    .map((e) => e.message.trim())
+    .filter(Boolean);
+
+  // Very simple keyword buckets – you can tune these
+  const symptomKeywords = [
+    "pain",
+    "ache",
+    "fever",
+    "cough",
+    "vomit",
+    "nausea",
+    "headache",
+    "dizzy",
+    "fatigue",
+    "tired",
+    "short of breath",
+    "chest",
+    "throat",
+    "stomach",
+  ];
+
+  const medicationKeywords = [
+    "tablet",
+    "medicine",
+    "medication",
+    "pill",
+    "capsule",
+    "mg",
+    "take one",
+    "take two",
+    "take this",
+    "antibiotic",
+    "paracetamol",
+    "ibuprofen",
+  ];
+
+  const selfCareKeywords = [
+    "rest",
+    "sleep",
+    "hydrated",
+    "drink water",
+    "plenty of fluids",
+    "fluids",
+    "exercise",
+    "light exercise",
+    "healthy diet",
+    "avoid",
+    "self-care",
+    "home care",
+    "at home you can",
+  ];
+
+  const containsAny = (text, keywords) =>
+    keywords.some((k) => text.toLowerCase().includes(k));
+
+  // ---- Symptoms conclusion (from user lines) ----
+  const symptomSentences = userLines
+    .filter((line) => containsAny(line, symptomKeywords))
+    .map(toShortPhrase);
+
+  const symptoms =
+    symptomSentences.length > 0
+      ? [
+          `Main symptoms discussed: ${symptomSentences
+            .slice(0, 3)
+            .join("; ")}.`,
+        ]
+      : [];
+
+  // ---- Medication conclusion (from assistant lines) ----
+  const medicationSentences = assistantLines
+    .filter((line) => containsAny(line, medicationKeywords))
+    .map(toShortPhrase);
+
+  const medications =
+    medicationSentences.length > 0
+      ? [
+          `Medication advice: ${medicationSentences
+            .slice(0, 3)
+            .join("; ")}.`,
+        ]
+      : [];
+
+  // ---- Self-care conclusion (from assistant lines) ----
+  const selfCareSentences = assistantLines
+    .filter((line) => containsAny(line, selfCareKeywords))
+    .map(toShortPhrase);
+
+  const selfCareTips =
+    selfCareSentences.length > 0
+      ? [
+          `Self-care tips: ${selfCareSentences
+            .slice(0, 3)
+            .join("; ")}.`,
+        ]
+      : [];
+
+  return { symptoms, medications, selfCareTips };
+};
+
   const conversation = useConversation({
     clientTools: {
       openModal: async (params) => {
@@ -440,69 +985,115 @@ export default function CiraAssistant() {
         } = params || {};
 
         if (showDoctorRecommendationPopup) {
-          // 🩺 End conversation after showing popup (3s delay)
           triggerDoctorRecommendationPopUp(condition, specialty);
           setShowEndOfConversationPopup(true);
-
-         
-        
-            await conversation.endSession();
-            setIsConnected(false);
-            setConversationEnded(false);
-            setShowEndOfConversationPopup(false);
-          
-
           return { success: true, opened: "doctor_popup" };
         }
+
         return { success: true, opened: null };
       },
     },
+
+    // 🔍 Logging all messages (user + assistant)
+    onMessage: (payload) => {
+      let text = "";
+      let role = "unknown";
+
+      if (typeof payload === "string") {
+        text = payload;
+      } else if (payload && typeof payload === "object") {
+        text =
+          payload.message ||
+          payload.text ||
+          payload.formatted?.text ||
+          payload.formatted?.transcript ||
+          "";
+        role =
+          payload.source ||
+          payload.role ||
+          payload.author ||
+          "unknown";
+      }
+
+      if (!text || !text.trim()) return;
+
+      const normalizedRole =
+        role === "ai" || role === "assistant"
+          ? "assistant"
+          : role === "user"
+          ? "user"
+          : "unknown";
+
+      const logEntry = {
+        role: normalizedRole,
+        rawRole: role,
+        message: text.trim(),
+        timestamp: new Date().toISOString(),
+      };
+
+      conversationLogRef.current.push(logEntry);
+
+      if (normalizedRole === "user") {
+        console.log("👤 User said:", text);
+      } else if (normalizedRole === "assistant") {
+        console.log("🤖 Cira replied:", text);
+      } else {
+        console.log("💬 Message:", logEntry);
+      }
+
+      console.log("🧾 Conversation log so far:", conversationLogRef.current);
+    },
+
     onConnect: () => {
       console.log("✅ Connected");
       setConversationEnded(false);
       setShowEndOfConversationPopup(false);
       lastSpokenText.current = "";
+      conversationLogRef.current = [];
+      console.log("🧾 Conversation log reset (new session started).");
     },
+
     onDisconnect: () => {
       console.log("🔌 Disconnected");
       setIsConnected(false);
       setConversationEnded(true);
+
+      console.log(
+        "🧾 Final conversation log:",
+        conversationLogRef.current
+      );
+
+      // 🔹 Build and show summary when consultation ends
+      const summary = buildSummaryFromConversation(
+        conversationLogRef.current
+      );
+      setConversationSummary(summary);
+      setShowSummaryModal(true);
     },
+
     onSpeakStart: (data) => {
-      if (data?.text) {
-        lastSpokenText.current = data.text;
-        console.log("🗣 Speaking:", data.text);
-      }
+      if (data?.text) lastSpokenText.current = data.text;
     },
     onSpeakEnd: async () => {
-      console.log("🔇 Speaking ended. Last phrase:", lastSpokenText.current);
-
       const phrase = lastSpokenText.current.toLowerCase();
       if (
-        phrase.includes("please book an appointment with a doctor") ||
-        phrase.includes("book an appointment with a doctor") ||
+        phrase.includes("book an appointment") ||
         phrase.includes("see a doctor") ||
         phrase.includes("visit a doctor")
       ) {
-        console.log(
-          "🩺 Auto-triggering Doctor Recommendation Popup (fallback triggered)"
+        triggerDoctorRecommendationPopUp(
+          "your health concerns",
+          "General Physician"
         );
-        triggerDoctorRecommendationPopUp("your health concerns", "General Physician");
         setShowEndOfConversationPopup(true);
-      
-          await conversation.endSession();
-          setIsConnected(false);
-          setConversationEnded(false);
-          setShowEndOfConversationPopup(false);
-       
       }
     },
     onPhoneme: (p) => {
       setPhoneme(p);
       setTimeout(() => setPhoneme(null), 80);
     },
-    onError: (error) => {
-      console.error("Conversation error:", error);
+    onError: (err) => {
+      console.error("Conversation error:", err);
       setErrorMessage("Conversation error occurred");
     },
   });
@@ -524,7 +1115,8 @@ export default function CiraAssistant() {
   // 🚀 Start conversation
   const handleStartConversationDirectly = async () => {
     try {
-      console.log("Starting conversation...");
+      setIsMuted(false);
+      console.log("🎬 Starting conversation...");
       await conversation.startSession({
         agentId: import.meta.env.VITE_ELEVENLABS_AGENT_ID,
       });
@@ -532,56 +1124,82 @@ export default function CiraAssistant() {
       setIsConnected(true);
       setShowEndOfConversationPopup(false);
     } catch (err) {
-      console.error("Failed to start conversation:", err);
+      console.error("❌ Failed to start conversation:", err);
       setErrorMessage("Failed to start conversation");
-    }
-  };
-
-  const handleStartConversation = async () => {
-    resetModalStates();
-    setShowEndOfConversationPopup(false);
-    await handleStartConversationDirectly();
-  };
-
-  // 🛑 End conversation manually
-  const handleEndConversation = async () => {
-    try {
-      console.log("Ending conversation...");
-      await conversation.endSession();
-      setIsConnected(false);
-      setConversationEnded(false);
-      setShowEndOfConversationPopup(false);
-    } catch (err) {
-      console.error("Failed to end conversation:", err);
-      setErrorMessage("Failed to end conversation");
     }
   };
 
   // 🔇 Mute toggle
   const toggleMute = async () => {
     try {
-      await conversation.setVolume({ volume: isMuted ? 1 : 0 });
-      setIsMuted(!isMuted);
+      const newMuteState = !isMuted;
+
+      if (newMuteState) {
+        await conversation.setVolume({ volume: 0 });
+        if (conversation?.stopListening) await conversation.stopListening();
+        console.log("🔇 Conversation muted (paused)");
+      } else {
+        await conversation.setVolume({ volume: 1 });
+        if (conversation?.startListening) await conversation.startListening();
+        console.log("🔊 Conversation resumed");
+      }
+
+      setIsMuted(newMuteState);
     } catch (err) {
-      console.error("Failed to change volume:", err);
+      console.error("Failed to toggle mute:", err);
     }
   };
 
-  const handleFindSpecialistDoctorOverride = () => {
-    setShowEndOfConversationPopup(false);
-    handleFindSpecialistDoctor();
+  // 🛑 End conversation manually
+  const handleEndConversation = async () => {
+    try {
+      await conversation.endSession();
+      setIsConnected(false);
+      // onDisconnect will build + show summary
+    } catch (err) {
+      console.error("❌ Failed to end conversation:", err);
+      setErrorMessage("Failed to end conversation");
+    }
   };
 
-  const handleSkipDoctorRecommendationOverride = () => {
-    setShowEndOfConversationPopup(false);
-    handleSkipDoctorRecommendation();
+  // IMPORTANT: Called when user clicks "Find Specialist Doctor"
+  const handleFindSpecialistDoctorClick = async () => {
+    try {
+      if (conversation?.endSession && isConnected) {
+        try {
+          await conversation.endSession();
+          setIsConnected(false);
+        } catch (err) {
+          console.warn(
+            "Failed to end session before opening doctor flow:",
+            err
+          );
+        }
+      }
+    } finally {
+      try {
+        handleFindSpecialistDoctor();
+      } catch (err) {
+        console.error("Failed to trigger doctor flow:", err);
+      }
+    }
   };
+
+  // Auto-start after terms
+  useEffect(() => {
+    if (hasAgreed && isAutoStarting) {
+      const start = async () => {
+        await handleStartConversationDirectly();
+        setIsAutoStarting(false);
+      };
+      start();
+    }
+  }, [hasAgreed, isAutoStarting]);
 
   // 🧪 Test modal manually
   const handleTestFlow = () => {
-    console.log("🧪 Testing modal flow...");
     resetModalStates();
-    triggerDoctorRecommendationPopUp("test health condition", "Test Specialist");
+    triggerDoctorRecommendationPopUp("test condition", "Test Specialist");
     setShowEndOfConversationPopup(true);
 
     setTimeout(() => {
@@ -589,6 +1207,13 @@ export default function CiraAssistant() {
       setConversationEnded(false);
       setShowEndOfConversationPopup(false);
     }, 3000);
+  };
+
+  // Manual button to open summary again
+  const handleOpenSummaryManually = () => {
+    const summary = buildSummaryFromConversation(conversationLogRef.current);
+    setConversationSummary(summary);
+    setShowSummaryModal(true);
   };
 
   return (
@@ -599,29 +1224,56 @@ export default function CiraAssistant() {
       }}
       className="flex flex-col items-center justify-center min-h-screen text-center p-6 relative overflow-x-hidden"
     >
-      <AnimatePresence>
-        {isAnyModalOpen() && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40"
-          />
-        )}
-      </AnimatePresence>
-
       {/* Avatar */}
       <div className="relative h-[290px] w-[290px] mb-6 flex items-center justify-center">
         <motion.div
           className="absolute inset-0 rounded-full p-[4px]"
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 12, ease: "linear" }}
+          animate={
+            isMuted
+              ? { scale: [1.0, 0.95], opacity: [0.9, 0.7] }
+              : !isConnected
+              ? { scale: [0.95, 1.02, 0.95], opacity: [1, 0.85, 0] }
+              : { rotate: 360, opacity: 1, scale: 1 }
+          }
+          transition={
+            isMuted
+              ? {
+                  duration: 4,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                  repeatType: "mirror",
+                }
+              : !isConnected
+              ? { duration: 8, ease: "easeInOut", repeat: Infinity }
+              : {
+                  rotate: {
+                    repeat: Infinity,
+                    duration: 12,
+                    ease: "linear",
+                  },
+                }
+          }
           style={{
-            background:
-              "conic-gradient(from 0deg,#ff69b4,#8a8af1,#f5cba7,#ff69b4)",
+            background: isMuted
+              ? "conic-gradient(from 0deg, #b399ff, #d4c8ff, #b399ff)"
+              : !isConnected
+              ? "conic-gradient(from 0deg, #b3d8ff, #f3b7ff, #b3d8ff)"
+              : isSpeaking
+              ? "conic-gradient(from 0deg, #ff4fa3, #ff9ed8, #ff4fa3)"
+              : "conic-gradient(from 0deg, #00c88f, #72f0c7, #00c88f)",
+            filter: "blur(0.5px)",
+            opacity: 1,
+            boxShadow: !isConnected
+              ? "0 0 25px rgba(255, 200, 255, 0.5)"
+              : "0 0 15px rgba(255, 255, 255, 0.5)",
           }}
         />
-        <div className="relative h-[280px] w-[280px] rounded-full overflow-hidden bg-pink-50 shadow-lg">
+
+        <div
+          className={`relative h-[280px] w-[280px] rounded-full overflow-hidden shadow-xl transition-all duration-700 ${
+            isMuted ? "bg-gray-100" : "bg-pink-50"
+          }`}
+        >
           <Canvas camera={{ position: [0, 1.5, 3], fov: 20 }}>
             <directionalLight position={[2, 5, 3]} intensity={1.2} />
             <hemisphereLight
@@ -631,17 +1283,40 @@ export default function CiraAssistant() {
             />
             <directionalLight position={[3, 5, 2]} intensity={1.2} />
             <OrbitControls enableZoom={false} />
-           <AnimatedOrb />
+            <NurseAvatar
+              isSpeaking={isSpeaking && !isMuted}
+              isConnected={isConnected}
+              phoneme={phoneme}
+              isMuted={isMuted}
+            />
           </Canvas>
         </div>
       </div>
 
-      {/* Status */}
-      {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
+      {/* Assistant Status Indicator */}
       {status === "connected" && (
-        <p className="text-green-600 mb-2">
-          {isSpeaking ? "Cira is speaking..." : "Cira is listening..."}
-        </p>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          key={isMuted ? "paused" : isSpeaking ? "speaking" : "listening"}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="mb-2"
+        >
+          {isMuted ? (
+            <p className="text-gray-600 font-medium flex items-center justify-center gap-2 transition-colors duration-500">
+              🔇 <span>Cira is paused</span>
+            </p>
+          ) : isSpeaking ? (
+            <p className="text-pink-600 font-medium flex items-center justify-center gap-2 animate-pulse transition-colors duration-500">
+              🗣️ <span>Cira is speaking...</span>
+            </p>
+          ) : (
+            <p className="text-green-600 font-medium flex items-center justify-center gap-2 transition-colors duration-500">
+              🎧 <span>Cira is listening...</span>
+            </p>
+          )}
+        </motion.div>
       )}
 
       {showEndOfConversationPopup && (
@@ -657,7 +1332,7 @@ export default function CiraAssistant() {
             onClick={handleEndConversation}
             className="bg-red-600 text-white p-3 rounded-full hover:bg-red-700 transition-colors"
           >
-            <MicOff />
+            <StopCircle />
           </button>
           <button
             onClick={toggleMute}
@@ -665,29 +1340,29 @@ export default function CiraAssistant() {
               isMuted ? "bg-red-500" : "bg-green-500"
             } text-white hover:opacity-90 transition-colors`}
           >
-            {isMuted ? <VolumeX /> : <Volume2 />}
+            {isMuted ? <Play /> : <Pause />}
           </button>
         </div>
       )}
 
       {/* Buttons */}
-      <div className="flex flex-col gap-3 mt-4">
-        {!isConnected && (
-          <button
-            onClick={handleStartConversation}
-            disabled={!hasPermission}
-            className={`flex items-center gap-2 rounded-full px-4 py-3 text-white font-medium transition-all duration-300 ${
-              hasPermission
-                ? "bg-gradient-to-r from-pink-500 to-pink-600 hover:scale-105 hover:shadow-lg active:scale-95"
-                : "bg-gray-400 cursor-not-allowed"
-            }`}
-          >
-            <PhoneOff className="w-5 h-5" />
-            <span className="text-lg">
-              {conversationEnded ? "Start New Conversation" : "Start Conversation"}
-            </span>
-          </button>
-        )}
+      <div className="flex flex-col items-center gap-3 mt-4">
+        {!isConnected &&
+          hasAgreed &&
+          !isAutoStarting && (
+            <button
+              onClick={handleStartConversationDirectly}
+              disabled={!hasPermission}
+              className={`flex items-center gap-2 rounded-full px-4 py-3 text-white font-medium transition-all duration-300 ${
+                hasPermission
+                  ? "bg-gradient-to-r from-pink-500 to-pink-600 hover:scale-105 hover:shadow-lg active:scale-95"
+                  : "bg-gray-400 cursor-not-allowed"
+              }`}
+            >
+              <Rocket className="w-5 h-5" />
+              <span className="text-lg">Start Conversation</span>
+            </button>
+          )}
 
         <button
           onClick={handleTestFlow}
@@ -696,20 +1371,40 @@ export default function CiraAssistant() {
           <TestTube className="w-5 h-5" />
           <span className="text-lg">Test Modal Flow</span>
         </button>
+
+        {/* Manual summary button (optional) */}
+        {!isConnected &&
+          conversationLogRef.current.length > 0 && (
+            <button
+              onClick={handleOpenSummaryManually}
+              className="text-sm mt-1 underline text-pink-600 hover:text-pink-700"
+            >
+              View consultation summary
+            </button>
+          )}
       </div>
 
       {/* Modals */}
-      {/* 🪟 Transparent Terms Modal appears on top */}
       <AnimatePresence>
         {!hasAgreed && (
-          <TermsAndConditionsModal onAccept={() => setHasAgreed(true)} />
+          <TermsAndConditionsModal
+            onAccept={() => {
+              setHasAgreed(true);
+              setIsAutoStarting(true);
+            }}
+          />
         )}
+
         {showDoctorRecommendationPopUp && (
           <DoctorRecommendationPopUp
-            condition={doctorRecommendationData?.condition || "your health concerns"}
-            recommendedSpecialty={doctorRecommendationData?.specialty || "General Physician"}
-            onFindDoctor={handleFindSpecialistDoctorOverride}
-            onSkip={handleSkipDoctorRecommendationOverride}
+            condition={
+              doctorRecommendationData?.condition || "your health concerns"
+            }
+            recommendedSpecialty={
+              doctorRecommendationData?.specialty || "General Physician"
+            }
+            onFindDoctor={handleFindSpecialistDoctorClick}
+            onSkip={handleSkipDoctorRecommendation}
           />
         )}
 
@@ -758,6 +1453,15 @@ export default function CiraAssistant() {
           <BookingConfirmationModal
             bookingDetails={bookingDetails}
             onClose={handleConfirmationClose}
+          />
+        )}
+
+        {/* NEW: Conversation Summary Modal */}
+        {showSummaryModal && (
+          <ConversationSummaryModal
+            open={showSummaryModal}
+            summary={conversationSummary}
+            onClose={() => setShowSummaryModal(false)}
           />
         )}
       </AnimatePresence>

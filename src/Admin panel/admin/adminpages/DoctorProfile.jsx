@@ -204,7 +204,7 @@ const DoctorProfile = () => {
                         <ArrowLeft className="w-5 h-5 text-gray-600" />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">{doctor.name}</h1>
+                        <h1 className="md:text-3xl text-xl font-bold text-gray-900">{doctor.name}</h1>
                         <p className="text-gray-600">{doctor.specialty} • {doctor.experience} experience</p>
                     </div>
                 </div>

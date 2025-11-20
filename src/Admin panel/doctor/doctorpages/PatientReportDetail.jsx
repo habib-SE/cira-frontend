@@ -577,11 +577,11 @@ AI Confidence: ${report.confidence}%`;
         )}
 
         {/* Footer Actions */}
-        <div className="flex space-x-3 pt-6 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
           <button
             onClick={handleDownloadReport}
             disabled={isDownloading}
-            className="flex-1 flex items-center justify-center space-x-2 bg-pink-400 text-white py-3 px-6 rounded-xl hover:bg-pink-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 w-full flex items-center justify-center space-x-2 bg-pink-400 text-white py-3 px-6 rounded-xl hover:bg-pink-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
             {isDownloading ? (
               <>
@@ -590,7 +590,7 @@ AI Confidence: ${report.confidence}%`;
               </>
             ) : (
               <>
-                <Download className="w-5 h-5" />
+                <Download className="w-5 h-5 flex-shrink-0" />
                 <span>Download Report</span>
               </>
             )}
@@ -599,7 +599,7 @@ AI Confidence: ${report.confidence}%`;
             <button
               onClick={handleMarkAsReviewed}
               disabled={isMarkingReviewed}
-              className="flex-1 flex items-center justify-center space-x-2 bg-pink-600 text-white py-3 px-6 rounded-xl hover:bg-pink-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 w-full flex items-center justify-center space-x-2 bg-pink-600 text-white py-3 px-6 rounded-xl hover:bg-pink-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               {isMarkingReviewed ? (
                 <>
@@ -608,7 +608,7 @@ AI Confidence: ${report.confidence}%`;
                 </>
               ) : (
                 <>
-                  <CheckCircle className="w-5 h-5" />
+                  <CheckCircle className="w-5 h-5 flex-shrink-0" />
                   <span>Mark as Reviewed</span>
                 </>
               )}

@@ -5,6 +5,114 @@ import Card from '../admincomponents/Card';
 import Breadcrumbs from '../../../components/shared/Breadcrumbs';
 import MetaChips from '../../../components/shared/MetaChips';
 
+// Default dummy pending doctors data
+const defaultPendingDoctors = [
+            {
+                id: 1,
+                name: 'Dr. Michael Chen',
+                specialty: 'Neurology',
+                experience: '12 years',
+                email: 'michael.chen@email.com',
+                phone: '+1 (555) 123-4567',
+                status: 'Pending',
+                avatar: 'MC',
+                documents: ['License', 'Certification'],
+                submittedDate: '2024-01-10',
+                verificationStatus: 'Under Review'
+            },
+            {
+                id: 2,
+                name: 'Dr. Lisa Wang',
+                specialty: 'Pediatrics',
+                experience: '5 years',
+                email: 'lisa.wang@email.com',
+                phone: '+1 (555) 234-5678',
+                status: 'Pending',
+                avatar: 'LW',
+                documents: ['License', 'Certification'],
+                submittedDate: '2024-01-12',
+                verificationStatus: 'Under Review'
+            },
+            {
+                id: 3,
+                name: 'Dr. Robert Martinez',
+                specialty: 'Dermatology',
+                experience: '7 years',
+                email: 'robert.martinez@email.com',
+                phone: '+1 (555) 345-6789',
+                status: 'Pending',
+                avatar: 'RM',
+                documents: ['License'],
+                submittedDate: '2024-01-15',
+                verificationStatus: 'Under Review'
+            },
+            {
+                id: 4,
+                name: 'Dr. Jennifer Thompson',
+                specialty: 'Cardiology',
+                experience: '10 years',
+                email: 'jennifer.thompson@email.com',
+                phone: '+1 (555) 456-7890',
+                status: 'Pending',
+                avatar: 'JT',
+                documents: ['License', 'Certification', 'Board Certification'],
+                submittedDate: '2024-01-16',
+                verificationStatus: 'Under Review'
+            },
+            {
+                id: 5,
+                name: 'Dr. Christopher Lee',
+                specialty: 'Orthopedics',
+                experience: '14 years',
+                email: 'christopher.lee@email.com',
+                phone: '+1 (555) 567-8901',
+                status: 'Pending',
+                avatar: 'CL',
+                documents: ['License', 'Certification'],
+                submittedDate: '2024-01-17',
+                verificationStatus: 'Under Review'
+            },
+            {
+                id: 6,
+                name: 'Dr. Amanda Foster',
+                specialty: 'Pediatrics',
+                experience: '6 years',
+                email: 'amanda.foster@email.com',
+                phone: '+1 (555) 678-9012',
+                status: 'Pending',
+                avatar: 'AF',
+                documents: ['License', 'Certification'],
+                submittedDate: '2024-01-18',
+                verificationStatus: 'Under Review'
+            },
+            {
+                id: 7,
+                name: 'Dr. Daniel Brown',
+                specialty: 'Neurology',
+                experience: '11 years',
+                email: 'daniel.brown@email.com',
+                phone: '+1 (555) 789-0123',
+                status: 'Pending',
+                avatar: 'DB',
+                documents: ['License', 'Certification', 'Fellowship Certificate'],
+                submittedDate: '2024-01-19',
+                verificationStatus: 'Under Review'
+            },
+            {
+                id: 8,
+                name: 'Dr. Sophia Anderson',
+                specialty: 'Dermatology',
+                experience: '9 years',
+                email: 'sophia.anderson@email.com',
+                phone: '+1 (555) 890-1234',
+                status: 'Pending',
+                avatar: 'SA',
+                documents: ['License', 'Certification'],
+                submittedDate: '2024-01-20',
+                verificationStatus: 'Under Review'
+            }
+        ];
+
 const Approvals = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -12,48 +120,38 @@ const Approvals = () => {
     const [filterSpecialty, setFilterSpecialty] = useState('');
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
-    // Sample pending doctors data
-    const [pendingDoctors, setPendingDoctors] = useState([
-        {
-            id: 1,
-            name: 'Dr. Michael Chen',
-            specialty: 'Neurology',
-            experience: '12 years',
-            email: 'michael.chen@email.com',
-            phone: '+1 (555) 123-4567',
-            status: 'Pending',
-            avatar: 'MC',
-            documents: ['License', 'Certification'],
-            submittedDate: '2024-01-10',
-            verificationStatus: 'Under Review'
-        },
-        {
-            id: 2,
-            name: 'Dr. Lisa Wang',
-            specialty: 'Pediatrics',
-            experience: '5 years',
-            email: 'lisa.wang@email.com',
-            phone: '+1 (555) 234-5678',
-            status: 'Pending',
-            avatar: 'LW',
-            documents: ['License', 'Certification'],
-            submittedDate: '2024-01-12',
-            verificationStatus: 'Under Review'
-        },
-        {
-            id: 3,
-            name: 'Dr. Robert Martinez',
-            specialty: 'Dermatology',
-            experience: '7 years',
-            email: 'robert.martinez@email.com',
-            phone: '+1 (555) 345-6789',
-            status: 'Pending',
-            avatar: 'RM',
-            documents: ['License'],
-            submittedDate: '2024-01-15',
-            verificationStatus: 'Under Review'
+    const [pendingDoctors, setPendingDoctors] = useState(() => {
+        const stored = localStorage.getItem('adminPendingDoctors');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                // If stored data is empty, use default data
+                if (Array.isArray(parsed) && parsed.length === 0) {
+                    return defaultPendingDoctors;
+                }
+                return parsed;
+            } catch {
+                return defaultPendingDoctors;
+            }
         }
-    ]);
+        return defaultPendingDoctors;
+    });
+
+    // Initialize with dummy data if localStorage is empty (first load)
+    useEffect(() => {
+        const stored = localStorage.getItem('adminPendingDoctors');
+        if (!stored || stored === '[]') {
+            localStorage.setItem('adminPendingDoctors', JSON.stringify(defaultPendingDoctors));
+            setPendingDoctors(defaultPendingDoctors);
+        }
+    }, []);
+
+    // Save to localStorage when state changes
+    useEffect(() => {
+        if (pendingDoctors.length > 0) {
+            localStorage.setItem('adminPendingDoctors', JSON.stringify(pendingDoctors));
+        }
+    }, [pendingDoctors]);
 
     const filteredDoctors = pendingDoctors.filter(doctor => {
         const matchesSearch = !searchTerm || 
@@ -76,9 +174,30 @@ const Approvals = () => {
     };
 
     const handleReject = (doctorId) => {
-        setPendingDoctors(prev => prev.filter(d => d.id !== doctorId));
-        setToast({ show: true, message: 'Doctor rejected', type: 'error' });
-        setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
+        const doctor = pendingDoctors.find(d => d.id === doctorId);
+        if (doctor) {
+            // Remove from pending
+            setPendingDoctors(prev => prev.filter(d => d.id !== doctorId));
+            
+            // Add to rejected doctors in localStorage (for Doctors page)
+            const rejectedDoctors = JSON.parse(localStorage.getItem('rejectedDoctors') || '[]');
+            const rejectedDoctor = {
+                ...doctor,
+                status: 'Rejected',
+                verificationStatus: 'Failed',
+                rejectedDate: new Date().toISOString().split('T')[0],
+                patients: 0,
+                rating: 0
+            };
+            rejectedDoctors.push(rejectedDoctor);
+            localStorage.setItem('rejectedDoctors', JSON.stringify(rejectedDoctors));
+            
+            // Dispatch custom event to notify Doctors page
+            window.dispatchEvent(new Event('doctorsUpdated'));
+            
+            setToast({ show: true, message: 'Doctor rejected', type: 'error' });
+            setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
+        }
     };
 
     const handleView = (doctor) => {

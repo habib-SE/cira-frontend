@@ -19,6 +19,8 @@ const FormTemplate = ({
   onSave,
   onSaveAndClose,
   initialData = {},
+  data,
+  onChange,
   validationErrors = {},
   isSubmitting = false,
   isDraft = false,
@@ -32,43 +34,65 @@ const FormTemplate = ({
   const [touchedFields, setTouchedFields] = useState({});
   const [shouldValidate, setShouldValidate] = useState(false);
 
-  // Auto-save functionality
+  // Sync internal state with parent data when it changes
   useEffect(() => {
-    if (hasUnsavedChanges && !isSubmitting) {
-      const autoSaveTimer = setTimeout(() => {
-        setIsAutoSaving(true);
-        if (onSave) {
-          onSave(formData);
-        }
-        setTimeout(() => {
-          setIsAutoSaving(false);
-          setHasUnsavedChanges(false);
-        }, 1000);
-      }, 2000);
-
-      return () => clearTimeout(autoSaveTimer);
+    if (data && Object.keys(data).length > 0) {
+      setFormData(data);
     }
-  }, [formData, hasUnsavedChanges, isSubmitting, onSave]);
+  }, [data]);
+
+  // Sync with initialData when it changes (for edit mode)
+  useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
+
+  // Auto-save functionality - Disabled for better UX
+  // Save only happens on final submit
+  // useEffect(() => {
+  //   if (hasUnsavedChanges && !isSubmitting) {
+  //     const autoSaveTimer = setTimeout(() => {
+  //       setIsAutoSaving(true);
+  //       if (onSave) {
+  //         onSave(formData);
+  //       }
+  //       setTimeout(() => {
+  //         setIsAutoSaving(false);
+  //         setHasUnsavedChanges(false);
+  //       }, 1000);
+  //     }, 2000);
+
+  //     return () => clearTimeout(autoSaveTimer);
+  //   }
+  // }, [formData, hasUnsavedChanges, isSubmitting, onSave]);
 
   const handleInputChange = (sectionId, fieldId, value) => {
-    setFormData(prev => {
+    const newData = (() => {
       // Support both nested (section-based) and flat data structures
-      if (prev[sectionId]) {
+      if (formData[sectionId]) {
         return {
-          ...prev,
+          ...formData,
           [sectionId]: {
-            ...prev[sectionId],
+            ...formData[sectionId],
             [fieldId]: value
           }
         };
       } else {
         return {
-          ...prev,
+          ...formData,
           [fieldId]: value
         };
       }
-    });
+    })();
+    
+    setFormData(newData);
     setHasUnsavedChanges(true);
+    
+    // Call parent onChange if provided
+    if (onChange) {
+      onChange(newData);
+    }
   };
 
   const handleFieldBlur = (sectionId, fieldId) => {
@@ -86,11 +110,11 @@ const FormTemplate = ({
   };
 
 
+  // These are kept for compatibility but don't auto-save
+  // Save only happens on final submit
   const handleSave = () => {
-    if (onSave) {
-      onSave(formData);
-      setHasUnsavedChanges(false);
-    }
+    // Data is already synced via onChange
+    // No need to save here
   };
 
   const handleSaveAndClose = () => {
@@ -112,31 +136,35 @@ const FormTemplate = ({
       });
       setTouchedFields(newTouched);
       setShouldValidate(true);
+      
+      // Trigger validation by calling onChange with current data
+      if (onChange) {
+        onChange(formData);
+      }
     }
 
-    // Validate current section before moving
-    const currentSectionErrors = validationErrors[activeSection] || {};
-    const hasErrors = Object.keys(currentSectionErrors).length > 0;
-    
-    if (hasErrors) {
-      // Don't move if there are validation errors
-      return;
-    }
+    // Wait for validation to complete, then check errors
+    setTimeout(() => {
+      const currentSectionErrors = validationErrors[activeSection] || {};
+      const hasErrors = Object.keys(currentSectionErrors).length > 0;
+      
+      if (hasErrors) {
+        // Don't move if there are validation errors
+        return;
+      }
 
-    // Save current data before moving
-    if (onSave) {
-      onSave(formData);
-      setHasUnsavedChanges(false);
-    }
-    
-    // Reset validation state for next section
-    setShouldValidate(false);
-    
-    // Move to next section
-    const currentIndex = sections.findIndex(s => s.id === activeSection);
-    if (currentIndex < sections.length - 1) {
-      setActiveSection(sections[currentIndex + 1].id);
-    }
+      // Don't save on Next - just move to next section
+      // Data is already synced via onChange
+      
+      // Reset validation state for next section
+      setShouldValidate(false);
+      
+      // Move to next section
+      const currentIndex = sections.findIndex(s => s.id === activeSection);
+      if (currentIndex < sections.length - 1) {
+        setActiveSection(sections[currentIndex + 1].id);
+      }
+    }, 100);
   };
 
   const handleBack = () => {
@@ -426,7 +454,18 @@ const FormTemplate = ({
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+          <div className="flex items-center gap-3">
+            {/* Back Button */}
+            <button
+              type="button"
+              onClick={!isFirstSection() ? handleBack : onCancel}
+              className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              title={!isFirstSection() ? "Go back" : "Close"}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+          </div>
           
           {/* Auto-save indicator */}
           <div className="flex items-center space-x-2 text-sm text-gray-500">
@@ -502,17 +541,8 @@ const FormTemplate = ({
 
             {/* Form Actions */}
             <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="flex items-center justify-center px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 min-w-[120px]"
-              >
-                <X className="w-4 h-4 mr-2" />
-                Cancel
-              </button>
-
-              <div className="flex items-center space-x-3">
-                {/* Back Button - Show on all pages except first */}
+              {/* Previous Button - Left Side */}
+              <div>
                 {!isFirstSection() && (
                   <button
                     type="button"
@@ -521,11 +551,13 @@ const FormTemplate = ({
                     className="flex items-center justify-center px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50 min-w-[120px]"
                   >
                     <ChevronLeft className="w-4 h-4 mr-2" />
-                    Back
+                    Previous
                   </button>
                 )}
+              </div>
 
-                {/* Next or Submit Button */}
+              {/* Next or Submit Button - Right Side */}
+              <div className="flex items-center space-x-3">
                 {!isLastSection() ? (
                   <button
                     type="button"
