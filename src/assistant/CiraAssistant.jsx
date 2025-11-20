@@ -817,12 +817,6 @@ export default function CiraAssistant() {
       );
       setConversationSummary(summary);
       
-      // Trigger doctor recommendation popup instead of showing summary modal
-      triggerDoctorRecommendationPopUp(
-        "your health concerns", 
-        "General Physician"
-      );
-      setShowEndOfConversationPopup(true);
     },
 
     onSpeakStart: (data) => {
@@ -905,17 +899,17 @@ export default function CiraAssistant() {
   };
 
   // 🛑 End conversation manually
-  const handleEndConversation = async () => {
+   const handleEndConversation = async () => {
     try {
       await conversation.endSession();
       setIsConnected(false);
-      // onDisconnect will build + show summary
+      setConversationEnded(false);
+      setShowEndOfConversationPopup(false);
     } catch (err) {
       console.error("❌ Failed to end conversation:", err);
       setErrorMessage("Failed to end conversation");
     }
   };
-
   // IMPORTANT: Called when user clicks "Find Specialist Doctor"
   const handleFindSpecialistDoctorClick = async () => {
     try {
@@ -960,7 +954,7 @@ export default function CiraAssistant() {
       setIsConnected(false);
       setConversationEnded(false);
       setShowEndOfConversationPopup(false);
-    }, 3000);
+    }, 10000);
   };
 
   // Manual button to open summary again
@@ -1100,6 +1094,7 @@ export default function CiraAssistant() {
       <div className="flex flex-col items-center gap-3 mt-4">
         {!isConnected &&
           hasAgreed &&
+          !conversationEnded && 
           !isAutoStarting && (
             <button
               onClick={handleStartConversationDirectly}
