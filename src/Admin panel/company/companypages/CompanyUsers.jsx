@@ -359,7 +359,7 @@ const CompanyUsers = () => {
           <table className="w-full min-w-[640px]">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 pl-5 sm:pl-10 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Name
                 </th>
                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -380,14 +380,21 @@ const CompanyUsers = () => {
               {filteredUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50">
                   <td className="px-3 sm:px-6 py-3 sm:py-4">
-                    <div className="flex items-center min-w-0">
+                    <div className="flex items-center min-w-0 pl-2 sm:pl-4">
                       <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-xs sm:text-sm font-medium text-gray-600">
-                          {user.name.split(' ').map(n => n[0]).join('')}
+                          {user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
                         </span>
                       </div>
-                      <div className="ml-2 sm:ml-4 min-w-0 flex-1">
-                        <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">{user.name}</div>
+                      <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                        <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                          {user.name || user.username || user.email?.split('@')[0] || 'No Name'}
+                        </div>
+                        {user.email && (
+                          <div className="text-[10px] sm:text-xs text-gray-500 truncate sm:hidden mt-0.5">
+                            {user.email}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </td>

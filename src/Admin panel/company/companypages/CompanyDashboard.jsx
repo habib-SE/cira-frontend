@@ -101,95 +101,99 @@ const CompanyDashboard = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="mb-8 flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Company Dashboard</h1>
-          <p className="text-gray-600 mt-2">Manage your organization's health services and employee wellness</p>
+      <div className="mb-4 sm:mb-6 lg:mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Company Dashboard</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-2">Manage your organization's health services and employee wellness</p>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <button
             onClick={handleExportData}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2 transition-colors"
+            className="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-1.5 sm:gap-2 transition-colors text-xs sm:text-sm"
+            title="Export Data"
           >
-            <Download className="h-4 w-4" />
-            <span>Export Data</span>
+            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Export Data</span>
+            <span className="sm:hidden">Export</span>
           </button>
           <button
             onClick={handleRefreshContent}
             disabled={isRefreshing}
-            className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 flex items-center space-x-2 transition-colors disabled:opacity-50"
+            className="px-3 sm:px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 flex items-center gap-1.5 sm:gap-2 transition-colors disabled:opacity-50 text-xs sm:text-sm"
+            title="Refresh"
           >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+            <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+            <span className="sm:hidden">{isRefreshing ? '...' : 'Refresh'}</span>
           </button>
         </div>
       </div>
 
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-        <div className="text-sm font-semibold text-gray-500 mb-3">
+        <div className="text-xs sm:text-sm font-semibold text-gray-500 mb-3">
           • Quick actions:
         </div>
         <div className="flex flex-wrap gap-2 sm:gap-3">
           <button
             onClick={() => navigate('/company/appointments/new')}
-            className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-xs sm:text-sm"
           >
-            <Plus className="w-4 h-4" />
-            New Appointment
+            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+            <span className="whitespace-nowrap">New Appointment</span>
           </button>
           <button
             onClick={() => navigate('/company/users/new')}
-            className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-xs sm:text-sm"
           >
-            <Users className="w-4 h-4" />
-            New User
+            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+            <span className="whitespace-nowrap">New User</span>
           </button>
           <button
             onClick={() => navigate('/company/billing')}
-            className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-sm"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium text-xs sm:text-sm"
           >
-            <CreditCard className="w-4 h-4" />
-            Billing
+            <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+            <span className="whitespace-nowrap">Billing</span>
           </button>
         </div>
-        <div className="mt-3 text-xs text-gray-400">
+        <div className="mt-3 text-[10px] sm:text-xs text-gray-400">
           (Company)
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         {kpis.map((kpi, index) => {
           const Icon = kpi.icon;
           return (
-            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{kpi.title}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{kpi.value}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">{kpi.title}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{kpi.value}</p>
                 </div>
-                <div className={`p-3 rounded-lg ${kpi.color}`}>
-                  <Icon className="h-6 w-6 text-white" />
+                <div className={`p-2 sm:p-3 rounded-lg ${kpi.color} flex-shrink-0`}>
+                  <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-2">{kpi.description}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-2 line-clamp-2">{kpi.description}</p>
             </div>
           );
         })}
       </div>
 
       {/* Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Recent Users */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Users</h3>
-            <p className="text-sm text-gray-600">Employee usage stats and subscription status</p>
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Recent Users</h3>
+            <p className="text-xs sm:text-sm text-gray-600">Employee usage stats and subscription status</p>
           </div>
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <div className="space-y-4">
               {recentUsers.map((user) => (
                 <div key={user.id} className="flex items-center justify-between py-2">
@@ -227,12 +231,12 @@ const CompanyDashboard = () => {
 
         {/* Quick Actions */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
-            <p className="text-sm text-gray-600">Common administrative tasks</p>
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Quick Actions</h3>
+            <p className="text-xs sm:text-sm text-gray-600">Common administrative tasks</p>
           </div>
-          <div className="p-6">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 sm:p-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <button 
                 onClick={() => handleQuickAction('addUser')}
                 className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"

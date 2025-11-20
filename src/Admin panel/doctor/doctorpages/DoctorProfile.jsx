@@ -214,15 +214,15 @@ const DoctorProfile = () => {
                         </span>
                     </div>
                     
-                    <nav className="p-2">
-                        <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible">
+                    <nav className="p-2 sm:p-3">
+                        <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 tab-scroll-container">
                             {tabs.map((tab) => {
                                 const Icon = tab.icon;
                                 return (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`flex items-center space-x-2 sm:space-x-3 px-3 py-2 sm:py-2.5 rounded-xl transition-all duration-200 whitespace-nowrap lg:w-full ${
+                                        className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-200 whitespace-nowrap lg:w-full min-w-max lg:min-w-0 ${
                                             activeTab === tab.id
                                                 ? 'bg-pink-50 text-pink-600 border border-pink-200'
                                                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'

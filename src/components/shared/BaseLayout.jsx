@@ -38,6 +38,13 @@ const BaseLayout = ({
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
+  // Close mobile menu when route changes on mobile
+  useEffect(() => {
+    if (window.innerWidth < 1024 && sidebarBehavior === "toggle") {
+      setIsMobileMenuOpen(false);
+    }
+  }, [location.pathname, sidebarBehavior]);
+
   const getSidebarClasses = () => {
     if (sidebarBehavior === "persistent") {
       return `block lg:flex fixed lg:relative z-50 lg:z-[1000px] h-screen ${sidebarClass}`;
