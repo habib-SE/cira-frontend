@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import loginLogo from '../../../assets/LoginLogo.png';
+import { Logo } from '../../../components/shared';
 
 const CompanyLoginPage = () => {
   const navigate = useNavigate();
@@ -91,25 +91,25 @@ const CompanyLoginPage = () => {
   return (
     <div className="min-h-screen flex" style={{ background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)' }}>
       {/* Left Side - Login Form */}
-      <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 xl:px-24">
+      <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-24 py-6 sm:py-8">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div>
-            <div className="flex items-center justify-center mb-8">
-              <img 
-                src={loginLogo} 
-                alt="CIRA Logo" 
-                className="h-16 w-auto"
+            <div className="flex items-center justify-center mb-6 sm:mb-8">
+              <Logo 
+                variant="login"
+                className="h-12 sm:h-14 lg:h-16 w-auto"
+                alt="CIRA Logo"
               />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 text-center mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-2">
               Company Login
             </h2>
-            <p className="text-gray-600 text-center mb-8">
+            <p className="text-sm sm:text-base text-gray-600 text-center mb-6 sm:mb-8 px-2">
               Access your organization's health management dashboard
             </p>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center space-x-2">
                 <AlertCircle className="h-5 w-5 text-red-500" />
@@ -118,7 +118,7 @@ const CompanyLoginPage = () => {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                 Company Email
               </label>
               <div className="relative">
@@ -130,15 +130,15 @@ const CompanyLoginPage = () => {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                   placeholder="admin@company.com"
                 />
-                <Building className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Building className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -150,7 +150,7 @@ const CompanyLoginPage = () => {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent pr-10"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent pr-10"
                   placeholder="Enter your password"
                 />
                 <button
@@ -158,25 +158,25 @@ const CompanyLoginPage = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
               <div className="flex items-center">
                 <input
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                  className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                <label htmlFor="remember-me" className="ml-2 block text-xs sm:text-sm text-gray-700">
                   Remember me
                 </label>
               </div>
 
-              <div className="text-sm">
+              <div className="text-xs sm:text-sm">
                 <a href="#" className="font-medium text-pink-600 hover:text-pink-500">
                   Forgot password?
                 </a>
@@ -187,42 +187,42 @@ const CompanyLoginPage = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex justify-center py-2.5 sm:py-3 px-4 border border-transparent rounded-lg shadow-sm text-xs sm:text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Signing in...
+                    <span className="text-xs sm:text-sm">Signing in...</span>
                   </div>
                 ) : (
-                  'Sign in to Company Portal'
+                  <span className="text-xs sm:text-sm">Sign in to Company Portal</span>
                 )}
               </button>
             </div>
           </form>
 
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300" />
               </div>
-              <div className="relative flex justify-center text-sm">
+              <div className="relative flex justify-center text-xs sm:text-sm">
                 <span className="px-2 bg-white text-gray-500">Or continue with</span>
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <div className="mt-4 sm:mt-6 grid grid-cols-2 gap-2 sm:gap-3">
+              <button className="w-full inline-flex justify-center py-2 px-3 sm:px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-xs sm:text-sm font-medium text-gray-500 hover:bg-gray-50">
                 <span>Google</span>
               </button>
-              <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <button className="w-full inline-flex justify-center py-2 px-3 sm:px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-xs sm:text-sm font-medium text-gray-500 hover:bg-gray-50">
                 <span>Microsoft</span>
               </button>
             </div>
           </div>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+          <div className="mt-4 sm:mt-6 text-center">
+            <p className="text-xs sm:text-sm text-gray-600 px-2">
               Don't have a company account?{' '}
               <a href="#" className="font-medium text-pink-600 hover:text-pink-500">
                 Contact sales
@@ -233,13 +233,13 @@ const CompanyLoginPage = () => {
       </div>
 
       {/* Right Side - Company Benefits */}
-      <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-center lg:px-8">
+      <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-center lg:px-6 xl:px-8">
         <div className="max-w-md">
           <div className="text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">
+            <h3 className="text-xl xl:text-2xl font-bold text-gray-900 mb-4 xl:mb-6">
               Manage Your Organization's Health
             </h3>
-            <div className="space-y-6">
+            <div className="space-y-4 xl:space-y-6">
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center">

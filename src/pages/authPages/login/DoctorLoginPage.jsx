@@ -234,17 +234,17 @@ const DoctorLoginPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50 flex items-center justify-center p-4">
-            <div className={`w-full space-y-8 ${isLogin ? 'max-w-md' : 'max-w-4xl'}`}>
+        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50 flex items-center justify-center p-3 sm:p-4 lg:p-6">
+            <div className={`w-full space-y-4 sm:space-y-6 lg:space-y-8 ${isLogin ? 'max-w-md' : 'max-w-4xl'}`}>
                 {/* Header */}
                 <div className="text-center">
-                    <div className="mx-auto h-16 w-16 bg-pink-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
-                        <Stethoscope className="h-8 w-8 text-white" />
+                    <div className="mx-auto h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 bg-pink-500 rounded-full flex items-center justify-center mb-3 sm:mb-4 shadow-lg">
+                        <Stethoscope className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white" />
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-900">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 px-2">
                         {isLogin ? 'Welcome Back, Doctor' : 'Join CIRA Medical'}
                     </h2>
-                    <p className="mt-2 text-sm text-gray-600">
+                    <p className="mt-2 text-xs sm:text-sm text-gray-600 px-4">
                         {isLogin 
                             ? 'Access your medical practice dashboard' 
                             : 'Start your journey as a verified medical professional'
@@ -253,7 +253,7 @@ const DoctorLoginPage = () => {
                 </div>
 
                 {/* Form */}
-                <div className="bg-white py-8 px-6 shadow-xl rounded-2xl">
+                <div className="bg-white py-4 sm:py-6 lg:py-8 px-4 sm:px-6 shadow-xl rounded-xl sm:rounded-2xl">
                     {isLogin ? (
                         <FormicaValidatedForm
                             schema={authFormicaSchemas.login}
@@ -413,28 +413,28 @@ const DoctorLoginPage = () => {
                                     </div>
 
                                     {/* Step Indicator */}
-                                    <div className="mb-8">
-                                        <div className="flex items-center justify-center gap-6 md:gap-10">
+                                    <div className="mb-4 sm:mb-6 lg:mb-8">
+                                        <div className="flex items-center justify-center gap-2 sm:gap-4 md:gap-6 lg:gap-10 overflow-x-auto pb-2">
                                             {[1, 2, 3, 4].map((step, index) => (
                                                 <React.Fragment key={step}>
-                                                    <div className="flex flex-col items-center relative z-10">
+                                                    <div className="flex flex-col items-center relative z-10 flex-shrink-0">
                                                         <div
-                                                            className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 shadow-lg ${
+                                                            className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold transition-all duration-300 shadow-lg ${
                                                                 registrationStep === step
-                                                                    ? 'bg-pink-500 text-white ring-4 ring-pink-200 scale-110'
+                                                                    ? 'bg-pink-500 text-white ring-2 sm:ring-4 ring-pink-200 scale-110'
                                                                     : registrationStep > step
-                                                                    ? 'bg-green-500 text-white ring-2 ring-green-200'
+                                                                    ? 'bg-green-500 text-white ring-1 sm:ring-2 ring-green-200'
                                                                     : 'bg-gray-200 text-gray-500'
                                                             }`}
                                                         >
                                                             {registrationStep > step ? (
-                                                                <CheckCircle className="w-7 h-7" />
+                                                                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-7 lg:h-7" />
                                                             ) : (
-                                                                <span className="text-base">{step}</span>
+                                                                <span className="text-xs sm:text-sm lg:text-base">{step}</span>
                                                             )}
                                                         </div>
-                                                        <div className="mt-3 text-center">
-                                                            <p className={`text-sm font-semibold ${
+                                                        <div className="mt-2 sm:mt-3 text-center">
+                                                            <p className={`text-[9px] sm:text-xs lg:text-sm font-semibold ${
                                                                 registrationStep >= step ? 'text-pink-600' : 'text-gray-500'
                                                             }`}>
                                                                 {step === 1 && 'Personal'}
@@ -446,7 +446,7 @@ const DoctorLoginPage = () => {
                                                     </div>
                                                     {index < 3 && (
                                                         <div
-                                                            className={`w-10 md:w-16 h-0.5 mx-2 transition-all duration-300 rounded-full ${
+                                                            className={`w-4 sm:w-6 md:w-10 lg:w-16 h-0.5 mx-1 sm:mx-2 transition-all duration-300 rounded-full flex-shrink-0 ${
                                                                 registrationStep > step ? 'bg-green-500' : 'bg-gray-200'
                                                             }`}
                                                         />
@@ -457,12 +457,12 @@ const DoctorLoginPage = () => {
                                     </div>
                                     {/* Step 1: Personal Information */}
                                     {registrationStep === 1 && (
-                                        <div className="space-y-6">
-                                            <div className="text-center mb-6">
-                                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Personal Information</h3>
-                                                <p className="text-gray-600">Let's start with your basic details</p>
+                                        <div className="space-y-4 sm:space-y-6">
+                                            <div className="text-center mb-4 sm:mb-6">
+                                                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Personal Information</h3>
+                                                <p className="text-sm sm:text-base text-gray-600">Let's start with your basic details</p>
                                             </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <FormicaFormField
                                             label="First Name"
                                             name="firstName"

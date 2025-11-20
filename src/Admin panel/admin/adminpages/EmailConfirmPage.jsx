@@ -27,7 +27,19 @@ const EmailConfirmPage = () => {
     }
   }, [countdown]);
 
-  // Auto-focus next input
+  // Check if a field can be focused (all previous fields must be filled)
+  const canFocusField = (index) => {
+    if (index === 0) return true; // First field is always accessible
+    // Check if all previous fields are filled
+    for (let i = 0; i < index; i++) {
+      if (!code[i] || code[i] === '') {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Handle input change - sequential entry with auto-advance
   const handleInputChange = (index, value) => {
     // Only allow single digits
     if (value.length > 1) return;
@@ -35,22 +47,109 @@ const EmailConfirmPage = () => {
     // Only allow numbers
     if (value && !/^[0-9]$/.test(value)) return;
     
+    // Prevent entering value if previous fields are not filled
+    if (index > 0) {
+      for (let i = 0; i < index; i++) {
+        if (!code[i] || code[i] === '') {
+          // Focus the first empty field
+          inputRefs.current[i]?.focus();
+          return;
+        }
+      }
+    }
+    
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
     setError('');
 
-    // Auto-focus next input
+    // Auto-advance to next field when a digit is entered
     if (value && index < 3) {
-      inputRefs.current[index + 1]?.focus();
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        inputRefs.current[index + 1]?.focus();
+      }, 10);
+    }
+    
+    // If deleting (empty value), focus previous field
+    if (!value && index > 0) {
+      setTimeout(() => {
+        inputRefs.current[index - 1]?.focus();
+      }, 10);
     }
   };
 
-  // Handle backspace
+  // Handle keyboard navigation - sequential only
   const handleKeyDown = (index, e) => {
+    // Handle backspace - go to previous field if current is empty
     if (e.key === 'Backspace' && !code[index] && index > 0) {
+      e.preventDefault();
+      inputRefs.current[index - 1]?.focus();
+      inputRefs.current[index - 1]?.select(); // Select text in previous field
+    }
+    
+    // Handle backspace when field has value - clear and stay
+    if (e.key === 'Backspace' && code[index] && index > 0) {
+      const newCode = [...code];
+      newCode[index] = '';
+      setCode(newCode);
+      // Don't move focus, just clear the current field
+    }
+    
+    // Handle arrow keys - only allow navigation to filled or accessible fields
+    if (e.key === 'ArrowLeft' && index > 0) {
+      e.preventDefault();
       inputRefs.current[index - 1]?.focus();
     }
+    if (e.key === 'ArrowRight' && index < 3) {
+      e.preventDefault();
+      // Only move right if current field has a value
+      if (code[index]) {
+        inputRefs.current[index + 1]?.focus();
+      }
+    }
+    
+    // Handle delete key
+    if (e.key === 'Delete' && code[index]) {
+      const newCode = [...code];
+      newCode[index] = '';
+      setCode(newCode);
+    }
+  };
+
+  // Handle focus - prevent focusing if previous fields are empty
+  const handleFocus = (index, e) => {
+    // If trying to focus a field that shouldn't be accessible, prevent it
+    if (!canFocusField(index)) {
+      e.preventDefault();
+      // Find and focus the first empty field
+      for (let i = 0; i < index; i++) {
+        if (!code[i] || code[i] === '') {
+          inputRefs.current[i]?.focus();
+          break;
+        }
+      }
+      return;
+    }
+    // Select text when focusing an accessible field
+    e.target.select();
+  };
+
+  // Handle click - prevent clicking on inaccessible fields
+  const handleInputClick = (index) => {
+    // If field is not accessible, focus the first empty field instead
+    if (!canFocusField(index)) {
+      for (let i = 0; i < index; i++) {
+        if (!code[i] || code[i] === '') {
+          inputRefs.current[i]?.focus();
+          break;
+        }
+      }
+      return;
+    }
+    // Focus and select if accessible
+    inputRefs.current[index]?.focus();
+    inputRefs.current[index]?.select();
   };
 
   // Handle paste
@@ -126,13 +225,13 @@ const EmailConfirmPage = () => {
 
   return (
     <div 
-      className="min-h-screen flex flex-col px-4 py-5 overflow-hidden relative"
+      className="min-h-screen flex flex-col px-3 sm:px-4 py-4 sm:py-5 overflow-hidden relative"
       style={{ background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)' }}
     >
     {/* Header - Logo in center */}
-    <div className="w-full flex justify-start items-center mb-4">
-                <div className="flex items-center pl-4">
-                    <img src={logo} alt="Cira Logo" className="h-7 w-auto" />
+    <div className="w-full flex justify-start items-center mb-3 sm:mb-4">
+                <div className="flex items-center pl-2 sm:pl-4">
+                    <img src={logo} alt="Cira Logo" className="h-6 sm:h-7 w-auto" />
                 </div>
             </div>
 
@@ -157,45 +256,56 @@ const EmailConfirmPage = () => {
     )}
 
       {/* Main Content - Centered */}
-      <div className="flex-1 flex flex-col items-center justify-center">
+      <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-0">
         <div className="w-full max-w-sm text-center">
         {/* Logo */}
-        <div className="mb-3 flex justify-center items-center">
+        <div className="mb-2 sm:mb-3 flex justify-center items-center">
           <img 
             src={LoginLogo} 
             alt="Cira Logo" 
-            className="w-28 h-28 mb-3"
+            className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 mb-2 sm:mb-3"
           />
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 text-center">
           Confirm your Email
         </h1>
 
         {/* Instructions */}
-        <p className="text-gray-600 text-center mb-4 leading-relaxed">
+        <p className="text-sm sm:text-base text-gray-600 text-center mb-4 sm:mb-6 leading-relaxed px-2">
           Please enter the 4-digit code we sent to your email to continue
         </p>
 
         {/* Code Input Fields */}
-        <div className="flex gap-3 mb-3 justify-center">
-          {code.map((digit, index) => (
-            <input
-              key={index}
-              ref={el => inputRefs.current[index] = el}
-              type="tel"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength="1"
-              value={digit}
-              onChange={(e) => handleInputChange(index, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(index, e)}
-              onPaste={index === 0 ? handlePaste : undefined}
-              autoComplete="one-time-code"
-              className="w-14 h-14 text-center text-xl font-semibold border border-gray-200 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
-            />
-          ))}
+        <div className="flex gap-2 sm:gap-3 mb-3 justify-center">
+          {code.map((digit, index) => {
+            const isAccessible = canFocusField(index);
+            return (
+              <input
+                key={index}
+                ref={el => inputRefs.current[index] = el}
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength="1"
+                value={digit}
+                onChange={(e) => handleInputChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                onClick={() => handleInputClick(index)}
+                onFocus={(e) => handleFocus(index, e)}
+                onPaste={index === 0 ? handlePaste : undefined}
+                autoComplete="one-time-code"
+                tabIndex={isAccessible ? 0 : -1}
+                disabled={!isAccessible}
+                className={`w-12 h-12 sm:w-14 sm:h-14 text-center text-lg sm:text-xl font-semibold border rounded-xl sm:rounded-2xl transition-all duration-200 ${
+                  isAccessible
+                    ? 'border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent cursor-text'
+                    : 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-50'
+                }`}
+              />
+            );
+          })}
         </div>
 
         {/* Error Message */}
@@ -206,16 +316,16 @@ const EmailConfirmPage = () => {
         )}
 
         {/* Resend Code */}
-        <div className="mb-20 text-center">
+        <div className="mb-6 sm:mb-8 lg:mb-20 text-center">
           {canResend ? (
             <button
               onClick={handleResend}
-              className="text-gray-500 text-sm hover:text-gray-700 transition-colors"
+              className="text-gray-500 text-xs sm:text-sm hover:text-gray-700 transition-colors"
             >
               Resend Code
             </button>
           ) : (
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-xs sm:text-sm">
               Resend in {countdown}s
             </p>
           )}
@@ -225,7 +335,7 @@ const EmailConfirmPage = () => {
          <button
            onClick={handleContinue}
            disabled={isLoading || code.join('').length !== 4}
-           className={`w-full py-3 rounded-3xl font-semibold text-lg transition-all duration-200 ${
+           className={`w-full py-2.5 sm:py-3 rounded-2xl sm:rounded-3xl font-semibold text-base sm:text-lg transition-all duration-200 ${
              isLoading || code.join('').length !== 4
                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                : 'bg-pink-500 text-white hover:bg-pink-600 active:bg-pink-700 transform active:scale-95'
@@ -233,8 +343,8 @@ const EmailConfirmPage = () => {
          >
            {isLoading ? (
              <div className="flex items-center justify-center">
-               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-               Verifying...
+               <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+               <span className="text-sm sm:text-base">Verifying...</span>
              </div>
            ) : (
              'Continue'

@@ -21,3 +21,4 @@ export { default as FormTemplate } from './FormTemplate';
 export { default as StatusChip } from './StatusChip';
 export { default as ConsentIndicator } from './ConsentIndicator';
 export { default as Footer } from './Footer';
+export { default as Logo } from './Logo';

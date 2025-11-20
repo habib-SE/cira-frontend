@@ -237,7 +237,7 @@ import {
   EnvelopeIcon,
 } from '@heroicons/react/24/outline';
 import { Building } from 'lucide-react';
-import logo from '../../../assets/ciratestinglogo.png';
+import { Logo } from '../../../components/shared';
 
 const roles = [
   { key: 'user', label: 'User', icon: UserIcon },
@@ -266,7 +266,7 @@ const MainLoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-br flex items-center justify-center px-4" 
+    <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-br flex items-center justify-center px-3 sm:px-4 py-4 sm:py-6" 
     style={{
       background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)'}}
     >
@@ -274,33 +274,33 @@ const MainLoginPage = () => {
       <div className="pointer-events-none absolute -top-32 -left-10 h-72 w-72  blur-3xl rounded-full" />
       <div className="pointer-events-none absolute -bottom-32 -right-10 h-72 w-72 bg-purple-400/20 blur-3xl rounded-full" />
 
-      <div className="relative z-10 w-full max-w-6xl grid lg:grid-cols-2 gap-10 items-center">
-        {/* Left Hero Side */}
-        <div className="flex flex-col gap-6 text-center lg:text-left">
-            {/* Logo in top-left corner */}
-  <div className="absolute top-4 -left-10 z-20 flex items-center gap-3">
-    <img src={logo} alt="Cira Logo" className="h-16 w-auto" />
+      <div className="relative z-10 w-full max-w-6xl grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 items-start lg:items-center">
+        {/* Left Hero Side - Top on mobile, Left on desktop */}
+        <div className="flex flex-col gap-4 sm:gap-6 text-center lg:text-left order-1">
+            {/* Logo in top-left corner - hidden on mobile, shown on desktop */}
+  <div className="hidden lg:flex absolute top-4 -left-10 z-20 items-center gap-3">
+    <Logo variant="default" className="h-12 lg:h-16 w-auto" alt="Cira Logo" />
     
   </div>
 
           <div>
-            <span className="px-3 py-1 rounded-full bg-white/70 shadow-sm text-xs font-semibold text-pink-500">
+            <span className="px-2 sm:px-3 py-1 rounded-full bg-white/70 shadow-sm text-[10px] sm:text-xs font-semibold text-pink-500">
       Cira Health • Secure & Simple
     </span>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mt-7">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mt-4 sm:mt-7">
               Welcome back,
               <span className="bg-[linear-gradient(to_right,#ec4899_0%,#f472b6_30%,#a855f7_60%,#3b82f6_100%)] bg-clip-text text-transparent">
                 {' '}let&apos;s get you in.
               </span>
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-slate-600 max-w-xl mx-auto lg:mx-0">
+            <p className="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base text-slate-600 max-w-xl mx-auto lg:mx-0 px-2 sm:px-0">
               One login for Admins, Doctors, Companies, and Users.
               Clean dashboard, instant insights.
             </p>
           </div>
 
           {/* Fun / trust badges */}
-          <div className="flex flex-wrap justify-center lg:justify-start gap-3 text-xs">
+          <div className="flex flex-wrap justify-center lg:justify-start gap-2 sm:gap-3 text-[10px] sm:text-xs">
             <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/80 shadow-sm border border-pink-100">
               <span className="text-pink-500 text-base">★</span>
               <span className="font-medium text-slate-700">Modern & friendly UI</span>
@@ -326,9 +326,9 @@ const MainLoginPage = () => {
             </button>
 
             {showDemo && (
-              <div className="mt-3 p-4 bg-white/90 border border-pink-100 rounded-2xl shadow-sm text-left max-w-xs mx-auto lg:mx-0">
-                <p className="text-xs font-semibold text-slate-800 mb-1">Demo Credentials</p>
-                <ul className="text-[10px] sm:text-xs text-slate-700 space-y-1">
+              <div className="mt-3 p-3 sm:p-4 bg-white/90 border border-pink-100 rounded-2xl shadow-sm text-left max-w-xs mx-auto lg:mx-0">
+                <p className="text-[10px] sm:text-xs font-semibold text-slate-800 mb-1">Demo Credentials</p>
+                <ul className="text-[9px] sm:text-[10px] md:text-xs text-slate-700 space-y-1">
                   <li><strong>Admin:</strong> admin@cira.com / admin123</li>
                   <li><strong>User:</strong> user@cira.com / user123</li>
                   <li><strong>Doctor:</strong> doctor@cira.com / doctor123</li>
@@ -339,15 +339,15 @@ const MainLoginPage = () => {
           </div>
         </div>
 
-        {/* Right Login Card */}
-        <div className="flex justify-end">
-          <div className="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/70  rounded-3xl p-2 sm:p-8">
+        {/* Right Login Card - Bottom on mobile, Right on desktop */}
+        <div className="flex justify-center lg:justify-end order-2">
+          <div className="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/70 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8">
             {/* playful header */}
-            <div className="mb-5">
-              <p className="text-xs font-medium text-pink-500 mb-1">
+            <div className="mb-4 sm:mb-5">
+              <p className="text-[10px] sm:text-xs font-medium text-pink-500 mb-1">
                 Sign in to continue
               </p>
-              <h2 className="text-xl sm:text-2xl font-semibold text-slate-900">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-slate-900">
                 Choose your role &amp; jump in
               </h2>
             </div>
@@ -371,7 +371,7 @@ const MainLoginPage = () => {
             >
               {/* Role selection */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">
+                <label className="block text-[10px] sm:text-xs font-semibold text-slate-700 mb-2">
                   I&apos;m logging in as
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -383,14 +383,14 @@ const MainLoginPage = () => {
                         type="button"
                         onClick={() => setSelectedRole(key)}
                         className={[
-                          'flex flex-col items-center justify-center gap-1 py-2.5 rounded-2xl border text-[11px] sm:text-xs font-medium transition-all',
+                          'flex flex-col items-center justify-center gap-1 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border text-[10px] sm:text-[11px] md:text-xs font-medium transition-all',
                           active
                             ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white border-transparent shadow-md scale-[1.02]'
                             : 'bg-white/70 text-slate-700 border-slate-200 hover:border-pink-300 hover:bg-pink-50/80',
                         ].join(' ')}
                       >
-                        <Icon className="h-4 w-4" />
-                        <span>{label}</span>
+                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span className="truncate w-full px-1">{label}</span>
                       </button>
                     );
                   })}
@@ -406,18 +406,18 @@ const MainLoginPage = () => {
               <div className="space-y-1">
                 <label
                   htmlFor="email"
-                  className="block text-xs font-semibold text-slate-700"
+                  className="block text-[10px] sm:text-xs font-semibold text-slate-700"
                 >
                   Email
                 </label>
                 <div className="relative">
-                  <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-400" />
                   <input
                     id="email"
                     name="email"
                     type="email"
                     required
-                    className="w-full pl-9 pr-3 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-white/90 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent"
+                    className="w-full pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-white/90 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -427,50 +427,50 @@ const MainLoginPage = () => {
               <div className="space-y-1">
                 <label
                   htmlFor="password"
-                  className="block text-xs font-semibold text-slate-700"
+                  className="block text-[10px] sm:text-xs font-semibold text-slate-700"
                 >
                   Password
                 </label>
                 <div className="relative">
-                  <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-400" />
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
-                    className="w-full pl-9 pr-9 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-white/90 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent"
+                    className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-white/90 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
+                    className="absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
                   >
                     {showPassword ? (
-                      <EyeSlashIcon className="h-4 w-4" />
+                      <EyeSlashIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     ) : (
-                      <EyeIcon className="h-4 w-4" />
+                      <EyeIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     )}
                   </button>
                 </div>
               </div>
 
               {/* Remember / Forgot */}
-              <div className="flex items-center justify-between gap-3">
-                <label className="flex items-center gap-2">
+              <div className="flex items-center justify-between gap-2 sm:gap-3">
+                <label className="flex items-center gap-1.5 sm:gap-2">
                   <input
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
-                    className="h-3.5 w-3.5 rounded border-slate-300 text-pink-500 focus:ring-pink-400"
+                    className="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded border-slate-300 text-pink-500 focus:ring-pink-400"
                   />
-                  <span className="text-[10px] sm:text-xs text-slate-600">
+                  <span className="text-[9px] sm:text-[10px] md:text-xs text-slate-600">
                     Remember me
                   </span>
                 </label>
                 <button
                   type="button"
-                  className="text-[10px] sm:text-xs font-semibold text-pink-500 hover:text-pink-600 hover:underline"
+                  className="text-[9px] sm:text-[10px] md:text-xs font-semibold text-pink-500 hover:text-pink-600 hover:underline"
                 >
                   Forgot password?
                 </button>
@@ -480,7 +480,7 @@ const MainLoginPage = () => {
               <button
                 type="submit"
                 disabled={!selectedRole}
-                className={`w-full py-2.5 rounded-2xl text-xs sm:text-sm font-semibold shadow-md transition-all
+                className={`w-full py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-semibold shadow-md transition-all
                 ${
                   selectedRole
                     ? 'bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white hover:shadow-lg hover:translate-y-0.5'
@@ -509,10 +509,10 @@ const MainLoginPage = () => {
             )} */}
 
             {/* Security line */}
-            <p className="mt-4 text-[9px] sm:text-[10px] text-slate-400 text-center">
+            <p className="mt-3 sm:mt-4 text-[8px] sm:text-[9px] md:text-[10px] text-slate-400 text-center px-2">
               🔒 Your data is protected with modern encryption & secure access policies.
             </p>
-            <p className="mt-4 text-[9px] sm:text-[10px] text-gray-800 text-center">
+            <p className="mt-2 sm:mt-4 text-[8px] sm:text-[9px] md:text-[10px] text-gray-800 text-center px-2">
               © 2025 CIRA. Crafted by INSTLY Technologies
             </p>
           </div>
