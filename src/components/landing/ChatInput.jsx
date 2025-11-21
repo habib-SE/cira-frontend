@@ -34,7 +34,7 @@ const ChatInput = ({ onSendMessage, characterLimit = 4608 }) => {
   const remainingChars = characterLimit - message.length;
 
   return (
-    <div className="w-full max-w-4xl">
+    <div className="w-full max-w-5xl">
       {/* Prompt text above input */}
       <p className="text-lg text-gray-800 text-cente mb-6 font-bold">
         What can I help you with today?

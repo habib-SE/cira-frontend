@@ -89,7 +89,7 @@ export default function HeroSection() {
       </motion.div>
 
       {/* Chat Input */}
-      <motion.div variants={fadeUp} className="w-full max-w-[66%] ml-28">
+      <motion.div variants={fadeUp} className="w-full max-w-[80%] ml-28">
         <ChatInput onSendMessage={handleSendMessage} />
       </motion.div>
 
