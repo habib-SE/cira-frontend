@@ -47,7 +47,7 @@ export default function HeroSection() {
     >
       {/* Avatar */}
       <motion.div  variants={fadeUp} className='flex items-center justify-center'>
-      <img src={Nurse} alt="" className='w-[10%] ml-10 items-center'/>
+      <img src={Nurse} alt="" className='w-[20%] md:w-[10%] ml-3 md:ml-10 items-center mb-7 md:mb-4 lg:mb-0'/>
       </motion.div>
 
       {/* Trust Badges */}
@@ -70,7 +70,7 @@ export default function HeroSection() {
       </motion.div>
 
       {/* Text Block */}
-      <motion.div variants={fadeUp} className="w-full max-w-4xl px-4 ml-10 md:ml-25">
+      <motion.div variants={fadeUp} className="w-full max-w-4xl px-12 pl-0 md:pl-28 lg:pl-25">
 <h1 className="text-4xl md:text-5xl font-serif font-normal text-gray-950 mb-6 tracking-wide text-left">
   Hi, I'm <span className="text-pink-400">Cira</span>, your AI Nurse
 </h1>
@@ -89,7 +89,7 @@ export default function HeroSection() {
       </motion.div>
 
       {/* Chat Input */}
-      <motion.div variants={fadeUp} className="w-full max-w-[82%] ml-28">
+      <motion.div variants={fadeUp} className="w-full  md:max-w-[92%] pl-3 md:pl-25">
         <ChatInput onSendMessage={handleSendMessage} />
       </motion.div>
 

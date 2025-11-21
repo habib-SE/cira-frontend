@@ -14,7 +14,7 @@ export default function DoctorConnectionSection() {
 
         {/* Headline */}
         <motion.h2
-          className="text-4xl font-serif md:text-4xl lg:text-5xl font-normal text-gray-950 tracking-tight leading-tight"
+          className="text-3xl font-serif md:text-4xl lg:text-5xl font-normal text-gray-950 tracking-tight leading-tight"
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
@@ -28,7 +28,7 @@ export default function DoctorConnectionSection() {
 
         {/* 24/7 Badge */}
         <motion.button
-          className="mt-10 inline-flex items-center text-teal-500 border-2 border-teal-500 hover:bg-teal-500 hover:text-gray-100  text-sm font-medium px-8 py-4 rounded-full transition-all duration-20"
+          className="mt-10 inline-flex items-center text-teal-500 border-2 border-teal-500 hover:bg-teal-500 hover:text-gray-100  text-sm font-medium px-6 py-2 md:px-8 md:py-4 rounded-full transition-all duration-20"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

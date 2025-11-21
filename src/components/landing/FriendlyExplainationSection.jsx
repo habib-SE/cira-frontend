@@ -15,7 +15,7 @@ export default function FriendlyExplanationSection() {
 
         {/* Headline */}
         <motion.h2
-          className="text-4xl font-serif  md:text-5xl lg:text-6xl font-normal text-gray-950 leading-tight"
+          className="text-3xl font-serif  md:text-5xl lg:text-6xl font-normal text-gray-950 leading-tight"
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
@@ -48,7 +48,7 @@ export default function FriendlyExplanationSection() {
         viewport={{ once: true }}
         transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
       >
-        <img src={FriendlyNurse} alt="FriendlyNurse" className="w-[40%]" />
+        <img src={FriendlyNurse} alt="FriendlyNurse" className="w-[60%] md:w-[40%]" />
       </motion.div>
     </section>
   );
