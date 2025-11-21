@@ -154,7 +154,7 @@ export default function NurseAvatar({ isSpeaking, isConnected, phoneme, isMuted 
       object={avatar.scene}
       scale={8}
       position={[0, -14.7, -1]}
-      rotation={[-0.4, -Math.PI / 36, 0]}
+      rotation={[-0.4, 0, 0]}
     />
   );
 }

@@ -36,7 +36,7 @@ const ChatInput = ({ onSendMessage, characterLimit = 4608 }) => {
   return (
     <div className="w-full max-w-4xl">
       {/* Prompt text above input */}
-      <p className="text-lg text-gray-800 text-cente mb-4 font-medium">
+      <p className="text-lg text-gray-800 text-cente mb-6 font-bold">
         What can I help you with today?
       </p>
 
@@ -64,10 +64,10 @@ const ChatInput = ({ onSendMessage, characterLimit = 4608 }) => {
       <textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        placeholder="Ask me anything about your health - symptom checker, medical advice, health questions"
+        placeholder="Ask me anything about your health..."
         rows={3}
         maxLength={characterLimit}
-        className="w-full h-36 px-6 py-6 pr-40 text-lg bg-white rounded-md focus:outline-none border-none placeholder-gray-400 text-start resize-none overflow-y-auto"
+        className="w-full h-36 px-6 py-6 pr-6 text-lg bg-white rounded-md focus:outline-none border-none placeholder-gray-400 text-start resize-none overflow-y-auto"
       />
 
       {/* MIC — Bottom Left */}
@@ -85,8 +85,6 @@ const ChatInput = ({ onSendMessage, characterLimit = 4608 }) => {
         disabled={!message.trim() || message.length > characterLimit}
         className="absolute bottom-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 
           hover:from-purple-700 hover:to-pink-700 
-          disabled:from-gray-400 disabled:to-gray-400 
-          disabled:cursor-not-allowed 
           text-white font-semibold px-5 py-2 rounded-sm 
           transition-all duration-200 shadow-md text-sm whitespace-nowrap"
         whileHover={{ scale: 1.05 }}

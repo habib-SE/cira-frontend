@@ -622,6 +622,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import NurseAvatar from "./nurseAvatar/NurseAvatar";
+import { convertNumbersToDigitalWords } from "../utils/numberToDigitalWords";
 
 // Import modals
 import VitalSignsDisplay from "./modal/VitalSignsDisplay";
@@ -687,41 +688,38 @@ export default function CiraAssistant() {
   } = useModalLogic();
 
   // NEW: Extract clinical summary from conversation
-  const extractClinicalSummaryFromConversation = (log) => {
-    // Look for the clinical summary in the assistant's last messages
-    const assistantMessages = log
-      .filter((e) => e.role === "assistant")
-      .map((e) => e.message.trim());
+const extractClinicalSummaryFromConversation = (log) => {
+  const assistantMessages = log
+    .filter((e) => e.role === "assistant")
+    .map((e) => e.message.trim());
 
-    // The clinical summary should be in the last few messages from the assistant
-    // Look for the professional clinical summary format described in the prompt
-    for (let i = assistantMessages.length - 1; i >= Math.max(0, assistantMessages.length - 5); i--) {
-      const message = assistantMessages[i];
-      
-      // Check if this message matches the clinical summary format
-      if (message && 
-          (message.includes("presented with") || 
-           message.includes("year-old") ||
-           message.includes("Seek medical attention if symptoms worsen"))) {
-        return {
-          clinicalSummary: message
-        };
-      }
+  for (let i = assistantMessages.length - 1; i >= Math.max(0, assistantMessages.length - 5); i--) {
+    const message = assistantMessages[i];
+    if (
+      message &&
+      (message.includes("presented with") || message.includes("year-old") || message.includes("Seek medical attention if symptoms worsen"))
+    ) {
+      // ✅ Convert numbers to digital words here
+      return {
+        clinicalSummary: convertNumbersToDigitalWords(message),
+      };
     }
+  }
 
-    // Fallback: if no clinical summary found, create a basic one
-    const userMessages = log
-      .filter((e) => e.role === "user")
-      .map((e) => e.message.trim());
+  const userMessages = log
+    .filter((e) => e.role === "user")
+    .map((e) => e.message.trim());
 
-    const symptoms = userMessages.slice(-3).join(", ");
-    
-    return {
-      clinicalSummary: symptoms ? 
-        `Based on your symptoms including ${symptoms}, it's recommended to consult with a healthcare professional for proper evaluation and treatment.` 
-        : "No clinical summary available from the consultation."
-    };
+  const symptoms = userMessages.slice(-3).join(", ");
+
+  return {
+    clinicalSummary: symptoms
+      ? convertNumbersToDigitalWords(
+          `Based on your symptoms including ${symptoms}, it's recommended to consult with a healthcare professional for proper evaluation and treatment.`
+        )
+      : "No clinical summary available from the consultation.",
   };
+};
 
   const conversation = useConversation({
     clientTools: {
@@ -957,14 +955,6 @@ export default function CiraAssistant() {
     }, 10000);
   };
 
-  // Manual button to open summary again
-  const handleOpenSummaryManually = () => {
-    const summary = extractClinicalSummaryFromConversation(conversationLogRef.current);
-    setConversationSummary(summary);
-    // This will now trigger the doctor popup with the clinical summary
-    triggerDoctorRecommendationPopUp("your health concerns", "General Physician");
-    setShowEndOfConversationPopup(true);
-  };
 
   return (
     <div
@@ -1071,7 +1061,7 @@ export default function CiraAssistant() {
 
 
       {/* Controls */}
-      {isConnected && !showEndOfConversationPopup && (
+      {isConnected && (
         <div className="flex gap-4 mt-2">
           <button
             onClick={handleEndConversation}
@@ -1094,7 +1084,6 @@ export default function CiraAssistant() {
       <div className="flex flex-col items-center gap-3 mt-4">
         {!isConnected &&
           hasAgreed &&
-          !conversationEnded && 
           !isAutoStarting && (
             <button
               onClick={handleStartConversationDirectly}

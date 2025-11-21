@@ -5,6 +5,7 @@ import NurseAvatar from '../../assistant/nurseAvatar/NurseAvatar';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { motion } from 'framer-motion';
+import Nurse from '../../assets/nurse.png'
 
 export default function HeroSection() {
   const [chatHistory, setChatHistory] = useState([]);
@@ -39,66 +40,56 @@ export default function HeroSection() {
 
   return (
     <motion.section
-      className="min-h-screen bg-white flex flex-col items-center justify-center px-6 py-12"
+      className="min-h-screen bg-[#FFFEF9] flex flex-col px-6 py-6"
       initial="hidden"
       animate="show"
       transition={{ staggerChildren: 0.15 }}
     >
       {/* Avatar */}
-      <motion.div variants={fadeUp} className="mb-20 relative h-[190px] w-[220px] flex items-center">
-        <div
-          className="absolute top-16 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[190px] w-[190px] rounded-full bg-[#FCF5E6] blur-[1px] z-[1]"
-        ></div>
-
-        <div className="relative h-[280px] w-[280px] rounded-full overflow-hidden z-[3]">
-          <Canvas camera={{ position: [0, 1.5, 3], fov: 20 }}>
-            <directionalLight position={[2, 5, 3]} intensity={1.2} />
-            <hemisphereLight skyColor={0xffffff} groundColor={0xffe0f0} intensity={0.6} />
-            <OrbitControls enableZoom={false} />
-            <NurseAvatar />
-          </Canvas>
-        </div>
+      <motion.div  variants={fadeUp} className='flex items-center justify-center'>
+      <img src={Nurse} alt="" className='w-[10%] ml-10 items-center'/>
       </motion.div>
 
       {/* Trust Badges */}
-      <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-6 text-sm text-gray-600 mb-8">
-        <motion.div variants={float} className="flex items-center gap-2 text-black">
-          <Shield className="w-4 h-4 fill-current" />
+      <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-6 text-[12px] text-gray-600 mb-8 -mt-4">
+        <motion.div variants={float} className="flex items-center gap-1 text-black">
+          <Shield className="w-3 fill-current" />
           <div className="flex flex-row">
             <strong>256</strong>
             <p>-bit encryption</p>
           </div>
         </motion.div>
-        <motion.div variants={float} transition={{ delay: 0.1 }} className="flex items-center gap-2 text-black">
-          <Users className="w-4 h-4 fill-current" />
+        <motion.div variants={float} transition={{ delay: 0.1 }} className="flex items-center gap-1 text-black">
+          <Users className="w-3 fill-current" />
           <span>Trusted by thousands</span>
         </motion.div>
-        <motion.div variants={float} transition={{ delay: 0.2 }} className="flex items-center gap-2 text-black">
-          <Zap className="w-4 h-4 fill-current" />
+        <motion.div variants={float} transition={{ delay: 0.2 }} className="flex items-center gap-1 text-black">
+          <Zap className="w-3 fill-current" />
           <span>Instant AI answers</span>
         </motion.div>
       </motion.div>
 
       {/* Text Block */}
-      <motion.div variants={fadeUp} className="w-full max-w-2xl px-4 -ml-6">
-        <h1 className="text-4xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight text-left">
-          Hi, I'm <span className="text-pink-400">Cira</span>, your AI Nurse
-        </h1>
+      <motion.div variants={fadeUp} className="w-full max-w-4xl px-4 ml-10 md:ml-25">
+<h1 className="text-4xl md:text-5xl font-serif font-normal text-gray-950 mb-6 tracking-wide text-left">
+  Hi, I'm <span className="text-pink-400">Cira</span>, your AI Nurse
+</h1>
+
+
 
         <motion.div
-          className="text-left space-y-4 text-gray-700 text-lg mb-8"
+          className="text-left space-y-4 text-gray-800 text-md mb-5 [word-spacing:1px]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeInOut', delay: 0.2 } }}
         >
           <p>I'm your private and personal wellness <strong>Nurse</strong>.</p>
-          <p>As an AI Nurse, my service is <strong>fast and free</strong>.</p>
-          <p>I've already helped <strong>thousands of people!</strong></p>
-          <p>After we chat, you can book a consultation with our doctors for only <strong>£49</strong></p>
+          <p>As an <strong>AI Nurse</strong>, my service is fast and free.I've already helped <strong>thousands of people!</strong></p>
+          <p>After we chat, if you want you can book a consultation with our experienced doctors for only <strong>£49</strong>.</p>
         </motion.div>
       </motion.div>
 
       {/* Chat Input */}
-      <motion.div variants={fadeUp} className="w-full max-w-2xl">
+      <motion.div variants={fadeUp} className="w-full max-w-[66%] ml-28">
         <ChatInput onSendMessage={handleSendMessage} />
       </motion.div>
 

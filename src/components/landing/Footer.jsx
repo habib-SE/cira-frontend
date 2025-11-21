@@ -1,6 +1,7 @@
 // components/Footer.tsx
 import { Facebook, Instagram, Twitter, Linkedin } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Stars from "../../assets/stars.svg"
 
 export default function Footer() {
   const container = {
@@ -22,16 +23,18 @@ export default function Footer() {
 
         {/* Logo + Name */}
         <motion.div className="flex items-center justify-center gap-3 mb-8" variants={container}>
-          <div className="flex-shrink-0 flex items-center">
-            <div
+          <div className="flex-shrink-0 flex items-center gap-2">
+            {/* <div
               className="w-10 h-10 rounded-full flex items-center justify-center mr-3 shadow-lg"
               style={{
                 background: "linear-gradient(to bottom right, #ff9fd1, #ff76a2)",
               }}
             >
               <span className="text-white font-bold text-lg">C</span>
-            </div>
-            <p className='text-2xl font-bold'>Cira</p>
+            </div> */}
+             
+           <img src={Stars} alt="stars logo" className="w-[25%]"/>           
+            <p className="text-xl font-semibold text-gray-900">Cira</p>
           </div>
         </motion.div>
 

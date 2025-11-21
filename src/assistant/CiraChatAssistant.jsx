@@ -308,9 +308,9 @@ export default function CiraChatAssistant() {
                                 type="button"
                                 className="underline text-pink-500 hover:text-pink-600"
                             >
-                                The Wellness Terms of Service
+                                The Cira Terms of Service
                             </button>{" "}
-                            and will discuss all The Wellness output with a doctor.
+                            and will discuss all The Cira output with a doctor.
                         </label>
                     </div>
 

@@ -23,7 +23,7 @@ export default function PrivacySection() {
 
         {/* Headline */}
         <motion.h2
-          className="text-4xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight"
+          className="text-4xl md:text-4xl lg:text-5xl font-normal font-serif text-gray-950 leading-tight"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -36,7 +36,7 @@ export default function PrivacySection() {
 
         {/* Subtitle */}
         <motion.p
-          className="mt-10 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
+          className="mt-10 text-normal md:text-md text-gray-600 max-w-3xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

@@ -14,7 +14,7 @@ export default function DoctorConnectionSection() {
 
         {/* Headline */}
         <motion.h2
-          className="text-4xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight"
+          className="text-4xl font-serif md:text-4xl lg:text-5xl font-normal text-gray-950 tracking-tight leading-tight"
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
@@ -28,7 +28,7 @@ export default function DoctorConnectionSection() {
 
         {/* 24/7 Badge */}
         <motion.button
-          className="mt-10 inline-flex items-center text-teal-600 border-2 border-teal-600 text-sm font-medium px-6 py-3 rounded-full transition-all duration-200 hover:bg-teal-50"
+          className="mt-10 inline-flex items-center text-teal-500 border-2 border-teal-500 hover:bg-teal-500 hover:text-gray-100  text-sm font-medium px-8 py-4 rounded-full transition-all duration-20"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -39,7 +39,7 @@ export default function DoctorConnectionSection() {
 
         {/* Description */}
         <motion.p
-          className="mt-10 text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed"
+          className="mt-10 text-md text-gray-600 max-w-xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -65,7 +65,7 @@ export default function DoctorConnectionSection() {
                   <Stethoscope className="w-6 h-6 text-cyan-500" />
                 </div>
                 <div>
-                  <strong className="text-gray-900">Private GP and Specialist Doctors</strong>
+                  <h4 className="text-gray-900 font-semibold">Private GP and Specialist Doctors</h4>
                   <p className="text-gray-600 text-sm mt-1">Experienced. Skilled. Trustworthy.</p>
                 </div>
               </li>
@@ -75,7 +75,7 @@ export default function DoctorConnectionSection() {
                   <ClipboardList className="w-6 h-6 text-cyan-500" />
                 </div>
                 <div>
-                  <strong className="text-gray-900">Full service care</strong>
+                  <h4 className="text-gray-900 font-semibold">Full service care</h4>
                   <p className="text-gray-600 text-sm mt-1">Prescriptions, referrals & treatment</p>
                 </div>
               </li>
@@ -85,7 +85,7 @@ export default function DoctorConnectionSection() {
                   <Check className="w-6 h-6 text-cyan-500" />
                 </div>
                 <div>
-                  <strong className="text-gray-900">No insurance needed</strong>
+                  <h4 className="text-gray-900 font-semibold">No insurance needed</h4>
                   <p className="text-gray-600 text-sm mt-1">All notes available in The Wellness</p>
                 </div>
               </li>
