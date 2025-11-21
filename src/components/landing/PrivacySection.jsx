@@ -23,7 +23,7 @@ export default function PrivacySection() {
 
         {/* Headline */}
         <motion.h2
-          className="text-4xl md:text-4xl lg:text-5xl font-normal font-serif text-gray-950 leading-tight"
+          className="text-3xl md:text-4xl lg:text-5xl font-normal font-serif text-gray-950 leading-tight"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
