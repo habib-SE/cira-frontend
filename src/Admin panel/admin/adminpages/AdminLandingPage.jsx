@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Activity, Users, Calendar, Brain } from 'lucide-react';
-import logo from '../../../assets/Logo.png';
+import Stars from '../../../assets/stars.svg';
 
 const AdminLandingPage = () => {
     const navigate = useNavigate();
@@ -110,19 +110,8 @@ const AdminLandingPage = () => {
                 initial="hidden"
                 animate="visible"
             >
-                {/* Logo Section */}
+                {/* Title Section */}
                 <motion.div className="mb-4" variants={itemVariants}>
-                    <motion.div 
-                        className="inline-flex items-center justify-center mb-2"
-                        whileHover={{ scale: 1.1 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <img 
-                            src={logo} 
-                            alt="Doctor AI Logo" 
-                            className="w-20 h-20 object-contain"
-                        />
-                    </motion.div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
                         Doctor AI
                     </h1>

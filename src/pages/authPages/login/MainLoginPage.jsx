@@ -237,7 +237,7 @@ import {
   EnvelopeIcon,
 } from '@heroicons/react/24/outline';
 import { Building } from 'lucide-react';
-import { Logo } from '../../../components/shared';
+import Stars from '../../../assets/stars.svg';
 
 const roles = [
   { key: 'user', label: 'User', icon: UserIcon },
@@ -277,11 +277,13 @@ const MainLoginPage = () => {
       <div className="relative z-10 w-full max-w-6xl grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 items-start lg:items-center">
         {/* Left Hero Side - Top on mobile, Left on desktop */}
         <div className="flex flex-col gap-4 sm:gap-6 text-center lg:text-left order-1">
-            {/* Logo in top-left corner - hidden on mobile, shown on desktop */}
-  <div className="hidden lg:flex absolute top-4 -left-10 z-20 items-center gap-3">
-    <Logo variant="default" className="h-12 lg:h-16 w-auto" alt="Cira Logo" />
-    
-  </div>
+            {/* Logo - visible on all screens */}
+            <div className="flex justify-start mb-2 sm:mb-4">
+              <div className="flex-shrink-0 flex gap-2 items-center">
+                <img src={Stars} alt="stars logo" className="w-[20%]"/>
+                <span className="text-xl font-semibold text-gray-900">Cira</span>
+              </div>
+            </div>
 
           <div>
             <span className="px-2 sm:px-3 py-1 rounded-full bg-white/70 shadow-sm text-[10px] sm:text-xs font-semibold text-pink-500">

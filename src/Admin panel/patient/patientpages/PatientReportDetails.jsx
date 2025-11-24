@@ -401,11 +401,11 @@ const PatientReportDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-pink-50">
+    <div className="min-h-screen bg-pink-50 p-6 space-y-6">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4">
+      <div className="p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center space-x-3 w-full sm:w-auto justify-start">
               <div className="text-left">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900">AI Nurse Report Details</h1>
@@ -447,7 +447,7 @@ const PatientReportDetails = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Left Column - Symptoms & Vitals */}

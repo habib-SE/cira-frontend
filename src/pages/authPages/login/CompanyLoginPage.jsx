@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import { Logo } from '../../../components/shared';
+import Stars from '../../../assets/stars.svg';
 
 const CompanyLoginPage = () => {
   const navigate = useNavigate();
@@ -95,11 +95,10 @@ const CompanyLoginPage = () => {
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div>
             <div className="flex items-center justify-center mb-6 sm:mb-8">
-              <Logo 
-                variant="login"
-                className="h-12 sm:h-14 lg:h-16 w-auto"
-                alt="CIRA Logo"
-              />
+              <div className="flex-shrink-0 flex gap-2 items-center">
+                <img src={Stars} alt="stars logo" className="w-[20%]"/>
+                <span className="text-xl font-semibold text-gray-900">Cira</span>
+              </div>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-2">
               Company Login

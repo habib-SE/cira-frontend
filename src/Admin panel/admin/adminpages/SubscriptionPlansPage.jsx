@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Check } from 'lucide-react';
-import { Logo } from '../../../components/shared';
+import Stars from '../../../assets/stars.svg';
 
 const 
 SubscriptionPlansPage = () => {
@@ -86,21 +86,16 @@ SubscriptionPlansPage = () => {
             {/* Header - Logo in top left */}
             <div className="w-full flex justify-start items-center mb-2 sm:mb-2">
                 <div className="flex items-center pl-2 sm:pl-4">
-                    <Logo variant="default" alt="Cira Logo" className="h-6 sm:h-7 w-auto" />
+                    <div className="flex-shrink-0 flex gap-2 items-center">
+                        <img src={Stars} alt="stars logo" className="w-[20%]"/>
+                        <span className="text-xl font-semibold text-gray-900">Cira</span>
+                    </div>
                 </div>
             </div>
 
             {/* Main Content - Centered */}
             <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-0">
                 <div className="w-full max-w-6xl text-center px-2">
-                 {/* Main Logo */}
-                 <div className="flex justify-center mb-3 sm:mb-1">
-                        <Logo
-                            variant="login"
-                            alt="Login Logo"
-                            className="w-20 h-20 sm:w-28 sm:h-28"
-                        />
-                    </div>
                     {/* Main Title */}
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-1 leading-tight">
                         Choose Your Plan

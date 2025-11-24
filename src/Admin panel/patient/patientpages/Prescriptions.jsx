@@ -95,7 +95,7 @@ const Prescriptions = () => {
   };
 
   return (
-    <div className="p-6 bg-pink-50 min-h-screen">
+    <div className="min-h-screen bg-pink-50 p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>

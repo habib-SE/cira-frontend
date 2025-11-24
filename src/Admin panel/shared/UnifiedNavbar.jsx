@@ -232,7 +232,7 @@ const UnifiedNavbar = ({
           ],
           displayName: 'user',
           showMobileMenu: true, // Show mobile menu toggle button
-          padding: 'px-4 py-3'
+          padding: 'px-6 py-3'
         };
       default:
         return {

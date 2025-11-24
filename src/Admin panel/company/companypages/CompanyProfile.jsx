@@ -403,7 +403,7 @@ const CompanyProfile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="">
         {/* Header */}
         <div className="mb-4 sm:mb-6">
           <button

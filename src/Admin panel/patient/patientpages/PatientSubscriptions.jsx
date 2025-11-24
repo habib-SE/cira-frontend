@@ -159,9 +159,8 @@ const PatientSubscriptions = () => {
   };
 
   return (
-    <div className="min-h-screen bg-pink-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
+    <div className="min-h-screen bg-pink-50 p-6 space-y-6">
+      {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">AI Usage Plans</h1>
           <p className="text-gray-600">Choose the perfect plan for your healthcare needs</p>
@@ -385,7 +384,6 @@ const PatientSubscriptions = () => {
             </Card>
           </div>
         </div>
-      </div>
     </div>
   );
 };

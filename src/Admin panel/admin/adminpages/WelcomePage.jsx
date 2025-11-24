@@ -1,8 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link, Quote, EllipsisVertical } from 'lucide-react';
-import logo from '../../../assets/Logo.png';
-import loginLogo from '../../../assets/LoginLogo.png';
+import Stars from '../../../assets/stars.svg';
 
 const WelcomePage = () => {
     const navigate = useNavigate();
@@ -14,22 +13,16 @@ const WelcomePage = () => {
             {/* Header - Logo in top left */}
             <div className="w-full flex justify-start items-center mb-4">
                 <div className="flex items-center pl-4">
-                    <img src={logo} alt="Cira Logo" className="h-7 w-auto" />
+                    <div className="flex-shrink-0 flex gap-2 items-center">
+                        <img src={Stars} alt="stars logo" className="w-[20%]"/>
+                        <span className="text-xl font-semibold text-gray-900">Cira</span>
+                    </div>
                 </div>
             </div>
 
             {/* Main Content - Centered */}
             <div className="flex-1 flex flex-col items-center justify-center">
                 <div className="w-full  text-center">
-                    {/* Main Logo */}
-                    <div className="flex justify-center mb-2">
-                        <img
-                            src={loginLogo}
-                            alt="Login Logo"
-                            className="w-28 h-28"
-                        />
-                    </div>
-
                     {/* Main Title */}
                     <h1 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
                         Smart AI Companion for Anytime Assistance
