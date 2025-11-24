@@ -1,0 +1,14 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pink Circle -->
+  <circle cx="100" cy="100" r="90" fill="#F72F9C" />
+
+  <!-- White C Shape -->
+  <path 
+    d="M140 60
+       A50 50 0 1 0 140 140
+       L125 130
+       A35 35 0 1 1 125 70
+       Z"
+    fill="white"
+  />
+</svg>

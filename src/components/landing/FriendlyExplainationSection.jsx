@@ -15,7 +15,7 @@ export default function FriendlyExplanationSection() {
 
         {/* Headline */}
         <motion.h2
-          className="text-4xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight"
+          className="text-3xl font-serif  md:text-5xl lg:text-6xl font-normal text-gray-950 leading-tight"
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
@@ -23,12 +23,12 @@ export default function FriendlyExplanationSection() {
           transition={{ duration: 0.8, ease: 'easeOut' }}
         >
           Cira listens like a friend,<br />
-          <span className="text-gray-800">explains like a Nurse.</span>
+          <span className="text-gray-950">explains like a Nurse.</span>
         </motion.h2>
 
         {/* Subtext */}
         <motion.p
-          className="mt-8 text-md md:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed"
+          className="mt-8 text-normal md:text-md text-gray-700 max-w-xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -42,13 +42,13 @@ export default function FriendlyExplanationSection() {
 
       {/* Avatar + Listening Indicator */}
       <motion.div
-        className="flex flex-col items-center mt-20"
+        className="flex flex-col items-center mt-12"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
       >
-        <img src={FriendlyNurse} alt="FriendlyNurse" className="w-[40%] rounded-xl shadow-lg" />
+        <img src={FriendlyNurse} alt="FriendlyNurse" className="w-[60%] md:w-[40%]" />
       </motion.div>
     </section>
   );

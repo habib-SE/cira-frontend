@@ -622,6 +622,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import NurseAvatar from "./nurseAvatar/NurseAvatar";
+import { convertNumbersToDigitalWords } from "../utils/numberToDigitalWords";
 
 // Import modals
 import VitalSignsDisplay from "./modal/VitalSignsDisplay";
@@ -687,11 +688,10 @@ export default function CiraAssistant() {
   } = useModalLogic();
 
   // NEW: Extract clinical summary from conversation
-  const extractClinicalSummaryFromConversation = (log) => {
-    // Look for the clinical summary in the assistant's last messages
-    const assistantMessages = log
-      .filter((e) => e.role === "assistant")
-      .map((e) => e.message.trim());
+const extractClinicalSummaryFromConversation = (log) => {
+  const assistantMessages = log
+    .filter((e) => e.role === "assistant")
+    .map((e) => e.message.trim());
 
     // The clinical summary should be in the last few messages from the assistant
     for (
@@ -714,10 +714,9 @@ export default function CiraAssistant() {
       }
     }
 
-    // Fallback: if no clinical summary found, create a basic one
-    const userMessages = log
-      .filter((e) => e.role === "user")
-      .map((e) => e.message.trim());
+  const userMessages = log
+    .filter((e) => e.role === "user")
+    .map((e) => e.message.trim());
 
     const symptoms = userMessages.slice(-3).join(", ");
 
@@ -949,17 +948,17 @@ export default function CiraAssistant() {
   };
 
   // 🛑 End conversation manually
-  const handleEndConversation = async () => {
+   const handleEndConversation = async () => {
     try {
       await conversation.endSession();
       setIsConnected(false);
-      // onDisconnect will build + show summary
+      setConversationEnded(false);
+      setShowEndOfConversationPopup(false);
     } catch (err) {
       console.error("❌ Failed to end conversation:", err);
       setErrorMessage("Failed to end conversation");
     }
   };
-
   // IMPORTANT: Called when user clicks "Find Specialist Doctor"
   const handleFindSpecialistDoctorClick = async () => {
     try {
@@ -1004,7 +1003,7 @@ export default function CiraAssistant() {
       setIsConnected(false);
       setConversationEnded(false);
       setShowEndOfConversationPopup(false);
-    }, 3000);
+    }, 10000);
   };
 
   // Manual button to open summary again
@@ -1124,7 +1123,7 @@ export default function CiraAssistant() {
       )}
 
       {/* Controls */}
-      {isConnected && !showEndOfConversationPopup && (
+      {isConnected && (
         <div className="flex gap-4 mt-2">
           <button
             onClick={handleEndConversation}
