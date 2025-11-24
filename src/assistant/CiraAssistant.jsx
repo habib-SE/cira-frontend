@@ -694,17 +694,22 @@ export default function CiraAssistant() {
       .map((e) => e.message.trim());
 
     // The clinical summary should be in the last few messages from the assistant
-    // Look for the professional clinical summary format described in the prompt
-    for (let i = assistantMessages.length - 1; i >= Math.max(0, assistantMessages.length - 5); i--) {
+    for (
+      let i = assistantMessages.length - 1;
+      i >= Math.max(0, assistantMessages.length - 5);
+      i--
+    ) {
       const message = assistantMessages[i];
-      
+
       // Check if this message matches the clinical summary format
-      if (message && 
-          (message.includes("presented with") || 
-           message.includes("year-old") ||
-           message.includes("Seek medical attention if symptoms worsen"))) {
+      if (
+        message &&
+        (message.includes("presented with") ||
+          message.includes("year-old") ||
+          message.includes("Seek medical attention if symptoms worsen"))
+      ) {
         return {
-          clinicalSummary: message
+          clinicalSummary: message,
         };
       }
     }
@@ -715,11 +720,11 @@ export default function CiraAssistant() {
       .map((e) => e.message.trim());
 
     const symptoms = userMessages.slice(-3).join(", ");
-    
+
     return {
-      clinicalSummary: symptoms ? 
-        `Based on your symptoms including ${symptoms}, it's recommended to consult with a healthcare professional for proper evaluation and treatment.` 
-        : "No clinical summary available from the consultation."
+      clinicalSummary: symptoms
+        ? `Based on your symptoms including ${symptoms}, it's recommended to consult with a healthcare professional for proper evaluation and treatment.`
+        : "No clinical summary available from the consultation.",
     };
   };
 
@@ -733,6 +738,7 @@ export default function CiraAssistant() {
         } = params || {};
 
         if (showDoctorRecommendationPopup) {
+          // 🔔 Trigger from ElevenLabs client tool
           triggerDoctorRecommendationPopUp(condition, specialty);
           setShowEndOfConversationPopup(true);
           return { success: true, opened: "doctor_popup" };
@@ -756,11 +762,7 @@ export default function CiraAssistant() {
           payload.formatted?.text ||
           payload.formatted?.transcript ||
           "";
-        role =
-          payload.source ||
-          payload.role ||
-          payload.author ||
-          "unknown";
+        role = payload.source || payload.role || payload.author || "unknown";
       }
 
       if (!text || !text.trim()) return;
@@ -790,6 +792,45 @@ export default function CiraAssistant() {
       }
 
       console.log("🧾 Conversation log so far:", conversationLogRef.current);
+
+      // ✅ NEW: Detect the FINAL doctor-booking sentence directly from assistant message
+      if (normalizedRole === "assistant") {
+        const lower = text.toLowerCase();
+
+        // The exact line from the system prompt (supporting ' and ’)
+        const exactStraight =
+          "please book an appointment with a doctor so you can make sure you're getting the best care possible.";
+        const exactCurly =
+          "please book an appointment with a doctor so you can make sure you’re getting the best care possible.";
+
+        const containsExactStraight = lower.includes(exactStraight);
+        const containsExactCurly = lower.includes(exactCurly);
+
+        const containsKeyParts =
+          lower.includes("please book an appointment with a doctor") &&
+          lower.includes("best care");
+
+        if (
+          containsExactStraight ||
+          containsExactCurly ||
+          containsKeyParts
+        ) {
+          console.log(
+            "🩺 Detected final booking sentence in assistant message. Triggering doctor recommendation popup."
+          );
+
+          const summary = extractClinicalSummaryFromConversation(
+            conversationLogRef.current
+          );
+          setConversationSummary(summary);
+
+          triggerDoctorRecommendationPopUp(
+            "your health concerns",
+            "General Physician"
+          );
+          setShowEndOfConversationPopup(true);
+        }
+      }
     },
 
     onConnect: () => {
@@ -811,15 +852,15 @@ export default function CiraAssistant() {
         conversationLogRef.current
       );
 
-      // 🔹 Build clinical summary when consultation ends
+      // 🔹 Build clinical summary when consultation ends (fallback)
       const summary = extractClinicalSummaryFromConversation(
         conversationLogRef.current
       );
       setConversationSummary(summary);
-      
-      // Trigger doctor recommendation popup instead of showing summary modal
+
+      // Fallback popup trigger if it somehow didn't fire during the last sentence
       triggerDoctorRecommendationPopUp(
-        "your health concerns", 
+        "your health concerns",
         "General Physician"
       );
       setShowEndOfConversationPopup(true);
@@ -829,12 +870,15 @@ export default function CiraAssistant() {
       if (data?.text) lastSpokenText.current = data.text;
     },
     onSpeakEnd: async () => {
-      const phrase = lastSpokenText.current.toLowerCase();
+      const phrase = (lastSpokenText.current || "").toLowerCase();
       if (
         phrase.includes("book an appointment") ||
         phrase.includes("see a doctor") ||
         phrase.includes("visit a doctor")
       ) {
+        console.log(
+          "🩺 Detected booking wording in spoken phrase. Triggering popup (voice fallback)."
+        );
         triggerDoctorRecommendationPopUp(
           "your health concerns",
           "General Physician"
@@ -965,10 +1009,14 @@ export default function CiraAssistant() {
 
   // Manual button to open summary again
   const handleOpenSummaryManually = () => {
-    const summary = extractClinicalSummaryFromConversation(conversationLogRef.current);
+    const summary = extractClinicalSummaryFromConversation(
+      conversationLogRef.current
+    );
     setConversationSummary(summary);
-    // This will now trigger the doctor popup with the clinical summary
-    triggerDoctorRecommendationPopUp("your health concerns", "General Physician");
+    triggerDoctorRecommendationPopUp(
+      "your health concerns",
+      "General Physician"
+    );
     setShowEndOfConversationPopup(true);
   };
 
@@ -1075,7 +1123,6 @@ export default function CiraAssistant() {
         </motion.div>
       )}
 
-
       {/* Controls */}
       {isConnected && !showEndOfConversationPopup && (
         <div className="flex gap-4 mt-2">
@@ -1098,22 +1145,20 @@ export default function CiraAssistant() {
 
       {/* Buttons */}
       <div className="flex flex-col items-center gap-3 mt-4">
-        {!isConnected &&
-          hasAgreed &&
-          !isAutoStarting && (
-            <button
-              onClick={handleStartConversationDirectly}
-              disabled={!hasPermission}
-              className={`flex items-center gap-2 rounded-full px-4 py-3 text-white font-medium transition-all duration-300 ${
-                hasPermission
-                  ? "bg-gradient-to-r from-pink-500 to-pink-600 hover:scale-105 hover:shadow-lg active:scale-95"
-                  : "bg-gray-400 cursor-not-allowed"
-              }`}
-            >
-              <Rocket className="w-5 h-5" />
-              <span className="text-lg">Start Conversation</span>
-            </button>
-          )}
+        {!isConnected && hasAgreed && !isAutoStarting && (
+          <button
+            onClick={handleStartConversationDirectly}
+            disabled={!hasPermission}
+            className={`flex items-center gap-2 rounded-full px-4 py-3 text-white font-medium transition-all duration-300 ${
+              hasPermission
+                ? "bg-gradient-to-r from-pink-500 to-pink-600 hover:scale-105 hover:shadow-lg active:scale-95"
+                : "bg-gray-400 cursor-not-allowed"
+            }`}
+          >
+            <Rocket className="w-5 h-5" />
+            <span className="text-lg">Start Conversation</span>
+          </button>
+        )}
 
         <button
           onClick={handleTestFlow}
@@ -1122,17 +1167,6 @@ export default function CiraAssistant() {
           <TestTube className="w-5 h-5" />
           <span className="text-lg">Test Modal Flow</span>
         </button>
-
-        {/* Manual summary button (optional) - REMOVED */}
-        {/* {!isConnected &&
-          conversationLogRef.current.length > 0 && (
-            <button
-              onClick={handleOpenSummaryManually}
-              className="text-sm mt-1 underline text-pink-600 hover:text-pink-700"
-            >
-              View consultation summary
-            </button>
-          )} */}
       </div>
 
       {/* Modals */}
@@ -1207,15 +1241,6 @@ export default function CiraAssistant() {
             onClose={handleConfirmationClose}
           />
         )}
-
-        {/* OLD: Conversation Summary Modal - REMOVED */}
-        {/* {showSummaryModal && (
-          <ConversationSummaryModal
-            open={showSummaryModal}
-            summary={conversationSummary}
-            onClose={() => setShowSummaryModal(false)}
-          />
-        )} */}
       </AnimatePresence>
     </div>
   );
