@@ -7,21 +7,13 @@ import { OrbitControls } from '@react-three/drei';
 import { motion } from 'framer-motion';
 import Nurse from '../../assets/nurse.png'
 
-export default function HeroSection() {
+export default function HeroSection({ onStartChat }) {
   const [chatHistory, setChatHistory] = useState([]);
 
-  const handleSendMessage = (message) => {
-    setChatHistory(prev => [...prev, { type: 'user', message }]);
-
-    setTimeout(() => {
-      setChatHistory(prev => [
-        ...prev,
-        {
-          type: 'ai',
-          message: "I understand you're asking about your health. Let me help you with that...",
-        },
-      ]);
-    }, 800);
+  const handleSendMessage = (msg) => {
+    if (onStartChat) {
+      onStartChat(msg); // 🔹 tells LandingPage to show CiraChatAssistant
+    }
   };
 
   // Shared fade-up + scale animation

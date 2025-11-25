@@ -8,19 +8,10 @@ export default function Header() {
   return (
     <header className="w-full" style={{
       background: 'linear-gradient(180deg,#FFFEF9 100%)'}}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-8xl mx-auto px-5 mt-2">
         <div className="flex justify-between items-center h-12">
           {/* Logo - Left Side */}
           <div className="flex-shrink-0 flex gap-2 items-center">
-            {/* <div
-              className="w-8 h-8 rounded-full flex items-center justify-center mr-3 shadow-lg"
-              style={{
-                background:
-                  "linear-gradient(to bottom right, #ff9fd1, #ff76a2)",
-              }}
-            >
-              <span className="text-white font-bold text-lg">C</span>
-            </div> */}
 
             <img src={Stars} alt="stars logo" className="w-[20%]"/>
             <Link to="/" className="text-xl font-semibold text-gray-900">
