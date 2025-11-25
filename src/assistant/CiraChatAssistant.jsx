@@ -775,11 +775,6 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
                 <div className="flex -space-x-2">
                   <img
                     src={AgentAvatar}
-                    alt="Clinician 1"
-                    className="w-8 h-8 rounded-full border border-white object-cover"
-                  />
-                  <img
-                    src={AgentAvatar}
                     alt="Clinician 2"
                     className="w-8 h-8 rounded-full border border-white object-cover"
                   />
@@ -815,13 +810,13 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
                     }`}
                 >
                   <div className="flex items-center gap-2 max-w-[80%]">
-                    {isAssistant && (
+                    {/* {isAssistant && (
                       <img
                         src={AgentAvatar}
                         alt="Cira avatar"
                         className="w-7 h-7 rounded-full flex-shrink-0"
                       />
-                    )}
+                    )} */}
                     <div
                       className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${isAssistant
                           ? "bg-white text-gray-800"
@@ -838,11 +833,11 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
             {isThinking && (
               <div className="flex w-full justify-start">
                 <div className="flex items-center gap-2 max-w-[80%]">
-                  <img
+                  {/* <img
                     src={AgentAvatar}
                     alt="Cira avatar"
                     className="w-7 h-7 rounded-full flex-shrink-0"
-                  />
+                  /> */}
                   <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-white text-gray-500">
                     <span className="inline-flex gap-1 items-center">
                       <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" />
