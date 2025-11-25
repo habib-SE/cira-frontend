@@ -92,11 +92,11 @@ const BaseLayout = ({
 
         {/* Page content */}
         <main 
-          className={`flex-1 overflow-y-auto overflow-x-hidden relative min-h-0 px-2 sm:px-3 lg:px-4 ${pageBackground ? `bg-${pageBackground}` : ''}`}
+          className={`flex-1 overflow-y-auto overflow-x-hidden relative min-h-0 ${pageBackground ? `bg-${pageBackground}` : ''}`}
         >
           <PageLoader isLoading={isLoading}>    
             <div className="min-h-full flex flex-col min-w-0">
-              <div className="flex-1 w-full mx-auto max-w-[1600px]">
+              <div className="flex-1 w-full">
                 <Outlet />
               </div>
               {/* Footer - only shows at bottom of content, not fixed */}

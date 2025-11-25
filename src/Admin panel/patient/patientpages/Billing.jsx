@@ -16,7 +16,7 @@ const Billing = () => {
   ];
 
   return (
-    <div className="p-4 sm:p-6 space-y-6">
+    <div className="min-h-screen bg-pink-50 p-6 space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Billing</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

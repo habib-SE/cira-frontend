@@ -209,7 +209,7 @@ const PatientReports = () => {
   );
 
   return (
-    <div className="p-4 lg:p-6 space-y-6 overflow-x-hidden bg-pink-50 min-h-screen">
+    <div className="min-h-screen bg-pink-50 p-6 space-y-6 overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
         <div className="text-center lg:text-left w-full lg:w-1/2">
@@ -225,7 +225,7 @@ const PatientReports = () => {
       </div>
 
       {/* Search and Filter */}
-      <Card className="p-4 lg:p-6 w-full max-w-[1200px] mx-auto">
+      <Card className="p-4 lg:p-6 w-full">
         <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -253,7 +253,7 @@ const PatientReports = () => {
       </Card>
 
       {/* AI Reports List */}
-      <Card className="p-4 lg:p-6 w-full max-w-[1200px] mx-auto">
+      <Card className="p-4 lg:p-6 w-full">
         <div className="mb-6">
           <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-1 text-center lg:text-left">AI Nurse Consultation Reports</h3>
           <p className="text-sm text-gray-600 text-center lg:text-left">Your AI-powered health consultations and analysis reports</p>

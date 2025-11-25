@@ -4,7 +4,7 @@ import Card from '../../admin/admincomponents/Card';
 
 const PatientSettings = () => {
   return (
-    <div className="p-6 space-y-6 bg-pink-50 min-h-screen">
+    <div className="min-h-screen bg-pink-50 p-6 space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>

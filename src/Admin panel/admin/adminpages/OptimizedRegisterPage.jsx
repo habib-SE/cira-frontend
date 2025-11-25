@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeClosed, Check, X, AlertCircle } from 'lucide-react';
-import logo from '../../../assets/Logo.png';
-import loginLogo from '../../../assets/LoginLogo.png';
+import Stars from '../../../assets/stars.svg';
 import PhoneNumberInput from '../admincomponents/PhoneNumberInput';
 import { FormicaForm } from '../../../components/forms';
 import { authFormicaSchemas } from '../../../utils/validation/formicaSchemas';
@@ -107,9 +106,8 @@ const OptimizedRegisterPage = () => {
 
       {/* Main Content */}
       <div className="relative w-full max-w-md">
-        {/* Logo */}
+        {/* Title */}
         <div className="text-center mb-8">
-          <img src={logo} alt="CIRA Logo" className="h-16 mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-gray-800">Create Account</h1>
           <p className="text-gray-600 mt-2">Join the future of healthcare</p>
         </div>

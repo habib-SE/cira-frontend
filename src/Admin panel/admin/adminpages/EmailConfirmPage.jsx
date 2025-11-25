@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Check, X } from 'lucide-react';
-import LoginLogo from '../../../assets/LoginLogo.png';
-import logo from '../../../assets/Logo.png';
+import Stars from '../../../assets/stars.svg';
 import '../../../styles/banner.css';
 
 const EmailConfirmPage = () => {
@@ -231,7 +230,10 @@ const EmailConfirmPage = () => {
     {/* Header - Logo in center */}
     <div className="w-full flex justify-start items-center mb-3 sm:mb-4">
                 <div className="flex items-center pl-2 sm:pl-4">
-                    <img src={logo} alt="Cira Logo" className="h-6 sm:h-7 w-auto" />
+                    <div className="flex-shrink-0 flex gap-2 items-center">
+                        <img src={Stars} alt="stars logo" className="w-[20%]"/>
+                        <span className="text-xl font-semibold text-gray-900">Cira</span>
+                    </div>
                 </div>
             </div>
 
@@ -258,15 +260,6 @@ const EmailConfirmPage = () => {
       {/* Main Content - Centered */}
       <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-0">
         <div className="w-full max-w-sm text-center">
-        {/* Logo */}
-        <div className="mb-2 sm:mb-3 flex justify-center items-center">
-          <img 
-            src={LoginLogo} 
-            alt="Cira Logo" 
-            className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 mb-2 sm:mb-3"
-          />
-        </div>
-
         {/* Title */}
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 text-center">
           Confirm your Email

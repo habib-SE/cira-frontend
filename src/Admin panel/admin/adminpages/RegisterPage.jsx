@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeClosed, Check, X, AlertCircle } from 'lucide-react';
-import logo from '../../../assets/Logo.png';
-import loginLogo from '../../../assets/LoginLogo.png';
+import Stars from '../../../assets/stars.svg';
 import PhoneNumberInput from '../admincomponents/PhoneNumberInput';
 import { 
   FormicaValidatedForm, 
@@ -96,7 +95,10 @@ const RegisterPage = () => {
       {/* Header - Fixed at top */}
       <div className="w-full flex justify-start items-center mb-4">
                 <div className="flex items-center pl-4">
-                    <img src={logo} alt="Cira Logo" className="h-7 w-auto" />
+                    <div className="flex-shrink-0 flex gap-2 items-center">
+                        <img src={Stars} alt="stars logo" className="w-[20%]"/>
+                        <span className="text-xl font-semibold text-gray-900">Cira</span>
+                    </div>
                 </div>
             </div>
 
