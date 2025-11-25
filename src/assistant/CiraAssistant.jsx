@@ -820,20 +820,20 @@ const extractClinicalSummaryFromConversation = (log) => {
     onSpeakStart: (data) => {
       if (data?.text) lastSpokenText.current = data.text;
     },
-    onSpeakEnd: async () => {
-      const phrase = lastSpokenText.current.toLowerCase();
-      if (
-        phrase.includes("book an appointment") ||
-        phrase.includes("see a doctor") ||
-        phrase.includes("visit a doctor")
-      ) {
-        triggerDoctorRecommendationPopUp(
-          "your health concerns",
-          "General Physician"
-        );
-        setShowEndOfConversationPopup(true);
-      }
-    },
+   onSpeakEnd: async () => {
+  const phrase = lastSpokenText.current.trim();
+
+  const triggerSentence =
+    "Please book an appointment with a doctor so you can make sure you’re getting the best care possible.";
+
+  if (phrase === triggerSentence) {
+    triggerDoctorRecommendationPopUp(
+      "your health concerns",
+      "General Physician"
+    );
+    setShowEndOfConversationPopup(true);
+  }
+},
     onPhoneme: (p) => {
       setPhoneme(p);
       setTimeout(() => setPhoneme(null), 80);
