@@ -1475,7 +1475,8 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
             onSendMessage={handleUserMessage}
             label="" // already hiding label
             disabled={!hasAgreed}
-            placeholder="Describe how you're feeling or what you're worried about..."
+            submitText=""
+            placeholder="Reply to Cira..."
           />
         </div>
       </motion.footer>
