@@ -8,7 +8,7 @@ export default function Header() {
   return (
     <header className="w-full" style={{
       background: 'linear-gradient(180deg,#FFFEF9 100%)'}}>
-      <div className="max-w-8xl mx-auto px-5 mt-2">
+      <div className="max-w-8xl mx-auto px-7 mt-2">
         <div className="flex justify-between items-center h-12">
           {/* Logo - Left Side */}
           <div className="flex-shrink-0 flex gap-2 items-center">
