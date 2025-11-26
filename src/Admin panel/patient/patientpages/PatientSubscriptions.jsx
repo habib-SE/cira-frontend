@@ -168,10 +168,7 @@ const PatientSubscriptions = () => {
 
         {/* All Plans Section */}
         <div className="mb-12">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Available Plans</h2>
-            <p className="text-gray-600">Select a plan that fits your healthcare requirements</p>
-          </div>
+         
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {plans.map((plan) => (

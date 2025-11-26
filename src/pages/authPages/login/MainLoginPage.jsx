@@ -270,6 +270,14 @@ const MainLoginPage = () => {
     style={{
       background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)'}}
     >
+      {/* Logo in top left corner */}
+      <div className="absolute top-4 sm:top-6 left-4 sm:left-6 z-20">
+        <div className="flex-shrink-0 flex gap-2 items-center">
+          <img src={Stars} alt="stars logo" className="w-5 h-5 sm:w-6 sm:h-6"/>
+          <span className="text-lg sm:text-xl font-semibold text-gray-900">Cira</span>
+        </div>
+      </div>
+
       {/* soft glow blobs */}
       <div className="pointer-events-none absolute -top-32 -left-10 h-72 w-72  blur-3xl rounded-full" />
       <div className="pointer-events-none absolute -bottom-32 -right-10 h-72 w-72 bg-purple-400/20 blur-3xl rounded-full" />
@@ -277,13 +285,6 @@ const MainLoginPage = () => {
       <div className="relative z-10 w-full max-w-6xl grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 items-start lg:items-center">
         {/* Left Hero Side - Top on mobile, Left on desktop */}
         <div className="flex flex-col gap-4 sm:gap-6 text-center lg:text-left order-1">
-            {/* Logo - visible on all screens */}
-            <div className="flex justify-start mb-2 sm:mb-4">
-              <div className="flex-shrink-0 flex gap-2 items-center">
-                <img src={Stars} alt="stars logo" className="w-[20%]"/>
-                <span className="text-xl font-semibold text-gray-900">Cira</span>
-              </div>
-            </div>
 
           <div>
             <span className="px-2 sm:px-3 py-1 rounded-full bg-white/70 shadow-sm text-[10px] sm:text-xs font-semibold text-pink-500">

@@ -709,7 +709,7 @@
 // };
 
 // export default ReferralCheckout;
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   HeartHandshake,
   Stethoscope,
@@ -724,6 +724,7 @@ import {
   Phone,
   Mail,
   BadgeCheck,
+  Plus,
 } from "lucide-react";
 import Card from "../../admin/admincomponents/Card";
 
@@ -820,9 +821,36 @@ const ReferralModal = ({ open, onClose, onSubmit, doctor }) => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  // Reset form when modal opens
+  useEffect(() => {
+    if (open) {
+      setForm({
+        patientName: "",
+        patientEmail: "",
+        patientPhone: "",
+        notes: "",
+        urgency: "Normal",
+      });
+      setSuccess(false);
+      setSubmitting(false);
+    }
+  }, [open]);
+
   if (!open) return null;
 
   const update = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+
+  const resetForm = () => {
+    setForm({
+      patientName: "",
+      patientEmail: "",
+      patientPhone: "",
+      notes: "",
+      urgency: "Normal",
+    });
+    setSuccess(false);
+    setSubmitting(false);
+  };
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -859,15 +887,24 @@ const ReferralModal = ({ open, onClose, onSubmit, doctor }) => {
               <CheckCircle2 className="h-8 w-8" />
             </div>
             <h4 className="text-lg font-semibold mb-2">Referral Sent</h4>
-            <p className="text-gray-600">
-              We’ve shared the patient details with {doctor?.name}. You can track status in <b>My Referrals</b>.
+            <p className="text-gray-600 mb-6">
+              We've shared the patient details with {doctor?.name}. You can track status in <b>My Referrals</b>.
             </p>
-            <button
-              onClick={onClose}
-              className="mt-6 px-5 py-2.5 rounded-lg bg-pink-600 text-white hover:bg-pink-700"
-            >
-              Close
-            </button>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={resetForm}
+                className="px-5 py-2.5 rounded-lg bg-pink-600 text-white hover:bg-pink-700 flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Another Referral
+              </button>
+              <button
+                onClick={onClose}
+                className="px-5 py-2.5 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+              >
+                Close
+              </button>
+            </div>
           </div>
         ) : (
           <div className="p-6">

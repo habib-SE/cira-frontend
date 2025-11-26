@@ -373,18 +373,20 @@ const UnifiedNavbar = ({
                         Mark all read
                       </button>
                     )}
-                    <button
-                      onClick={() => setShowAddNotification(!showAddNotification)}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-                      title="Add notification"
-                    >
-                      <Plus className="w-4 h-4 text-gray-600" />
-                    </button>
+                    {portalType === 'admin' && (
+                      <button
+                        onClick={() => setShowAddNotification(!showAddNotification)}
+                        className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                        title="Add notification"
+                      >
+                        <Plus className="w-4 h-4 text-gray-600" />
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                {/* Add Notification Form */}
-                {showAddNotification && (
+                {/* Add Notification Form - Only for Admin */}
+                {portalType === 'admin' && showAddNotification && (
                   <div className="p-4 border-b border-gray-200 bg-gray-50">
                     <div className="space-y-3">
                       <input
@@ -468,13 +470,15 @@ const UnifiedNavbar = ({
                                 <Check className="w-3.5 h-3.5 text-gray-600" />
                               </button>
                             )}
-                            <button
-                              onClick={() => handleDeleteNotification(notification.id)}
-                              className="p-1.5 rounded-lg hover:bg-red-100 transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-3.5 h-3.5 text-gray-600 hover:text-red-600" />
-                            </button>
+                            {portalType === 'admin' && (
+                              <button
+                                onClick={() => handleDeleteNotification(notification.id)}
+                                className="p-1.5 rounded-lg hover:bg-red-100 transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-gray-600 hover:text-red-600" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -482,8 +486,8 @@ const UnifiedNavbar = ({
                   )}
                 </div>
 
-                {/* Footer */}
-                {notifications.length > 0 && (
+                {/* Footer - Only for Admin */}
+                {portalType === 'admin' && notifications.length > 0 && (
                   <div className="p-3 border-t border-gray-200 bg-gray-50">
                     <button
                       onClick={() => {

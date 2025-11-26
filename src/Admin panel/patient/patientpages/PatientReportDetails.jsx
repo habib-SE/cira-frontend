@@ -402,6 +402,15 @@ const PatientReportDetails = () => {
 
   return (
     <div className="min-h-screen bg-pink-50 p-6 space-y-6">
+      {/* Back Button */}
+      <button
+        onClick={() => navigate('/user/reports')}
+        className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+      >
+        <ArrowLeft className="h-5 w-5" />
+        <span className="font-medium">Back to Reports</span>
+      </button>
+
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
       <div className="p-6">

@@ -70,10 +70,7 @@ const PatientSettings = () => {
       </Card>
 
       {/* Action Buttons */}
-      <div className="flex justify-end space-x-4">
-        <button className="px-6 py-3 bg-pink-100 text-pink-700 rounded-xl hover:bg-pink-200 transition-colors font-medium">
-          Cancel
-        </button>
+      <div className="flex justify-end">
         <button className="px-6 py-3 bg-pink-600 text-white rounded-xl hover:bg-pink-700 transition-colors font-medium">
           Save Changes
         </button>
