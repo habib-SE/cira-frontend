@@ -1201,8 +1201,10 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   return (
     <div className="fixed inset-0 w-full flex flex-col" style={{
       background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 68%, #FFF7EA 100%)'}}>
-      <Header className="w-full "/>
-
+        {/* Header: now transparent */}
+  <header className="fixed top-0 left-0 right-0 z-20">
+    <Header className="bg-transparent shadow-none border-none" />
+  </header>
       {/* Scroll area: header + messages + summary */}
       <motion.div
         ref={scrollAreaRef}
@@ -1247,8 +1249,8 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
               {error}
             </div>
           )}
-
-          <div className="space-y-4 pb-28">
+          <div className=" border border-gray-200 mb-5"></div>
+          <div className="space-y-4 pb-24">
             {messages.map((m) => {
               const isAssistant = m.role === "assistant";
               return (
@@ -1477,6 +1479,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
             label="" // already hiding label
             disabled={!hasAgreed}
             submitText=""
+            showMic={false} 
             placeholder="Reply to Cira..."
           />
         </div>

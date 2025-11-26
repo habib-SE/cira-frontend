@@ -85,7 +85,7 @@ function LandingPage() {
 
       {/* 🔹 FULL-SCREEN OVERLAY CHAT (no page scroll) */}
       {showChat && (
-        <div className="fixed inset-0 bg-[#FFFDF9] z-40">
+        <div className="fixed inset-0 z-40">
           <CiraChatAssistant initialMessage={initialMessage} />
         </div>
       )}
