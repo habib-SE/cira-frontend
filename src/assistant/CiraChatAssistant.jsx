@@ -959,6 +959,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   const [isThinking, setIsThinking] = useState(false);
 
   const scrollAreaRef = useRef(null);
+  const [hasStartedChat, setHasStartedChat] = useState(false);
 
   const conversation = useConversation({
     textOnly: true,
@@ -1135,12 +1136,38 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 
   }
 
+  // const handleUserMessage = async (text) => {
+  //   if (!hasAgreed) return;
+  //   const trimmed = text.trim();
+  //   if (!trimmed) return;
+
+  //   setMessages((prev) => [...prev, { id: nextId(), role: "user", text: trimmed }]);
+  //   setIsThinking(true);
+
+  //   try {
+  //     await ensureConnected();
+  //     if (sendUserMessage) sendUserMessage(trimmed);
+  //     else setIsThinking(false);
+  //   } catch (err) {
+  //     console.error("Error sending user message:", err);
+  //     setError("Could not send your message. Please try again.");
+  //     setIsThinking(false);
+  //   }
+  // };
+
   const handleUserMessage = async (text) => {
     if (!hasAgreed) return;
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    setMessages((prev) => [...prev, { id: nextId(), role: "user", text: trimmed }]);
+    setMessages((prev) => [
+      ...prev,
+      { id: nextId(), role: "user", text: trimmed },
+    ]);
+
+    // 👇 mark that chat has started (hide TOS block)
+    setHasStartedChat(true);
+
     setIsThinking(true);
 
     try {
@@ -1187,7 +1214,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 
           {/* --- header and messages remain unchanged --- */}
 
-          <header className="mb-6">
+          <header className="mb-6 px-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold">
@@ -1203,13 +1230,13 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
               </div>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-semibold text-[#111827] mb-1">
+            <h1 className="text-3xl md:text-4xl font-semibold text-[#111827] mb-2">
               Cira Consult
             </h1>
-            <p className="text-sm text-gray-500 mb-1">
+            <p className="text-sm mt-5 text-gray-500 mb-1">
               Consult started: Today, {startedLabel}
             </p>
-            <p className="text-xs text-black">
+            <p className="text-xs mt-5 text-black font-bold">
               If this is an emergency, call 999 or your local emergency number.
             </p>
           </header>
@@ -1220,23 +1247,24 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-4 pb-28">
             {messages.map((m) => {
               const isAssistant = m.role === "assistant";
               return (
-                <div key={m.id} className={`flex w-full ${isAssistant ? "justify-start" : "justify-end"}`}>
-                  <div className="flex items-center gap-2 max-w-[80%]">
-                    {/* {isAssistant && (
-                      <img
-                        src={AgentAvatar}
-                        alt="Cira avatar"
-                        className="w-7 h-7 rounded-full flex-shrink-0"
-                      />
-                    )} */}
+                <div
+                  key={m.id}
+                  className={`flex w-full ${isAssistant ? "justify-start" : "justify-end"
+                    }`}
+                >
+                  <div className="flex items-center">
                     <div
-                      className={`rounded-2xl px-4 py-3 text-sm ${
-                        isAssistant ? "bg-white text-gray-800" : "bg-pink-500 text-white"
-                      }`}
+                      className={`
+              px-4 py-4 text-sm
+              ${isAssistant
+                          ? "rounded-2xl bg-white text-gray-800"
+                          : "rounded-2xl rounded-tr-none bg-pink-500 text-white"
+                        }
+            `}
                     >
                       {m.text}
                     </div>
@@ -1247,23 +1275,41 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 
             {isThinking && (
               <div className="flex w-full justify-start">
-                <div className="flex items-center gap-2 max-w-[80%]">
-                  {/* <img
-                    src={AgentAvatar}
-                    alt="Cira avatar"
-                    className="w-7 h-7 rounded-full flex-shrink-0"
-                  /> */}
-                  <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-white text-gray-500">
-                    <span className="inline-flex gap-1 items-center">
-                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" />
-                    </span>
+                <div className="flex items-center">
+                  <div className="flex w-full justify-start">
+                    <div className="flex items-center gap-2 max-w-[80%]">
+                      <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-white text-gray-500">
+                        <span className="inline-flex gap-1 items-center">
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-gray-400"
+                            style={{
+                              animation: "dotWave 1.2s infinite ease-in-out",
+                              animationDelay: "0s",
+                            }}
+                          />
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-gray-400"
+                            style={{
+                              animation: "dotWave 1.2s infinite ease-in-out",
+                              animationDelay: "0.15s",
+                            }}
+                          />
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-gray-400"
+                            style={{
+                              animation: "dotWave 1.2s infinite ease-in-out",
+                              animationDelay: "0.3s",
+                            }}
+                          />
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
           </div>
+
 
           {/* SUMMARY */}
           {consultSummary && (
@@ -1399,36 +1445,41 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
       </motion.div>
 
       <motion.footer
-        className="w-full flex-shrink-0 flex justify-center pb-6 px-4"
+        className="w-full flex-shrink-0 flex justify-center pb-4 px-4"
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
       >
         <div className="w-full max-w-xl bg-white space-y-3">
-          <div className="flex items-start gap-2 text-[11px] text-gray-600">
-            <input
-              id="tos"
-              type="checkbox"
-              checked={hasAgreed}
-              onChange={(e) => setHasAgreed(e.target.checked)}
-              className="mt-0.5"
-            />
-            <label htmlFor="tos">
-              I agree to the{" "}
-              <button type="button" className="underline text-pink-500">
-                The Cira Terms of Service
-              </button>{" "}
-              and will discuss all The Cira output with a doctor.
-            </label>
-          </div>
+          {/* ✅ Only show TOS before first message */}
+          {!hasStartedChat && (
+            <div className="flex items-start gap-2 text-[11px] text-gray-600">
+              <input
+                id="tos"
+                type="checkbox"
+                checked={hasAgreed}
+                onChange={(e) => setHasAgreed(e.target.checked)}
+                className="mt-0.5"
+              />
+              <label htmlFor="tos">
+                I agree to the{" "}
+                <button type="button" className="underline text-pink-500">
+                  The Cira Terms of Service
+                </button>{" "}
+                and will discuss all The Cira output with a doctor.
+              </label>
+            </div>
+          )}
 
           <ChatInput
             onSendMessage={handleUserMessage}
+            label="" // already hiding label
             disabled={!hasAgreed}
             placeholder="Describe how you're feeling or what you're worried about..."
           />
         </div>
       </motion.footer>
+
     </div>
   );
 }
