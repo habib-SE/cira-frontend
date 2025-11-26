@@ -103,15 +103,15 @@ const CompanyDashboard = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="mb-8 flex justify-between items-start">
+      <div className="mb-8 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Company Dashboard</h1>
           <p className="text-gray-600 mt-2">Manage your organization's health services and employee wellness</p>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={handleExportData}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2 transition-colors"
+            className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2 transition-colors"
           >
             <Download className="h-4 w-4" />
             <span>Export Data</span>
@@ -119,7 +119,7 @@ const CompanyDashboard = () => {
           <button
             onClick={handleRefreshContent}
             disabled={isRefreshing}
-            className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 flex items-center space-x-2 transition-colors disabled:opacity-50"
+            className="w-full sm:w-auto px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
@@ -154,9 +154,6 @@ const CompanyDashboard = () => {
             <CreditCard className="w-4 h-4" />
             Billing
           </button>
-        </div>
-        <div className="mt-3 text-xs text-gray-400">
-          (Company)
         </div>
       </div>
 

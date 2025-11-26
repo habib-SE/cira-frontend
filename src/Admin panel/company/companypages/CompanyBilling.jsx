@@ -136,6 +136,33 @@ const CompanyBilling = () => {
     showAlert('info', `Editing payment method ${methodId}...`);
   };
 
+  const ALERT_VARIANTS = {
+    success: {
+      container: 'bg-pink-50 border-pink-200',
+      icon: 'text-pink-600',
+      title: 'text-pink-800',
+      detail: 'text-pink-700',
+      detailText: 'Action completed successfully.',
+      close: 'text-pink-400 hover:text-pink-600'
+    },
+    error: {
+      container: 'bg-red-50 border-red-200',
+      icon: 'text-red-600',
+      title: 'text-red-800',
+      detail: 'text-red-700',
+      detailText: 'Something went wrong. Please try again.',
+      close: 'text-red-400 hover:text-red-600'
+    },
+    info: {
+      container: 'bg-pink-50 border-pink-200',
+      icon: 'text-pink-600',
+      title: 'text-pink-800',
+      detail: 'text-pink-700',
+      detailText: '',
+      close: 'text-pink-400 hover:text-pink-600'
+    }
+  };
+
   const showAlert = (type, message) => {
     setAlertMessage({ show: true, type, message });
     setTimeout(() => {
@@ -212,11 +239,11 @@ const CompanyBilling = () => {
 
         {/* Payment Methods */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Payment Methods</h3>
             <button 
               onClick={handleAddPaymentMethod}
-              className="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700 flex items-center space-x-2"
+              className="w-full sm:w-auto bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-700 flex items-center justify-center gap-2"
             >
               <Plus className="h-4 w-4" />
               <span>Add Method</span>
@@ -321,15 +348,16 @@ const CompanyBilling = () => {
           </div>
           <button 
             onClick={handleViewAllInvoices}
-            className="text-pink-600 hover:text-pink-700 text-sm font-medium"
+            className="text-pink-600 hover:text-pink-700 text-sm font-medium inline-flex items-center gap-1 whitespace-nowrap"
           >
-            View All →
+            <span>View All</span>
+            <span aria-hidden="true">→</span>
           </button>
         </div>
         <div className="divide-y divide-gray-200">
           {invoices.map((invoice, index) => (
             <div key={index} className="px-6 py-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center space-x-4">
                   <div className="bg-pink-100 p-3 rounded-lg">
                     <Download className="h-5 w-5 text-pink-600" />
@@ -340,8 +368,8 @@ const CompanyBilling = () => {
                     <p className="text-xs text-gray-500 mt-1">Paid on {invoice.date}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <div className="text-right">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 gap-3 sm:gap-4">
+                  <div className="text-left sm:text-right">
                     <p className="text-lg font-bold text-gray-900">{invoice.amount}</p>
                     <span className="inline-flex items-center space-x-1 mt-1">
                       <CheckCircle className="h-3 w-3 text-green-500" />
@@ -350,7 +378,7 @@ const CompanyBilling = () => {
                   </div>
                   <button 
                     onClick={() => handleDownloadInvoice(invoice.id)}
-                    className="bg-pink-50 hover:bg-pink-100 p-2.5 rounded-lg transition-colors"
+                    className="w-full sm:w-auto bg-pink-50 hover:bg-pink-100 p-2.5 rounded-lg transition-colors flex items-center justify-center"
                   >
                     <Download className="h-5 w-5 text-pink-600" />
                   </button>
@@ -363,21 +391,42 @@ const CompanyBilling = () => {
 
       {/* Alert Notification */}
       {alertMessage.show && (
-        <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 ${
-          alertMessage.type === 'success' ? 'bg-green-500 text-white' : 
-          alertMessage.type === 'error' ? 'bg-red-500 text-white' : 
-          'bg-blue-500 text-white'
-        }`}>
-          {alertMessage.type === 'success' && <CheckCircle className="h-5 w-5" />}
-          {alertMessage.type === 'error' && <AlertCircle className="h-5 w-5" />}
-          <span className="font-medium">{alertMessage.message}</span>
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right duration-300 sm:right-4 sm:left-auto left-4 sm:w-auto w-[calc(100%-2rem)]">
+          {(() => {
+            const variant = ALERT_VARIANTS[alertMessage.type] ?? ALERT_VARIANTS.info;
+            return (
+              <div className={`rounded-lg border p-4 shadow-lg max-w-sm flex items-start gap-3 ${variant.container}`}>
+                <div className="flex-shrink-0 mt-0.5">
+                  {alertMessage.type === 'error' ? (
+                    <AlertCircle className={`h-5 w-5 ${variant.icon}`} />
+                  ) : (
+                    <CheckCircle className={`h-5 w-5 ${variant.icon}`} />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className={`text-sm font-medium ${variant.title}`}>
+                    {alertMessage.message}
+                  </p>
+                  {variant.detailText && (
+                    <p className={`text-xs mt-1 ${variant.detail}`}>{variant.detailText}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setAlertMessage({ show: false, type: '', message: '' })}
+                  className={`flex-shrink-0 ${variant.close}`}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            );
+          })()}
         </div>
       )}
 
       {/* Manage Plan Modal */}
       {showManagePlanModal && (
-        <div className="fixed inset-0 bg-gray-500/30 backdrop-blur-md flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-gray-500/30 backdrop-blur-md flex items-center justify-center px-4 py-6 sm:px-0 sm:py-0 z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-auto sm:mx-0 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">Manage Your Plan</h2>
               <button 
@@ -420,8 +469,8 @@ const CompanyBilling = () => {
 
       {/* Add Payment Method Modal */}
       {showAddPaymentModal && (
-        <div className="fixed inset-0 bg-gray-500/30 backdrop-blur-md flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-gray-500/30 backdrop-blur-md flex items-center justify-center px-4 py-6 sm:px-0 sm:py-0 z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-auto sm:mx-0 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">Add Payment Method</h2>
               <button 
