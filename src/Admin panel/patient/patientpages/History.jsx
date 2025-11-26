@@ -201,38 +201,37 @@ const History = () => {
   });
 
   return (
-    <div className="min-h-screen bg-pink-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Activity History</h1>
-          <p className="text-gray-600">Track your healthcare activities and interactions</p>
+    <div className="min-h-screen bg-pink-50 p-6 space-y-6">
+      {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Activity History</h1>
+          <p className="text-sm sm:text-base text-gray-600">Track your healthcare activities and interactions</p>
         </div>
 
-        {/* Filters and Search */}
-        <div className="mb-8">
-          <Card className="p-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* Search */}
-              <div className="flex-1">
+        {/* Filters and Search - Full Width */}
+        <div className="mb-6 sm:mb-8">
+          <Card className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              {/* Search - Full Width */}
+              <div className="flex-1 w-full">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search activities..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
                   />
                 </div>
               </div>
 
-              {/* Filter Dropdown */}
-              <div className="relative">
+              {/* Filter Dropdown - Full Width on Mobile */}
+              <div className="relative w-full sm:w-auto sm:min-w-[200px]">
                 <select
                   value={selectedFilter}
                   onChange={(e) => setSelectedFilter(e.target.value)}
-                  className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 sm:py-3 pr-8 sm:pr-10 text-sm sm:text-base focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
                 >
                   <option value="all">All Activities</option>
                   <option value="scan">Health Scans</option>
@@ -240,18 +239,18 @@ const History = () => {
                   <option value="booking">Appointments</option>
                   <option value="payment">Payments</option>
                 </select>
-                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400 pointer-events-none" />
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Timeline */}
-        <div className="relative">
+        {/* Timeline - Full Width */}
+        <div className="relative w-full">
           {/* Timeline Line */}
-          <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200 hidden sm:block"></div>
+          <div className="absolute left-4 sm:left-8 top-0 bottom-0 w-0.5 bg-gray-200 hidden sm:block"></div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6 w-full">
             {filteredActivities.map((activity, index) => {
               const activityType = activityTypes[activity.type];
               const IconComponent = activityType.icon;
@@ -263,9 +262,9 @@ const History = () => {
                     <IconComponent className={`h-4 w-4 ${activityType.iconColor}`} />
                   </div>
 
-                  {/* Activity Card */}
-                  <div className={`ml-0 sm:ml-20 ${activityType.bgColor} ${activityType.borderColor} border rounded-xl shadow-sm hover:shadow-md transition-shadow`}>
-                    <div className="p-6">
+                  {/* Activity Card - Full Width */}
+                  <div className={`ml-0 sm:ml-20 w-full ${activityType.bgColor} ${activityType.borderColor} border rounded-xl shadow-sm hover:shadow-md transition-shadow`}>
+                    <div className="p-4 sm:p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4 flex-1">
                       
@@ -337,11 +336,11 @@ const History = () => {
           )}
         </div>
 
-        {/* Activity Summary */}
-        <div className="mt-12">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Activity Summary</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {/* Activity Summary - Full Width */}
+        <div className="mt-8 sm:mt-12 w-full">
+          <Card className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Activity Summary</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 w-full">
               {Object.entries(activityTypes).map(([type, config]) => {
                 const count = activities.filter(activity => activity.type === type).length;
                 const IconComponent = config.icon;
@@ -359,7 +358,6 @@ const History = () => {
             </div>
           </Card>
         </div>
-      </div>
     </div>
   );
 };

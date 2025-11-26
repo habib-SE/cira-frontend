@@ -77,7 +77,7 @@ const DoctorRecommendationModal = ({
         {/* Content */}
         <div className="overflow-y-auto overflow-x-hidden max-h-[60vh] space-y-6 px-6">
  {/* Summary Section */}
-<motion.div
+{/* <motion.div
   initial={{ opacity: 0, y: 10 }}
   animate={{ opacity: 1, y: 0 }}
   transition={{ delay: 0.1 }}
@@ -99,7 +99,7 @@ const DoctorRecommendationModal = ({
       can help ensure accurate diagnosis and effective treatment.
     </p>
   </div>
-</motion.div>
+</motion.div> */}
 
 
           <div className="space-y-4">

@@ -26,8 +26,7 @@ import {
   LogOut,
   History
 } from 'lucide-react';
-import logo from '../../assets/logo.png';
-import loginLogo from '../../assets/loginlogo.png';
+import Stars from '../../assets/stars.svg';
 
 const UnifiedSidebar = ({ 
   isCollapsed, 
@@ -129,7 +128,7 @@ const UnifiedSidebar = ({
       isCollapsed ? 'w-16' : 'w-64'
     }`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 relative overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-5.5 border-b border-gray-200 relative overflow-hidden">
         {/* Main Logo - Shows when expanded */}
         <div 
           className="flex items-center space-x-2"
@@ -139,14 +138,13 @@ const UnifiedSidebar = ({
             pointerEvents: !isCollapsed ? 'auto' : 'none'
           }}
         >
-          <img 
-            src={logo} 
-            alt="CIRA Logo" 
-            className="h-11 py-1 w-auto"
-          />
+          <div className="flex-shrink-0 flex gap-2 items-center">
+            <img src={Stars} alt="stars logo" className="w-[20%]"/>
+            <span className="text-xl font-semibold text-gray-900">Cira</span>
+          </div>
         </div>
 
-        {/* Login Logo - Shows when collapsed - Fixed in center */}
+        {/* Star Icon - Shows when collapsed - Fixed in center */}
         <div 
           className="absolute inset-0 flex items-center justify-center"
           style={{
@@ -155,11 +153,7 @@ const UnifiedSidebar = ({
             pointerEvents: 'none'
           }}
         >
-          <img 
-            src={loginLogo} 
-            alt="CIRA Logo" 
-            className="h-12"
-          />
+          <img src={Stars} alt="stars logo" className="w-8 h-8" />
         </div>
 
         {/* Collapse button - Shows when expanded */}

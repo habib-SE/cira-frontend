@@ -1,16 +1,15 @@
 import React from 'react';
-import logo from '../../../assets/Logo.png';
+import Stars from '../../../assets/stars.svg';
 
 const Header = () => {
   return (
     <div className="flex justify-between items-center mb-8">
       {/* Cira Logo */}
       <div className="flex items-center">
-        <img 
-          src={logo} 
-          alt="Cira Logo" 
-          className="h-8 w-auto"
-        />
+        <div className="flex-shrink-0 flex gap-2 items-center">
+          <img src={Stars} alt="stars logo" className="w-[20%]"/>
+          <span className="text-xl font-semibold text-gray-900">Cira</span>
+        </div>
       </div>
       
       {/* Flag Icon */}

@@ -1035,9 +1035,8 @@ const ReferralCheckout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-pink-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
+    <div className="min-h-screen bg-pink-50 p-6 space-y-6">
+      {/* Header */}
         <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -1148,7 +1147,6 @@ const ReferralCheckout = () => {
             )}
           </div>
         )}
-      </div>
 
       {/* Referral modal */}
       <ReferralModal

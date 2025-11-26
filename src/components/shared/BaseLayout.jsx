@@ -38,6 +38,13 @@ const BaseLayout = ({
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
+  // Close mobile menu when route changes on mobile
+  useEffect(() => {
+    if (window.innerWidth < 1024 && sidebarBehavior === "toggle") {
+      setIsMobileMenuOpen(false);
+    }
+  }, [location.pathname, sidebarBehavior]);
+
   const getSidebarClasses = () => {
     if (sidebarBehavior === "persistent") {
       return `block lg:flex fixed lg:relative z-50 lg:z-[1000px] h-screen ${sidebarClass}`;
@@ -84,10 +91,12 @@ const BaseLayout = ({
         />
 
         {/* Page content */}
-        <main className={`flex-1 overflow-y-auto items-center overflow-x-hidden relative min-h-0 bg-${pageBackground}`}>
+        <main 
+          className={`flex-1 overflow-y-auto overflow-x-hidden relative min-h-0 ${pageBackground ? `bg-${pageBackground}` : ''}`}
+        >
           <PageLoader isLoading={isLoading}>    
-            <div className="min-h-full flex flex-col">
-              <div className="flex-1">
+            <div className="min-h-full flex flex-col min-w-0">
+              <div className="flex-1 w-full">
                 <Outlet />
               </div>
               {/* Footer - only shows at bottom of content, not fixed */}

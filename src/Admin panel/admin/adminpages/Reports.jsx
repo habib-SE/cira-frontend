@@ -12,7 +12,14 @@ import {
     Clock,
     AlertTriangle,
     CheckCircle,
-    File
+    File,
+    Brain,
+    Heart,
+    Activity,
+    TrendingUp,
+    Zap,
+    Bot,
+    ArrowLeft
 } from 'lucide-react';
 import Card from '../admincomponents/Card';
 
@@ -354,19 +361,33 @@ const Reports = () => {
         {
             id: 1,
             patient: 'John Doe',
+            patientId: 'P-2024-001',
+            age: 45,
+            gender: 'Male',
             doctor: 'Dr. Sarah Johnson',
-            reportType: 'Health Assessment',
+            reportType: 'AI Nurse Health Assessment',
             generatedDate: '2024-01-15',
+            generatedTime: '10:30 AM',
             appointmentDate: '2024-01-15',
             status: 'Completed',
             priority: 'Normal',
+            riskLevel: 'Low',
             summary: 'Patient shows signs of improved blood pressure management with current medication regimen.',
+            aiInsights: 'AI analysis indicates stable cardiovascular health with positive response to current treatment plan.',
+            confidence: 94,
+            aiNurseVersion: 'v2.1',
             findings: [
                 'Blood pressure readings within normal range',
                 'Medication compliance: 95%',
                 'Lifestyle modifications showing positive results',
                 'Next follow-up recommended in 3 months'
             ],
+            vitals: {
+                bloodPressure: '120/80 mmHg',
+                heartRate: '72 bpm',
+                temperature: '98.6°F',
+                oxygenSaturation: '98%'
+            },
             recommendations: [
                 'Continue current medication dosage',
                 'Maintain regular exercise routine',
@@ -379,19 +400,33 @@ const Reports = () => {
         {
             id: 2,
             patient: 'Jane Smith',
+            patientId: 'P-2024-002',
+            age: 38,
+            gender: 'Female',
             doctor: 'Dr. Michael Chen',
-            reportType: 'Risk Assessment',
+            reportType: 'AI Nurse Risk Assessment',
             generatedDate: '2024-01-15',
+            generatedTime: '02:15 PM',
             appointmentDate: '2024-01-15',
             status: 'Completed',
             priority: 'High',
+            riskLevel: 'High',
             summary: 'High risk factors identified requiring immediate attention and lifestyle modifications.',
+            aiInsights: 'AI analysis indicates elevated risk factors requiring immediate medical intervention and lifestyle changes.',
+            confidence: 87,
+            aiNurseVersion: 'v2.1',
             findings: [
                 'Elevated cholesterol levels detected',
                 'Family history of cardiovascular disease',
                 'Sedentary lifestyle patterns observed',
                 'Dietary habits need improvement'
             ],
+            vitals: {
+                bloodPressure: '135/88 mmHg',
+                heartRate: '82 bpm',
+                temperature: '98.4°F',
+                oxygenSaturation: '96%'
+            },
             recommendations: [
                 'Immediate dietary consultation required',
                 'Start cholesterol-lowering medication',
@@ -911,6 +946,17 @@ const Reports = () => {
             <div className="relative min-h-[600px]">
         {detailReport ? (
           <div className="space-y-6 mt-6">
+            {/* Back Button and Title */}
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                onClick={() => navigate('/admin/reports')}
+                className="p-2 rounded-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <h2 className="text-3xl font-bold text-pink-600">View Page</h2>
+            </div>
+            
             <div className="bg-white border border-gray-200 rounded-2xl shadow-xl">
               <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-start sm:items-center gap-3">
@@ -932,12 +978,6 @@ const Reports = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => navigate('/admin/reports')}
-                    className="inline-flex items-center px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                  >
-                    Close
-                  </button>
                   <button
                     onClick={() => handleDownloadReport(detailReport)}
                     className="inline-flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors duration-200 shadow-lg shadow-pink-200/60"
@@ -1139,71 +1179,161 @@ const Reports = () => {
                 </div>
             </Card>
 
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-4">
                 {filteredReports.map((report) => (
-                <Card key={report.id} className="p-4 sm:p-5 hover:shadow-lg transition-shadow duration-200">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center text-pink-600 flex-shrink-0">
-                        <File className="w-5 h-5" />
+                    <Card key={report.id} className="p-6 hover:shadow-xl transition-shadow duration-300">
+                        <div className="flex flex-col lg:flex-row gap-6">
+                            {/* Left Section */}
+                            <div className="flex-1 space-y-4">
+                                {/* Header with AI Nurse Icon and Title */}
+                                <div className="flex items-start gap-3">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                                        <Bot className="w-7 h-7 text-white" />
                                     </div>
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate max-w-xs sm:max-w-md">
-                            {report.reportType}
-                          </h3>
-                                    <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(report.priority)}`}>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-lg font-bold text-gray-900 mb-1">
+                                            {report.reportType || 'AI Nurse Report'}
+                                        </h3>
+                                        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                                            <span>{report.patient || 'Unknown'}</span>
+                                            {report.patientId && <span>• {report.patientId}</span>}
+                                            {(report.age || report.gender) && (
+                                                <span>• {report.age || ''} {report.age && report.gender ? 'years,' : ''} {report.gender || ''}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Status Badges */}
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full ${getPriorityColor(report.priority)}`}>
                                         {getPriorityIcon(report.priority)}
                                         <span className="ml-1">{report.priority}</span>
                                     </span>
-                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(report.status)}`}>
+                                    <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${getStatusColor(report.status)}`}>
                                         {report.status}
                                     </span>
-                                    </div>
-                        <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-500 gap-3">
-                          <span className="flex items-center gap-1">
-                            <User className="w-4 h-4" />
-                            {report.patient}
-                          </span>
-                          <span className="hidden sm:inline text-gray-300">•</span>
-                          <span className="flex items-center gap-1">
-                            <Stethoscope className="w-4 h-4" />
-                            {report.doctor}
-                          </span>
-                          <span className="hidden sm:inline text-gray-300">•</span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {report.generatedDate}
-                          </span>
+                                    {report.riskLevel && (
+                                        <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${
+                                            report.riskLevel === 'High' ? 'bg-red-100 text-red-800' :
+                                            report.riskLevel === 'Low' ? 'bg-green-100 text-green-800' :
+                                            'bg-yellow-100 text-yellow-800'
+                                        }`}>
+                                            {report.riskLevel} Risk
+                                        </span>
+                                    )}
                                 </div>
-                        <p className="mt-3 text-sm text-gray-700 line-clamp-2">{report.summary}</p>
+
+                                {/* AI Insight Section */}
+                                {report.aiInsights && (
+                                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                                        <div className="flex items-start gap-2">
+                                            <Brain className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                                            <div>
+                                                <h4 className="text-xs font-semibold text-blue-900 mb-1">AI Insight</h4>
+                                                <p className="text-sm text-blue-800">{report.aiInsights}</p>
+                                            </div>
                                         </div>
                                     </div>
-                    <div className="flex items-center gap-2 sm:flex-col sm:items-end sm:gap-3 flex-shrink-0">
-                      <div className="text-xs sm:text-sm text-gray-500 sm:text-right">
-                        <p>
-                          File Size: <span className="font-medium text-gray-700">{report.fileSize}</span>
-                        </p>
-                        <p>
-                          Downloads: <span className="font-medium text-gray-700">{report.downloadCount}</span>
-                        </p>
+                                )}
+
+                                {/* Key Findings */}
+                                {report.findings && report.findings.length > 0 && (
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-gray-900 mb-2">Key Findings:</h4>
+                                        <ul className="space-y-1.5">
+                                            {report.findings.slice(0, 2).map((finding, idx) => (
+                                                <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
+                                                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 flex-shrink-0" />
+                                                    <span>{finding}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Vitals */}
+                                {report.vitals && (
+                                    <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
+                                        {report.vitals.bloodPressure && (
+                                            <div className="flex items-center gap-1.5 text-sm">
+                                                <Heart className="w-4 h-4 text-red-500" />
+                                                <span className="text-gray-700">{report.vitals.bloodPressure}</span>
+                                            </div>
+                                        )}
+                                        {report.vitals.heartRate && (
+                                            <div className="flex items-center gap-1.5 text-sm">
+                                                <Activity className="w-4 h-4 text-blue-500" />
+                                                <span className="text-gray-700">{report.vitals.heartRate}</span>
+                                            </div>
+                                        )}
+                                        {report.vitals.temperature && (
+                                            <div className="flex items-center gap-1.5 text-sm">
+                                                <TrendingUp className="w-4 h-4 text-orange-500" />
+                                                <span className="text-gray-700">{report.vitals.temperature}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Right Section - Metadata and Actions */}
+                            <div className="lg:w-64 flex flex-col gap-4 lg:border-l lg:pl-6">
+                                {/* AI Confidence */}
+                                {report.confidence && (
+                                    <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="text-xs font-medium text-gray-600">AI Confidence</span>
+                                            <span className="text-xs font-bold text-gray-900">{report.confidence}%</span>
                                         </div>
-                      <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => handleViewReport(report)}
-                          className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200"
-                                >
-                          <Eye className="w-4 h-4" />
-                          View
-                                </button>
-                                <button
-                                    onClick={() => handleDownloadReport(report)}
-                          className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors duration-200"
-                                >
-                          <Download className="w-4 h-4" />
-                          Download
-                                </button>
-                      </div>
+                                        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-500"
+                                                style={{ width: `${report.confidence}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Metadata Row */}
+                                <div className="space-y-2 text-xs text-gray-600">
+                                    {(report.generatedDate || report.generatedTime) && (
+                                        <div className="flex items-center gap-1">
+                                            <Calendar className="w-3.5 h-3.5" />
+                                            <span>{report.generatedDate} {report.generatedTime || ''}</span>
+                                        </div>
+                                    )}
+                                    {report.aiNurseVersion && (
+                                        <div className="flex items-center gap-1">
+                                            <Bot className="w-3.5 h-3.5" />
+                                            <span>AI {report.aiNurseVersion}</span>
+                                        </div>
+                                    )}
+                                    {report.fileSize && (
+                                        <div className="flex items-center gap-1">
+                                            <FileText className="w-3.5 h-3.5" />
+                                            <span>{report.fileSize}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex items-center gap-2 pt-2">
+                                    <button
+                                        onClick={() => handleViewReport(report)}
+                                        className="flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                                        title="View Report"
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDownloadReport(report)}
+                                        className="flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                                        title="Download Report"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </Card>

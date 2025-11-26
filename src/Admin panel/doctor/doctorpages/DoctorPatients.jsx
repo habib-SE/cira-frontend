@@ -198,23 +198,23 @@ const DoctorPatients = () => {
 
         <div className={`space-y-6 transition-opacity duration-300 ${isContentLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           {/* Search and Filter */}
-          <Card className="p-6">
-        <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Card className="p-4 sm:p-6">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4">
+          <div className="flex-1 min-w-0 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
             <input
               type="text"
               placeholder="Search patients by name, condition, or ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
             />
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              className="w-full sm:w-auto px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
             >
               <option value="all">All Status</option>
               <option value="Active">Active</option>
@@ -223,9 +223,9 @@ const DoctorPatients = () => {
             </select>
             <button 
               onClick={() => setShowFilters(true)}
-              className="flex items-center space-x-2 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 sm:py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors text-sm sm:text-base"
             >
-              <Filter className="h-5 w-5" />
+              <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>More Filters</span>
             </button>
           </div>
@@ -234,48 +234,48 @@ const DoctorPatients = () => {
 
       {/* Patients Table */}
       <Card className="p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto -mx-3 sm:mx-0">
+          <table className="w-full min-w-[640px]">
             <thead className="bg-pink-50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Patient</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Age/Gender</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Condition</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Last Visit</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Actions</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Patient</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Age/Gender</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Condition</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-pink-600 uppercase tracking-wider hidden sm:table-cell">Last Visit</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Status</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-pink-600 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredPatients.map((patient) => (
                 <tr key={patient.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="bg-green-100 p-2 rounded-lg mr-3">
-                        <Users className="h-5 w-5 text-green-600" />
+                  <td className="px-3 sm:px-6 py-3 sm:py-4">
+                    <div className="flex items-center min-w-0">
+                      <div className="bg-green-100 p-1.5 sm:p-2 rounded-lg mr-2 sm:mr-3 flex-shrink-0">
+                        <Users className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                       </div>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{patient.name}</div>
-                        <div className="text-sm text-gray-500">{patient.email}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">{patient.name}</div>
+                        <div className="text-xs sm:text-sm text-gray-500 truncate">{patient.email}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 whitespace-nowrap">
                     {patient.age} / {patient.gender}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 truncate max-w-[120px] sm:max-w-none">
                     {patient.condition}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 hidden sm:table-cell whitespace-nowrap">
                     {patient.lastVisit}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(patient.status)}`}>
                       {patient.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center space-x-2">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm font-medium">
+                    <div className="flex items-center space-x-1 sm:space-x-2">
                       <button 
                         onClick={() => handleViewPatient(patient.id)}
                         className="text-pink-600 hover:text-pink-900 transition-colors"

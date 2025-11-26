@@ -14,9 +14,8 @@ const PatientLayout = () => {
                 portalType: "user",
                 showSearch: false
             }}
-            sidebarBehavior="persistent"
-            showMobileOverlay={false}
-            mainContentClass="lg:ml-0 ml-15"
+            sidebarBehavior="toggle"
+            showMobileOverlay={true}
             pageBackground="pink-50"
         />
     );

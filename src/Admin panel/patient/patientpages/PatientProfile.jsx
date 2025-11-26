@@ -208,7 +208,7 @@ const PatientProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-pink-50">
+    <div className="min-h-screen bg-pink-50 p-6 space-y-6">
       {/* Success Alert */}
       {showAlert && (
         <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right duration-300">
@@ -232,8 +232,7 @@ const PatientProfile = () => {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
+      {/* Header */}
         <div className="mb-8">
           <div className="lg:flex block items-center justify-between">
             <div>
@@ -756,7 +755,6 @@ const PatientProfile = () => {
             </button>
           </div>
         )}
-      </div>
     </div>
   );
 };

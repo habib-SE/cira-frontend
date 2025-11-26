@@ -43,7 +43,7 @@ const PaymentModal = ({ doctor, onPaymentSuccess, onBack, onClose }) => {
             <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
               💳 Payment
             </h2>
-            <p className="text-gray-700 mt-1">
+            <p className="text-gray-700 mt-1 ml-9">
               Consultation with <span className="font-semibold">{currentDoctor.name}</span>
             </p>
           </div>

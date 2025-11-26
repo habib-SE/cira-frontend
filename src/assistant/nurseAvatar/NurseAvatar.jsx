@@ -7,7 +7,7 @@ import * as THREE from "three";
  * Nurse Avatar with lip sync + blinking etc
  */
 export default function NurseAvatar({ isSpeaking, isConnected, phoneme, isMuted }) {
-  const avatar = useLoader(GLTFLoader, "/nurse6.glb");
+  const avatar = useLoader(GLTFLoader, "/nurse.glb");
   const headRef = useRef();
   const blinkTimer = useRef(0);
   const isBlinking = useRef(false);
@@ -32,24 +32,41 @@ export default function NurseAvatar({ isSpeaking, isConnected, phoneme, isMuted 
     V: { open: 0.4, smile: 0.5 },
   };
 
-  // Style adjustments
+  // Style adjustments with robust outfit color
   useEffect(() => {
     avatar.scene.traverse((child) => {
       if (child.isMesh) {
+        console.log("Found mesh:", child.name);
+
+        // Outfit meshes
         if (
+          child.name.includes("Outfit") ||
           child.name === "Wolf3D_Outfit_Top" ||
           child.name === "Wolf3D_Outfit_Bottom" ||
           child.name === "Wolf3D_Outfit_Footwear"
         ) {
-          if (child.material.map) child.material.map = null;
-          child.material.color = new THREE.Color("#8a8af1");
-          child.material.roughness = 0.4;
-          child.material.metalness = 0.1;
+          console.log("Replacing outfit material for:", child.name);
+
+          const newMat = new THREE.MeshStandardMaterial({
+            color: new THREE.Color("#8a8af1"), // Solid blue
+            roughness: 0.4,
+            metalness: 0.1,
+          });
+
+          // Preserve skinning and morph targets for animation
+          newMat.skinning = child.material.skinning || false;
+          newMat.morphTargets = child.material.morphTargets || false;
+
+          child.material = newMat;
         }
+
+        // Hair
         if (child.name === "Wolf3D_Hair") {
           child.material.metalness = 0.5;
           child.material.roughness = 0.2;
         }
+
+        // Body
         if (child.name === "Wolf3D_Body") {
           child.material.metalness = 0.05;
           child.material.roughness = 0.4;
@@ -68,7 +85,7 @@ export default function NurseAvatar({ isSpeaking, isConnected, phoneme, isMuted 
     if (headRef.current && headRef.current.morphTargetInfluences) {
       const morphs = headRef.current.morphTargetInfluences;
 
-      // If disconnected, reset mouth
+      // Reset if disconnected
       if (!isConnected) {
         morphs[0] = THREE.MathUtils.lerp(morphs[0], 0, 0.3);
         morphs[1] = THREE.MathUtils.lerp(morphs[1], 0, 0.3);
@@ -76,28 +93,25 @@ export default function NurseAvatar({ isSpeaking, isConnected, phoneme, isMuted 
         return;
       }
 
-      // Always reset morphs to neutral before animating
+      // Reset morphs to neutral
       for (let i = 0; i < morphs.length; i++) {
         morphs[i] = THREE.MathUtils.lerp(morphs[i], 0, 0.5);
       }
 
-      // ❌ If muted, stop all mouth movement
+      // Stop mouth if muted
       if (isMuted) {
         morphs[0] = THREE.MathUtils.lerp(morphs[0], 0, 0.6);
         morphs[1] = THREE.MathUtils.lerp(morphs[1], 0, 0.6);
         return;
       }
 
-      // 🎤 Active lip sync (speaking)
+      // Active lip sync
       if (phoneme && visemeMap[phoneme]) {
         const { open, smile } = visemeMap[phoneme];
         morphs[0] = THREE.MathUtils.lerp(morphs[0], open, 0.6);
         morphs[1] = THREE.MathUtils.lerp(morphs[1], smile, 0.6);
       } else if (isSpeaking) {
-        speechIntensity.current = Math.min(
-          speechIntensity.current + delta * 2,
-          1
-        );
+        speechIntensity.current = Math.min(speechIntensity.current + delta * 2, 1);
         mouthOpenRef.current = 0.5 + Math.sin(Date.now() * 0.018) * 0.25;
         morphs[0] = THREE.MathUtils.lerp(
           morphs[0],
@@ -105,14 +119,13 @@ export default function NurseAvatar({ isSpeaking, isConnected, phoneme, isMuted 
           0.6
         );
       } else {
-        // idle mouth close
         speechIntensity.current = Math.max(speechIntensity.current - delta * 3, 0);
         morphs[0] = THREE.MathUtils.lerp(morphs[0], 0, 0.6);
         morphs[1] = THREE.MathUtils.lerp(morphs[1], 0, 0.6);
       }
     }
 
-    // Blinking (always runs)
+    // Blinking
     blinkTimer.current += delta;
     const eyeLeft = avatar.scene.getObjectByName("EyeLeft");
     const eyeRight = avatar.scene.getObjectByName("EyeRight");

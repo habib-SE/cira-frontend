@@ -231,8 +231,8 @@ const UnifiedNavbar = ({
             { label: 'Settings', icon: Settings, onClick: () => console.log('Settings clicked') },
           ],
           displayName: 'user',
-          showMobileMenu: false, // Patient sidebar is persistent on mobile
-          padding: 'px-4 py-3'
+          showMobileMenu: true, // Show mobile menu toggle button
+          padding: 'px-6 py-3'
         };
       default:
         return {
