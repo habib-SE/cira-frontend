@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Download, Upload, Search, Filter, Eye, Bot, Calendar, Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@mui/material';
@@ -8,9 +8,11 @@ const PatientReports = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 });
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
-  const aiReports = [
+  const [aiReports, setAiReports] = useState([
     { 
       id: 1, 
       date: 'Sept 30, 2025', 
@@ -65,7 +67,55 @@ const PatientReports = () => {
       duration: '18 minutes',
       aiScore: 89
     }
-  ];
+  ]);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+
+    // Simulate file upload processing
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Generate current date
+    const now = new Date();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+    const dateStr = `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+
+    // Extract file name without extension for summary
+    const fileName = file.name.replace(/\.[^/.]+$/, '');
+    
+    // Determine report type based on file name or default
+    const reportTypes = ['Daily Checkup', 'Medication Review', 'Symptom Analysis', 'Wellness Check', 'Emergency Consult', 'Sleep Analysis', 'Lab Results', 'Medical Report'];
+    const reportType = reportTypes.find(type => fileName.toLowerCase().includes(type.toLowerCase().split(' ')[0])) || 'Uploaded Report';
+
+    // Generate a new report entry
+    const newReport = {
+      id: Math.max(...aiReports.map(r => r.id), 0) + 1,
+      date: dateStr,
+      summary: `Uploaded report: ${fileName}`,
+      status: 'Completed',
+      type: reportType,
+      duration: 'N/A',
+      aiScore: Math.floor(Math.random() * 30) + 70, // Random score between 70-100
+      fileName: file.name,
+      fileSize: (file.size / 1024 / 1024).toFixed(2) + ' MB'
+    };
+
+    // Add the new report to the beginning of the list
+    setAiReports(prevReports => [newReport, ...prevReports]);
+    setIsUploading(false);
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -217,9 +267,20 @@ const PatientReports = () => {
           <p className="text-gray-600 text-sm lg:text-base">View and manage your AI-powered health consultations and reports</p>
         </div>
         <div className="flex items-center justify-center lg:justify-end space-x-3 w-full lg:w-1/2">
-          <button className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gray-600 text-white px-5 py-2.5 rounded-xl hover:bg-gray-700 transition-colors font-medium">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+            className="hidden"
+          />
+          <button 
+            onClick={handleUploadClick}
+            disabled={isUploading}
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gray-600 text-white px-5 py-2.5 rounded-xl hover:bg-gray-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <Upload className="w-5 h-5" />
-            <span>Upload Report</span>
+            <span>{isUploading ? 'Uploading...' : 'Upload Report'}</span>
           </button>
         </div>
       </div>
