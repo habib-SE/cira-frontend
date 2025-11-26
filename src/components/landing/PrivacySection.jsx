@@ -18,7 +18,7 @@ export default function PrivacySection() {
   };
 
   return (
-    <section className="py-24 px-6 bg-white">
+    <section className="py-24 px-6">
       <div className="max-w-4xl mx-auto text-center">
 
         {/* Headline */}

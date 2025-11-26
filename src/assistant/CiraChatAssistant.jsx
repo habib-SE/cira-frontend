@@ -1199,8 +1199,9 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   }, []);
 
   return (
-    <div className="fixed inset-0 w-full flex flex-col bg-[#FFFDF9]">
-      <Header />
+    <div className="fixed inset-0 w-full flex flex-col" style={{
+      background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 68%, #FFF7EA 100%)'}}>
+      <Header className="w-full "/>
 
       {/* Scroll area: header + messages + summary */}
       <motion.div
@@ -1450,10 +1451,10 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
       >
-        <div className="w-full max-w-xl bg-white space-y-3">
+        <div className="w-full pt-4 pb-2 rounded-lg max-w-xl bg-white space-y-3">
           {/* ✅ Only show TOS before first message */}
           {!hasStartedChat && (
-            <div className="flex items-start gap-2 text-[11px] text-gray-600">
+            <div className="flex items-start gap-2 text-[11px] text-gray-600 px-4">
               <input
                 id="tos"
                 type="checkbox"
