@@ -14,7 +14,7 @@ const ChatInput = ({
 }) => {
   const [message, setMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const navigate = useNavigate();              // ✅ call the hook
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -33,17 +33,24 @@ const ChatInput = ({
 
   const wrapperClass = (() => {
     if (isDisabled) {
-      return "relative rounded-md bg-white border border-gray-200";
+      return "relative rounded-xl bg-white border border-gray-200 shadow-sm";
     }
+
     if (isFocused) {
-      return "relative rounded-md p-0.5 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500";
+      return `
+        relative  rounded-xl 
+        border-[1.5px] border-gray-800 
+        shadow-md
+        overflow-hidden
+      `;
     }
-    return "relative rounded-md bg-white border border-gray-200";
+
+    return "relative rounded-xl bg-white border border-gray-200 shadow-sm";
   })();
 
   const handleMicClick = () => {
     if (disabled) return;
-    navigate("/assistant");                    // ✅ will now navigate
+    navigate("/assistant");
   };
 
   return (
@@ -59,51 +66,57 @@ const ChatInput = ({
         initial={{ opacity: 0.9 }}
         animate={{ opacity: 1 }}
       >
-        <form onSubmit={handleSubmit} className="relative">
-          <div className="relative w-full">
-            {message === "" && (
-              <span className="absolute left-6 top-4 text-gray-400 text-md pointer-events-none">
-                {placeholder}
-              </span>
-            )}
+        {/* FIX: inner layer prevents white corners */}
+        <div className="bg-white rounded-2xl w-full h-full p-0 overflow-hidden">
 
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              className="w-full h-28 px-6 pt-0 pb-14 pr-40 text-lg bg-white rounded-md focus:outline-none border-0 placeholder-gray-400 text-start"
-              maxLength={characterLimit}
-              disabled={disabled}
-            />
+          <form onSubmit={handleSubmit} className="relative">
+            <div className="relative w-full">
 
-            <button
-              type="button"
-              onClick={handleMicClick}
-              className="absolute bottom-2 left-2 p-2 rounded-full text-gray-100 hover:bg-pink-200 transition-all duration-200"
-              disabled={disabled}
-            >
-              <img src={mic} alt="mic" />
-            </button>
+              {message === "" && (
+                <span className="absolute left-6 top-4 text-gray-400 text-md pointer-events-none">
+                  {placeholder}
+                </span>
+              )}
 
-            <motion.button
-              type="submit"
-              disabled={isDisabled || !message.trim()}
-              className="absolute bottom-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 
-                hover:from-purple-700 hover:to-pink-700 
-                disabled:from-gray-400 disabled:to-gray-400 
-                disabled:cursor-not-allowed 
-                text-white font-semibold px-5 py-2 rounded-sm 
-                transition-all duration-200 shadow-md text-sm whitespace-nowrap flex items-center gap-2 justify-center"
-              whileHover={{ scale: isDisabled ? 1 : 1.05 }}
-              whileTap={{ scale: isDisabled ? 1 : 0.95 }}
-            >
-              <Send className="w-4 h-4" />
-              {submitText && <span>{submitText}</span>}
-            </motion.button>
-          </div>
-        </form>
+              <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                className="w-full h-28 px-6 pt-0 pb-14 pr-40 text-lg bg-transparent rounded-2xl focus:outline-none border-0 placeholder-gray-400 text-start"
+                maxLength={characterLimit}
+                disabled={disabled}
+              />
+
+              <button
+                type="button"
+                onClick={handleMicClick}
+                className="absolute bottom-2 left-2 p-2 rounded-full text-gray-100 hover:bg-pink-200 transition-all duration-200"
+                disabled={disabled}
+              >
+                <img src={mic} alt="mic" />
+              </button>
+
+              <motion.button
+                type="submit"
+                disabled={isDisabled || !message.trim()}
+                className="absolute bottom-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 
+                  hover:from-purple-700 hover:to-pink-700 
+                  disabled:from-gray-400 disabled:to-gray-400 
+                  disabled:cursor-not-allowed 
+                  text-white font-semibold px-5 py-2 rounded-sm 
+                  transition-all duration-200 shadow-md text-sm whitespace-nowrap flex items-center gap-2 justify-center"
+                whileHover={{ scale: isDisabled ? 1 : 1.05 }}
+                whileTap={{ scale: isDisabled ? 1 : 0.95 }}
+              >
+                <Send className="w-4 h-4" />
+                {submitText && <span>{submitText}</span>}
+              </motion.button>
+            </div>
+          </form>
+
+        </div>
       </motion.div>
 
       <div className="flex justify-end mt-2">
