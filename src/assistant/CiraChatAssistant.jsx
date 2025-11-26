@@ -871,7 +871,74 @@ import stars from "../assets/stars.svg";
 
 const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 
-export default function CiraChatAssistant({ initialMessage: initialMessageProp}) {
+// 🔎 Helper to extract conditions + confidence from the AI summary text
+function parseConditionsAndConfidence(summary) {
+  if (!summary) return { conditions: [], confidence: null };
+
+  const conditions = [];
+  let confidence = null;
+
+  // 1) Overall confidence, e.g. "I am about 85% confident..."
+  const confMatch = summary.match(/(\d+)\s*%[^.\n]*confident/i);
+  if (confMatch) {
+    confidence = Number(confMatch[1]);
+  }
+
+  // 2) Block "Top 3 possible conditions..."
+  const topBlockMatch = summary.match(
+    /top\s*3\s*possible\s*conditions[^:]*:\s*([\s\S]+)/i
+  );
+
+  if (topBlockMatch) {
+    const lines = topBlockMatch[1]
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+
+    for (const line of lines) {
+      const m = line.match(/(\d+)\s*%\s*(.+)/);
+      if (!m) break; // stop once we leave the percentage block
+      conditions.push({
+        percentage: Number(m[1]),
+        name: m[2].replace(/\.$/, ""),
+      });
+    }
+  }
+
+  return { conditions, confidence };
+}
+
+// 🧼 Helper to remove the "Top 3 possible conditions" text block
+function stripTopConditionsFromSummary(summary) {
+  if (!summary) return "";
+
+  const pattern =
+    /Top\s*3\s*possible\s*conditions[^:]*:\s*([\s\S]*?)(?=\n\s*\n|For self-care|Please book an appointment|Please book|Take care of yourself|$)/i;
+
+  return summary.replace(pattern, "").trim();
+}
+
+// 🧼 Helper to pull out the "For self-care..." paragraph and leave rest
+function splitOutSelfCare(summary) {
+  if (!summary) return { cleaned: "", selfCare: "" };
+
+  const pattern =
+    /(For self-care[^]*?)(?=\n\s*\n|Please book an appointment|Please book|Take care of yourself|$)/i;
+
+  const match = summary.match(pattern);
+  if (!match) {
+    return { cleaned: summary.trim(), selfCare: "" };
+  }
+
+  const selfCare = match[1].trim();
+  const before = summary.slice(0, match.index);
+  const after = summary.slice(match.index + match[0].length);
+  const cleaned = (before + after).trim();
+
+  return { cleaned, selfCare };
+}
+
+export default function CiraChatAssistant({ initialMessage: initialMessageProp }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -1044,6 +1111,30 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp})
       minute: "2-digit",
     });
 
+  // 🔄 Parse summary into pieces
+  const parsedSummary = consultSummary
+    ? parseConditionsAndConfidence(consultSummary)
+    : { conditions: [], confidence: null };
+
+  let displaySummary = "";
+  let selfCareText = "";
+
+  if (consultSummary) {
+    const withoutTop = stripTopConditionsFromSummary(consultSummary);
+    const split = splitOutSelfCare(withoutTop);
+    displaySummary = split.cleaned;
+    selfCareText = split.selfCare;
+
+    displaySummary = displaySummary
+      .replace(/^\s*Here are the[^\n]*\n?/gim, "")
+      .replace(/Take care of yourself,[^\n]*\n?/gi, "")
+      .trim();
+
+    // 🔧 remove big vertical gaps between paragraphs
+    displaySummary = displaySummary.replace(/\n{3,}/g, "\n\n");
+
+  }
+
   const handleUserMessage = async (text) => {
     if (!hasAgreed) return;
     const trimmed = text.trim();
@@ -1072,7 +1163,6 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp})
     navigate("/");
   };
 
-  // ⭐ FIX: allow full page scroll
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "auto"; // ← CHANGED HERE
@@ -1085,6 +1175,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp})
     <div className="fixed inset-0 w-full flex flex-col bg-[#FFFDF9]">
       <Header />
 
+      {/* Scroll area: header + messages + summary */}
       <motion.div
         ref={scrollAreaRef}
         className="flex-1 overflow-y-auto px-4 pt-6 pb-8 flex justify-center"
@@ -1103,8 +1194,11 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp})
                   <img src={stars} alt="stars" />
                 </div>
                 <div className="flex -space-x-2">
-                  <img src={AgentAvatar} alt="" className="w-8 h-8 rounded-full border border-white" />
-                  <img src={AgentAvatar} alt="" className="w-8 h-8 rounded-full border border-white" />
+                  <img
+                    src={AgentAvatar}
+                    alt="Clinician 2"
+                    className="w-8 h-8 rounded-full border border-white object-cover"
+                  />
                 </div>
               </div>
             </div>
@@ -1132,9 +1226,13 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp})
               return (
                 <div key={m.id} className={`flex w-full ${isAssistant ? "justify-start" : "justify-end"}`}>
                   <div className="flex items-center gap-2 max-w-[80%]">
-                    {isAssistant && (
-                      <img src={AgentAvatar} alt="" className="w-7 h-7 rounded-full" />
-                    )}
+                    {/* {isAssistant && (
+                      <img
+                        src={AgentAvatar}
+                        alt="Cira avatar"
+                        className="w-7 h-7 rounded-full flex-shrink-0"
+                      />
+                    )} */}
                     <div
                       className={`rounded-2xl px-4 py-3 text-sm ${
                         isAssistant ? "bg-white text-gray-800" : "bg-pink-500 text-white"
@@ -1150,8 +1248,12 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp})
             {isThinking && (
               <div className="flex w-full justify-start">
                 <div className="flex items-center gap-2 max-w-[80%]">
-                  <img src={AgentAvatar} alt="" className="w-7 h-7 rounded-full" />
-                  <div className="rounded-2xl px-4 py-3 bg-white text-gray-500">
+                  {/* <img
+                    src={AgentAvatar}
+                    alt="Cira avatar"
+                    className="w-7 h-7 rounded-full flex-shrink-0"
+                  /> */}
+                  <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-white text-gray-500">
                     <span className="inline-flex gap-1 items-center">
                       <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" />
                       <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" />
@@ -1183,13 +1285,108 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp})
                   {summaryDateLabel && <p className="text-xs text-gray-400">{summaryDateLabel}</p>}
                 </div>
 
-                <p className="text-sm text-gray-700 whitespace-pre-line mb-4">
-                  {consultSummary}
+                {/* Narrative summary WITHOUT "Top 3..." and WITHOUT self-care / stray lines */}
+                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-4">
+                  {displaySummary}
                 </p>
 
-                <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                  <button className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg text-sm py-2.5">
-                    Download Reports Note (PDF)
+                {/* 🔹 Conditions with percentages */}
+                {parsedSummary.conditions.length > 0 && (
+                  <div className="mt-4 border-t border-gray-100 pt-4">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                      Conditions Matching
+                    </h3>
+
+                    <div className="space-y-3">
+                      {parsedSummary.conditions.map((c, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between text-sm"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                            <span className="text-gray-800 truncate">
+                              {c.name}
+                            </span>
+                          </div>
+                          <span className="font-medium text-gray-900">
+                            {c.percentage}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 🔹 Assessment confidence bar */}
+                {parsedSummary.confidence != null && (
+                  <div className="mt-5">
+                    <p className="text-xs text-gray-500 mb-1">
+                      Assessment confidence
+                    </p>
+
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="font-medium text-emerald-600">
+                        {parsedSummary.confidence >= 80
+                          ? "Pretty sure"
+                          : parsedSummary.confidence >= 60
+                            ? "Somewhat sure"
+                            : "Low confidence"}
+                      </span>
+                      <span className="text-gray-600">
+                        {parsedSummary.confidence}%
+                      </span>
+                    </div>
+
+                    <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-emerald-500"
+                        style={{
+                          width: `${Math.min(
+                            parsedSummary.confidence,
+                            100
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 🔹 Self-care / when to seek help (dynamic from summary) */}
+                <div className="mt-5 border-t border-gray-100 pt-4">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                    Self-care & when to seek help
+                  </h3>
+
+                  {selfCareText ? (
+                    <p className="text-xs text-gray-600 mb-2 whitespace-pre-line">
+                      {selfCareText}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-600 mb-2">
+                      Home care with rest, fluids, and over-the-counter pain
+                      relievers is usually enough for most mild illnesses. If
+                      your fever rises, breathing becomes difficult, or your
+                      symptoms last more than a few days or suddenly worsen,
+                      contact a doctor or urgent care.
+                    </p>
+                  )}
+
+                  <p className="text-[11px] text-gray-400">
+                    These are rough estimates and do not replace medical advice.
+                    Always consult a healthcare professional if you&apos;re
+                    worried.
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="button"
+                    className="flex-1 inline-flex items-center justify-center text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 
+                      hover:from-purple-700 hover:to-pink-700 text-white transition-colors"
+                  >
+                    Download Report Note (PDF)
                   </button>
                   <button className="flex-1 bg-[#E4ECFF] text-[#2F4EBB] rounded-lg text-sm py-2.5">
                     Find Doctor Specialist
@@ -1235,3 +1432,4 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp})
     </div>
   );
 }
+
