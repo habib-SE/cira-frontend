@@ -13,7 +13,7 @@ export default function Footer() {
 
   return (
     <motion.footer
-      className="py-16 px-6 bg-white border-t border-gray-100"
+      className="py-16 px-6 border-t border-gray-100"
       initial="hidden"
       whileInView="show"
       viewport={{ once: true }}

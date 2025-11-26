@@ -6,9 +6,8 @@ export default function Header() {
   const isAssistantPage = location.pathname === "/login";
 
   return (
-    <header className="w-full" style={{
-      background: 'linear-gradient(180deg,#FFFEF9 100%)'}}>
-      <div className="max-w-8xl mx-auto px-7 mt-2">
+    <header className="w-full bg-[#FFFBFD]" >
+      <div className="max-w-8xl mx-auto px-7 pt-2">
         <div className="flex justify-between items-center h-12">
           {/* Logo - Left Side */}
           <div className="flex-shrink-0 flex gap-2 items-center">
