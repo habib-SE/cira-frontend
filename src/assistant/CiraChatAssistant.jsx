@@ -1217,7 +1217,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 
           {/* --- header and messages remain unchanged --- */}
 
-          <header className="mb-6 px-4">
+          <header className="mb-6 px-4 pt-24">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold">
