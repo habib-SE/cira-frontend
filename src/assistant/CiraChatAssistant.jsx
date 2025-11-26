@@ -1262,7 +1262,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
                       className={`
               px-4 py-4 text-sm
               ${isAssistant
-                          ? "rounded-2xl bg-white text-gray-800"
+                          ? "rounded-2xl text-gray-800"
                           : "rounded-2xl rounded-tr-none bg-pink-500 text-white"
                         }
             `}
@@ -1279,7 +1279,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
                 <div className="flex items-center">
                   <div className="flex w-full justify-start">
                     <div className="flex items-center gap-2 max-w-[80%]">
-                      <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-white text-gray-500">
+                      <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed text-gray-500">
                         <span className="inline-flex gap-1 items-center">
                           <span
                             className="w-1.5 h-1.5 rounded-full bg-gray-400"
@@ -1451,7 +1451,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
       >
-        <div className="w-full pt-4 pb-2 rounded-lg max-w-xl bg-white space-y-3">
+        <div className="w-full pt-4 pb-2 max-w-xl bg-white rounded-2xl space-y-3">
           {/* ✅ Only show TOS before first message */}
           {!hasStartedChat && (
             <div className="flex items-start gap-2 text-[11px] text-gray-600 px-4">
