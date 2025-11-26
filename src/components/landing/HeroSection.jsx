@@ -39,25 +39,25 @@ export default function HeroSection({ onStartChat }) {
     >
       {/* Avatar */}
       <motion.div  variants={fadeUp} className='flex items-center justify-center'>
-      <img src={Nurse} alt="" className='w-[20%] md:w-[10%] ml-3 md:ml-10 items-center mb-7 md:mb-4 lg:mb-0'/>
+      <img src={Nurse} alt="" className='w-[20%] md:w-[10%] ml-3 md:ml-10 items-center mb-7 md:mb-4 lg:mb-7'/>
       </motion.div>
 
       {/* Trust Badges */}
       <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-6 text-[12px] text-gray-600 mb-8 -mt-4">
         <motion.div variants={float} className="flex items-center gap-1 text-black">
-          <Shield className="w-3 fill-current" />
-          <div className="flex flex-row">
+          <Shield className="w-[15px] h-[15px] fill-current" />
+          <div className="flex flex-row text-[15px]">
             <strong>256</strong>
             <p>-bit encryption</p>
           </div>
         </motion.div>
         <motion.div variants={float} transition={{ delay: 0.1 }} className="flex items-center gap-1 text-black">
-          <Users className="w-3 fill-current" />
-          <span>Trusted by thousands</span>
+          <Users className="w-[15px] h-[15px] fill-current" />
+          <span className="text-[15px]">Trusted by thousands</span>
         </motion.div>
         <motion.div variants={float} transition={{ delay: 0.2 }} className="flex items-center gap-1 text-black">
-          <Zap className="w-3 fill-current" />
-          <span>Instant AI answers</span>
+          <Zap className="w-[15px] h-[15px] fill-current" />
+          <span className="text-[15px]">Instant AI answers</span>
         </motion.div>
       </motion.div>
 
@@ -74,9 +74,9 @@ export default function HeroSection({ onStartChat }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeInOut', delay: 0.2 } }}
         >
-          <p>I'm your private and personal wellness <strong>Nurse</strong>.</p>
-          <p>As an <strong>AI Nurse</strong>, my service is fast and free.I've already helped <strong>thousands of people!</strong></p>
-          <p>After we chat, if you want you can book a consultation with our experienced doctors for only <strong>£49</strong>.</p>
+          <p className="text-[18px]">I'm your private and personal wellness <strong>Nurse</strong>.</p>
+          <p className="text-[18px]">As an <strong>AI Nurse</strong>, my service is fast and free.I've already helped <strong>thousands of people!</strong></p>
+          <p className="text-[18px]">After we chat, if you want you can book a consultation with our experienced doctors for only <strong>£49</strong>.</p>
         </motion.div>
       </motion.div>
 

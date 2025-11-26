@@ -9,7 +9,7 @@ export default function DoctorConnectionSection() {
   };
 
   return (
-    <section className="py-24 px-6 bg-gradient-to-b from-white to-orange-50 min-h-[90vh] flex items-center">
+    <section className="py-10 px-6 bg-gradient-to-b from-white to-orange-50 min-h-[90vh] flex items-center">
       <div className="max-w-4xl mx-auto text-center">
 
         {/* Headline */}
@@ -39,7 +39,7 @@ export default function DoctorConnectionSection() {
 
         {/* Description */}
         <motion.p
-          className="mt-10 text-md text-gray-600 max-w-xl mx-auto leading-relaxed"
+          className="mt-10 text-md text-gray-500 max-w-xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

@@ -28,7 +28,7 @@ export default function FriendlyExplanationSection() {
 
         {/* Subtext */}
         <motion.p
-          className="mt-8 text-normal md:text-md text-gray-700 max-w-xl mx-auto leading-relaxed"
+          className="mt-8 text-normal md:text-md text-gray-500 max-w-xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -48,7 +48,7 @@ export default function FriendlyExplanationSection() {
         viewport={{ once: true }}
         transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
       >
-        <img src={FriendlyNurse} alt="FriendlyNurse" className="w-[60%] md:w-[40%]" />
+        <img src={FriendlyNurse} alt="FriendlyNurse" className="w-[90%] md:w-[50%]" />
       </motion.div>
     </section>
   );

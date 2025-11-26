@@ -252,27 +252,27 @@ const AI_Nurse = () => {
       {/* Right Panel - Camera or Voice */}
       <div className="lg:w-1/4 bg-white border-l border-gray-200 flex flex-col">
         {/* Panel Header */}
-        <div className="p-4 border-b border-gray-200 flex-shrink-0">
+        <div className="p-3 border-b border-gray-200 flex-shrink-0">
           {rightPanelMode === 'camera' && (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <button
                 onClick={toggleCamera}
-                className={`w-full flex justify-center gap-3 p-3 rounded-lg transition-colors ${
+                className={`w-full flex justify-center gap-2 p-2.5 rounded-lg transition-colors text-sm ${
                   isCameraOn 
                     ? 'bg-red-500 text-white hover:bg-red-600' 
                     : 'bg-gray-500 text-white hover:bg-gray-600'
                 }`}
               >
-                <Scan size={24} className=''/>
+                <Scan size={20} className=''/>
                 {isCameraOn ? 'Turn Off Camera' : 'Turn On Camera'}
               </button>
               
               {/* Voice Chat Button */}
               <button
                 onClick={() => navigate('/assistant')}
-                className="w-full p-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
+                className="w-full p-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl text-sm"
               >
-                <Mic size={20} />
+                <Mic size={18} />
                 <span className="font-medium">Voice Chat</span>
               </button>
             </div>
@@ -280,35 +280,35 @@ const AI_Nurse = () => {
         </div>
 
         {/* Panel Content */}
-        <div className="flex-1 p-4 overflow-y-auto">
+        <div className="flex-1 p-2 overflow-hidden flex items-start">
           {rightPanelMode === 'camera' ? (
             <>
               {/* Vitals Display */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-red-50 p-3 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-700 text-left">Heart Rate</span>
+              <div className="grid grid-cols-2 gap-2 w-full">
+                <button className="bg-red-50 p-2 rounded-lg hover:bg-red-100 transition-colors text-left border border-red-200 shadow-sm">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-medium text-gray-700 mb-0.5">Heart Rate</span>
+                    <p className="text-lg font-bold text-red-600">{vitals.heartRate} <span className="text-[10px]">BPM</span></p>
                   </div>
-                  <p className="text-lg font-bold text-red-600">{vitals.heartRate} BPM</p>
-                </div>
-                <div className="bg-orange-50 p-3 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-700 text-left">Temperature</span>
+                </button>
+                <button className="bg-orange-50 p-2 rounded-lg hover:bg-orange-100 transition-colors text-left border border-orange-200 shadow-sm">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-medium text-gray-700 mb-0.5">Temperature</span>
+                    <p className="text-lg font-bold text-orange-600">{vitals.temperature}<span className="text-[10px]">°F</span></p>
                   </div>
-                  <p className="text-lg font-bold text-orange-600">{vitals.temperature}°F</p>
-                </div>
-                <div className="bg-blue-50 p-3 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-700">Blood Pressure</span>
+                </button>
+                <button className="bg-blue-50 p-2 rounded-lg hover:bg-blue-100 transition-colors text-left border border-blue-200 shadow-sm">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-medium text-gray-700 mb-0.5">Blood Pressure</span>
+                    <p className="text-lg font-bold text-blue-600">{vitals.bloodPressure}</p>
                   </div>
-                  <p className="text-lg font-bold text-blue-600">{vitals.bloodPressure}</p>
-                </div>
-                <div className="bg-green-50 p-3 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-700">Oxygen</span>
+                </button>
+                <button className="bg-green-50 p-2 rounded-lg hover:bg-green-100 transition-colors text-left border border-green-200 shadow-sm">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-medium text-gray-700 mb-0.5">Oxygen</span>
+                    <p className="text-lg font-bold text-green-600">{vitals.oxygen}<span className="text-[10px]">%</span></p>
                   </div>
-                  <p className="text-lg font-bold text-green-600">{vitals.oxygen}%</p>
-                </div>
+                </button>
               </div>
             </>
           ) : (

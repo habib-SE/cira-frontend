@@ -140,16 +140,16 @@ const CompanySettings = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
           <p className="text-gray-600 mt-2">Company details, privacy, and preferences</p>
         </div>
         <button 
           onClick={handleSave}
-          className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors flex items-center space-x-2"
+          className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors inline-flex items-center justify-center gap-2 shadow-md shadow-pink-200/60"
         >
-          <Save className="h-4 w-4" />
+          <Save className="h-5 w-5" />
           <span>Save Changes</span>
         </button>
       </div>

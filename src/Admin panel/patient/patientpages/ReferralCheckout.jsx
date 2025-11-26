@@ -1016,7 +1016,7 @@ const DoctorCard = ({ d, onRefer }) => (
             <Stethoscope className="h-4 w-4" /> {d.languages.join(", ")}
           </span>
         </div>
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-3 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
           <div className="text-sm text-gray-700">
             <span className="font-medium">Fee:</span> PKR {d.fee.toLocaleString()}{" "}
             <span className="mx-2">•</span>
@@ -1026,7 +1026,7 @@ const DoctorCard = ({ d, onRefer }) => (
           </div>
           <button
             onClick={() => onRefer(d)}
-            className="px-4 py-2 rounded-lg bg-pink-600 text-white hover:bg-pink-700"
+            className="w-full sm:w-auto px-4 py-2 rounded-lg bg-pink-600 text-white hover:bg-pink-700"
           >
             Refer Patient
           </button>
