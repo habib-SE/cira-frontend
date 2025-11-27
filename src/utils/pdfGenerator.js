@@ -1,0 +1,204 @@
+import { jsPDF } from 'jspdf';
+
+export const generateConsultationPDF = (consultationData) => {
+  const {
+    patientName = 'Patient',
+    consultDate = new Date().toLocaleDateString(),
+    conditions = [],
+    confidence = null,
+    narrativeSummary = '',
+    selfCareText = '',
+    vitalsData = null
+  } = consultationData;
+
+  // Create new PDF document
+  const doc = new jsPDF();
+  
+  // Set initial y position
+  let yPos = 20;
+  
+  // Title
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(44, 62, 80);
+  doc.text('Cira AI Consultation Report', 105, yPos, { align: 'center' });
+  
+  yPos += 15;
+  
+  // Patient info section
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Patient: ${patientName}`, 20, yPos);
+  doc.text(`Date: ${consultDate}`, 20, yPos + 7);
+  
+  yPos += 25;
+  
+  // Narrative Summary
+  if (narrativeSummary) {
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(44, 62, 80);
+    doc.text('Consultation Summary', 20, yPos);
+    
+    yPos += 10;
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    
+    const splitSummary = doc.splitTextToSize(narrativeSummary, 170);
+    doc.text(splitSummary, 20, yPos);
+    
+    yPos += (splitSummary.length * 5) + 15;
+  }
+  
+  // Conditions Matching
+  if (conditions.length > 0) {
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(44, 62, 80);
+    doc.text('Conditions Matching', 20, yPos);
+    
+    yPos += 10;
+    
+    conditions.forEach((condition, index) => {
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(60, 60, 60);
+      doc.text(`${condition.name}:`, 25, yPos);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${condition.percentage}%`, 160, yPos);
+      
+      yPos += 7;
+    });
+    
+    yPos += 10;
+  }
+  
+  // Assessment Confidence
+  if (confidence !== null) {
+    if (yPos > 250) {
+      doc.addPage();
+      yPos = 20;
+    }
+    
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(44, 62, 80);
+    doc.text('Assessment Confidence', 20, yPos);
+    
+    yPos += 10;
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text(`Overall Confidence: ${confidence}%`, 25, yPos);
+    
+    // Confidence level description
+    let confidenceLevel = '';
+    if (confidence >= 80) {
+      confidenceLevel = 'Pretty sure';
+    } else if (confidence >= 60) {
+      confidenceLevel = 'Somewhat sure';
+    } else {
+      confidenceLevel = 'Low confidence';
+    }
+    
+    doc.text(`Confidence Level: ${confidenceLevel}`, 25, yPos + 7);
+    
+    yPos += 20;
+  }
+  
+  // Vital Signs (if available)
+  if (vitalsData) {
+    if (yPos > 220) {
+      doc.addPage();
+      yPos = 20;
+    }
+    
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(44, 62, 80);
+    doc.text('Vital Signs', 20, yPos);
+    
+    yPos += 10;
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    
+    if (vitalsData.heartRate) {
+      doc.text(`Heart Rate: ${vitalsData.heartRate} bpm`, 25, yPos);
+      yPos += 7;
+    }
+    
+    if (vitalsData.spo2) {
+      doc.text(`Blood Oxygen: ${vitalsData.spo2}%`, 25, yPos);
+      yPos += 7;
+    }
+    
+    if (vitalsData.temperature) {
+      doc.text(`Temperature: ${vitalsData.temperature}°C`, 25, yPos);
+      yPos += 7;
+    }
+    
+    yPos += 10;
+  }
+  
+  // Self-care Recommendations
+  if (selfCareText) {
+    if (yPos > 220) {
+      doc.addPage();
+      yPos = 20;
+    }
+    
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(44, 62, 80);
+    doc.text('Self-care Recommendations', 20, yPos);
+    
+    yPos += 10;
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    
+    const splitSelfCare = doc.splitTextToSize(selfCareText, 170);
+    doc.text(splitSelfCare, 20, yPos);
+    
+    yPos += (splitSelfCare.length * 5) + 15;
+  }
+  
+  // Important Notice
+  if (yPos > 200) {
+    doc.addPage();
+    yPos = 20;
+  }
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(150, 150, 150);
+  doc.text('Important: This AI-generated report is for informational purposes only and does not replace professional medical advice.', 20, yPos, { maxWidth: 170 });
+  doc.text('Always consult with a qualified healthcare provider for medical diagnosis and treatment.', 20, yPos + 5, { maxWidth: 170 });
+  
+  yPos += 20;
+  
+  // Footer
+  doc.setFontSize(8);
+  doc.setTextColor(200, 200, 200);
+  doc.text('Generated by Cira AI Assistant - Confidential Medical Document', 105, 290, { align: 'center' });
+  
+  return doc;
+};
+
+export const downloadPDF = (consultationData, filename = 'Cira_Consultation_Report.pdf') => {
+  const doc = generateConsultationPDF(consultationData);
+  doc.save(filename);
+};
