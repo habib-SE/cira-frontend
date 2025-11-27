@@ -202,7 +202,7 @@ const ChatInput = ({
         initial={{ opacity: 0.9 }}
         animate={{ opacity: 1 }}
       >
-        <div className="bg-white rounded-2xl w-full h-full p-0 overflow-hidden">
+        <div className="bg-white rounded-xl w-full h-full p-0 overflow-hidden">
           <form onSubmit={handleSubmit} className="relative">
             <div className="relative w-full">
               {message === "" && (

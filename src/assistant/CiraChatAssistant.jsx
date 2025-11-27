@@ -22,6 +22,7 @@ import BookingConfirmationModal from "./modal/BookingConfirmationModal";
 import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
 import FacialScanModal from "./modal/FacialScanModal";
 
+import { downloadSOAPFromChatData } from '../utils/pdfGenerator';
 
 const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 
@@ -361,6 +362,22 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     };
   }, []);
 
+  const handleDownloadPDF = () => {
+  if (!consultSummary) return;
+
+  const consultationData = {
+    patientName: 'User', // You can get this from user context or state
+    consultDate: summaryCreatedAt ? summaryCreatedAt.toLocaleDateString() : new Date().toLocaleDateString(),
+    conditions: parsedSummary.conditions,
+    confidence: parsedSummary.confidence,
+    narrativeSummary: displaySummary,
+    selfCareText: selfCareText,
+    vitalsData: vitalsData // Include vitals if available
+  };
+
+  downloadSOAPFromChatData(consultationData, `Cira_Consult_Report_${new Date().getTime()}.pdf`);
+};
+
   // 🔘 When user clicks "Find Doctor Specialist" in summary
   const handleFindDoctorSpecialistClick = () => {
     if (!consultSummary) return;
@@ -454,7 +471,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     <>
     
       <div
-        className="fixed inset-0 w-full flex flex-col pt-2 bg-[#FFFEF9]"
+        className="fixed inset-0 w-full flex flex-col bg-[#FFFEF9]"
       >
         {/* Scroll area covering entire screen except fixed footer */}
         <motion.div
@@ -694,21 +711,13 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 
                       {/* Actions */}
                       <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                        <button
-                          type="button"
-                          className="flex-1 inline-flex items-center justify-center px-4 py-2 sm:py-3  text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 
-    hover:from-purple-700 hover:to-pink-700 text-white transition-colors"
-                          onClick={() => {
-                            const link = document.createElement("a");
-                            link.href = "/Report.pdf"; // PDF file in public folder
-                            link.download = "Report.pdf";
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                          }}
-                        >
-                          Download Report Note (PDF)
-                        </button>
+              <button
+  type="button"
+  className="flex-1 inline-flex items-center justify-center px-4 py-2 sm:py-3 text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-colors"
+  onClick={handleDownloadPDF}
+>
+  Download Report Note (PDF)
+</button>
 
                         <button
                           type="button"
@@ -734,17 +743,17 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
         >
           {!consultSummary && (
-            <div className="w-full pt-4 pb-2 max-w-xl rounded-xl space-y-3 ">
+            <div className="w-full  pb-2 max-w-xl rounded-2xl space-y-3">
 
               {/* ✅ Only show TOS before first message */}
               {!hasStartedChat && (
-                <div className="flex items-start gap-2 text-[11px] text-gray-600 px-4">
+                <div className="flex items-start gap-2 text-[11px] text-gray-600 p-4 -mb-4 rounded-t-2xl  bg-white">
                   <input
                     id="tos"
                     type="checkbox"
                     checked={hasAgreed}
                     onChange={(e) => setHasAgreed(e.target.checked)}
-                    className="mt-0.5"
+                    className="mb-2.5"
                   />
                   <label htmlFor="tos">
                     I agree to the{" "}
