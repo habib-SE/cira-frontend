@@ -32,32 +32,32 @@ export default function HeroSection({ onStartChat }) {
 
   return (
     <motion.section
-      className="min-h-screen flex flex-col px-4 py-4 md:px-6 md:py-6"
+      className="min-h-screen flex flex-col px-4 -mt-10 md:px-6"
       initial="hidden"
       animate="show"
       transition={{ staggerChildren: 0.15 }}
     >
       {/* Avatar */}
       <motion.div  variants={fadeUp} className='flex items-center justify-center'>
-      <img src={Nurse} alt="" className='w-[15%] md:w-[10%] ml-0 md:ml-10 items-center mb-4 md:mb-4 lg:mb-7'/>
+      <img src={Nurse} alt="" className='w-[15%] md:w-[10%] ml-0 md:ml-10 items-center mb-2 md:mb-2 lg:mb-5'/>
       </motion.div>
 
       {/* Trust Badges */}
-      <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-3 md:gap-6 text-[11px] md:text-[12px] text-gray-600 mb-6 md:mb-8 -mt-2 md:-mt-4">
+      <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-3 md:gap-6 text-[8px] md:text-[9px] text-gray-600 mb-6 md:mb-8 -mt-2 md:-mt-4">
         <motion.div variants={float} className="flex items-center gap-1 text-black">
-          <Shield className="w-[12px] h-[12px] md:w-[15px] md:h-[15px] fill-current" />
-          <div className="flex flex-row text-[13px] md:text-[15px]">
+          <Shield className="w-[10px] h-[10px] md:w-[13px] md:h-[13px] fill-current" />
+          <div className="flex flex-row text-[10px] md:text-[12px]">
             <strong>256</strong>
             <p>-bit encryption</p>
           </div>
         </motion.div>
         <motion.div variants={float} transition={{ delay: 0.1 }} className="flex items-center gap-1 text-black">
-          <Users className="w-[12px] h-[12px] md:w-[15px] md:h-[15px] fill-current" />
-          <span className="text-[13px] md:text-[15px]">Trusted by thousands</span>
+          <Users className="w-[10px] h-[10px] md:w-[13px] md:h-[13px] fill-current" />
+          <span className="text-[10px] md:text-[12px]">Trusted by thousands</span>
         </motion.div>
         <motion.div variants={float} transition={{ delay: 0.2 }} className="flex items-center gap-1 text-black">
-          <Zap className="w-[12px] h-[12px] md:w-[15px] md:h-[15px] fill-current" />
-          <span className="text-[13px] md:text-[15px]">Instant AI answers</span>
+          <Zap className="w-[10px] h-[10px] md:w-[13px] md:h-[13px] fill-current" />
+          <span className="text-[10px] md:text-[12px]">Instant AI answers</span>
         </motion.div>
       </motion.div>
 
@@ -70,13 +70,13 @@ export default function HeroSection({ onStartChat }) {
 
 
         <motion.div
-          className="text-left space-y-3 md:space-y-4 text-gray-800 text-sm md:text-md mb-4 md:mb-5 [word-spacing:1px]"
+          className="text-left space-y-1 md:space-y-2 text-gray-800 text-sm md:text-md mb-4 md:mb-5 [word-spacing:1px]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeInOut', delay: 0.2 } }}
         >
-          <p className="text-[15px] md:text-[18px] leading-relaxed">I'm your private and personal wellness <strong>Nurse</strong>.</p>
-          <p className="text-[15px] md:text-[18px] leading-relaxed">As an <strong>AI Nurse</strong>, my service is fast and free.I've already helped <strong>thousands of people!</strong></p>
-          <p className="text-[15px] md:text-[18px] leading-relaxed">After we chat, if you want you can book a consultation with our experienced doctors for only <strong>£49</strong>.</p>
+          <p className="text-[12px] md:text-[15px] leading-relaxed">I'm your private and personal wellness <strong>Nurse</strong>.</p>
+          <p className="text-[12px] md:text-[15px] leading-relaxed">As an <strong>AI Nurse</strong>, my service is fast and free.I've already helped <strong>thousands of people!</strong></p>
+          <p className="text-[12px] md:text-[15px] leading-relaxed">After we chat, if you want you can book a consultation with our experienced doctors for only <strong>£49</strong>.</p>
         </motion.div>
       </motion.div>
 

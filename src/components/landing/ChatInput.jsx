@@ -192,7 +192,7 @@ const ChatInput = ({
   return (
     <div className="w-full">
       {label && (
-        <p className="text-[20px] text-gray-800 text-start mb-4 font-semibold">
+        <p className="text-[15px] text-gray-800 text-start mb-4 font-semibold">
           {label}
         </p>
       )}
