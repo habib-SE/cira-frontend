@@ -1201,8 +1201,11 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
  return (
     <div className="fixed inset-0 w-full flex flex-col" style={{
       background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 68%, #FFF7EA 100%)'}}>
-      <Header className="w-full"/>
-      {/* Scroll area covering entire screen except fixed footer */}
+        {/* Header: now transparent */}
+  <header className="fixed top-0 left-0 right-0 z-20">
+    <Header className="bg-transparent shadow-none border-none" />
+  </header>
+      {/* Scroll area: header + messages + summary */}
       <motion.div
         ref={scrollAreaRef}
         className="flex-1 overflow-y-auto pb-18"
@@ -1214,23 +1217,21 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
           <div className="w-full max-w-xl">
             
 
-            {/* Content area */}
-            <div className="px-4 pt-6 pb-8">
-              <header className="mb-6 px-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold">
-                      <img src={stars} alt="stars" />
-                    </div>
-                    <div className="flex -space-x-2">
-                      <img
-                        src={AgentAvatar}
-                        alt="Clinician 2"
-                        className="w-8 h-8 rounded-full border border-white object-cover"
-                      />
-                    </div>
-                  </div>
+          <header className="mb-6 px-4 pt-24">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold">
+                  <img src={stars} alt="stars" />
                 </div>
+                <div className="flex -space-x-2">
+                  <img
+                    src={AgentAvatar}
+                    alt="Clinician 2"
+                    className="w-8 h-8 rounded-full border border-white object-cover"
+                  />
+                </div>
+              </div>
+            </div>
 
                 <h1 className="text-3xl md:text-4xl font-semibold text-[#111827] mb-2">
                   Cira Consult
@@ -1243,74 +1244,75 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
                 </p>
               </header>
 
-              {error && (
-                <div className="mb-4 text-xs text-red-600 bg-red-50 border border-red-100 px-3 py-2 rounded-full">
-                  {error}
-                </div>
-              )}
-
-              <div className="space-y-4 pb-28">
-                {messages.map((m) => {
-                  const isAssistant = m.role === "assistant";
-                  return (
+          {error && (
+            <div className="mb-4 text-xs text-red-600 bg-red-50 border border-red-100 px-3 py-2 rounded-full">
+              {error}
+            </div>
+          )}
+          <div className=" border border-gray-200 mb-5"></div>
+          <div className="space-y-4 pb-24">
+            {messages.map((m) => {
+              const isAssistant = m.role === "assistant";
+              return (
+                <div
+                  key={m.id}
+                  className={`flex w-full ${isAssistant ? "justify-start" : "justify-end"
+                    }`}
+                >
+                  <div className="flex items-center">
                     <div
-                      key={m.id}
-                      className={`flex w-full ${isAssistant ? "justify-start" : "justify-end"
-                        }`}
+                      className={`
+              px-4 py-4 text-sm
+              ${isAssistant
+                          ? "rounded-2xl text-gray-800"
+                          : "rounded-2xl rounded-tr-none bg-pink-500 text-white"
+                        }
+            `}
                     >
-                      <div className="flex items-center">
-                        <div
-                          className={`
-                px-4 py-4 text-sm
-                ${isAssistant
-                            ? "rounded-2xl bg-white text-gray-800"
-                            : "rounded-2xl rounded-tr-none bg-pink-500 text-white"
-                          }
-              `}
-                        >
-                          {m.text}
-                        </div>
-                      </div>
+                      {m.text}
                     </div>
-                  );
-                })}
+                  </div>
+                </div>
+              );
+            })}
 
-                {isThinking && (
+            {isThinking && (
+              <div className="flex w-full justify-start">
+                <div className="flex items-center">
                   <div className="flex w-full justify-start">
-                    <div className="flex items-center">
-                      <div className="flex w-full justify-start">
-                        <div className="flex items-center gap-2 max-w-[80%]">
-                          <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-white text-gray-500">
-                            <span className="inline-flex gap-1 items-center">
-                              <span
-                                className="w-1.5 h-1.5 rounded-full bg-gray-400"
-                                style={{
-                                  animation: "dotWave 1.2s infinite ease-in-out",
-                                  animationDelay: "0s",
-                                }}
-                              />
-                              <span
-                                className="w-1.5 h-1.5 rounded-full bg-gray-400"
-                                style={{
-                                  animation: "dotWave 1.2s infinite ease-in-out",
-                                  animationDelay: "0.15s",
-                                }}
-                              />
-                              <span
-                                className="w-1.5 h-1.5 rounded-full bg-gray-400"
-                                style={{
-                                  animation: "dotWave 1.2s infinite ease-in-out",
-                                  animationDelay: "0.3s",
-                                }}
-                              />
-                            </span>
-                          </div>
-                        </div>
+                    <div className="flex items-center gap-2 max-w-[80%]">
+                      <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed text-gray-500">
+                        <span className="inline-flex gap-1 items-center">
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-gray-400"
+                            style={{
+                              animation: "dotWave 1.2s infinite ease-in-out",
+                              animationDelay: "0s",
+                            }}
+                          />
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-gray-400"
+                            style={{
+                              animation: "dotWave 1.2s infinite ease-in-out",
+                              animationDelay: "0.15s",
+                            }}
+                          />
+                          <span
+                            className="w-1.5 h-1.5 rounded-full bg-gray-400"
+                            style={{
+                              animation: "dotWave 1.2s infinite ease-in-out",
+                              animationDelay: "0.3s",
+                            }}
+                          />
+                        </span>
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
+            )}
+          </div>
+
 
               {/* SUMMARY */}
               {consultSummary && (
@@ -1454,7 +1456,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
       >
-        <div className="w-full pt-4 pb-2 rounded-lg max-w-xl bg-white space-y-3 shadow-lg">
+        <div className="w-full pt-4 pb-2 max-w-xl bg-white rounded-2xl space-y-3">
           {/* ✅ Only show TOS before first message */}
           {!hasStartedChat && (
             <div className="flex items-start gap-2 text-[11px] text-gray-600 px-4">
@@ -1479,7 +1481,9 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
             onSendMessage={handleUserMessage}
             label="" // already hiding label
             disabled={!hasAgreed}
-            placeholder="Describe how you're feeling or what you're worried about..."
+            submitText=""
+            showMic={false} 
+            placeholder="Reply to Cira..."
           />
         </div>
       </motion.footer>
