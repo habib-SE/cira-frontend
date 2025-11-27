@@ -363,20 +363,20 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   }, []);
 
   const handleDownloadPDF = () => {
-  if (!consultSummary) return;
+    if (!consultSummary) return;
 
-  const consultationData = {
-    patientName: 'User', // You can get this from user context or state
-    consultDate: summaryCreatedAt ? summaryCreatedAt.toLocaleDateString() : new Date().toLocaleDateString(),
-    conditions: parsedSummary.conditions,
-    confidence: parsedSummary.confidence,
-    narrativeSummary: displaySummary,
-    selfCareText: selfCareText,
-    vitalsData: vitalsData // Include vitals if available
+    const consultationData = {
+      patientName: 'User', // You can get this from user context or state
+      consultDate: summaryCreatedAt ? summaryCreatedAt.toLocaleDateString() : new Date().toLocaleDateString(),
+      conditions: parsedSummary.conditions,
+      confidence: parsedSummary.confidence,
+      narrativeSummary: displaySummary,
+      selfCareText: selfCareText,
+      vitalsData: vitalsData // Include vitals if available
+    };
+
+    downloadSOAPFromChatData(consultationData, `Cira_Consult_Report_${new Date().getTime()}.pdf`);
   };
-
-  downloadSOAPFromChatData(consultationData, `Cira_Consult_Report_${new Date().getTime()}.pdf`);
-};
 
   // 🔘 When user clicks "Find Doctor Specialist" in summary
   const handleFindDoctorSpecialistClick = () => {
@@ -469,10 +469,13 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 
   return (
     <>
-    
+
       <div
         className="fixed inset-0 w-full flex flex-col bg-[#FFFEF9]"
       >
+        <div className="fixed top-0 left-0 right-0 z-50 md:z-0">
+          <Header />
+        </div>
         {/* Scroll area covering entire screen except fixed footer */}
         <motion.div
           ref={scrollAreaRef}
@@ -711,13 +714,13 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 
                       {/* Actions */}
                       <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <button
-  type="button"
-  className="flex-1 inline-flex items-center justify-center px-4 py-2 sm:py-3 text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-colors"
-  onClick={handleDownloadPDF}
->
-  Download Report Note (PDF)
-</button>
+                        <button
+                          type="button"
+                          className="flex-1 inline-flex items-center justify-center px-4 py-2 sm:py-3 text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-colors"
+                          onClick={handleDownloadPDF}
+                        >
+                          Download Report Note (PDF)
+                        </button>
 
                         <button
                           type="button"
@@ -743,7 +746,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
         >
           {!consultSummary && (
-            <div className="w-full  pb-2 max-w-xl rounded-2xl space-y-3">
+            <div className="w-full bg-[#FFFEF9] max-w-xl rounded-2xl space-y-3">
 
               {/* ✅ Only show TOS before first message */}
               {!hasStartedChat && (

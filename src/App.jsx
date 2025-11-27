@@ -116,9 +116,9 @@ function App() {
           <Route
             path="/home"
             element={
-              <FixedHeaderLayout>
+              // <FixedHeaderLayout>
                 <LandingPage />
-              </FixedHeaderLayout>
+              // </FixedHeaderLayout>
             }
           />
 

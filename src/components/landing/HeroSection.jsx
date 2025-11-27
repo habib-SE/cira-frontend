@@ -32,7 +32,7 @@ export default function HeroSection({ onStartChat }) {
 
   return (
     <motion.section
-      className="min-h-screen flex flex-col px-4 -mt-0 md:-mt-16 md:px-6"
+      className="min-h-screen flex flex-col px-4 md:px-6"
       initial="hidden"
       animate="show"
       transition={{ staggerChildren: 0.15 }}
@@ -43,7 +43,7 @@ export default function HeroSection({ onStartChat }) {
       </motion.div>
 
       {/* Trust Badges */}
-      <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-3 md:gap-6 text-[8px] md:text-[9px] text-gray-600 mb-6 md:mb-8 -mt-2 md:-mt-4">
+      <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-3 md:gap-6 text-[8px] md:text-[9px] text-gray-600 mb-6 md:mb-8 ">
         <motion.div variants={float} className="flex items-center gap-1 text-black">
           <Shield className="w-[10px] h-[10px] md:w-[13px] md:h-[13px] fill-current" />
           <div className="flex flex-row text-[10px] md:text-[12px]">
