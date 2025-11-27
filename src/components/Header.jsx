@@ -44,8 +44,8 @@ export default function Header({ className = "" }) {
   const isAssistantPage = location.pathname === "/login";
 
   return (
-    // 🔹 Force transparent bg and allow extra classes from parent
-    <header className={`w-full bg-transparent ${className}`}>
+    // 🔹 Solid white background on mobile only, transparent on large screens
+    <header className={`w-full bg-white md:bg-transparent shadow-sm md:shadow-none z-50 ${className}`}>
       <div className="max-w-8xl mx-auto px-7 pt-2">
         <div className="flex justify-between items-center h-12">
           {/* Logo - Left Side */}

@@ -214,25 +214,25 @@ const PatientProfile = () => {
             <span className="text-xs font-medium text-green-800">Profile updated successfully!</span>
             <button onClick={() => setShowAlert(false)} className="ml-2 text-green-400 hover:text-green-600">
               <X className="h-3 w-3" />
-            </button>
+              </button>
           </div>
         </div>
       )}
 
-      {/* Header */}
+        {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">Profile & Health Information</h1>
-        <button
-          onClick={() => {
-            setIsEditing(!isEditing);
+            <button
+              onClick={() => {
+                setIsEditing(!isEditing);
             if (isEditing) setValidationErrors({});
-          }}
+              }}
           className="flex items-center gap-1.5 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 text-sm font-medium"
-        >
-          <Edit3 className="h-4 w-4" />
+            >
+              <Edit3 className="h-4 w-4" />
           <span>{isEditing ? 'Cancel' : 'Edit'}</span>
-        </button>
-      </div>
+            </button>
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Personal Details */}
@@ -240,21 +240,21 @@ const PatientProfile = () => {
           <div className="flex items-center gap-2 mb-4">
             <User className="h-4 w-4 text-pink-600" />
             <h2 className="text-base font-semibold text-gray-900">Personal Details</h2>
-          </div>
+            </div>
 
-          {isEditing ? (
+            {isEditing ? (
             <div className="space-y-3">
               <div className="grid grid-cols-3 gap-2">
-                <div>
+                  <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">First Name</label>
-                  <input
-                    type="text"
-                    value={personalDetails.firstName}
-                    onChange={(e) => handlePersonalDetailsChange('firstName', e.target.value)}
+                    <input
+                      type="text"
+                      value={personalDetails.firstName}
+                      onChange={(e) => handlePersonalDetailsChange('firstName', e.target.value)}
                     className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-pink-500"
-                  />
-                </div>
-                <div>
+                    />
+                  </div>
+                  <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Middle Name</label>
                   <input
                     type="text"
@@ -265,67 +265,67 @@ const PatientProfile = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Last Name</label>
-                  <input
-                    type="text"
-                    value={personalDetails.lastName}
-                    onChange={(e) => handlePersonalDetailsChange('lastName', e.target.value)}
+                    <input
+                      type="text"
+                      value={personalDetails.lastName}
+                      onChange={(e) => handlePersonalDetailsChange('lastName', e.target.value)}
                     className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-pink-500"
-                  />
+                    />
+                  </div>
                 </div>
-              </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <div>
+                  <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
-                  <div className="relative">
+                    <div className="relative">
                     <Mail className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
-                    <input
-                      type="email"
-                      value={personalDetails.email}
-                      onChange={(e) => handlePersonalDetailsChange('email', e.target.value)}
+                      <input
+                        type="email"
+                        value={personalDetails.email}
+                        onChange={(e) => handlePersonalDetailsChange('email', e.target.value)}
                       className={`w-full pl-7 pr-2 py-1.5 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-pink-500 ${
-                        validationErrors.email ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                    />
-                  </div>
-                  {validationErrors.email && (
+                          validationErrors.email ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                    </div>
+                    {validationErrors.email && (
                     <p className="mt-0.5 text-xs text-red-600">{validationErrors.email}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
-                  <div className="relative">
-                    <Phone className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
-                    <input
-                      type="tel"
-                      value={personalDetails.phone}
-                      onChange={(e) => handlePersonalDetailsChange('phone', e.target.value)}
-                      className={`w-full pl-7 pr-2 py-1.5 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-pink-500 ${
-                        validationErrors.phone ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                    />
+                    )}
                   </div>
-                  {validationErrors.phone && (
+                  <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+                    <div className="relative">
+                    <Phone className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+                      <input
+                        type="tel"
+                        value={personalDetails.phone}
+                        onChange={(e) => handlePersonalDetailsChange('phone', e.target.value)}
+                      className={`w-full pl-7 pr-2 py-1.5 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-pink-500 ${
+                          validationErrors.phone ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                    </div>
+                    {validationErrors.phone && (
                     <p className="mt-0.5 text-xs text-red-600">{validationErrors.phone}</p>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <div>
+                  <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Secondary Phone</label>
-                <div className="relative">
+                    <div className="relative">
                   <Phone className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
-                  <input
+                      <input
                     type="tel"
                     value={personalDetails.secondaryPhone}
                     onChange={(e) => handlePersonalDetailsChange('secondaryPhone', e.target.value)}
                     className="w-full pl-7 pr-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-pink-500"
-                  />
-                </div>
-              </div>
+                      />
+                    </div>
+                  </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <div>
+                  <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Date of Birth</label>
                   <div className="relative">
                     <Calendar className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
@@ -350,7 +350,7 @@ const PatientProfile = () => {
                     <option value="Prefer not to say">Prefer not to say</option>
                   </select>
                 </div>
-              </div>
+                </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -441,12 +441,12 @@ const PatientProfile = () => {
                   <MapPin className="absolute left-2 top-2 h-3 w-3 text-gray-400" />
                   <input
                     type="text"
-                    value={personalDetails.address}
-                    onChange={(e) => handlePersonalDetailsChange('address', e.target.value)}
+                      value={personalDetails.address}
+                      onChange={(e) => handlePersonalDetailsChange('address', e.target.value)}
                     className="w-full pl-7 pr-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-pink-500"
-                  />
+                    />
+                  </div>
                 </div>
-              </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
@@ -495,10 +495,10 @@ const PatientProfile = () => {
                     <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
                     <div className="relative">
                       <Users className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
-                      <input
-                        type="text"
-                        value={personalDetails.emergencyContact}
-                        onChange={(e) => handlePersonalDetailsChange('emergencyContact', e.target.value)}
+                  <input
+                    type="text"
+                    value={personalDetails.emergencyContact}
+                    onChange={(e) => handlePersonalDetailsChange('emergencyContact', e.target.value)}
                         className="w-full pl-7 pr-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-pink-500"
                       />
                     </div>
@@ -545,23 +545,23 @@ const PatientProfile = () => {
                   <option value="SMS">SMS</option>
                   <option value="Mail">Mail</option>
                 </select>
+                </div>
               </div>
-            </div>
-          ) : (
+            ) : (
             <div className="space-y-3">
               <div className="flex items-center gap-3 pb-3 border-b">
                 <div className="h-12 w-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm">
-                  {getInitials(personalDetails.firstName, personalDetails.lastName)}
-                </div>
+                    {getInitials(personalDetails.firstName, personalDetails.lastName)}
+                  </div>
                 <div className="flex-1">
                   <div className="text-base font-bold text-gray-900">
                     {personalDetails.firstName} {personalDetails.middleName && personalDetails.middleName + ' '}{personalDetails.lastName}
-                  </div>
+                    </div>
                   <div className="text-xs text-gray-600 flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     <span>{personalDetails.dateOfBirth} • {calculateAge(personalDetails.dateOfBirth)} yrs</span>
+                    </div>
                   </div>
-                </div>
                 <div className="flex flex-col gap-1">
                   <span className="px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
                     {personalDetails.gender}
@@ -570,7 +570,7 @@ const PatientProfile = () => {
                     {personalDetails.bloodType}
                   </span>
                 </div>
-              </div>
+                </div>
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50">
@@ -578,8 +578,8 @@ const PatientProfile = () => {
                   <div className="flex-1 min-w-0">
                     <div className="text-[10px] font-semibold text-gray-500 uppercase mb-0.5">Email</div>
                     <div className="text-xs font-medium text-gray-900 break-all">{personalDetails.email}</div>
+                    </div>
                   </div>
-                </div>
 
                 <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50">
                   <Phone className="h-4 w-4 text-gray-400 flex-shrink-0" />
@@ -589,8 +589,8 @@ const PatientProfile = () => {
                     {personalDetails.secondaryPhone && (
                       <div className="text-xs text-gray-600 mt-0.5">Secondary: {personalDetails.secondaryPhone}</div>
                     )}
+                    </div>
                   </div>
-                </div>
 
                 <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50">
                   <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
@@ -600,8 +600,8 @@ const PatientProfile = () => {
                       {personalDetails.address}, {personalDetails.city}, {personalDetails.state} {personalDetails.zipCode}
                     </div>
                     <div className="text-xs text-gray-600 mt-0.5">{personalDetails.country}</div>
+                    </div>
                   </div>
-                </div>
 
                 <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50">
                   <Briefcase className="h-4 w-4 text-gray-400 flex-shrink-0" />
@@ -634,138 +634,138 @@ const PatientProfile = () => {
                     <div className="text-[10px] font-semibold text-gray-500 uppercase mb-0.5">Preferred Contact</div>
                     <div className="text-xs font-medium text-gray-900">{personalDetails.preferredContactMethod}</div>
                   </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </Card>
+            )}
+          </Card>
 
         {/* Medical History */}
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-4">
             <Heart className="h-4 w-4 text-red-600" />
             <h2 className="text-base font-semibold text-gray-900">Medical History</h2>
-          </div>
+            </div>
 
           <div className="space-y-4">
-            {/* Conditions */}
-            <div>
+              {/* Conditions */}
+              <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-semibold text-gray-900">Medical Conditions</h3>
-                {isEditing && (
-                  <button
-                    onClick={() => setShowAddCondition(true)}
+                  {isEditing && (
+                    <button
+                      onClick={() => setShowAddCondition(true)}
                     className="flex items-center gap-1 text-pink-600 hover:text-pink-700 text-xs"
-                  >
+                    >
                     <Plus className="h-3 w-3" />
-                    <span>Add</span>
-                  </button>
-                )}
-              </div>
+                      <span>Add</span>
+                    </button>
+                  )}
+                </div>
               <div className="space-y-1.5">
-                {medicalHistory.conditions.map((condition) => (
+                  {medicalHistory.conditions.map((condition) => (
                   <div key={condition.id} className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded hover:bg-gray-50">
-                    <div className="flex-1">
+                      <div className="flex-1">
                       <div className="text-xs font-semibold text-gray-900 mb-0.5">{condition.name}</div>
                       <div className="text-[10px] text-gray-600 flex items-center gap-1">
                         <span>Diagnosed: {condition.diagnosed}</span>
                         <span>•</span>
                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${getStatusColor(condition.status)}`}>
-                          {condition.status}
-                        </span>
+                            {condition.status}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    {isEditing && (
-                      <button
-                        onClick={() => removeMedicalItem('conditions', condition.id)}
+                      {isEditing && (
+                        <button
+                          onClick={() => removeMedicalItem('conditions', condition.id)}
                         className="ml-2 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
-                      >
+                        >
                         <Trash2 className="h-3 w-3" />
-                      </button>
-                    )}
-                  </div>
-                ))}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Medications */}
-            <div>
+              {/* Medications */}
+              <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-semibold text-gray-900">Current Medications</h3>
-                {isEditing && (
-                  <button
-                    onClick={() => setShowAddMedication(true)}
+                  {isEditing && (
+                    <button
+                      onClick={() => setShowAddMedication(true)}
                     className="flex items-center gap-1 text-pink-600 hover:text-pink-700 text-xs"
-                  >
+                    >
                     <Plus className="h-3 w-3" />
-                    <span>Add</span>
-                  </button>
-                )}
-              </div>
+                      <span>Add</span>
+                    </button>
+                  )}
+                </div>
               <div className="space-y-1.5">
-                {medicalHistory.medications.map((medication) => (
+                  {medicalHistory.medications.map((medication) => (
                   <div key={medication.id} className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded hover:bg-gray-50">
-                    <div className="flex-1">
+                      <div className="flex-1">
                       <div className="text-xs font-semibold text-gray-900 mb-0.5">{medication.name}</div>
                       <div className="text-[10px] text-gray-600">
-                        {medication.dosage} • {medication.frequency} • Prescribed: {medication.prescribed}
+                          {medication.dosage} • {medication.frequency} • Prescribed: {medication.prescribed}
+                        </div>
                       </div>
-                    </div>
-                    {isEditing && (
-                      <button
-                        onClick={() => removeMedicalItem('medications', medication.id)}
+                      {isEditing && (
+                        <button
+                          onClick={() => removeMedicalItem('medications', medication.id)}
                         className="ml-2 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
-                      >
+                        >
                         <Trash2 className="h-3 w-3" />
-                      </button>
-                    )}
-                  </div>
-                ))}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Allergies */}
-            <div>
+              {/* Allergies */}
+              <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-semibold text-gray-900">Allergies</h3>
-                {isEditing && (
-                  <button
-                    onClick={() => setShowAddAllergy(true)}
+                  {isEditing && (
+                    <button
+                      onClick={() => setShowAddAllergy(true)}
                     className="flex items-center gap-1 text-pink-600 hover:text-pink-700 text-xs"
-                  >
+                    >
                     <Plus className="h-3 w-3" />
-                    <span>Add</span>
-                  </button>
-                )}
-              </div>
+                      <span>Add</span>
+                    </button>
+                  )}
+                </div>
               <div className="space-y-1.5">
-                {medicalHistory.allergies.map((allergy) => (
+                  {medicalHistory.allergies.map((allergy) => (
                   <div key={allergy.id} className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded hover:bg-gray-50">
-                    <div className="flex-1">
+                      <div className="flex-1">
                       <div className="text-xs font-semibold text-gray-900 mb-0.5">{allergy.allergen}</div>
                       <div className="text-[10px] text-gray-600 flex items-center gap-1">
                         <span>{allergy.reaction}</span>
                         <span>•</span>
                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${getSeverityColor(allergy.severity)}`}>
-                          {allergy.severity}
-                        </span>
+                            {allergy.severity}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    {isEditing && (
-                      <button
-                        onClick={() => removeMedicalItem('allergies', allergy.id)}
+                      {isEditing && (
+                        <button
+                          onClick={() => removeMedicalItem('allergies', allergy.id)}
                         className="ml-2 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
-                      >
+                        >
                         <Trash2 className="h-3 w-3" />
-                      </button>
-                    )}
-                  </div>
-                ))}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
-      </div>
+          </Card>
+        </div>
 
       {/* Health Summary Stats */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -786,11 +786,11 @@ const PatientProfile = () => {
             <div className="p-2 bg-blue-100 rounded-lg">
               <Pill className="h-4 w-4 text-blue-600" />
             </div>
-            <div>
+                    <div>
               <div className="text-xs text-gray-600">Medications</div>
               <div className="text-lg font-bold text-gray-900">{medicalHistory.medications.length}</div>
-            </div>
-          </div>
+                    </div>
+                  </div>
         </Card>
 
         <Card className="p-3">
@@ -798,11 +798,11 @@ const PatientProfile = () => {
             <div className="p-2 bg-yellow-100 rounded-lg">
               <AlertTriangle className="h-4 w-4 text-yellow-600" />
             </div>
-            <div>
+                    <div>
               <div className="text-xs text-gray-600">Allergies</div>
               <div className="text-lg font-bold text-gray-900">{medicalHistory.allergies.length}</div>
-            </div>
-          </div>
+                    </div>
+                  </div>
         </Card>
 
         <Card className="p-3">
@@ -810,13 +810,13 @@ const PatientProfile = () => {
             <div className="p-2 bg-green-100 rounded-lg">
               <Activity className="h-4 w-4 text-green-600" />
             </div>
-            <div>
+                    <div>
               <div className="text-xs text-gray-600">Age</div>
               <div className="text-lg font-bold text-gray-900">{calculateAge(personalDetails.dateOfBirth)} yrs</div>
-            </div>
-          </div>
+                    </div>
+                  </div>
         </Card>
-      </div>
+                </div>
 
       {/* Additional Information Section */}
       <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -825,7 +825,7 @@ const PatientProfile = () => {
           <div className="flex items-center gap-2 mb-3">
             <Clock className="h-4 w-4 text-blue-600" />
             <h3 className="text-sm font-semibold text-gray-900">Recent Activity</h3>
-          </div>
+              </div>
           <div className="space-y-2">
             <div className="flex items-start gap-2 p-2 bg-gray-50 rounded">
               <div className="h-1.5 w-1.5 bg-blue-500 rounded-full mt-1.5"></div>
@@ -866,34 +866,34 @@ const PatientProfile = () => {
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-              <div>
+                    <div>
                 <div className="text-xs font-medium text-gray-900">Blood Pressure</div>
                 <div className="text-[10px] text-gray-600">Last checked: 3 days ago</div>
-              </div>
+                    </div>
               <div className="text-xs font-bold text-green-600">120/80</div>
-            </div>
+                  </div>
             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-              <div>
+                    <div>
                 <div className="text-xs font-medium text-gray-900">Heart Rate</div>
                 <div className="text-[10px] text-gray-600">Last checked: 3 days ago</div>
-              </div>
+                    </div>
               <div className="text-xs font-bold text-blue-600">72 bpm</div>
-            </div>
+                  </div>
             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-              <div>
+                    <div>
                 <div className="text-xs font-medium text-gray-900">Weight</div>
                 <div className="text-[10px] text-gray-600">Last checked: 1 week ago</div>
-              </div>
+                    </div>
               <div className="text-xs font-bold text-purple-600">165 lbs</div>
-            </div>
+                  </div>
             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-              <div>
+                    <div>
                 <div className="text-xs font-medium text-gray-900">BMI</div>
                 <div className="text-[10px] text-gray-600">Last checked: 1 week ago</div>
-              </div>
+                    </div>
               <div className="text-xs font-bold text-orange-600">24.2</div>
-            </div>
-          </div>
+                  </div>
+                </div>
         </Card>
 
         {/* Quick Actions */}
@@ -901,7 +901,7 @@ const PatientProfile = () => {
           <div className="flex items-center gap-2 mb-3">
             <FileText className="h-4 w-4 text-pink-600" />
             <h3 className="text-sm font-semibold text-gray-900">Quick Actions</h3>
-          </div>
+              </div>
           <div className="space-y-2">
             <button className="w-full flex items-center justify-between p-2 bg-pink-50 hover:bg-pink-100 rounded transition-colors">
               <span className="text-xs font-medium text-gray-900">View Reports</span>
@@ -921,7 +921,7 @@ const PatientProfile = () => {
             </button>
           </div>
         </Card>
-      </div>
+            </div>
 
       {/* Insurance & Additional Info */}
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -982,10 +982,10 @@ const PatientProfile = () => {
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between p-2 bg-orange-50 rounded border border-orange-200">
-              <div>
+                <div>
                 <div className="text-xs font-medium text-gray-900">Medication Reminder</div>
                 <div className="text-[10px] text-gray-600">Metformin - Due in 2 hours</div>
-              </div>
+                </div>
               <div className="text-xs font-bold text-orange-600">2h</div>
             </div>
             <div className="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200">
@@ -1001,9 +1001,9 @@ const PatientProfile = () => {
                 <div className="text-[10px] text-gray-600">Annual physical - Jan 2026</div>
               </div>
               <div className="text-xs font-bold text-green-600">36d</div>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
 
         {/* Important Documents */}
         <Card className="p-4">
@@ -1042,30 +1042,30 @@ const PatientProfile = () => {
             </button>
           </div>
         </Card>
-      </div>
-
-      {/* Save Button */}
-      {isEditing && (
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={handleSaveProfile}
-            disabled={isSaving}
-            className="flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-xs font-medium"
-          >
-            {isSaving ? (
-              <>
-                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <Save className="h-3.5 w-3.5" />
-                <span>Save Changes</span>
-              </>
-            )}
-          </button>
         </div>
-      )}
+
+        {/* Save Button */}
+        {isEditing && (
+        <div className="mt-4 flex justify-end">
+            <button
+              onClick={handleSaveProfile}
+              disabled={isSaving}
+            className="flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-xs font-medium"
+            >
+              {isSaving ? (
+                <>
+                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                <Save className="h-3.5 w-3.5" />
+                  <span>Save Changes</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
     </div>
   );
 };
