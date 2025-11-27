@@ -175,7 +175,7 @@ const ChatInput = ({
     if (isFocused) {
       return `
         relative rounded-xl 
-        border-[1.5px] border-gray-800 
+        border-[1px] border-gray-800 
         shadow-md
         overflow-hidden
       `;
@@ -192,7 +192,7 @@ const ChatInput = ({
   return (
     <div className="w-full">
       {label && (
-        <p className="text-[20px] text-gray-800 text-start mb-4 font-semibold">
+        <p className="text-[15px] text-gray-800 text-start mb-4 font-semibold">
           {label}
         </p>
       )}
@@ -206,7 +206,7 @@ const ChatInput = ({
           <form onSubmit={handleSubmit} className="relative">
             <div className="relative w-full">
               {message === "" && (
-                <span className="absolute left-6 top-4 text-gray-400 text-md pointer-events-none">
+                <span className="absolute left-6 top-4 text-gray-400 text-xs md:text-sm lg:text-md pointer-events-none">
                   {placeholder}
                 </span>
               )}
@@ -244,7 +244,7 @@ const ChatInput = ({
                   hover:from-purple-700 hover:to-pink-700 
                   disabled:from-gray-400 disabled:to-gray-400 
                   disabled:cursor-not-allowed 
-                  text-white font-semibold px-5 py-2 rounded-sm 
+                  text-white font-semibold px-3 md:px-5 py-2 rounded-sm 
                   transition-all duration-200 shadow-md text-sm whitespace-nowrap flex items-center gap-2 justify-center"
                 whileHover={{ scale: isDisabled ? 1 : 1.05 }}
                 whileTap={{ scale: isDisabled ? 1 : 0.95 }}

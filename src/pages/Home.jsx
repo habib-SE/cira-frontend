@@ -70,11 +70,10 @@ function LandingPage() {
   }, [showChat]);
 
   return (
-    <div className="min-h-screen" style={{
-      background: 'linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 28%, #FFF7EA 100%)'}}>
+    <div className="min-h-screen bg-[#FFFEF9]">
       {/* Landing content */}
       {!showChat && (
-        <div className="w-full max-w-4xl mx-auto px-4 py-6">
+        <div className="w-full max-w-4xl mx-auto px-4 py-2 md:px-4 md:py-6">
           <HeroSection onStartChat={handleStartChat} />
           <FriendlyExplanationSection />
           <DoctorConnectionSection />

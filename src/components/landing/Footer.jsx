@@ -13,7 +13,7 @@ export default function Footer() {
 
   return (
     <motion.footer
-      className="py-16 px-6 border-t border-gray-100"
+      className="py-8 px-4 md:py-16 md:px-6 border-t border-gray-100"
       initial="hidden"
       whileInView="show"
       viewport={{ once: true }}
@@ -22,7 +22,7 @@ export default function Footer() {
       <div className="max-w-5xl mx-auto text-center">
 
         {/* Logo + Name */}
-        <motion.div className="flex items-center justify-center gap-3 mb-8" variants={container}>
+        <motion.div className="flex items-center justify-center gap-2 md:gap-3 mb-6 md:mb-8" variants={container}>
           <div className="flex-shrink-0 flex items-center gap-2">
             {/* <div
               className="w-10 h-10 rounded-full flex items-center justify-center mr-3 shadow-lg"
@@ -33,46 +33,46 @@ export default function Footer() {
               <span className="text-white font-bold text-lg">C</span>
             </div> */}
              
-           <img src={Stars} alt="stars logo" className="w-[25%]"/>           
-            <p className="text-xl font-semibold text-gray-900">Cira</p>
+           <img src={Stars} alt="stars logo" className="w-[20%] md:w-[25%]"/>           
+            <p className="text-lg md:text-xl font-semibold text-gray-900">Cira</p>
           </div>
         </motion.div>
 
         {/* Social Icons */}
-        <motion.div className="flex justify-center gap-8 mb-10" variants={container}>
+        <motion.div className="flex justify-center gap-6 md:gap-8 mb-6 md:mb-10" variants={container}>
           <motion.a
             href="#"
             className="text-gray-600 hover:text-purple-600 transition"
             whileHover={iconHover}
           >
-            <Facebook className="w-6 h-6" />
+            <Facebook className="w-5 h-5 md:w-6 md:h-6" />
           </motion.a>
           <motion.a
             href="#"
             className="text-gray-600 hover:text-purple-600 transition"
             whileHover={iconHover}
           >
-            <Instagram className="w-6 h-6" />
+            <Instagram className="w-5 h-5 md:w-6 md:h-6" />
           </motion.a>
           <motion.a
             href="#"
             className="text-gray-600 hover:text-purple-600 transition"
             whileHover={iconHover}
           >
-            <Twitter className="w-6 h-6" />
+            <Twitter className="w-5 h-5 md:w-6 md:h-6" />
           </motion.a>
           <motion.a
             href="#"
             className="text-gray-600 hover:text-purple-600 transition"
             whileHover={iconHover}
           >
-            <Linkedin className="w-6 h-6" />
+            <Linkedin className="w-5 h-5 md:w-6 md:h-6" />
           </motion.a>
         </motion.div>
 
         {/* Copyright */}
         <motion.p
-          className="text-sm text-gray-500"
+          className="text-xs md:text-sm text-gray-500"
           variants={container}
         >
           © 2025 Cira. All rights reserved
