@@ -1087,11 +1087,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 return (
     <>
       <div
-        className="fixed inset-0 w-full flex flex-col pt-12"
-        style={{
-          background:
-            "linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 68%, #FFF7EA 100%)",
-        }}
+        className="fixed bg-[#FFFEF9] inset-0 w-full flex flex-col pt-12"
       >
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 z-20">
@@ -1363,12 +1359,12 @@ return (
 
         {/* Fixed footer */}
         <motion.footer
-          className="w-full flex-shrink-0 flex justify-center pb-4 px-4 bg-transparent fixed bottom-0"
+          className="w-full flex-shrink-0 flex justify-center px-4 bg-transparent fixed bottom-0"
           initial={{ y: -60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
         >
-          <div className="w-full pt-4 pb-2 max-w-xl bg-white rounded-2xl space-y-3 shadow-lg">
+          <div className="w-full pt-4 pb-2 max-w-xl bg-white rounded-xl space-y-3 shadow-lg">
             {/* ✅ Only show TOS before first message */}
             {!hasStartedChat && (
               <div className="flex items-start gap-2 text-[11px] text-gray-600 px-4">

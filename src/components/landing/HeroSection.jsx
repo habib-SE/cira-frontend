@@ -32,14 +32,14 @@ export default function HeroSection({ onStartChat }) {
 
   return (
     <motion.section
-      className="min-h-screen flex flex-col px-4 -mt-10 md:px-6"
+      className="min-h-screen flex flex-col px-4 -mt-0 md:-mt-16 md:px-6"
       initial="hidden"
       animate="show"
       transition={{ staggerChildren: 0.15 }}
     >
       {/* Avatar */}
-      <motion.div  variants={fadeUp} className='flex items-center justify-center'>
-      <img src={Nurse} alt="" className='w-[15%] md:w-[10%] ml-0 md:ml-10 items-center mb-2 md:mb-2 lg:mb-5'/>
+      <motion.div variants={fadeUp} className='flex items-center justify-center'>
+        <img src={Nurse} alt="" className='w-[15%] md:w-[10%] ml-0 md:ml-10 items-center mb-2 md:mb-2 lg:mb-5' />
       </motion.div>
 
       {/* Trust Badges */}
@@ -62,10 +62,10 @@ export default function HeroSection({ onStartChat }) {
       </motion.div>
 
       {/* Text Block */}
-      <motion.div variants={fadeUp} className="w-full max-w-4xl px-0 md:px-12 md:pl-28 lg:pl-25">
-<h1 className="text-2xl md:text-5xl  font-serif font-normal text-gray-950 mb-4 md:mb-6 tracking-wide text-left">
-  Hi, I'm <span className="text-pink-400">Cira</span>, your AI Nurse
-</h1>
+      <motion.div variants={fadeUp} className="w-full max-w-3xl px-0 md:px-12 md:pl-28 lg:pl-25">
+        <h1 className="text-2xl md:text-5xl  font-serif font-normal text-gray-950 mb-4 md:mb-6 tracking-wide text-left">
+          Hi, I'm <span className="text-pink-400">Cira</span>, your AI Nurse
+        </h1>
 
 
 
