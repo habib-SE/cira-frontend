@@ -1013,10 +1013,10 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   };
 
   // 🌡️ Modal flow handlers
-  const handleFindSpecialistDoctorClick = () => {
-    setShowDoctorRecommendationPopUp(false);
-    setShowDoctorRecommendation(true);
-  };
+const handleFindSpecialistDoctorClick = () => {
+  setShowDoctorRecommendationPopUp(false);
+  setShowFacialScanPopUp(true);  // ✅ OPEN FACIAL SCAN
+};
 
   const handleSkipDoctorRecommendation = () => {
     setShowDoctorRecommendationPopUp(false);
@@ -1042,9 +1042,11 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     setShowFacialScanPopUp(false);
   };
 
-  const handleContinueFromVitals = () => {
-    setShowVitals(false);
-  };
+ const handleContinueFromVitals = () => {
+  setShowVitals(false);
+  setShowDoctorRecommendation(true);   // ✅ CONTINUE FLOW
+};
+
 
   const handleSelectDoctor = (doctor) => {
     setSelectedDoctor(doctor);
@@ -1087,21 +1089,21 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 return (
     <>
       <div
-        className="fixed inset-0 w-full flex flex-col pt-12"
+        className="fixed inset-0 w-full flex flex-col pt-2"
         style={{
           background:
             "linear-gradient(180deg, #FFFBFD 0%, #FDE4F8 68%, #FFF7EA 100%)",
         }}
       >
         {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-20">
+        <header className="fixed top-0 left-0 right-0 z-0">
           <Header className="bg-transparent shadow-none border-none" />
         </header>
 
         {/* Scroll area covering entire screen except fixed footer */}
         <motion.div
           ref={scrollAreaRef}
-          className="flex-1 overflow-y-auto pt-16"
+          className="flex-1 overflow-y-auto"
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -1339,12 +1341,21 @@ return (
                       {/* Actions */}
                       <div className="mt-6 flex flex-col sm:flex-row gap-3">
                         <button
-                          type="button"
-                          className="flex-1 inline-flex items-center justify-center text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 
-                            hover:from-purple-700 hover:to-pink-700 text-white transition-colors"
-                        >
-                          Download Report Note (PDF)
-                        </button>
+  type="button"
+  className="flex-1 inline-flex items-center justify-center px-4 py-2 sm:py-3  text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 
+    hover:from-purple-700 hover:to-pink-700 text-white transition-colors"
+  onClick={() => {
+    const link = document.createElement("a");
+    link.href = "/Report.pdf"; // PDF file in public folder
+    link.download = "Report.pdf";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }}
+>
+  Download Report Note (PDF)
+</button>
+
                         <button
                           type="button"
                           onClick={handleFindDoctorSpecialistClick}
@@ -1362,50 +1373,54 @@ return (
         </motion.div>
 
         {/* Fixed footer */}
-        <motion.footer
-          className="w-full flex-shrink-0 flex justify-center pb-4 px-4 bg-transparent fixed bottom-0"
-          initial={{ y: -60, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-        >
-          <div className="w-full pt-4 pb-2 max-w-xl bg-white rounded-2xl space-y-3 shadow-lg">
-            {/* ✅ Only show TOS before first message */}
-            {!hasStartedChat && (
-              <div className="flex items-start gap-2 text-[11px] text-gray-600 px-4">
-                <input
-                  id="tos"
-                  type="checkbox"
-                  checked={hasAgreed}
-                  onChange={(e) => setHasAgreed(e.target.checked)}
-                  className="mt-0.5"
-                />
-                <label htmlFor="tos">
-                  I agree to the{" "}
-                  <button type="button" className="underline text-pink-500">
-                    The Cira Terms of Service
-                  </button>{" "}
-                  and will discuss all The Cira output with a doctor.
-                </label>
-              </div>
-            )}
+       <motion.footer
+  className="w-full flex-shrink-0 flex justify-center pb-4 px-4 bg-transparent fixed bottom-0"
+  initial={{ y: -60, opacity: 0 }}
+  animate={{ y: 0, opacity: 1 }}
+  transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+>
+  {!consultSummary && (
+    <div className="w-full pt-4 pb-2 max-w-xl bg-white rounded-2xl space-y-3 shadow-lg">
 
-            <ChatInput
-              onSendMessage={handleUserMessage}
-              label=""
-              disabled={!hasAgreed}
-              submitText=""
-              showMic={false}
-              placeholder="Reply to Cira..."
-            />
-          </div>
-        </motion.footer>
+      {/* ✅ Only show TOS before first message */}
+      {!hasStartedChat && (
+        <div className="flex items-start gap-2 text-[11px] text-gray-600 px-4">
+          <input
+            id="tos"
+            type="checkbox"
+            checked={hasAgreed}
+            onChange={(e) => setHasAgreed(e.target.checked)}
+            className="mt-0.5"
+          />
+          <label htmlFor="tos">
+            I agree to the{" "}
+            <button type="button" className="underline text-pink-500">
+              The Cira Terms of Service
+            </button>{" "}
+            and will discuss all The Cira output with a doctor.
+          </label>
+        </div>
+      )}
+
+      <ChatInput
+        onSendMessage={handleUserMessage}
+        label=""
+        disabled={!hasAgreed}
+        submitText=""
+        showMic={false}
+        placeholder="Reply to Cira..."
+      />
+    </div>
+  )}
+</motion.footer>
+
       </div>
 
       {/* Modals with overlay – block background interaction */}
       <AnimatePresence>
         {isAnyModalOpen && (
           <motion.div
-            className="fixed inset-0 z-40 flex items-center justify-center bg-black/40"
+            className="fixed inset-0 z-40 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
