@@ -452,14 +452,10 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 
   return (
     <>
+    
       <div
         className="fixed inset-0 w-full flex flex-col pt-2 bg-[#FFFEF9]"
       >
-        {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-0">
-          <Header className="" />
-        </header>
-
         {/* Scroll area covering entire screen except fixed footer */}
         <motion.div
           ref={scrollAreaRef}

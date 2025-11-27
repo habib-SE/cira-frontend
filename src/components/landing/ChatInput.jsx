@@ -175,7 +175,7 @@ const ChatInput = ({
     if (isFocused) {
       return `
         relative rounded-xl 
-        border-[1.5px] border-gray-800 
+        border-[1px] border-gray-800 
         shadow-md
         overflow-hidden
       `;
