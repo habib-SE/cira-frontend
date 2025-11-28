@@ -32,7 +32,7 @@ export default function HeroSection({ onStartChat }) {
 
   return (
     <motion.section
-      className="min-h-screen flex flex-col px-4 md:px-6"
+      className="min-h-screen flex flex-col px-4 mt-9 md:px-6"
       initial="hidden"
       animate="show"
       transition={{ staggerChildren: 0.15 }}

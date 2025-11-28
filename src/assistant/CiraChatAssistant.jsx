@@ -34,43 +34,64 @@ function parseConditionsAndConfidence(summary) {
   let confidence = null;
 
   // 1) Overall confidence, e.g. "I am about 85% confident..."
-  const confMatch = summary.match(/(\d+)\s*%[^.\n]*confident/i);
+  const confMatch = summary.match(/(\d+)\s*%[^.\n]*confiden/i);
   if (confMatch) {
     confidence = Number(confMatch[1]);
   }
 
-  // 2) Block "Top 3 possible conditions..."
-  const topBlockMatch = summary.match(
-    /top\s*3\s*possible\s*conditions[^:]*:\s*([\s\S]+)/i
-  );
+  // 2) Find the block that contains the % conditions
+  //    - either "Top 3 possible conditions:"
+  //    - or "the following possibilities/conditions:"
+  const blockMatch =
+    summary.match(
+      /top\s*\d*\s*possible\s*conditions[^:]*:\s*([\s\S]+)/i
+    ) ||
+    summary.match(
+      /following\s+(?:possibilities|conditions)[^:]*:\s*([\s\S]+)/i
+    );
 
-  if (topBlockMatch) {
-    const lines = topBlockMatch[1]
-      .split("\n")
-      .map((l) => l.trim())
-      .filter(Boolean);
+  // If we find such a block, parse inside it. Otherwise, fall back to full summary.
+  const searchText = blockMatch ? blockMatch[1] : summary;
 
-    for (const line of lines) {
-      const m = line.match(/(\d+)\s*%\s*(.+)/);
-      if (!m) break; // stop once we leave the percentage block
-      conditions.push({
-        percentage: Number(m[1]),
-        name: m[2].replace(/\.$/, ""),
-      });
-    }
+  // 3) Extract things like "60% Acute Appendicitis"
+  const condRegex = /(\d+)\s*%\s*([^%\n]+?)(?=(?:\s+\d+\s*%|\n|$))/g;
+  let m;
+
+  while ((m = condRegex.exec(searchText)) !== null) {
+    const rawName = m[2].trim();
+
+    // Skip lines like "85% confident in the following possibilities"
+    if (/confiden/i.test(rawName)) continue;
+
+    conditions.push({
+      percentage: Number(m[1]),
+      name: rawName.replace(/[.;]+$/, "").trim(),
+    });
   }
 
   return { conditions, confidence };
 }
 
-// 🧼 Helper to remove the "Top 3 possible conditions" text block
+
+// 🧼 Helper to remove confidence sentence + raw condition lines from the summary
 function stripTopConditionsFromSummary(summary) {
   if (!summary) return "";
 
-  const pattern =
-    /Top\s*3\s*possible\s*conditions[^:]*:\s*([\s\S]*?)(?=\n\s*\n|For self-care|Please book an appointment|Please book|Take care of yourself|$)/i;
+  let cleaned = summary;
 
-  return summary.replace(pattern, "").trim();
+  // 🔹 Remove the "I am about 85% confident in the following possibilities:" sentence
+  cleaned = cleaned.replace(
+    /I\s+am[^.\n]*\d+\s*%[^.\n]*following\s+(?:possibilities|conditions)[^.\n]*:?/i,
+    ""
+  );
+
+  // 🔹 Remove any lines that start with "NN% ..."
+  cleaned = cleaned
+    .split("\n")
+    .filter((line) => !/^\s*\d+\s*%/.test(line.trim()))
+    .join("\n");
+
+  return cleaned.trim();
 }
 
 // 🧼 Helper to pull out the "For self-care..." paragraph and leave rest
@@ -296,7 +317,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
       minute: "2-digit",
     });
 
-  // 🔄 Parse summary into pieces
+   // 🔄 Parse summary into pieces
   const parsedSummary = consultSummary
     ? parseConditionsAndConfidence(consultSummary)
     : { conditions: [], confidence: null };
@@ -305,19 +326,38 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   let selfCareText = "";
 
   if (consultSummary) {
+    // 1) Remove confidence + raw % lines
     const withoutTop = stripTopConditionsFromSummary(consultSummary);
+
+    // 2) Separate out the self-care block
     const split = splitOutSelfCare(withoutTop);
     displaySummary = split.cleaned;
     selfCareText = split.selfCare;
 
+    // 3) Remove leftover intro lines like "Here are the..."
     displaySummary = displaySummary
       .replace(/^\s*Here are the[^\n]*\n?/gim, "")
       .replace(/Take care of yourself,[^\n]*\n?/gi, "")
       .trim();
 
-    // 🔧 remove big vertical gaps between paragraphs
+    // 4) 🔒 Final safety filter: drop any remaining "% condition" lines
+    displaySummary = displaySummary
+      .split("\n")
+      .filter((line) => {
+        const trimmed = line.trim();
+        if (!trimmed) return true; // keep empty lines
+        if (/^\d+\s*%/.test(trimmed)) return false; // remove "60% Acute Appendicitis"
+        if (/confident in the following possibilities/i.test(trimmed))
+          return false;
+        if (/top\s*\d*\s*possible\s*conditions/i.test(trimmed)) return false;
+        return true;
+      })
+      .join("\n");
+
+    // 5) Clean big gaps
     displaySummary = displaySummary.replace(/\n{3,}/g, "\n\n");
   }
+
 
   const handleUserMessage = async (text) => {
     if (!hasAgreed) return;
@@ -491,14 +531,14 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
                 <header className="mb-6 px-4 pt-24">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold">
-                        <img src={stars} alt="stars" />
+                      <div className="w-16 h-16 rounded-full  border-2 flex items-center justify-center text-xs font-semibold">
+                        <img src={stars} className=" w-12 h-12" alt="stars" />
                       </div>
                       <div className="flex -space-x-2">
                         <img
                           src={AgentAvatar}
                           alt="Clinician 2"
-                          className="w-8 h-8 rounded-full border border-white object-cover"
+                          className="w-15 h-15 rounded-full border border-white object-cover"
                         />
                       </div>
                     </div>
