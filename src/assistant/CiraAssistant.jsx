@@ -634,7 +634,7 @@ import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
 import FacialScanModal from "./modal/FacialScanModal";
 import TermsAndConditionsModal from "./modal/TermsAndConditionsModal";
 
-import { useModalLogic } from "./modal/modalHooks";
+import { useModalLogic } from "./modal/voiceModalHooks";
 
 /* ─────────────────────────────
    Main component

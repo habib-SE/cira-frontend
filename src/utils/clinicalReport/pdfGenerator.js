@@ -602,3 +602,5 @@ export const downloadSOAPFromChatData = (
   const doc = generateSOAPFromChatData(chatData, patientInfo);
   doc.save(filename);
 };
+
+

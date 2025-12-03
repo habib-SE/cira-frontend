@@ -925,6 +925,7 @@
 
 
 
+// File: CiraChatAssistant.jsx
 import React, {
   useCallback,
   useEffect,
@@ -933,181 +934,36 @@ import React, {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useConversation } from "@11labs/react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-import AgentAvatar from "../assets/nurse.png";
 import ChatInput from "../components/landing/ChatInput";
 import Header from "../components/Header";
 import stars from "../assets/stars.svg";
+import AgentAvatar from "../assets/nurse.png";
 
-import VitalSignsDisplay from "./modal/VitalSignsDisplay";
-import DoctorRecommendationModal from "./modal/DoctorRecommendationModal";
-import PaymentModal from "./modal/PaymentModal";
-import AppointmentModal from "./modal/AppointmentModal";
-import BookingConfirmationModal from "./modal/BookingConfirmationModal";
-import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
-import FacialScanModal from "./modal/FacialScanModal";
+// Import custom hooks, components, and utilities
+import { useModalFlow } from "./modal/chatModalHooks";
+import ModalFlowRenderer from "./modal/chatModalFlowRenderer";
+import SummaryModal from "./modal/summarymodal";
 
-import { downloadSOAPFromChatData } from "../utils/pdfGenerator";
+import {
+  extractConsultDataFromMessage,
+  processSummaryForDisplay,
+  formatDateLabels
+} from "../utils/ChatConversationSummary/summaryProcessor";
+import { handleDownloadPDF } from "../utils/clinicalReport/consultReportExtractor";
+
 
 const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
-
-// 🔎 Helper to extract conditions + confidence from plain summary text (fallback)
-function parseConditionsAndConfidence(summary) {
-  if (!summary) return { conditions: [], confidence: null };
-
-  const conditions = [];
-  let confidence = null;
-
-  const confMatch = summary.match(/(\d+)\s*%[^.\n]*confiden/i);
-  if (confMatch) {
-    confidence = Number(confMatch[1]);
-  }
-
-  const blockMatch =
-    summary.match(
-      /top\s*\d*\s*possible\s*conditions[^:]*:\s*([\s\S]+)/i
-    ) ||
-    summary.match(
-      /following\s+(?:possibilities|conditions)[^:]*:\s*([\s\S]+)/i
-    );
-
-  const searchText = blockMatch ? blockMatch[1] : summary;
-
-  const condRegex = /(\d+)\s*%\s*([^%\n]+?)(?=(?:\s+\d+\s*%|\n|$))/g;
-  let m;
-
-  while ((m = condRegex.exec(searchText)) !== null) {
-    const rawName = m[2].trim();
-
-    if (/confiden/i.test(rawName)) continue;
-
-    conditions.push({
-      percentage: Number(m[1]),
-      name: rawName.replace(/[.;]+$/, "").trim(),
-    });
-  }
-
-  return { conditions, confidence };
-}
-
-// 🧼 Helper to remove confidence sentence + raw condition lines from the summary
-function stripTopConditionsFromSummary(summary) {
-  if (!summary) return "";
-
-  let cleaned = summary;
-
-  cleaned = cleaned.replace(
-    /I\s+am[^.\n]*\d+\s*%[^.\n]*following\s+(?:possibilities|conditions)[^.\n]*:?/i,
-    ""
-  );
-
-  cleaned = cleaned
-    .split("\n")
-    .filter((line) => !/^\s*\d+\s*%/.test(line.trim()))
-    .join("\n");
-
-  return cleaned.trim();
-}
-
-// 🧼 Helper to pull out the "For self-care..." paragraph and leave rest
-function splitOutSelfCare(summary) {
-  if (!summary) return { cleaned: "", selfCare: "" };
-
-  const pattern =
-    /(For self-care[^]*?)(?=\n\s*\n|Please book an appointment|Please book|Take care of yourself|$)/i;
-
-  const match = summary.match(pattern);
-  if (!match) {
-    return { cleaned: summary.trim(), selfCare: "" };
-  }
-
-  const selfCare = match[1].trim();
-  const before = summary.slice(0, match.index);
-  const after = summary.slice(match.index + match[0].length);
-  const cleaned = (before + after).trim();
-
-  return { cleaned, selfCare };
-}
-
-function extractConsultDataFromMessage(raw) {
-  if (!raw) {
-    return {
-      summaryText: "",
-      report: null,
-      conditions: [],
-      confidence: null,
-    };
-  }
-
-  let summaryText = raw;
-  let report = null;
-
-  const jsonMatch = raw.match(/```json([\s\S]*?)```/i);
-
-  if (jsonMatch) {
-    const jsonText = jsonMatch[1].trim();
-
-    // ✅ For UI we only want the natural language part BEFORE the JSON
-    summaryText = raw.slice(0, jsonMatch.index).trim();
-
-    try {
-      const parsed = JSON.parse(jsonText);
-      report =
-        parsed.CIRA_CONSULT_REPORT ||
-        parsed["CIRA_CONSULT_REPORT"] ||
-        parsed;
-    } catch (e) {
-      console.warn("Failed to parse CIRA_CONSULT_REPORT JSON:", e);
-    }
-  }
-
-  // Clean leftover fences just in case
-  summaryText = summaryText.replace(/```json|```/gi, "").trim();
-
-  // 1️⃣ Try to read conditions & confidence from JSON report
-  let conditions = [];
-  let confidence = null;
-
-  if (report && report["📊 PROBABILITY ESTIMATES"]) {
-    const prob = report["📊 PROBABILITY ESTIMATES"];
-    if (prob && typeof prob === "object") {
-      conditions = Object.entries(prob)
-        .map(([name, value]) => {
-          const num = parseInt(String(value).replace(/[^\d]/g, ""), 10);
-          if (Number.isNaN(num)) return null;
-          return { name, percentage: num };
-        })
-        .filter(Boolean);
-    }
-  }
-
-  if (report && report["🤖 SYSTEM INFO"]) {
-    const info = report["🤖 SYSTEM INFO"];
-    if (info && info["Confidence Level"]) {
-      const m = String(info["Confidence Level"]).match(/(\d+)/);
-      if (m) confidence = Number(m[1]);
-    }
-  }
-
-  // 2️⃣ Fallback to regex parsing on cleaned summary text if needed
-  if (!conditions.length || confidence == null) {
-    const parsed = parseConditionsAndConfidence(summaryText);
-    if (!conditions.length && parsed.conditions?.length) {
-      conditions = parsed.conditions;
-    }
-    if (confidence == null && parsed.confidence != null) {
-      confidence = parsed.confidence;
-    }
-  }
-
-  return { summaryText, report, conditions, confidence };
-}
 
 export default function CiraChatAssistant({ initialMessage: initialMessageProp }) {
   const location = useLocation();
   const navigate = useNavigate();
+  // 🔹 Modal flow management
+  const modalFlow = useModalFlow();
+  const [conversationSummary, setConversationSummary] = useState("");
 
+  // 🔹 Chat state
   const [hasAgreed, setHasAgreed] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -1119,50 +975,18 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   const [messages, setMessages] = useState([]);
   const initialSentRef = useRef(false);
 
-  // 🔹 Final consult summary + metadata
+  // 🔹 Summary state
   const [consultSummary, setConsultSummary] = useState(null);
   const [summaryCreatedAt, setSummaryCreatedAt] = useState(null);
-
-  // 🔹 Parsed stats from report (conditions + confidence)
   const [summaryStats, setSummaryStats] = useState({
     conditions: [],
     confidence: null,
   });
-
-  // 🔹 Parsed CIRA_CONSULT_REPORT JSON (used only for PDF)
   const [consultReport, setConsultReport] = useState(null);
 
   const [isThinking, setIsThinking] = useState(false);
-
   const scrollAreaRef = useRef(null);
   const [hasStartedChat, setHasStartedChat] = useState(false);
-
-  // 🧩 Extra state for modal flow
-  const [conversationSummary, setConversationSummary] = useState("");
-  const [showDoctorRecommendationPopUp, setShowDoctorRecommendationPopUp] = useState(false);
-  const [doctorRecommendationData, setDoctorRecommendationData] = useState(null);
-
-  const [showFacialScanPopUp, setShowFacialScanPopUp] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
-
-  const [showVitals, setShowVitals] = useState(false);
-  const [vitalsData, setVitalsData] = useState(null);
-
-  const [showDoctorRecommendation, setShowDoctorRecommendation] = useState(false);
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [showPayment, setShowPayment] = useState(false);
-  const [showAppointment, setShowAppointment] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [bookingDetails, setBookingDetails] = useState(null);
-
-  const isAnyModalOpen =
-    showDoctorRecommendationPopUp ||
-    showFacialScanPopUp ||
-    showVitals ||
-    showDoctorRecommendation ||
-    showPayment ||
-    showAppointment ||
-    showConfirmation;
 
   const conversation = useConversation({
     textOnly: true,
@@ -1215,7 +1039,6 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
       if (looksLikeSummary) {
         console.log("📝 Captured consult summary.");
 
-        // ✅ NEW: strip JSON + parse CIRA_CONSULT_REPORT
         const extracted = extractConsultDataFromMessage(trimmedText);
 
         setConsultSummary(extracted.summaryText);
@@ -1313,61 +1136,19 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     c.scrollTo({ top: c.scrollHeight, behavior: "smooth" });
   }, [messages, isThinking, consultSummary]);
 
+  // Process summary for display
+  const { displaySummary, selfCareText } = consultSummary 
+    ? processSummaryForDisplay(consultSummary)
+    : { displaySummary: "", selfCareText: "" };
+
+  // Format date labels
   const startedTime = new Date();
-  const startedLabel = startedTime.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const { startedLabel, summaryDateLabel } = formatDateLabels(summaryCreatedAt, startedTime);
 
-  const summaryDateLabel =
-    summaryCreatedAt &&
-    summaryCreatedAt.toLocaleString([], {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-  // 🔄 Use pre-parsed stats (conditions + confidence) from JSON
+  // Use pre-parsed stats (conditions + confidence) from JSON
   const parsedSummary = consultSummary
     ? summaryStats
     : { conditions: [], confidence: null };
-
-  let displaySummary = "";
-  let selfCareText = "";
-
-  if (consultSummary) {
-    // 1) Remove confidence + raw % lines
-    const withoutTop = stripTopConditionsFromSummary(consultSummary);
-
-    // 2) Separate out the self-care block
-    const split = splitOutSelfCare(withoutTop);
-    displaySummary = split.cleaned;
-    selfCareText = split.selfCare;
-
-    // 3) Remove leftover intro lines like "Here are the..."
-    displaySummary = displaySummary
-      .replace(/^\s*Here are the[^\n]*\n?/gim, "")
-      .replace(/Take care of yourself,[^\n]*\n?/gi, "")
-      .trim();
-
-    // 4) Final safety filter
-    displaySummary = displaySummary
-      .split("\n")
-      .filter((line) => {
-        const trimmed = line.trim();
-        if (!trimmed) return true;
-        if (/^\d+\s*%/.test(trimmed)) return false;
-        if (/confident in the following possibilities/i.test(trimmed))
-          return false;
-        if (/top\s*\d*\s*possible\s*conditions/i.test(trimmed)) return false;
-        return true;
-      })
-      .join("\n");
-
-    displaySummary = displaySummary.replace(/\n{3,}/g, "\n\n");
-  }
 
   const handleUserMessage = async (text) => {
     if (!hasAgreed) return;
@@ -1410,252 +1191,26 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     };
   }, []);
 
-const handleDownloadPDF = () => {
-  if (!consultSummary) return;
-
-  // 🧾 Base patient info
-  let patientInfo = {
-    name: "User",
-    age: "",
-    gender: "",
-    consultDate: summaryCreatedAt
-      ? summaryCreatedAt.toLocaleDateString()
-      : new Date().toLocaleDateString(),
-  };
-
-  let chiefComplaint;
-  let hpi = {}; // ✅ always an object, never undefined
-  let associatedChips = [];
-  let associatedNote;
-
-  // 🔍 1) Try to fill from CIRA_CONSULT_REPORT JSON
-  if (consultReport && typeof consultReport === "object") {
-    // PATIENT INFO
-    const pInfo = consultReport["👤 PATIENT INFORMATION"];
-    if (pInfo) {
-      patientInfo = {
-        ...patientInfo,
-        age: pInfo.Age || patientInfo.age,
-        gender: pInfo["Biological Sex"] || patientInfo.gender,
-      };
-    }
-
-    // CHIEF COMPLAINT
-    chiefComplaint = consultReport["🩺 CHIEF COMPLAINT"];
-
-    // HPI block – match any key containing "HISTORY OF PRESENT ILLNESS"
-    const hpiKey = Object.keys(consultReport).find((k) =>
-      /history of present illness/i.test(k)
+  // PDF Download handler
+  const handleDownloadPDFClick = () => {
+    handleDownloadPDF(
+      consultSummary,
+      displaySummary,
+      selfCareText,
+      parsedSummary,
+      summaryCreatedAt,
+      modalFlow.vitalsData,
+      consultReport
     );
-    const hpiBlock =
-      hpiKey && typeof consultReport[hpiKey] === "object"
-        ? consultReport[hpiKey]
-        : null;
-
-    if (hpiBlock) {
-      hpi = {
-        onset: hpiBlock.Onset || "",
-        durationPattern:
-          hpiBlock.Duration ||
-          hpiBlock["Duration / Pattern"] ||
-          "",
-        location: hpiBlock.Location || "",
-        character: hpiBlock.Character || "",
-        severity:
-          hpiBlock["Severity (1–10)"] ||
-          hpiBlock.Severity ||
-          "",
-        progression: hpiBlock.Progression || "",
-        aggravatingFactors: hpiBlock.Triggers || "",
-        relievingFactors: hpiBlock.Relief || "",
-        radiation: hpiBlock.Radiation || "",
-        previousEpisodes: "",
-      };
-
-      if (hpiBlock["Associated Symptoms"]) {
-        associatedNote = hpiBlock["Associated Symptoms"];
-      }
-    }
-
-    // ASSOCIATED SYMPTOMS chips from Medical Background (if any)
-    const medBg = consultReport["🗂 MEDICAL BACKGROUND"];
-    if (medBg) {
-      if (medBg["Past History"])
-        associatedChips.push(`Past: ${medBg["Past History"]}`);
-      if (medBg["Current Medications"])
-        associatedChips.push(`Meds: ${medBg["Current Medications"]}`);
-      if (medBg.Allergies)
-        associatedChips.push(`Allergies: ${medBg.Allergies}`);
-    }
-  }
-
-  // 🧠 2) Fallback / patch: derive HPI from the narrative summary if still empty
-  const summaryForHpi = consultSummary || displaySummary || "";
-  if (summaryForHpi.trim()) {
-    const s = summaryForHpi;
-
-    // Only override if fields are missing or blank
-    const isEmpty = (v) => v == null || String(v).trim() === "";
-
-    if (isEmpty(hpi.onset)) {
-      const onsetMatch = s.match(/started\s+([^,.]+)/i);
-      if (onsetMatch) hpi.onset = onsetMatch[1].trim();
-    }
-
-    if (isEmpty(hpi.severity)) {
-      const sevMatch =
-        s.match(/rated\s+as\s+a\s+(\d+)\s+out of\s+10/i) ||
-        s.match(/rated\s+(\d+)\s*\/\s*10/i);
-      if (sevMatch) hpi.severity = sevMatch[1];
-    }
-
-    if (isEmpty(hpi.location)) {
-      if (/all over/i.test(s)) {
-        hpi.location = "All over body";
-      }
-    }
-
-    if (isEmpty(hpi.character)) {
-      const charMatch = s.match(
-        /\b(sharp|dull|aching|throbbing|burning|cramping|stabbing)\b/i
-      );
-      if (charMatch) {
-        const word = charMatch[1];
-        hpi.character = word.charAt(0).toUpperCase() + word.slice(1);
-      }
-    }
-
-    if (isEmpty(hpi.durationPattern)) {
-      // quick heuristic – you can tweak
-      if (/less than 24 hours/i.test(s)) {
-        hpi.durationPattern = "Less than 24 hours";
-      } else {
-        hpi.durationPattern = "Acute (less than 1 day, per history)";
-      }
-    }
-
-    if (isEmpty(hpi.progression)) {
-      hpi.progression = "Not clearly specified by patient";
-    }
-    if (isEmpty(hpi.radiation)) {
-      hpi.radiation = "Not specified";
-    }
-    if (isEmpty(hpi.aggravatingFactors)) {
-      hpi.aggravatingFactors = "Not specified";
-    }
-    if (isEmpty(hpi.relievingFactors)) {
-      hpi.relievingFactors = "Not specified";
-    }
-    if (isEmpty(hpi.previousEpisodes)) {
-      hpi.previousEpisodes = "Not mentioned";
-    }
-  }
-
-  // 🔗 3) Build consultation payload for PDF
-  const consultationData = {
-    conditions: parsedSummary.conditions,
-    confidence: parsedSummary.confidence,
-    narrativeSummary: displaySummary,
-    selfCareText,
-    vitalsData,
-    hpi,
-    associatedSymptomsChips: associatedChips,
-    associatedSymptomsNote: associatedNote,
-    chiefComplaint,
   };
 
-  // 📄 4) Generate & download PDF (uses your existing pdfGenerator.js)
-  downloadSOAPFromChatData(
-    consultationData,
-    patientInfo,
-    `Cira_Consult_Report_${new Date().getTime()}.pdf`
-  );
-};
-
-
+  // Wrapper for find doctor specialist click
   const handleFindDoctorSpecialistClick = () => {
     if (!consultSummary) return;
-
-    const primaryCondition =
-      parsedSummary.conditions[0]?.name || "your health concerns";
-
-    setDoctorRecommendationData({
-      condition: primaryCondition,
-      specialty: "General Physician",
-    });
+    
+    const primaryCondition = parsedSummary.conditions[0]?.name || "your health concerns";
+    modalFlow.handleFindDoctorSpecialistClick(primaryCondition);
     setConversationSummary(consultSummary);
-    setShowDoctorRecommendationPopUp(true);
-  };
-
-  const handleFindSpecialistDoctorClick = () => {
-    setShowDoctorRecommendationPopUp(false);
-    setShowFacialScanPopUp(true);
-  };
-
-  const handleSkipDoctorRecommendation = () => {
-    setShowDoctorRecommendationPopUp(false);
-  };
-
-  const handleStartFacialScan = () => {
-    setIsScanning(true);
-    setShowFacialScanPopUp(false);
-
-    setTimeout(() => {
-      setIsScanning(false);
-      setVitalsData({
-        heartRate: 80,
-        spo2: 98,
-        temperature: 36.8,
-      });
-      setShowVitals(true);
-    }, 1500);
-  };
-
-  const handleSkipFacialScan = () => {
-    setShowFacialScanPopUp(false);
-  };
-
-  const handleContinueFromVitals = () => {
-    setShowVitals(false);
-    setShowDoctorRecommendation(true);
-  };
-
-  const handleSelectDoctor = (doctor) => {
-    setSelectedDoctor(doctor);
-    setShowDoctorRecommendation(false);
-    setShowPayment(true);
-  };
-
-  const handleSkipDoctor = () => {
-    setShowDoctorRecommendation(false);
-  };
-
-  const handlePaymentSuccess = (details) => {
-    setShowPayment(false);
-    setBookingDetails(details);
-    setShowAppointment(true);
-  };
-
-  const handlePaymentBack = () => {
-    setShowPayment(false);
-    setShowDoctorRecommendation(true);
-  };
-
-  const handleBookingSuccess = (details) => {
-    setShowAppointment(false);
-    setBookingDetails(details);
-    setShowConfirmation(true);
-  };
-
-  const handleAppointmentBack = () => {
-    setShowAppointment(false);
-    setShowPayment(true);
-  };
-
-  const handleConfirmationClose = () => {
-    setShowConfirmation(false);
-    setSelectedDoctor(null);
-    setBookingDetails(null);
   };
 
   return (
@@ -1664,7 +1219,6 @@ const handleDownloadPDF = () => {
         <div className="fixed top-0 left-0 right-0 z-50 md:z-0">
           <Header />
         </div>
-
         <motion.div
           ref={scrollAreaRef}
           className="flex-1 overflow-y-auto"
@@ -1778,142 +1332,14 @@ const handleDownloadPDF = () => {
 
                 {/* SUMMARY CARD */}
                 {consultSummary && (
-                  <section className="w-full mt-6 mb-2">
-                    <div className="bg-white shadow-sm border border-[#E3E3F3] px-5 py-6">
-                      <div className="w-full flex justify-center my-4">
-                        <div className="rounded-xl overflow-hidden px-6 py-4 flex flex-col items-center">
-                          <img
-                            src={AgentAvatar}
-                            alt=""
-                            className="w-32 h-32 rounded-full mb-3"
-                          />
-                          <p className="text-xs text-gray-500">
-                            Your AI clinician assistant, Cira
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="mb-3">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-1">
-                          AI Consult Summary
-                        </h2>
-                        {summaryDateLabel && (
-                          <p className="text-xs text-gray-400">
-                            {summaryDateLabel}
-                          </p>
-                        )}
-                      </div>
-
-                      <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-4">
-                        {displaySummary}
-                      </p>
-
-                      {parsedSummary.conditions.length > 0 && (
-                        <div className="mt-4 border-t border-gray-100 pt-4">
-                          <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                            Conditions Matching
-                          </h3>
-
-                          <div className="space-y-3">
-                            {parsedSummary.conditions.map((c, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center justify-between text-sm"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-                                  <span className="text-gray-800 truncate">
-                                    {c.name}
-                                  </span>
-                                </div>
-                                <span className="font-medium text-gray-900">
-                                  {c.percentage}%
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {parsedSummary.confidence != null && (
-                        <div className="mt-5">
-                          <p className="text-xs text-gray-500 mb-1">
-                            Assessment confidence
-                          </p>
-
-                          <div className="flex items-center justify-between text-xs mb-1">
-                            <span className="font-medium text-emerald-600">
-                              {parsedSummary.confidence >= 80
-                                ? "Pretty sure"
-                                : parsedSummary.confidence >= 60
-                                ? "Somewhat sure"
-                                : "Low confidence"}
-                            </span>
-                            <span className="text-gray-600">
-                              {parsedSummary.confidence}%
-                            </span>
-                          </div>
-
-                          <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-emerald-500"
-                              style={{
-                                width: `${Math.min(
-                                  parsedSummary.confidence,
-                                  100
-                                )}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="mt-5 border-t border-gray-100 pt-4">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                          Self-care & when to seek help
-                        </h3>
-
-                        {selfCareText ? (
-                          <p className="text-xs text-gray-600 mb-2 whitespace-pre-line">
-                            {selfCareText}
-                          </p>
-                        ) : (
-                          <p className="text-xs text-gray-600 mb-2">
-                            Home care with rest, fluids, and over-the-counter
-                            pain relievers is usually enough for most mild
-                            illnesses. If your fever rises, breathing becomes
-                            difficult, or your symptoms last more than a few
-                            days or suddenly worsen, contact a doctor or urgent
-                            care.
-                          </p>
-                        )}
-
-                        <p className="text-[11px] text-gray-400">
-                          These are rough estimates and do not replace medical
-                          advice. Always consult a healthcare professional if
-                          you&apos;re worried.
-                        </p>
-                      </div>
-
-                      <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                        <button
-                          type="button"
-                          className="flex-1 inline-flex items-center justify-center px-4 py-2 sm:py-3 text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-colors"
-                          onClick={handleDownloadPDF}
-                        >
-                          Download Report Note (PDF)
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={handleFindDoctorSpecialistClick}
-                          className="flex-1 bg-[#E4ECFF] text-[#2F4EBB] rounded-lg text-sm py-2.5"
-                        >
-                          Find Doctor Specialist
-                        </button>
-                      </div>
-                    </div>
-                  </section>
+                  <SummaryModal
+                    displaySummary={displaySummary}
+                    selfCareText={selfCareText}
+                    parsedSummary={parsedSummary}
+                    summaryDateLabel={summaryDateLabel}
+                    onDownloadPDF={handleDownloadPDFClick}
+                    onFindDoctorSpecialist={handleFindDoctorSpecialistClick}
+                  />
                 )}
               </div>
             </div>
@@ -1960,81 +1386,36 @@ const handleDownloadPDF = () => {
         </motion.footer>
       </div>
 
-      {/* Modals with overlay – block background interaction */}
-      <AnimatePresence>
-        {isAnyModalOpen && (
-          <motion.div
-            className="fixed inset-0 z-40 flex items-center justify-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            {showDoctorRecommendationPopUp && (
-              <DoctorRecommendationPopUp
-                condition={
-                  doctorRecommendationData?.condition ||
-                  "your health concerns"
-                }
-                recommendedSpecialty={
-                  doctorRecommendationData?.specialty ||
-                  "General Physician"
-                }
-                onFindDoctor={handleFindSpecialistDoctorClick}
-                onSkip={handleSkipDoctorRecommendation}
-                conversationSummary={conversationSummary}
-              />
-            )}
-
-            {showFacialScanPopUp && (
-              <FacialScanModal
-                onStartScan={handleStartFacialScan}
-                onSkipScan={handleSkipFacialScan}
-                isScanning={isScanning}
-              />
-            )}
-
-            {showVitals && vitalsData && (
-              <VitalSignsDisplay
-                vitals={vitalsData}
-                onClose={handleContinueFromVitals}
-                onStartConversation={handleContinueFromVitals}
-              />
-            )}
-
-            {showDoctorRecommendation && doctorRecommendationData && (
-              <DoctorRecommendationModal
-                condition={doctorRecommendationData.condition}
-                recommendedSpecialty={doctorRecommendationData.specialty}
-                onSelectDoctor={handleSelectDoctor}
-                onSkip={handleSkipDoctor}
-              />
-            )}
-
-            {showPayment && selectedDoctor && (
-              <PaymentModal
-                doctor={selectedDoctor}
-                onPaymentSuccess={handlePaymentSuccess}
-                onBack={handlePaymentBack}
-              />
-            )}
-
-            {showAppointment && selectedDoctor && (
-              <AppointmentModal
-                doctor={selectedDoctor}
-                onBookingSuccess={handleBookingSuccess}
-                onBack={handleAppointmentBack}
-              />
-            )}
-
-            {showConfirmation && bookingDetails && (
-              <BookingConfirmationModal
-                bookingDetails={bookingDetails}
-                onClose={handleConfirmationClose}
-              />
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Modal Flow Renderer */}
+      <ModalFlowRenderer
+        isAnyModalOpen={modalFlow.isAnyModalOpen}
+        showDoctorRecommendationPopUp={modalFlow.showDoctorRecommendationPopUp}
+        doctorRecommendationData={modalFlow.doctorRecommendationData}
+        showFacialScanPopUp={modalFlow.showFacialScanPopUp}
+        isScanning={modalFlow.isScanning}
+        showVitals={modalFlow.showVitals}
+        vitalsData={modalFlow.vitalsData}
+        showDoctorRecommendation={modalFlow.showDoctorRecommendation}
+        selectedDoctor={modalFlow.selectedDoctor}
+        showPayment={modalFlow.showPayment}
+        showAppointment={modalFlow.showAppointment}
+        showConfirmation={modalFlow.showConfirmation}
+        bookingDetails={modalFlow.bookingDetails}
+        conversationSummary={conversationSummary}
+        onFindDoctor={modalFlow.handleFindSpecialistDoctorClick}
+        onSkipDoctorRecommendation={modalFlow.handleSkipDoctorRecommendation}
+        onStartScan={modalFlow.handleStartFacialScan}
+        onSkipScan={modalFlow.handleSkipFacialScan}
+        onCloseVitals={modalFlow.handleContinueFromVitals}
+        onStartConversation={modalFlow.handleContinueFromVitals}
+        onSelectDoctor={modalFlow.handleSelectDoctor}
+        onSkipDoctor={modalFlow.handleSkipDoctor}
+        onPaymentSuccess={modalFlow.handlePaymentSuccess}
+        onPaymentBack={modalFlow.handlePaymentBack}
+        onBookingSuccess={modalFlow.handleBookingSuccess}
+        onAppointmentBack={modalFlow.handleAppointmentBack}
+        onConfirmationClose={modalFlow.handleConfirmationClose}
+      />
     </>
   );
 }
