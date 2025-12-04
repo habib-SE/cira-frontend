@@ -31,43 +31,48 @@ const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 /* ------------------------------------------------------------------ */
 
 // 🔎 Helper to extract conditions + confidence from plain summary text (fallback)
+// 🔎 Helper to extract conditions + confidence from plain summary text (fallback)
 function parseConditionsAndConfidence(summary) {
   if (!summary) return { conditions: [], confidence: null };
 
   const conditions = [];
   let confidence = null;
 
-  const confMatch = summary.match(/(\d+)\s*%[^.\n]*confiden/i);
-  if (confMatch) {
-    confidence = Number(confMatch[1]);
-  }
+  // e.g. "I'm about 85% confident..."
+  const confMatch = summary.match(/(\d{1,3})\s*%[^.\n]*confiden/i);
+  if (confMatch) confidence = Number(confMatch[1]);
 
+  // Try to isolate the "TOP 3 CONDITIONS (PROBABILITIES)" block
   const blockMatch =
     summary.match(
-      /top\s*\d*\s*possible\s*conditions[^:]*:\s*([\s\S]+)/i
+      /TOP\s*\d*\s*CONDITIONS[^(]*\(PROBABILITIES\)[^:]*:\s*([\s\S]+)/i
     ) ||
     summary.match(
-      /following\s+(?:possibilities|conditions)[^:]*:\s*([\s\S]+)/i
+      /TOP\s*\d*\s*(?:POSSIBLE\s*)?CONDITIONS[^:]*:\s*([\s\S]+)/i
     );
 
   const searchText = blockMatch ? blockMatch[1] : summary;
 
-  const condRegex = /(\d+)\s*%\s*([^%\n]+?)(?=(?:\s+\d+\s*%|\n|$))/g;
+  // Lines like: "1) Acute Gastroenteritis (Viral) – 60%"
+  const numberedLineRegex =
+    /^\s*\d+\)\s*(.+?)\s*[–-]\s*(\d{1,3})\s*%/gm;
+
   let m;
+  while ((m = numberedLineRegex.exec(searchText)) !== null) {
+    const rawName = m[1].trim().replace(/[.;]+$/, "");
+    const pct = Number(m[2]);
+    if (!rawName || Number.isNaN(pct)) continue;
 
-  while ((m = condRegex.exec(searchText)) !== null) {
-    const rawName = m[2].trim();
+    // Never treat self-care as a condition
+    if (/self-care|when to seek help/i.test(rawName)) continue;
 
-    if (/confiden/i.test(rawName)) continue;
-
-    conditions.push({
-      percentage: Number(m[1]),
-      name: rawName.replace(/[.;]+$/, "").trim(),
-    });
+    conditions.push({ name: rawName, percentage: pct });
   }
 
   return { conditions, confidence };
 }
+
+
 
 // 🧼 Helper to remove confidence sentence + raw condition lines from the summary
 function stripTopConditionsFromSummary(summary) {
@@ -75,11 +80,20 @@ function stripTopConditionsFromSummary(summary) {
 
   let cleaned = summary;
 
+  // remove the confidence sentence that talks about "following possibilities/conditions"
   cleaned = cleaned.replace(
     /I\s+am[^.\n]*\d+\s*%[^.\n]*following\s+(?:possibilities|conditions)[^.\n]*:?/i,
     ""
   );
 
+  // remove the whole "TOP 3 CONDITIONS (PROBABILITIES)" block,
+  // but keep anything after it (e.g. SELF-CARE, DOCTOR RECOMMENDATION)
+  cleaned = cleaned.replace(
+    /TOP\s*\d*\s*CONDITIONS(?:\s*\(PROBABILITIES\))?\s*:\s*[\s\S]*?(?=SELF-CARE\s*&\s*WHEN\s+TO\s+SEEK\s+HELP|For\s+(?:self-care|now|immediate relief)|DOCTOR RECOMMENDATION|Please book an appointment|Take care of yourself|$)/i,
+    ""
+  );
+
+  // remove any standalone lines that start with "60%" style percentages
   cleaned = cleaned
     .split("\n")
     .filter((line) => !/^\s*\d+\s*%/.test(line.trim()))
@@ -88,16 +102,29 @@ function stripTopConditionsFromSummary(summary) {
   return cleaned.trim();
 }
 
+
 // 🧼 Helper to pull out the self-care paragraph and leave rest
 function splitOutSelfCare(summary) {
   if (!summary) return { cleaned: "", selfCare: "" };
 
-  // ✅ Match any self-care style opening:
-  // "For self-care", "For now", "For immediate relief"
-  const pattern =
-    /(For\s+(?:self-care|now|immediate relief)[^]*?)(?=\n\s*\n|Please book an appointment|Please book|Take care of yourself|$)/i;
+  // 1) new format: "SELF-CARE & WHEN TO SEEK HELP: For now, ..."
+  const selfCareBlockRegex =
+    /SELF-CARE\s*&\s*WHEN\s+TO\s+SEEK\s+HELP\s*:?\s*(For[\s\S]*?)(?=DOCTOR RECOMMENDATION|Please book an appointment|Please book|Take care of yourself|$)/i;
 
-  const match = summary.match(pattern);
+  let match = summary.match(selfCareBlockRegex);
+  if (match) {
+    const selfCare = match[1].trim();
+    const cleaned =
+      (summary.slice(0, match.index) +
+        summary.slice(match.index + match[0].length)).trim();
+    return { cleaned, selfCare };
+  }
+
+  // 2) fallback: old format without the "SELF-CARE…" heading
+  const pattern =
+    /(For\s+(?:self-care|now|immediate relief)[\s\S]*?)(?=\n\s*\n|DOCTOR RECOMMENDATION|Please book an appointment|Please book|Take care of yourself|$)/i;
+
+  match = summary.match(pattern);
   if (!match) {
     return { cleaned: summary.trim(), selfCare: "" };
   }
@@ -109,6 +136,7 @@ function splitOutSelfCare(summary) {
 
   return { cleaned, selfCare };
 }
+
 
 
 
@@ -126,6 +154,7 @@ function extractConsultDataFromMessage(raw) {
   let summaryText = raw;
   let report = null;
 
+  // ----------------- split JSON from plain text -----------------
   const jsonMatch = raw.match(/```json([\s\S]*?)```/i);
   if (jsonMatch) {
     const jsonText = jsonMatch[1].trim();
@@ -158,6 +187,7 @@ function extractConsultDataFromMessage(raw) {
     const s = String(name || "");
     return (
       /medication|pharmacist|recommendation|disclaimer/i.test(s) ||
+      /self-care|when to seek help/i.test(s) || // 🚫 filter self-care
       /💊|⚠️|‼️/.test(s)
     );
   };
@@ -165,6 +195,7 @@ function extractConsultDataFromMessage(raw) {
   let conditions = [];
   let confidence = null;
 
+  // 1️⃣ Optional: conditions from JSON (we will override by summary later)
   if (report && report["📊 PROBABILITY ESTIMATES"]) {
     const prob = report["📊 PROBABILITY ESTIMATES"];
     if (prob && typeof prob === "object") {
@@ -179,6 +210,7 @@ function extractConsultDataFromMessage(raw) {
     }
   }
 
+  // 2️⃣ Confidence from JSON if present
   if (report && report["🤖 SYSTEM INFO"]) {
     const info = report["🤖 SYSTEM INFO"];
     if (info && info["Confidence Level"]) {
@@ -187,46 +219,21 @@ function extractConsultDataFromMessage(raw) {
     }
   }
 
+  // 3️⃣ ALWAYS use conditions parsed from the summary text
   const parsedFromSummary = parseConditionsAndConfidence(summaryText);
-
-  if (!conditions.length && parsedFromSummary.conditions?.length) {
+  if (parsedFromSummary.conditions?.length) {
     conditions = parsedFromSummary.conditions;
-  } else if (conditions.length && parsedFromSummary.conditions?.length) {
-    const mapFromSummary = new Map(
-      parsedFromSummary.conditions.map((c) => [
-        baseNameForDedup(c.name),
-        c.percentage,
-      ])
-    );
-
-    let updated = false;
-    conditions = conditions.map((c) => {
-      const key = baseNameForDedup(c.name);
-      if (mapFromSummary.has(key)) {
-        const newPct = mapFromSummary.get(key);
-        if (typeof newPct === "number" && !Number.isNaN(newPct)) {
-          updated = true;
-          return { ...c, percentage: newPct };
-        }
-      }
-      return c;
-    });
-
-    if (updated) {
-      const order = parsedFromSummary.conditions.map((c) =>
-        baseNameForDedup(c.name)
-      );
-      conditions.sort(
-        (a, b) =>
-          order.indexOf(baseNameForDedup(a.name)) -
-          order.indexOf(baseNameForDedup(b.name))
-      );
-    }
   }
 
+  // 4️⃣ Confidence: fall back to summary if JSON didn't give one
   if (confidence == null && parsedFromSummary.confidence != null) {
     confidence = parsedFromSummary.confidence;
   }
+
+  // 5️⃣ Final cleanup – remove any stray self-care rows & dedupe
+  conditions = (conditions || []).filter(
+    (c) => c && !looksLikeNonCondition(c.name)
+  );
 
   if (conditions.length) {
     const seen = new Set();
@@ -241,11 +248,12 @@ function extractConsultDataFromMessage(raw) {
     conditions = deduped
       .filter((c) => typeof c.percentage === "number" && c.percentage > 0)
       .sort((a, b) => b.percentage - a.percentage)
-      .slice(0, 3);
+      .slice(0, 3); // 🔒 exactly 3 items
   }
 
   return { summaryText, report, conditions, confidence };
 }
+
 
 // 🔎 Helper: normalize + dedupe conditions by name
 function normalizeConditionName(name = "") {
@@ -292,161 +300,370 @@ function shortConditionName(name = "") {
   const trimmed = beforeParen.trim();
   return trimmed || raw;
 }
+// 🧹 Normalise condition labels (strip numbers / bullets / trailing dash)
+function cleanConditionLabel(raw = "") {
+  let s = String(raw || "").trim();
 
-// 🔎 Extract a short main symptom label for Chief Complaint
+  // remove leading "1) ", "2) ", etc.
+  s = s.replace(/^\d+\)\s*/, "");
+
+  // remove leading bullets / dashes
+  s = s.replace(/^[•\-–]+\s*/, "");
+
+  // remove trailing dash-only
+  s = s.replace(/\s*[–\-]\s*$/g, "");
+
+  return s.trim();
+}
+
 // 🔎 Extract a short main symptom label for Chief Complaint
 function extractMainSymptomFromText(text = "") {
   const lower = text.toLowerCase();
 
-  // Detect "no / without / lack of / denies ... <word>" even if there are a few words in between
-  const hasNegative = (word) =>
-    new RegExp(
-      `(no|without|lack of|denies)[^.\\n]{0,40}\\b${word}\\b`,
-      "i"
-    ).test(lower);
+  const has = (re) => re.test(lower);
+  const not = (re) => !re.test(lower);
 
-  const positive = (re) => re.test(lower);
-
-  // 1️⃣ HEADACHE – but only if not clearly negated
-  if (positive(/\bheadache(s)?\b/i) && !hasNegative("headache")) {
-    return "Headache";
+  // Explicit "chief complaint" style sentences
+  const ccMatch = text.match(
+    /(chief complaint[^:]*:\s*)(.+?)(?:\.|\n|$)/i
+  );
+  if (ccMatch && ccMatch[2]) {
+    const cc = ccMatch[2].trim();
+    if (cc.length <= 80) return cc.charAt(0).toUpperCase() + cc.slice(1);
   }
 
-  // 2️⃣ FEVER
-  const feverPositive =
-    /(have|having|with|got|developed)\s+(a\s+)?fever\b/i.test(lower) ||
-    /\bfever\b\s+(since|for)\b/i.test(lower) ||
-    /\bfever\b\s*(and|with)\s+/i.test(lower) ||
-    /\bfever of\b/i.test(lower);
+  // Pattern: "is presenting with X", "complaining of X"
+  const presentMatch = text.match(
+    /\b(presenting with|complaining of|experiencing)\s+([^.\n]{5,80})/i
+  );
+  if (presentMatch && presentMatch[2]) {
+    let phrase = presentMatch[2].trim();
+    // cut at "that/which/since"
+    const cutWords = ["that", "which", "since", "for", "because"];
+    const lowerPhrase = phrase.toLowerCase();
+    let cutAt = Infinity;
+    cutWords.forEach((w) => {
+      const idx = lowerPhrase.indexOf(`${w} `);
+      if (idx !== -1 && idx < cutAt) cutAt = idx;
+    });
+    if (cutAt !== Infinity) phrase = phrase.slice(0, cutAt).trim();
+    if (phrase.length <= 80) {
+      return phrase.charAt(0).toUpperCase() + phrase.slice(1);
+    }
+  }
 
-  if (feverPositive && !hasNegative("fever")) {
-    if (
-      /\b(body|generalized|all over|whole body)\s+(aches?|pain)\b/i.test(lower)
-    ) {
+  // Fall back to keyword-based mapping
+  if (has(/\bheadache(s)?\b/i) && not(/no headache/i)) return "Headache";
+  if (has(/\bback pain\b/i) && not(/no back pain/i)) return "Back pain";
+  if (has(/\babdominal pain\b|\bstomach pain\b|\bbelly pain\b/i) && not(/no abdominal pain/i))
+    return "Abdominal pain";
+  if (has(/\bchest pain\b/i) && not(/no chest pain/i)) return "Chest pain";
+  if (has(/\bshortness of breath\b|\bdifficulty breathing\b|\bbreathlessness\b/i) && not(/no shortness of breath/i))
+    return "Shortness of breath";
+
+  // Fever logic
+  const feverPositive =
+    /(have|having|with|got|developed|presenting with)\s+(a\s+)?fever\b/i.test(
+      text
+    ) ||
+    /\bfever\b\s+(since|for)\b/i.test(text) ||
+    /\bfever\b\s*(and|with)\b/i.test(text);
+
+  if (feverPositive && not(/no fever|without fever|denies fever/i)) {
+    if (/\bbody aches?\b|\bgeneralized aches?\b/i.test(lower)) {
       return "Fever with body aches";
     }
     return "Fever";
   }
 
-  // 3️⃣ Other main complaints
-  if (positive(/\bchest pain\b/i) && !hasNegative("chest pain")) {
-    return "Chest pain";
-  }
+  if (has(/\bsore throat\b/i) && not(/no sore throat/i)) return "Sore throat";
 
-  if (
-    positive(
-      /\b(shortness of breath|breathlessness|difficulty breathing)\b/i
-    ) &&
-    !hasNegative("shortness of breath")
-  ) {
-    return "Shortness of breath";
-  }
-
-  if (
-    positive(
-      /\babdominal pain\b|\bstomach pain\b|\bbelly pain\b/i
-    ) &&
-    !hasNegative("abdominal pain") &&
-    !hasNegative("stomach pain")
-  ) {
-    return "Abdominal pain";
-  }
-
-  if (positive(/\bsore throat\b/i) && !hasNegative("sore throat")) {
-    return "Sore throat";
-  }
-
-  if (
-    positive(/\bnausea\b|\bvomiting\b/i) &&
-    !/(no|without)[^.\\n]{0,40}\b(nausea|vomiting)\b/i.test(lower)
-  ) {
+  if (has(/\bnausea\b|\bvomiting\b/i) && not(/no nausea|no vomiting/i))
     return "Nausea / vomiting";
-  }
 
-  if (positive(/\bdiarrhea\b/i) && !hasNegative("diarrhea")) {
-    return "Diarrhea";
-  }
+  if (has(/\bdiarrhea\b/i) && not(/no diarrhea/i)) return "Diarrhea";
+  if (has(/\brash\b/i) && not(/no rash/i)) return "Rash";
 
-  if (positive(/\brash\b/i) && !hasNegative("rash")) {
-    return "Rash";
-  }
-
-  if (positive(/\bback pain\b/i) && !hasNegative("back pain")) {
-    return "Back pain";
-  }
-
-  // 4️⃣ Fallback – let caller handle if nothing obvious
   return "";
 }
 
-// 🔍 Try to recover name / age / gender from the whole conversation
-function extractPatientInfoFromMessages(messages = []) {
-  let name = "";
-  let age = "";
-  let gender = "";
 
-  const capWord = (w) =>
-    w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : "";
+// 🔎 Guess the patient's most likely first name from the summary text
+function extractLikelyNameFromSummary(text = "") {
+  if (!text) return null;
 
-  for (const m of messages) {
-    const raw = (m?.text || "").trim();
-    if (!raw) continue;
+  // Capitalised words we should NEVER treat as names
+  const IGNORE = new Set([
+    "Thank",
+    "Thanks",
+    "Given",
+    "Based",
+    "Alright",
+    "Okay",
+    "Ok",
+    "Just",
+    "So",
+    "Since",
+    "Because",
+    "While",
+    "However",
+    "Although",
+    "This",
+    "That",
+    "There",
+    "Here",
+    "For",
+    "From",
+    "Please",
+    "Viral",
+    "Mild",
+    "Other",
+    "These",
+    "Those",
+    "Fever",
+    "Back",
+    "Abdominal",
+    "Chest",
+    "Headache",
+    "Cira",
+    "AI",
+    "Clinical",
+    "Your",
+    "Summary",
+    "Summarize",
+    "Summarised",
+    "Summarized",
+  ]);
 
-    // normalize spaces a bit
-    const text = raw.replace(/\s+/g, " ");
+  const matches = text.match(/\b[A-Z][a-z]{2,}\b/g);
+  if (!matches) return null;
 
-    // 1️⃣ Combo pattern: "habib 24 and male" / "Habib 24 male"
-    if (!name || !age || !gender) {
-      const combo = text.match(
-        /\b([A-Za-z][A-Za-z]{1,20})[^\d]{0,20}(\d{1,3})[^\w]{0,20}\b(male|female)\b/i
-      );
-      if (combo) {
-        if (!name) name = capWord(combo[1]);
-        if (!age) age = combo[2];
-        if (!gender) gender = capWord(combo[3]);
-      }
+  const counts = {};
+  for (const w of matches) {
+    if (IGNORE.has(w)) continue;
+    counts[w] = (counts[w] || 0) + 1;
+  }
+
+  let best = null;
+  let bestCount = 0;
+  for (const [w, c] of Object.entries(counts)) {
+    if (c > bestCount) {
+      best = w;
+      bestCount = c;
     }
+  }
 
-    // 2️⃣ Age + sex without explicit name
-    if (!age || !gender) {
-      const ageSex =
-        text.match(/(\d{1,3})\s*[-–]?\s*year[- ]old\s+(male|female)/i) ||
-        text.match(/(\d{1,3})\s*(?:yrs?|years?)\s*(?:old)?\s+(male|female)/i) ||
-        text.match(/(\d{1,3})\s*(?:and|,)?\s*(male|female)\b/i);
+  // Extra safety: never return "summarize"-like words
+  if (best && /summar/i.test(best)) return null;
 
-      if (ageSex) {
-        if (!age) age = ageSex[1];
-        if (!gender) gender = capWord(ageSex[2]);
-      }
+  return bestCount > 0 ? best : null;
+}
+
+// 🔎 Extract name + age + gender from the summary narrative
+function extractDemographicsFromSummary(text = "") {
+  if (!text) return { name: null, age: null, gender: null };
+
+  let name = null;
+  let age = null;
+  let gender = null;
+
+  const normalizeSex = (s) => {
+    const v = String(s || "").toLowerCase();
+    if (v === "female" || v === "woman") return "Female";
+    if (v === "male" || v === "man") return "Male";
+    return null;
+  };
+
+  let m;
+
+  // 0️⃣ Greeting style:
+  // "Alright, Habib." / "Hi Habib" / "Hello Ziko" etc.
+  m = text.match(
+    /\b(?:Hi|Hello|Hey|Salaam|Salam|Assalam|Alright|Okay|Ok)[,!\s]+([A-Z][a-z]{2,})\b/
+  );
+  if (m) {
+    name = m[1];
+  }
+
+  // 1️⃣ "Ziko, 34, female, is presenting with..."
+  m =
+    text.match(
+      /\b([A-Z][a-z]{2,})\b\s*,\s*(\d{1,3})\s*,\s*(male|female|man|woman)\b/i
+    ) || m;
+  if (m && m.length >= 4) {
+    if (!name) name = m[1];
+    age = m[2];
+    gender = normalizeSex(m[3]);
+  }
+
+  // 2️⃣ "Habib, a 24-year-old male ..."
+  if (!age || !gender) {
+    const m2 = text.match(
+      /\b([A-Z][a-z]{2,})\b[^.\n]{0,120}?\b(\d{1,3})\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b/i
+    );
+    if (m2) {
+      if (!name) name = m2[1];
+      age = age || m2[2];
+      gender = gender || normalizeSex(m2[3]);
     }
+  }
 
-    // 3️⃣ Name patterns:
-    // "my name is habib", "i am habib", "i'm habib"
-    // or assistant: "Alright, Habib.", "Okay, Habib"
-    if (!name) {
-      const nm =
-        text.match(
-          /\bmy name is\s+([A-Za-z][A-Za-z]+(?:\s+[A-Za-z][A-Za-z]+)*)/i
-        ) ||
-        text.match(
-          /\bi am\s+([A-Za-z][A-Za-z]+(?:\s+[A-Za-z][A-Za-z]+)*)/i
-        ) ||
-        text.match(
-          /\bi'm\s+([A-Za-z][A-Za-z]+(?:\s+[A-Za-z][A-Za-z]+)*)/i
-        ) ||
-        text.match(
-          /\b(?:Alright|Okay|Ok|Thanks|Thank you|Great|Sure),?\s+([A-Za-z][A-Za-z]{1,20})\b/i
-        );
-
-      if (nm) {
-        // only first word is enough for report
-        name = capWord(nm[1].split(" ")[0]);
-      }
+  // 3️⃣ Any "24-year-old male" pattern
+  if (!age || !gender) {
+    const m3 = text.match(
+      /\b(\d{1,3})\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b/i
+    );
+    if (m3) {
+      age = age || m3[1];
+      gender = gender || normalizeSex(m3[2]);
     }
+  }
+
+  // 4️⃣ Age only
+  if (!age) {
+    const m4 = text.match(/\b(\d{1,3})\s*[-–]?\s*year[- ]old\b/i);
+    if (m4) {
+      age = m4[1];
+    }
+  }
+
+  // 5️⃣ Fallback name if nothing explicit matched
+  if (!name) {
+    name = extractLikelyNameFromSummary(text);
+  }
+
+  // If the fallback still produced something weird like "summarize", drop it
+  if (name && /summar/i.test(name)) {
+    name = null;
   }
 
   return { name, age, gender };
 }
+
+
+
+
+// 🔎 Extract ROS chips + note from the summary
+function extractRosFromSummary(text = "") {
+  const chipsSet = new Set();
+  if (!text) {
+    return {
+      chips: [],
+      note:
+        "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.",
+    };
+  }
+
+  const addChip = (label) => {
+    if (label) chipsSet.add(label);
+  };
+
+  // ----------------- CHIP PATTERNS -----------------
+  // No treatments tried
+  if (
+    /(haven't|have not|hasn't|no)\s+(tried|taken|used)\s+(any\s+)?(treatments?|medications?|medicine|drugs|remedies)/i.test(
+      text
+    )
+  ) {
+    addChip("No treatments tried yet");
+  }
+
+  // No sick contacts
+  if (
+    /(haven't|have not|hasn't|no)\s+(been\s+)?(around|near|in contact with|exposed to)\s+(any(one)?\s+)?(who('s| is)?\s+)?(sick|ill|unwell)/i.test(
+      text
+    )
+  ) {
+    addChip("No sick contacts");
+  }
+
+  // No recent travel
+  if (/(no|not|haven't|have not)\s+(recent\s+)?travel(led)?/i.test(text)) {
+    addChip("No recent travel");
+  }
+
+  // "No other symptoms"
+  if (/(no|without|denies)\s+other\s+symptoms/i.test(text)) {
+    addChip("No other symptoms");
+  }
+
+  // No other medical conditions
+  if (
+    /(no|without|denies)\s+(other\s+)?(chronic\s+)?(medical|health)\s+conditions?/i.test(
+      text
+    )
+  ) {
+    addChip("No other medical conditions");
+  }
+
+  // No current medications
+  if (/(no|without|denies)\s+(current\s+)?medications?/i.test(text)) {
+    addChip("No current medications");
+  }
+
+  // No allergies
+  if (
+    /(no|without|denies)\s+(known\s+)?(drug|medication|medicine)?\s*allerg(y|ies)/i.test(
+      text
+    )
+  ) {
+    addChip("No known allergies");
+  }
+
+  // Not pregnant
+  if (/(not pregnant|denies pregnancy|no possibility of pregnancy)/i.test(text)) {
+    addChip("Not pregnant");
+  }
+
+  // Negative for chest pain
+  if (/(no|denies|without)\s+chest pain/i.test(text)) {
+    addChip("Negative for chest pain");
+  }
+
+  // Negative for shortness of breath
+  if (
+    /(no|denies|without)\s+(shortness of breath|difficulty breathing|trouble breathing)/i.test(
+      text
+    )
+  ) {
+    addChip("Negative for shortness of breath");
+  }
+
+  // If we still got nothing, but there is some "no symptoms" type phrase
+  if (!chipsSet.size && /no (other )?symptoms?/i.test(text)) {
+    addChip("No other symptoms");
+  }
+
+  // Limit to max 4 chips to keep the layout clean
+  const chips = Array.from(chipsSet).slice(0, 4);
+
+  // ----------------- NOTE SELECTION -----------------
+  // Pick the first sentence that has strong negatives
+  const sentences = text.split(/(?<=[.!?])\s+/);
+  let rosNote = "";
+  for (const s of sentences) {
+    if (
+      /(haven't|have not|hasn't|no other symptoms|no symptoms|denies|without|no recent travel|no sick contacts)/i.test(
+        s
+      )
+    ) {
+      rosNote = s.trim();
+      break;
+    }
+  }
+
+  if (!rosNote) {
+    rosNote =
+      "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.";
+  }
+
+  return {
+    chips,
+    note: rosNote,
+  };
+}
+
+
 
 
 
@@ -784,195 +1001,159 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     };
   }, []);
 
-  /* ------------------------------------------------------------------ */
-  /*  PDF download – FIXED: name / age / gender / chief complaint       */
-  /* ------------------------------------------------------------------ */
-  /* ------------------------------------------------------------------ */
-  /*  PDF download – FIXED: name / age / gender / chief complaint       */
-  /* ------------------------------------------------------------------ */
-  const handleDownloadPDF = () => {
-    if (!consultSummary) return;
+/* ------------------------------------------------------------------ */
+/*  PDF download – NAME / AGE / SEX / CC / ROS all fixed              */
+/* ------------------------------------------------------------------ */
+const handleDownloadPDF = () => {
+  if (!consultSummary) return;
 
-    // 🔍 Search inside any nested object for a key
-    const deepFind = (obj, key) => {
-      if (!obj || typeof obj !== "object") return null;
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        return obj[key];
-      }
-      for (const value of Object.values(obj)) {
-        if (value && typeof value === "object") {
-          const result = deepFind(value, key);
-          if (result !== null && result !== undefined) return result;
-        }
-      }
-      return null;
-    };
+  // Use both cleaned and raw text as sources
+  const combinedSummary = `${displaySummary || ""}\n${consultSummary || ""}`.trim();
 
-    // 0️⃣ Start by extracting from the whole chat
-    const chatPatient = extractPatientInfoFromMessages(messages);
+  // 1️⃣ Try to get demographics from the summary text
+  const {
+    name: nameFromSummary,
+    age: ageFromSummary,
+    gender: genderFromSummary,
+  } = extractDemographicsFromSummary(combinedSummary);
 
-    // 1️⃣ Base patient info
-    let patientInfo = {
-      name: chatPatient.name || "User",
-      age: chatPatient.age || "",
-      gender: chatPatient.gender || "",
-      consultDate: summaryCreatedAt
-        ? summaryCreatedAt.toLocaleDateString()
-        : new Date().toLocaleDateString(),
-    };
-
-    let chiefComplaintFromJson;
-
-    // 👉 Use both cleaned + raw summary as parsing source
-     // 👉 Use full signal: all user messages + final summaries
-  const userText = messages
-    .filter((m) => m.role === "user")
-    .map((m) => m.text)
-    .join("\n");
-
-  const combinedSummary = `${userText}\n${displaySummary || ""}\n${
-    consultSummary || ""
-  }`;
-
-
-    // 2️⃣ Try to override from CIRA_CONSULT_REPORT if it exists
-    if (consultReport && typeof consultReport === "object") {
-      const patientSection = deepFind(consultReport, "👤 PATIENT INFORMATION");
-      if (patientSection && typeof patientSection === "object") {
-        patientInfo = {
-          ...patientInfo,
-          name:
-            patientSection.Name ||
-            patientSection["Name"] ||
-            patientInfo.name,
-          age: patientSection.Age || patientInfo.age,
-          gender:
-            patientSection["Biological Sex"] ||
-            patientSection["Sex"] ||
-            patientInfo.gender,
-        };
-      }
-
-      const ccValue = deepFind(consultReport, "🩺 CHIEF COMPLAINT");
-      if (typeof ccValue === "string" && ccValue.trim()) {
-        chiefComplaintFromJson = ccValue.trim();
-      }
-    }
-
-    // 3️⃣ If age/sex still missing, parse from summary text: "23-year-old male"
-    if ((!patientInfo.age || !patientInfo.gender) && combinedSummary) {
-      const ageSexMatch = combinedSummary.match(
-        /(\d{1,3})\s*[-–]?\s*year[- ]old\s+(male|female)/i
-      );
-      if (ageSexMatch) {
-        if (!patientInfo.age) patientInfo.age = ageSexMatch[1];
-        if (!patientInfo.gender) {
-          const sex = ageSexMatch[2];
-          patientInfo.gender =
-            sex.charAt(0).toUpperCase() + sex.slice(1).toLowerCase();
-        }
-      }
-    }
-
-    // 4️⃣ If name still generic, try "Habib, a 23-year-old male..."
-    if (
-      (!patientInfo.name || patientInfo.name === "User") &&
-      combinedSummary
-    ) {
-      const nameMatch = combinedSummary.match(
-        /\b([A-Z][a-z]+)\b[^.\n]*\b\d+\s*[-–]?\s*year[- ]old\s+(male|female)/i
-      );
-      if (nameMatch) {
-        patientInfo.name = nameMatch[1];
-      } else {
-        // Or "Habib, given your symptoms..."
-        const name2 = combinedSummary.match(
-          /^([A-Z][a-z]+),\s+(?:given your symptoms|based on your symptoms|so to summarize)/im
-        );
-        if (name2) {
-          patientInfo.name = name2[1];
-        }
-      }
-    }
-
-    // 5️⃣ Build a SHORT chief complaint label
-    //    Prefer to infer from summary text, then fall back to JSON
-    let shortCC = extractMainSymptomFromText(combinedSummary);
-
-    if (!shortCC && chiefComplaintFromJson) {
-      shortCC = chiefComplaintFromJson;
-    }
-
-    if (!shortCC && combinedSummary) {
-      let firstSentence = combinedSummary.split("\n")[0];
-
-      firstSentence = firstSentence
-        .replace(/I'm really glad[^.]*\./i, "")
-        .trim();
-
-      if (patientInfo.name) {
-        const safeName = patientInfo.name.replace(
-          /[-/\\^$*+?.()|[\]{}]/g,
-          "\\$&"
-        );
-        const nameRegex = new RegExp("^" + safeName + "[^a-zA-Z]+", "i");
-        firstSentence = firstSentence.replace(nameRegex, "").trim();
-      }
-      firstSentence = firstSentence.replace(
-        /\b(a|the)?\s*\d+\s*[-–]?\s*year[- ]old\s+(male|female)\b[, ]*/i,
-        ""
-      );
-      firstSentence = firstSentence.replace(
-        /\b(is experiencing|is having|is suffering from|is dealing with|has)\b\s*/i,
-        ""
-      );
-
-      const cutAt = Math.min(
-        ...["which", "that"].map((w) => {
-          const i = firstSentence.toLowerCase().indexOf(w + " ");
-          return i === -1 ? Infinity : i;
-        })
-      );
-      if (cutAt !== Infinity) firstSentence = firstSentence.slice(0, cutAt);
-
-      const commaIdx = firstSentence.indexOf(",");
-      if (commaIdx !== -1) firstSentence = firstSentence.slice(0, commaIdx);
-
-      if (firstSentence.length && firstSentence.length <= 80) {
-        shortCC =
-          firstSentence.charAt(0).toUpperCase() + firstSentence.slice(1);
-      }
-    }
-
-    if (!shortCC) {
-      shortCC = "Main symptom from consult summary";
-    }
-
-    // 6️⃣ Build consultation payload for the PDF
-    const consultationData = {
-      conditions: parsedSummary.conditions,
-      confidence: parsedSummary.confidence,
-      narrativeSummary: displaySummary || consultSummary,
-      selfCareText,
-      vitalsData,
-      hpi: {},
-      associatedSymptomsChips: [],
-      associatedSymptomsNote: undefined,
-      chiefComplaint: shortCC,
-
-      // ✅ Pass patient fields into the chatSummary object too
-      patientName: patientInfo.name,
-      patientAge: patientInfo.age,
-      patientGender: patientInfo.gender,
-    };
-
-    // 7️⃣ Generate & download PDF
-    downloadSOAPFromChatData(
-      consultationData,
-      patientInfo,
-      `Cira_Consult_Report_${Date.now()}.pdf`
-    );
+  // Base info (will be completed/overridden below)
+  let patientInfo = {
+    name: nameFromSummary || null,
+    age: ageFromSummary || null,
+    gender: genderFromSummary || null,
+    consultDate: summaryCreatedAt
+      ? summaryCreatedAt.toLocaleDateString()
+      : new Date().toLocaleDateString(),
   };
+
+  // Helper to safely search nested JSON
+  const deepFind = (obj, key) => {
+    if (!obj || typeof obj !== "object") return null;
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      return obj[key];
+    }
+    for (const value of Object.values(obj)) {
+      if (value && typeof value === "object") {
+        const result = deepFind(value, key);
+        if (result !== null && result !== undefined) return result;
+      }
+    }
+    return null;
+  };
+
+  // 1b️⃣ If an old CIRA_CONSULT_REPORT JSON is present, use it only
+  // to fill *missing* fields (never overwrite summary-derived values).
+  if (consultReport && typeof consultReport === "object") {
+    const ptSection = deepFind(consultReport, "👤 PATIENT INFORMATION");
+    if (ptSection && typeof ptSection === "object") {
+      if (!patientInfo.name) {
+        patientInfo.name =
+          ptSection.Name || ptSection["Name"] || patientInfo.name;
+      }
+      if (!patientInfo.age) {
+        patientInfo.age = ptSection.Age || patientInfo.age;
+      }
+      if (!patientInfo.gender) {
+        patientInfo.gender =
+          ptSection["Biological Sex"] ||
+          ptSection["Sex"] ||
+          patientInfo.gender;
+      }
+    }
+  }
+
+  // Final defaults (never leave undefined)
+  if (!patientInfo.name) patientInfo.name = "User";
+  if (!patientInfo.age) patientInfo.age = "";
+  if (!patientInfo.gender) patientInfo.gender = "";
+
+  // 2️⃣ Chief Complaint: prefer structured extraction from the narrative
+  let shortCC = extractMainSymptomFromText(combinedSummary);
+
+  // If not found, fall back to any JSON CC
+  let chiefComplaintFromJson = null;
+  if (consultReport && typeof consultReport === "object") {
+    chiefComplaintFromJson = deepFind(consultReport, "🩺 CHIEF COMPLAINT");
+  }
+  if (!shortCC && typeof chiefComplaintFromJson === "string") {
+    shortCC = chiefComplaintFromJson.trim();
+  }
+
+  // Last-resort CC: derive a compact phrase from first sentence
+  if (!shortCC && combinedSummary) {
+    let firstSentence = combinedSummary.split("\n")[0];
+
+    // Remove generic intro like "Thank you for confirming, Habib."
+    firstSentence = firstSentence.replace(/Thank you[^.]*\./i, "").trim();
+
+    // Strip name + age/sex fragments
+    if (patientInfo.name) {
+      const safeName = patientInfo.name.replace(
+        /[-/\\^$*+?.()|[\]{}]/g,
+        "\\$&"
+      );
+      const nameRegex = new RegExp("^" + safeName + "[^a-zA-Z]+", "i");
+      firstSentence = firstSentence.replace(nameRegex, "").trim();
+    }
+    firstSentence = firstSentence.replace(
+      /\b(a|the)?\s*\d+\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b[, ]*/i,
+      ""
+    );
+    firstSentence = firstSentence.replace(
+      /\b(is experiencing|is having|is suffering from|is dealing with|has)\b\s*/i,
+      ""
+    );
+
+    const cutAt = Math.min(
+      ...["which", "that"].map((w) => {
+        const i = firstSentence.toLowerCase().indexOf(w + " ");
+        return i === -1 ? Infinity : i;
+      })
+    );
+    if (cutAt !== Infinity) firstSentence = firstSentence.slice(0, cutAt);
+
+    const commaIdx = firstSentence.indexOf(",");
+    if (commaIdx !== -1) firstSentence = firstSentence.slice(0, commaIdx);
+
+    if (firstSentence.length && firstSentence.length <= 80) {
+      shortCC =
+        firstSentence.charAt(0).toUpperCase() + firstSentence.slice(1);
+    }
+  }
+
+  if (!shortCC) {
+    shortCC = "Main symptom from consult summary";
+  }
+
+  // 3️⃣ Associated Symptoms (ROS) from the same narrative
+  const { chips: rosChips, note: rosNote } =
+    extractRosFromSummary(combinedSummary);
+
+  // 4️⃣ Build the payload for the PDF generator
+  const consultationData = {
+    conditions: parsedSummary.conditions,
+    confidence: parsedSummary.confidence,
+    narrativeSummary: displaySummary || consultSummary,
+    selfCareText,
+    vitalsData,
+    hpi: {},
+    associatedSymptomsChips: rosChips,
+    associatedSymptomsNote: rosNote || undefined,
+    chiefComplaint: shortCC,
+  };
+
+  // 5️⃣ Generate & download PDF
+  downloadSOAPFromChatData(
+    consultationData,
+    patientInfo,
+    `Cira_Consult_Report_${Date.now()}.pdf`
+  );
+};
+
+
+
+
 
 
 
