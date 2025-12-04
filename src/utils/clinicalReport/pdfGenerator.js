@@ -1,12 +1,13 @@
-
+// File: src/utils/pdfGenerator.js
 import { jsPDF } from "jspdf";
+import starsLogo from "../assets/stars.svg";
 
 /* ----------------- Color helpers ----------------- */
 const COLORS = {
-  primary: "#6A1B9A",          // header deep purple
-  secondary: "#C2185B",        // critical magenta
+  primary: "#6A1B9A", // brand purple
+  secondary: "#C2185B", // magenta accent
   yellow: "#D69E2E",
-  lightBg: "#F3E5F5",          // light lavender
+  lightBg: "#F3E5F5", // light lavender
   pageBg: "#EFEBEF",
   green: "#16A34A",
   grayText: "#4B5563",
@@ -50,8 +51,62 @@ function addWrappedText(doc, text, x, y, maxWidth, lineHeight) {
   return y;
 }
 
+/* ----------------- Condition cleanup ----------------- */
+/**
+ * Normalizes and filters the conditions list:
+ * - removes duplicates
+ * - removes junk like "MEDICATION RECOMMENDATIONS"
+ * - sorts by percentage desc
+ * - keeps only top 3
+ */
+function cleanConditions(list) {
+  if (!Array.isArray(list)) return [];
+
+  const seen = new Set();
+  const blockedPatterns = [
+    /medication/i,
+    /self[-\s]*care/i,
+    /recommendation/i,
+    /doctor/i,
+  ];
+
+  const cleaned = [];
+
+  for (const item of list) {
+    if (!item) continue;
+    let { name, percentage } = item;
+    if (!name) continue;
+
+    // Skip obvious non-diagnostic rows
+    if (blockedPatterns.some((re) => re.test(name))) continue;
+
+    // Normalize for duplicate detection
+    const norm = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(
+        /\b(the|a|an|of|and|other|likely|possible|probable|causes?)\b/g,
+        ""
+      )
+      .trim();
+
+    if (!norm || seen.has(norm)) continue;
+    seen.add(norm);
+
+    cleaned.push({
+      name: name.replace(/\s*[-–]\s*$/g, "").trim(),
+      percentage: Number(percentage ?? 0),
+    });
+  }
+
+  cleaned.sort((a, b) => (b.percentage || 0) - (a.percentage || 0));
+  return cleaned.slice(0, 3);
+}
+
 /* ----------------- MAIN CLINICAL REPORT LAYOUT ----------------- */
-export const generateSOAPNotePDF = (soapData = {}) => {
+export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
+  const { logoImage } = options; // optional HTMLImageElement
+
   const {
     patientName = "Patient",
     patientAge = "",
@@ -65,28 +120,30 @@ export const generateSOAPNotePDF = (soapData = {}) => {
     plan = "",
 
     // extra fields
-    conditions = [],      // [{ name, percentage }]
-    confidence = null,    // number
+    conditions = [], // [{ name, percentage }]
+    confidence = null, // number
     selfCareText = "",
-    vitalsData,           // not shown prominently here but kept
-    chiefComplaint,       // optional override
-
-    // optional HPI structured block (OLD CARTS style)
+    vitalsData,
+    chiefComplaint,
     hpi = {},
-    // optional associated symptoms labels
     associatedSymptomsChips = [],
     associatedSymptomsNote,
   } = soapData;
 
-  const doc = new jsPDF("p", "mm", "a4");
-  const pageW = doc.internal.pageSize.getWidth();
-  const pageH = doc.internal.pageSize.getHeight();
+  // ⬇️ Custom (shorter) page size
+  const PAGE_WIDTH = 210;   // A4 width in mm
+  const PAGE_HEIGHT = 260;  // ↓ reduce this to shrink overall height (e.g. 240, 250, 260)
+
+  const doc = new jsPDF("p", "mm", [PAGE_WIDTH, PAGE_HEIGHT]);
+  const pageW = PAGE_WIDTH;
+  const pageH = PAGE_HEIGHT;
 
   const margin = 10;
   const cardX = margin;
   const cardY = margin;
   const cardW = pageW - margin * 2;
-  const cardH = pageH - margin * 2;
+  const cardH = pageH - margin * 2 - 25;  // ↓ smaller card height
+
 
   const innerX = cardX + 8;
   const innerW = cardW - 16;
@@ -102,28 +159,37 @@ export const generateSOAPNotePDF = (soapData = {}) => {
 
   let y = cardY + 6;
 
-  /* ----------- HEADER BAND ----------- */
-  const headerH = 20;
-  setFillHex(doc, COLORS.primary);
-  setStrokeHex(doc, COLORS.primary);
-  doc.rect(cardX, y, cardW, headerH, "F");
+  /* ----------- HEADER (WHITE, WITH LOGO + CIRA) ----------- */
+  const headerH = 18;
 
+  if (logoImage) {
+    const logoW = 12;
+    const logoH = 12;
+    const logoX = cardX + 4;
+    const logoY = y + 2;
+    // jsPDF will accept most image types when passed as "PNG"
+    doc.addImage(logoImage, "PNG", logoX, logoY, logoW, logoH);
+  }
+
+  // "Cira" title
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
-  setTextHex(doc, COLORS.white);
-  doc.text("CLINICAL SYMPTOMS REPORT", innerX, y + 7);
+  setTextHex(doc, "#111827");
+  const titleX = logoImage ? cardX + 4 + 14 : innerX;
+  doc.text("Cira", titleX, y + 8);
 
+  // Subtitle
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.text(
-    "AI-Generated Patient Snapshot & Differential Analysis",
-    innerX,
-    y + 12
-  );
+  doc.setFontSize(9);
+  setTextHex(doc, "#4B5563");
+  doc.text("Clinical Symptoms Report", titleX, y + 13);
 
+  // Date on the right
   const headerRightX = cardX + cardW - 8;
   doc.setFontSize(9);
-  doc.text(`Date: ${consultDate || ""}`, headerRightX, y + 7, { align: "right" });
+  doc.text(`Date: ${consultDate || ""}`, headerRightX, y + 8, {
+    align: "right",
+  });
 
   y += headerH + 4;
 
@@ -136,7 +202,7 @@ export const generateSOAPNotePDF = (soapData = {}) => {
   let px = innerX;
   let py = y + 6;
 
-  // Patient
+  // Patient name
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   setTextHex(doc, "#6B7280");
@@ -156,11 +222,13 @@ export const generateSOAPNotePDF = (soapData = {}) => {
   doc.setFontSize(11);
   setTextHex(doc, COLORS.primary);
   const ageGenderText =
-    patientAge || patientGender ? `${patientAge || "--"} / ${patientGender || "--"}` : "—";
+    patientAge || patientGender
+      ? `${patientAge || "--"} / ${patientGender || "--"}`
+      : "—";
   doc.text(ageGenderText, px, py + 5);
 
-  // Chief Complaint (right)
-  px = innerX + cardW * 0.60;
+  // Chief Complaint
+  px = innerX + cardW * 0.6;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   setTextHex(doc, "#111827");
@@ -178,11 +246,11 @@ export const generateSOAPNotePDF = (soapData = {}) => {
 
   y += patientStripH + 6;
 
-  /* ----------- HPI: PAIN CHARACTERIZATION (OLD CARTS) ----------- */
+  /* ----------- CLINICAL SUMMARY (MAIN NARRATIVE) ----------- */
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   setTextHex(doc, COLORS.secondary);
-  doc.text("HPI: PAIN CHARACTERIZATION (OLD CARTS)", innerX, y);
+  doc.text("CLINICAL SUMMARY", innerX, y);
   y += 4;
 
   setStrokeHex(doc, COLORS.secondary);
@@ -190,65 +258,14 @@ export const generateSOAPNotePDF = (soapData = {}) => {
   doc.line(innerX, y, innerX + innerW, y);
   y += 4;
 
-  const hpiDefaults = {
-    onset: "—",
-    durationPattern: "—",
-    progression: "—",
-    location: "—",
-    severity: "—",
-    character: "—",
-    radiation: "—",
-    aggravatingFactors: "—",
-    relievingFactors: "—",
-    previousEpisodes: "—",
-    ...hpi,
-  };
+  const summaryText = subjective || assessment || objective || "Not available.";
 
-  const colGap = 4;
-  const hpiColW = (innerW - colGap) / 2;
-  const leftX = innerX;
-  const rightX = innerX + hpiColW + colGap;
-  let rowY = y + 2;
-  const labelFontSize = 7;
-  const valueFontSize = 8;
-  const rowHeight = 8;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  setTextHex(doc, COLORS.grayText);
+  y = addWrappedText(doc, summaryText, innerX, y + 1, innerW, 3.5);
 
-  const drawHpiItem = (x, yPos, label, value) => {
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(labelFontSize);
-    setTextHex(doc, COLORS.primary);
-    doc.text(label.toUpperCase(), x, yPos);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(valueFontSize);
-    setTextHex(doc, COLORS.grayText);
-    const valLines = doc.splitTextToSize(value || "—", hpiColW - 2);
-    addWrappedText(doc, valLines.join(" "), x, yPos + 3.2, hpiColW - 2, 3.2);
-  };
-
-  // left column
-  drawHpiItem(leftX, rowY, "Onset", hpiDefaults.onset);
-  rowY += rowHeight;
-  drawHpiItem(leftX, rowY, "Progression", hpiDefaults.progression);
-  rowY += rowHeight;
-  drawHpiItem(leftX, rowY, "Severity (0–10)", hpiDefaults.severity);
-  rowY += rowHeight;
-  drawHpiItem(leftX, rowY, "Radiation", hpiDefaults.radiation);
-  rowY += rowHeight;
-  drawHpiItem(leftX, rowY, "Relieving Factors", hpiDefaults.relievingFactors);
-
-  // right column
-  let rowY2 = y + 2;
-  drawHpiItem(rightX, rowY2, "Duration / Pattern", hpiDefaults.durationPattern);
-  rowY2 += rowHeight;
-  drawHpiItem(rightX, rowY2, "Location", hpiDefaults.location);
-  rowY2 += rowHeight;
-  drawHpiItem(rightX, rowY2, "Character", hpiDefaults.character);
-  rowY2 += rowHeight;
-  drawHpiItem(rightX, rowY2, "Aggravating Factors", hpiDefaults.aggravatingFactors);
-  rowY2 += rowHeight;
-  drawHpiItem(rightX, rowY2, "Previous Episodes", hpiDefaults.previousEpisodes);
-
-  y = Math.max(rowY, rowY2) + 6;
+  y += 6;
 
   /* ----------- ASSOCIATED SYMPTOMS (ROS) ----------- */
   setFillHex(doc, "#EEF2FF");
@@ -265,35 +282,31 @@ export const generateSOAPNotePDF = (soapData = {}) => {
   doc.text("ASSOCIATED SYMPTOMS (ROS)", rx, ry);
   ry += 4;
 
-  // chips
   const chips =
     associatedSymptomsChips && associatedSymptomsChips.length
       ? associatedSymptomsChips
       : [
-          "Negative for Fever",
-          "Negative for N/V/D/C",
-          "No Prior Medical History",
-        ];
+        "Negative for Fever",
+        "Negative for N/V/D/C",
+        "No Prior Medical History",
+      ];
+
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   let chipX = rx;
   let chipY = ry;
   const chipPaddingX = 2;
-  const chipPaddingY = 1.5;
+  const chipH = 5;
 
   chips.forEach((label) => {
     const textW = doc.getTextWidth(label);
     const chipW = textW + chipPaddingX * 4;
-    const chipH = 5;
 
     if (chipX + chipW > innerX + innerW - 4) {
       chipX = rx;
       chipY += chipH + 2;
     }
 
-    // chip background
-    const chipColor = COLORS.green;
-    const { r, g, b } = hexToRgb(chipColor);
     doc.setFillColor(209, 250, 229); // light green
     doc.setDrawColor(209, 250, 229);
     doc.roundedRect(chipX, chipY - chipH + 3, chipW, chipH, 2, 2, "FD");
@@ -307,7 +320,7 @@ export const generateSOAPNotePDF = (soapData = {}) => {
   const rosNote =
     associatedSymptomsNote && associatedSymptomsNote.trim()
       ? associatedSymptomsNote
-      : "Lack of systemic symptoms is noted, but the high localized pain requires exclusion of surgical pathology.";
+      : "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.";
   setTextHex(doc, COLORS.grayText);
   doc.setFontSize(7);
   chipY = addWrappedText(doc, rosNote, rx, chipY, innerW - 8, 3.2);
@@ -315,6 +328,8 @@ export const generateSOAPNotePDF = (soapData = {}) => {
   y += rosBoxH + 8;
 
   /* ----------- DIFFERENTIAL DIAGNOSIS WITH BARS ----------- */
+  const diagList = cleanConditions(conditions || []);
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   setTextHex(doc, COLORS.primary);
@@ -336,11 +351,6 @@ export const generateSOAPNotePDF = (soapData = {}) => {
   const percentX = innerX + innerW - 2;
   const barColors = [COLORS.secondary, COLORS.yellow, COLORS.green];
 
-  const diagList = (conditions && conditions.length ? conditions : []).slice(
-    0,
-    3
-  );
-
   if (diagList.length === 0) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
@@ -361,19 +371,16 @@ export const generateSOAPNotePDF = (soapData = {}) => {
       const name = d.name || "Condition";
       const pct = d.percentage ?? 0;
 
-      // name
       setTextHex(doc, COLORS.grayText);
-      const nameLines = doc.splitTextToSize(name, innerW * 0.30);
-      addWrappedText(doc, nameLines.join(" "), labelX, y, innerW * 0.30, 3.5);
+      const nameLines = doc.splitTextToSize(name, innerW * 0.3);
+      addWrappedText(doc, nameLines.join(" "), labelX, y, innerW * 0.3, 3.5);
 
-      // bar
       const barWidth = Math.max(6, (Math.min(pct, 100) / 100) * maxBarWidth);
       const barY = y - 3;
       const barH = 4;
       setFillHex(doc, barColors[idx] || "#9CA3AF");
       doc.roundedRect(barStartX, barY, barWidth, barH, 2, 2, "F");
 
-      // percentage
       setTextHex(doc, barColors[idx] || "#374151");
       doc.setFont("helvetica", "bold");
       doc.text(`${pct}%`, percentX, y, { align: "right" });
@@ -385,99 +392,81 @@ export const generateSOAPNotePDF = (soapData = {}) => {
 
   y += 6;
 
-  /* ----------- CLINICAL PLAN & DISPOSITION ----------- */
-  setFillHex(doc, "#FDF2F8");
-  setStrokeHex(doc, COLORS.secondary);
-  const planBoxH = 26;
-  const planBoxY = y;
-  doc.roundedRect(innerX, planBoxY, innerW, planBoxH, 3, 3, "FD");
+/* ----------- CLINICAL PLAN & DISPOSITION ----------- */
+setFillHex(doc, "#FDF2F8");
+setStrokeHex(doc, COLORS.secondary);
 
-  let py2 = planBoxY + 7;
-  let px2 = innerX + 4;
+// 👉 make the PLAN box wider than the inner content (smaller side margins)
+const planBoxSideMargin = 4;               // smaller margin than innerX
+const planBoxX = cardX + planBoxSideMargin;
+const planBoxW = cardW - planBoxSideMargin * 2;
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  setTextHex(doc, COLORS.secondary);
-  doc.text("CLINICAL PLAN & DISPOSITION", px2, py2);
-  py2 += 5;
+// 👉 stretch the PLAN box downwards so there is almost no empty space
+const planBoxY = y;
+let planBoxH = cardY + cardH - planBoxY - 20;  // 8mm bottom padding
+if (planBoxH < 20) planBoxH = 20;             // safety minimum height
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  setTextHex(doc, COLORS.grayText);
-  const planText =
-    plan && plan.trim().length
-      ? plan
-      : "Based on the AI assessment, immediate clinical assessment and appropriate diagnostic workup are recommended if symptoms are severe, worsening, or associated with red-flag features.";
-  py2 = addWrappedText(doc, planText, px2, py2, innerW - 8, 3.5);
+doc.roundedRect(planBoxX, planBoxY, planBoxW, planBoxH, 3, 3, "FD");
 
-  y = planBoxY + planBoxH + 6;
+let py2 = planBoxY + 7;
+let px2 = planBoxX + 4;
 
-  /* ----------- RAW AI MODEL OUTPUT ----------- */
-  setFillHex(doc, "#F9FAFB");
-  setStrokeHex(doc, "#E5E7EB");
-  const rawBoxY = y;
-  const rawBoxH = cardY + cardH - 6 - rawBoxY;
-  doc.roundedRect(innerX, rawBoxY, innerW, rawBoxH, 2, 2, "FD");
+doc.setFont("helvetica", "bold");
+doc.setFontSize(10);
+setTextHex(doc, COLORS.secondary);
+doc.text("CLINICAL PLAN & DISPOSITION", px2, py2);
+py2 += 5;
 
-  let ry2 = rawBoxY + 7;
-  const rx2 = innerX + 4;
+doc.setFont("helvetica", "normal");
+doc.setFontSize(8);
+setTextHex(doc, COLORS.grayText);
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  setTextHex(doc, COLORS.primary);
-  doc.text("Raw AI Model Output (Subjective / Assessment)", rx2, ry2);
-  ry2 += 4;
+const planText =
+  plan && plan.trim().length
+    ? plan
+    : "Based on the AI assessment, follow-up with a healthcare provider is recommended if symptoms worsen, persist, or if red-flag features develop.";
 
-  // Subjective
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  setTextHex(doc, "#111827");
-  doc.text("Subjective (Patient Narrative)", rx2, ry2);
-  ry2 += 3.5;
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  setTextHex(doc, COLORS.grayText);
-  ry2 = addWrappedText(
-    doc,
-    subjective || "Not available.",
-    rx2,
-    ry2,
-    innerW - 8,
-    3.2
-  );
-
-  ry2 += 3;
-  // Assessment
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  setTextHex(doc, "#111827");
-  doc.text("Assessment & Plan (AI Summary)", rx2, ry2);
-  ry2 += 3.5;
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  setTextHex(doc, COLORS.grayText);
-  ry2 = addWrappedText(
-    doc,
-    assessment || objective || "Not available.",
-    rx2,
-    ry2,
-    innerW - 8,
-    3.2
-  );
+// 👉 use planBoxW here so we really use the extra width
+py2 = addWrappedText(doc, planText, px2, py2, planBoxW - 8, 3.5);
 
   return doc;
 };
 
+/* ----------------- Image loader for logo ----------------- */
+function loadStarsLogo() {
+  return new Promise((resolve, reject) => {
+    try {
+      const img = new Image();
+      img.src = starsLogo;
+      img.onload = () => resolve(img);
+      img.onerror = (err) => reject(err);
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
 /* ----------------- Download helper ----------------- */
-export const downloadSOAPNotePDF = (soapData, filename = "Report.pdf") => {
-  const doc = generateSOAPNotePDF(soapData);
-  doc.save(filename);
+export const downloadSOAPNotePDF = async (
+  soapData,
+  filename = "Report.pdf"
+) => {
+  try {
+    const logoImage = await loadStarsLogo();
+    const doc = generateSOAPNotePDF(soapData, { logoImage });
+    doc.save(filename);
+  } catch (e) {
+    console.warn("Failed to load logo for PDF, saving without it:", e);
+    const doc = generateSOAPNotePDF(soapData);
+    doc.save(filename);
+  }
 };
 
 /* ----------------- Chat summary → SOAP structure ----------------- */
-export const convertChatSummaryToSOAP = (chatSummary = {}, patientInfo = {}) => {
+export const convertChatSummaryToSOAP = (
+  chatSummary = {},
+  patientInfo = {}
+) => {
   const {
     conditions = [],
     confidence = null,
@@ -489,7 +478,7 @@ export const convertChatSummaryToSOAP = (chatSummary = {}, patientInfo = {}) => 
     associatedSymptomsChips,
     associatedSymptomsNote,
     chiefComplaint,
-    fullConversation, // ⬅️ NEW
+    fullConversation, // kept for future if needed
   } = chatSummary;
 
   const {
@@ -499,29 +488,18 @@ export const convertChatSummaryToSOAP = (chatSummary = {}, patientInfo = {}) => 
     consultDate = new Date().toLocaleDateString(),
   } = patientInfo;
 
-  // 🩺 SUBJECTIVE – summary + full conversation
+  // SUBJECTIVE – keep the one-paragraph clinical summary only
   let subjective = "";
-  const subjectivePieces = [];
-
   if (narrativeSummary && narrativeSummary.trim()) {
-    subjectivePieces.push(narrativeSummary.trim());
-  }
-
-  if (fullConversation && fullConversation.trim()) {
-    subjectivePieces.push(
-      "Conversation transcript:\n" + fullConversation.trim()
-    );
-  }
-
-  if (subjectivePieces.length > 0) {
-    subjective = subjectivePieces.join("\n\n");
+    subjective = narrativeSummary.trim();
   } else {
     subjective =
       "Patient reported symptoms as described in the consultation transcript.";
   }
 
-  // OBJECTIVE – same as before
-  let objective = "Assessment based on patient-reported symptoms and AI analysis.";
+  // OBJECTIVE – brief note + vitals if present
+  let objective =
+    "Assessment based on patient-reported symptoms and AI analysis.";
   if (vitalsData) {
     const vitalsLines = [];
     if (vitalsData.heartRate != null)
@@ -539,8 +517,10 @@ export const convertChatSummaryToSOAP = (chatSummary = {}, patientInfo = {}) => 
   }
 
   let assessment = "";
-  if (conditions.length > 0) {
-    assessment = `Differential diagnosis includes:\n\n${conditions
+  const cleanedConditions = cleanConditions(conditions || []);
+
+  if (cleanedConditions.length > 0) {
+    assessment = `Differential diagnosis includes:\n\n${cleanedConditions
       .map((c) => `• ${c.name}: ${c.percentage}% likelihood`)
       .join("\n")}`;
   } else {
@@ -548,7 +528,7 @@ export const convertChatSummaryToSOAP = (chatSummary = {}, patientInfo = {}) => 
       "Differential diagnosis to be determined based on clinical evaluation and any additional tests.";
   }
 
-  let planParts = [];
+  const planParts = [];
 
   if (selfCareText && selfCareText.trim()) {
     planParts.push(selfCareText.trim());
@@ -577,7 +557,7 @@ export const convertChatSummaryToSOAP = (chatSummary = {}, patientInfo = {}) => 
     plan,
 
     // extras for layout
-    conditions,
+    conditions: cleanedConditions,
     confidence,
     selfCareText,
     vitalsData,
@@ -588,19 +568,31 @@ export const convertChatSummaryToSOAP = (chatSummary = {}, patientInfo = {}) => 
   };
 };
 
-
-export const generateSOAPFromChatData = (chatData, patientInfo = {}) => {
+export const generateSOAPFromChatData = (
+  chatData,
+  patientInfo = {},
+  options = {}
+) => {
   const soapData = convertChatSummaryToSOAP(chatData, patientInfo);
-  return generateSOAPNotePDF(soapData);
+  return generateSOAPNotePDF(soapData, options);
 };
 
-export const downloadSOAPFromChatData = (
+export const downloadSOAPFromChatData = async (
   chatData,
   patientInfo = {},
   filename = "Report.pdf"
 ) => {
-  const doc = generateSOAPFromChatData(chatData, patientInfo);
-  doc.save(filename);
+  try {
+    const logoImage = await loadStarsLogo();
+    const doc = generateSOAPFromChatData(chatData, patientInfo, {
+      logoImage,
+    });
+    doc.save(filename);
+  } catch (e) {
+    console.warn("Failed to load logo for PDF, saving without it:", e);
+    const doc = generateSOAPFromChatData(chatData, patientInfo);
+    doc.save(filename);
+  }
 };
 
 
