@@ -4,16 +4,17 @@ import starsLogo from "../assets/stars.svg";
 
 /* ----------------- Color helpers ----------------- */
 const COLORS = {
-  primary: "#6A1B9A", // brand purple
-  secondary: "#C2185B", // magenta accent
+  primary: "#6A1B9A",
+  secondary: "#C2185B",
   yellow: "#D69E2E",
-  lightBg: "#F3E5F5", // light lavender
-  pageBg: "#EFEBEF",
+  lightBg: "#F3E5F5", // ← no longer used for sections
+  pageBg: "#FBF7F2",
   green: "#16A34A",
   grayText: "#4B5563",
   grayLight: "#E5E7EB",
   white: "#FFFFFF",
 };
+
 
 function hexToRgb(hex) {
   const clean = hex.replace("#", "");
@@ -104,6 +105,7 @@ function cleanConditions(list) {
 }
 
 /* ----------------- MAIN CLINICAL REPORT LAYOUT ----------------- */
+/* ----------------- MAIN CLINICAL REPORT LAYOUT ----------------- */
 export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
   const { logoImage } = options; // optional HTMLImageElement
 
@@ -132,34 +134,34 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
 
   // ⬇️ Custom (shorter) page size
   const PAGE_WIDTH = 210;   // A4 width in mm
-  const PAGE_HEIGHT = 260;  // ↓ reduce this to shrink overall height (e.g. 240, 250, 260)
-
+  const PAGE_HEIGHT = 297;  // shorter height
   const doc = new jsPDF("p", "mm", [PAGE_WIDTH, PAGE_HEIGHT]);
+
   const pageW = PAGE_WIDTH;
   const pageH = PAGE_HEIGHT;
 
-  const margin = 10;
-  const cardX = margin;
-  const cardY = margin;
-  const cardW = pageW - margin * 2;
-  const cardH = pageH - margin * 2 - 25;  // ↓ smaller card height
+// Tighter left/right padding
+const marginX = 8;              // horizontal margin (smaller)
+const marginY = 4;             // vertical margin (same as before)
+
+const cardX = marginX;
+const cardY = marginY;
+const cardW = pageW - marginX * 2;
+const cardH = pageH - marginY * 2 - 25;
+
+// Inner content inset
+const innerX = cardX + 6;       // was +8 → brings text closer to edges
+const innerW = cardW - 10;       // was -16 → wider content area
 
 
-  const innerX = cardX + 8;
-  const innerW = cardW - 16;
+// Page background (cream)
+setFillHex(doc, COLORS.pageBg);
+doc.rect(0, 0, pageW, pageH, "F");
 
-  // Page background
-  setFillHex(doc, COLORS.pageBg);
-  doc.rect(0, 0, pageW, pageH, "F");
-
-  // White card
-  setFillHex(doc, COLORS.white);
-  setStrokeHex(doc, "#E5E7EB");
-  doc.roundedRect(cardX, cardY, cardW, cardH, 4, 4, "FD");
 
   let y = cardY + 6;
 
-  /* ----------- HEADER (WHITE, WITH LOGO + CIRA) ----------- */
+  /* ----------- HEADER (WHITE, LOGO + TITLE, DARK TEXT) ----------- */
   const headerH = 18;
 
   if (logoImage) {
@@ -167,11 +169,10 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
     const logoH = 12;
     const logoX = cardX + 4;
     const logoY = y + 2;
-    // jsPDF will accept most image types when passed as "PNG"
     doc.addImage(logoImage, "PNG", logoX, logoY, logoW, logoH);
   }
 
-  // "Cira" title
+  // "Cira" title – dark grey, no purple
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   setTextHex(doc, "#111827");
@@ -181,85 +182,95 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
   // Subtitle
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  setTextHex(doc, "#4B5563");
+  setTextHex(doc, "#6B7280");
   doc.text("Clinical Symptoms Report", titleX, y + 13);
 
   // Date on the right
   const headerRightX = cardX + cardW - 8;
   doc.setFontSize(9);
+  setTextHex(doc, "#6B7280");
   doc.text(`Date: ${consultDate || ""}`, headerRightX, y + 8, {
     align: "right",
   });
 
-  y += headerH + 4;
+// Gray underline under header (Cira + Date) – full width
+setStrokeHex(doc, COLORS.grayLight);
+doc.setLineWidth(0.3);
+const lineY = y + headerH;
+doc.line(0, lineY, pageW, lineY);   // ⬅️ full-bleed line across the page
 
-  /* ----------- PATIENT STRIP ----------- */
-  const patientStripH = 18;
-  setFillHex(doc, COLORS.lightBg);
-  setStrokeHex(doc, COLORS.lightBg);
-  doc.rect(cardX, y, cardW, patientStripH, "F");
+y += headerH + 4;
+
+
+
+/* ----------- PATIENT STRIP ----------- */
+const patientStripH = 18;
+
 
   let px = innerX;
   let py = y + 6;
 
-  // Patient name
+// Patient name
+doc.setFont("helvetica", "normal");
+doc.setFontSize(7);
+setTextHex(doc, "#6B7280");
+doc.text("Name:", px, py);
+doc.setFont("helvetica", "bold");
+doc.setFontSize(11);
+setTextHex(doc, "#111827");
+doc.text(patientName || "Patient", px, py + 5);
+
+// Age & Sex – bring closer to Name
+px = innerX + 40;  // 👉 smaller offset instead of cardW * 0.35
+doc.setFont("helvetica", "normal");
+doc.setFontSize(7);
+setTextHex(doc, "#6B7280");
+doc.text("Age & Sex", px, py);
+doc.setFont("helvetica", "bold");
+doc.setFontSize(11);
+setTextHex(doc,"#111827");
+const ageGenderText =
+  patientAge || patientGender
+    ? `${patientAge || "--"} / ${patientGender || "--"}`
+    : "—";
+doc.text(ageGenderText, px, py + 5);
+
+  // Chief Complaint – stays right side but a bit closer
+  px = innerX + cardW * 0.58; // was 0.6
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   setTextHex(doc, "#6B7280");
-  doc.text("Patient", px, py);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  setTextHex(doc, COLORS.primary);
-  doc.text(patientName || "Patient", px, py + 5);
-
-  // Age / Gender
-  px = innerX + cardW * 0.35;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  setTextHex(doc, "#6B7280");
-  doc.text("Age / Gender", px, py);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  setTextHex(doc, COLORS.primary);
-  const ageGenderText =
-    patientAge || patientGender
-      ? `${patientAge || "--"} / ${patientGender || "--"}`
-      : "—";
-  doc.text(ageGenderText, px, py + 5);
-
-  // Chief Complaint
-  px = innerX + cardW * 0.6;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  setTextHex(doc, "#111827");
-  doc.text("CHIEF COMPLAINT (CC):", px, py);
+  doc.text("Chief Complaint", px, py);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  setTextHex(doc, COLORS.secondary);
+  setTextHex(doc, "#DC2626"); // red-ish for CC like screenshot
   const ccText =
     chiefComplaint && chiefComplaint.trim().length
       ? chiefComplaint
       : "Acute symptoms based on AI summary.";
-  const ccLines = doc.splitTextToSize(ccText, cardW * 0.35);
-  doc.text(ccLines, px, py + 4);
+  const ccLines = doc.splitTextToSize(ccText, cardW * 0.32);
+  doc.text(ccLines, px, py + 5);
 
   y += patientStripH + 6;
 
-  /* ----------- CLINICAL SUMMARY (MAIN NARRATIVE) ----------- */
+  /* ----------- CLINICAL SUMMARY (PINK TITLE + THICK LINE) ----------- */
+  // Heading
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  setTextHex(doc, COLORS.secondary);
+  doc.setFontSize(10.5);
+  setTextHex(doc, "#EC4899"); // pink-500 style
   doc.text("CLINICAL SUMMARY", innerX, y);
+
   y += 4;
 
-  setStrokeHex(doc, COLORS.secondary);
-  doc.setLineWidth(0.5);
+  // Underline – slightly thicker
+  setStrokeHex(doc, "#EC4899");
+  doc.setLineWidth(0.35); // was 0.5
   doc.line(innerX, y, innerX + innerW, y);
   y += 4;
 
+  // Summary body
   const summaryText = subjective || assessment || objective || "Not available.";
-
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   setTextHex(doc, COLORS.grayText);
@@ -267,36 +278,36 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
 
   y += 6;
 
-  /* ----------- ASSOCIATED SYMPTOMS (ROS) ----------- */
-  setFillHex(doc, "#EEF2FF");
-  setStrokeHex(doc, "#E5E7EB");
-  const rosBoxH = 24;
-  doc.roundedRect(innerX, y, innerW, rosBoxH, 3, 3, "FD");
+/* ----------- ASSOCIATED SYMPTOMS (ROS) ----------- */
+setFillHex(doc, COLORS.white);
+setStrokeHex(doc, "#E5E7EB");
+const rosBoxH = 24;
+doc.roundedRect(innerX, y, innerW, rosBoxH, 3, 3, "FD");
+
 
   let ry = y + 6;
   let rx = innerX + 4;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  setTextHex(doc, COLORS.primary);
+  setTextHex(doc, "#111827");
   doc.text("ASSOCIATED SYMPTOMS (ROS)", rx, ry);
   ry += 4;
 
-  const chips =
+    const chips =
     associatedSymptomsChips && associatedSymptomsChips.length
       ? associatedSymptomsChips
-      : [
-        "Negative for Fever",
-        "Negative for N/V/D/C",
-        "No Prior Medical History",
-      ];
+      : ["No other symptoms"];
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   let chipX = rx;
   let chipY = ry;
-  const chipPaddingX = 2;
-  const chipH = 5;
+  const chipPaddingX = 3;
+  const chipH = 6;
+
+  // 🔹 track where the lowest chip ends
+  let lastChipBottomY = chipY;
 
   chips.forEach((label) => {
     const textW = doc.getTextWidth(label);
@@ -304,26 +315,37 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
 
     if (chipX + chipW > innerX + innerW - 4) {
       chipX = rx;
-      chipY += chipH + 2;
+      chipY += chipH + 3;
     }
+
+    const chipTopY = chipY - chipH + 4;
 
     doc.setFillColor(209, 250, 229); // light green
     doc.setDrawColor(209, 250, 229);
-    doc.roundedRect(chipX, chipY - chipH + 3, chipW, chipH, 2, 2, "FD");
+    doc.roundedRect(chipX, chipTopY, chipW, chipH, 3, 3, "FD");
 
+    // center text vertically in the pill
     setTextHex(doc, "#166534");
-    doc.text(label, chipX + chipPaddingX * 2, chipY);
-    chipX += chipW + 2;
+    const textBaselineY = chipTopY + chipH / 2 + 1.5;
+    doc.text(label, chipX + chipPaddingX * 2, textBaselineY);
+
+    // update lowest chip bottom
+    const chipBottomY = chipTopY + chipH;
+    if (chipBottomY > lastChipBottomY) lastChipBottomY = chipBottomY;
+
+    chipX += chipW + 3;
   });
 
-  chipY += 5;
+  // 🔹 NOW add a clear gap below chips before the paragraph
+  const textStartY = lastChipBottomY + 4; // increase 4 → 6/8 if you want more gap
   const rosNote =
     associatedSymptomsNote && associatedSymptomsNote.trim()
       ? associatedSymptomsNote
       : "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.";
+
   setTextHex(doc, COLORS.grayText);
   doc.setFontSize(7);
-  chipY = addWrappedText(doc, rosNote, rx, chipY, innerW - 8, 3.2);
+  addWrappedText(doc, rosNote, rx, textStartY, innerW - 8, 3.2);
 
   y += rosBoxH + 8;
 
@@ -332,7 +354,7 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  setTextHex(doc, COLORS.primary);
+  setTextHex(doc, "#111827");
   const diffTitle =
     confidence != null
       ? `DIFFERENTIAL DIAGNOSIS (AI Confidence: ${confidence}%)`
@@ -393,41 +415,40 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
   y += 6;
 
 /* ----------- CLINICAL PLAN & DISPOSITION ----------- */
-setFillHex(doc, "#FDF2F8");
+setFillHex(doc, COLORS.white);
 setStrokeHex(doc, COLORS.secondary);
 
-// 👉 make the PLAN box wider than the inner content (smaller side margins)
-const planBoxSideMargin = 4;               // smaller margin than innerX
+const planBoxSideMargin = 4;
 const planBoxX = cardX + planBoxSideMargin;
 const planBoxW = cardW - planBoxSideMargin * 2;
 
-// 👉 stretch the PLAN box downwards so there is almost no empty space
 const planBoxY = y;
-let planBoxH = cardY + cardH - planBoxY - 20;  // 8mm bottom padding
-if (planBoxH < 20) planBoxH = 20;             // safety minimum height
+// 🔽 fixed smaller height instead of filling all remaining space
+let planBoxH = 50;       // try 40–60 to taste
+if (planBoxH < 20) planBoxH = 20;
 
 doc.roundedRect(planBoxX, planBoxY, planBoxW, planBoxH, 3, 3, "FD");
 
-let py2 = planBoxY + 7;
-let px2 = planBoxX + 4;
 
-doc.setFont("helvetica", "bold");
-doc.setFontSize(10);
-setTextHex(doc, COLORS.secondary);
-doc.text("CLINICAL PLAN & DISPOSITION", px2, py2);
-py2 += 5;
+  let py2 = planBoxY + 7;
+  let px2 = planBoxX + 4;
 
-doc.setFont("helvetica", "normal");
-doc.setFontSize(8);
-setTextHex(doc, COLORS.grayText);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  setTextHex(doc, COLORS.secondary);
+  doc.text("CLINICAL PLAN & DISPOSITION", px2, py2);
+  py2 += 5;
 
-const planText =
-  plan && plan.trim().length
-    ? plan
-    : "Based on the AI assessment, follow-up with a healthcare provider is recommended if symptoms worsen, persist, or if red-flag features develop.";
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  setTextHex(doc, COLORS.grayText);
 
-// 👉 use planBoxW here so we really use the extra width
-py2 = addWrappedText(doc, planText, px2, py2, planBoxW - 8, 3.5);
+  const planText =
+    plan && plan.trim().length
+      ? plan
+      : "Based on the AI assessment, follow-up with a healthcare provider is recommended if symptoms worsen, persist, or if red-flag features develop.";
+
+  py2 = addWrappedText(doc, planText, px2, py2, planBoxW - 8, 3.5);
 
   return doc;
 };
