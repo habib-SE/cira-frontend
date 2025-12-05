@@ -228,11 +228,11 @@ const ChatInput = ({
                 <button
                   type="button"
                   onClick={handleMicClick}
-                  className="absolute bottom-2 left-3 flex items-center gap-1 px-3 py-2 rounded-full bg-white border border-gray-200 text-sm text-gray-800 shadow-sm hover:bg-pink-200 transition-all duration-200"
+                  className="absolute bottom-2 left-3 flex items-center gap-1 px-2 md:px-3 py-2 rounded-full bg-white border border-gray-200 text-sm text-gray-800 shadow-sm hover:bg-pink-200 transition-all duration-200"
                   disabled={disabled}
                 >
                   <img src={mic} alt="mic" className="w-4 h-4" />
-                  <span>Speak</span>
+                  <span className="hidden md:inline">Speak</span>
                 </button>
               )}
 
@@ -244,13 +244,13 @@ const ChatInput = ({
                   hover:from-purple-700 hover:to-pink-700 
                   disabled:from-gray-400 disabled:to-gray-400 
                   disabled:cursor-not-allowed 
-                  text-white font-semibold px-3 md:px-5 py-2 rounded-sm 
+                  text-white font-semibold px-2 md:px-5 py-2 rounded-sm 
                   transition-all duration-200 shadow-md text-sm whitespace-nowrap flex items-center gap-2 justify-center"
                 whileHover={{ scale: isDisabled ? 1 : 1.05 }}
                 whileTap={{ scale: isDisabled ? 1 : 0.95 }}
               >
                 <Send className="w-4 h-4" />
-                {submitText && <span>{submitText}</span>}
+                {submitText && <span className="hidden md:inline">{submitText}</span>}
               </motion.button>
             </div>
           </form>

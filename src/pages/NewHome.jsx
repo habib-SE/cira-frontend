@@ -95,21 +95,21 @@ const HeroSection = ({ onStartChat }) => {
           className="flex flex-wrap justify-center gap-3 md:gap-6 text-[8px] md:text-[9px] text-gray-600 mb-7 md:mb-9"
         >
           <motion.div variants={float} className="flex items-center gap-1 text-black">
-           
-            <div className="flex flex-row text-[10px] md:text-[12px]">
+            <Shield className="w-[10px] h-[10px] md:w-[13px] md:h-[13px] fill-current text-black" />
+            <div className="flex flex-row text-[15px]">
               <strong>256</strong>
               <p>-bit encryption</p>
             </div>
           </motion.div>
           <motion.div variants={float} transition={{ delay: 0.1 }} className="flex items-center gap-1 text-black">
             <Users className="w-[10px] h-[10px] md:w-[13px] md:h-[13px] fill-current text-black" />
-            <span className="text-[10px] md:text-[12px]">Trusted by thousands</span>
+            <span className="text-[15px]">Trusted by thousands</span>
           </motion.div>
           <motion.div variants={float} transition={{ delay: 0.2 }} className="flex items-center gap-1 text-black">
             <div className="w-[10px] h-[10px] md:w-[13px] md:h-[13px] rounded-full bg-black flex items-center justify-center">
               <Plus className="w-[6px] h-[6px] md:w-[8px] md:h-[8px] text-white" strokeWidth={3} />
             </div>
-            <span className="text-[10px] md:text-[12px]">Instant AI answers</span>
+            <span className="text-[15px]">Instant AI answers</span>
           </motion.div>
         </motion.div>
 
@@ -123,7 +123,7 @@ const HeroSection = ({ onStartChat }) => {
                 alt="Cira" 
                 className="w-12 h-12 md:w-16 md:h-16 rounded-full object-contain flex-shrink-0" 
               />
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif font-normal text-gray-950 tracking-wide">
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif font-normal text-gray-950 tracking-tight">
                 Hi, I'm <span className="text-pink-400">Cira</span>, your AI Nurse
               </h1>
             </motion.div>
@@ -162,7 +162,7 @@ const HeroSection = ({ onStartChat }) => {
             {/* Chat Input */}
             <motion.div variants={fadeUp} className="w-full !mb-11">
               <div
-                className={`relative bg-white rounded-[2.5rem] border transition-all duration-300 overflow-hidden ${
+                className={`relative bg-white rounded-xl border transition-all duration-300 overflow-hidden ${
                   isFocused
                     ? "border-gray-800 shadow-md"
                     : "border-gray-200 shadow-sm"
@@ -175,8 +175,18 @@ const HeroSection = ({ onStartChat }) => {
                       onChange={(e) => setMessage(e.target.value)}
                       onFocus={() => setIsFocused(true)}
                       onBlur={() => setIsFocused(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          const trimmed = message.trim();
+                          if (trimmed && trimmed.length <= characterLimit) {
+                            onStartChat?.(trimmed);
+                            setMessage("");
+                          }
+                        }
+                      }}
                       placeholder="Ask me anything about your health..."
-                      className="w-full min-h-[112px] pl-6 pr-40 pt-4 pb-20 text-lg bg-white rounded-[2.5rem] focus:outline-none border-0 placeholder:text-gray-800 placeholder:text-[19px] placeholder:font-light text-start resize-none font-sans"
+                      className="w-full min-h-[112px] pl-6 pr-40 pt-4 pb-20 text-lg bg-white rounded-xl focus:outline-none border-0 placeholder:text-gray-800 placeholder:text-sm md:placeholder:text-[19px] placeholder:font-light text-start resize-none font-sans"
                       maxLength={characterLimit}
                     />
 
@@ -198,7 +208,7 @@ const HeroSection = ({ onStartChat }) => {
                           hover:from-pink-600 hover:to-purple-700 
                           disabled:from-gray-400 disabled:to-gray-400 
                           disabled:cursor-not-allowed 
-                          text-white font-semibold px-5 md:px-6 py-2.5 rounded-full
+                          text-white font-semibold px-5 md:px-6 py-2.5 rounded-lg
                           transition-all duration-200 shadow-md text-sm md:text-base whitespace-nowrap font-sans"
                         whileHover={{ scale: message.trim() ? 1.05 : 1 }}
                         whileTap={{ scale: message.trim() ? 0.95 : 1 }}
