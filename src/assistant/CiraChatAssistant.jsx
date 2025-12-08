@@ -7,25 +7,22 @@ import React, {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useConversation } from "@11labs/react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
+import AgentAvatar from "../assets/nurse.png";
 import ChatInput from "../components/landing/ChatInput";
 import Header from "../components/Header";
 import stars from "../assets/stars.svg";
-import AgentAvatar from "../assets/nurse.png";
 
-// Import custom hooks, components, and utilities
-import { useModalFlow } from "./modal/chatModalHooks";
-import ModalFlowRenderer from "./modal/chatModalFlowRenderer";
-import SummaryModal from "./modal/summarymodal";
+import VitalSignsDisplay from "./modal/VitalSignsDisplay";
+import DoctorRecommendationModal from "./modal/DoctorRecommendationModal";
+import PaymentModal from "./modal/PaymentModal";
+import AppointmentModal from "./modal/AppointmentModal";
+import BookingConfirmationModal from "./modal/BookingConfirmationModal";
+import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
+import FacialScanModal from "./modal/FacialScanModal";
 
-import {
-  extractConsultDataFromMessage,
-  processSummaryForDisplay,
-  formatDateLabels
-} from "../utils/ChatConversationSummary/summaryProcessor";
-import { handleDownloadPDF } from "../utils/clinicalReport/consultReportExtractor";
-
+import { downloadSOAPFromChatData } from "../utils/clinicalReport/pdfGenerator";
 
 const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 
@@ -673,11 +670,7 @@ function extractRosFromSummary(text = "") {
 export default function CiraChatAssistant({ initialMessage: initialMessageProp }) {
   const location = useLocation();
   const navigate = useNavigate();
-  // 🔹 Modal flow management
-  const modalFlow = useModalFlow();
-  const [conversationSummary, setConversationSummary] = useState("");
 
-  // 🔹 Chat state
   const [hasAgreed, setHasAgreed] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -689,16 +682,21 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   const [messages, setMessages] = useState([]);
   const initialSentRef = useRef(false);
 
-  // 🔹 Summary state
+  // 🔹 Final consult summary + metadata
   const [consultSummary, setConsultSummary] = useState(null);
   const [summaryCreatedAt, setSummaryCreatedAt] = useState(null);
+
+  // 🔹 Parsed stats from report (conditions + confidence)
   const [summaryStats, setSummaryStats] = useState({
     conditions: [],
     confidence: null,
   });
+
+  // 🔹 Parsed CIRA_CONSULT_REPORT JSON (used only for PDF)
   const [consultReport, setConsultReport] = useState(null);
 
   const [isThinking, setIsThinking] = useState(false);
+
   const scrollAreaRef = useRef(null);
   const [hasStartedChat, setHasStartedChat] = useState(false);
 
@@ -880,14 +878,21 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     c.scrollTo({ top: c.scrollHeight, behavior: "smooth" });
   }, [messages, isThinking, consultSummary]);
 
-  // Process summary for display
-  const { displaySummary, selfCareText } = consultSummary 
-    ? processSummaryForDisplay(consultSummary)
-    : { displaySummary: "", selfCareText: "" };
-
-  // Format date labels
   const startedTime = new Date();
-  const { startedLabel, summaryDateLabel } = formatDateLabels(summaryCreatedAt, startedTime);
+  const startedLabel = startedTime.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const summaryDateLabel =
+    summaryCreatedAt &&
+    summaryCreatedAt.toLocaleString([], {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   // 🔄 Use pre-parsed stats, but dedupe condition list
   const parsedSummary = consultSummary
@@ -1155,10 +1160,87 @@ const handleDownloadPDF = () => {
 
   const handleFindDoctorSpecialistClick = () => {
     if (!consultSummary) return;
-    
-    const primaryCondition = parsedSummary.conditions[0]?.name || "your health concerns";
-    modalFlow.handleFindDoctorSpecialistClick(primaryCondition);
+
+    const primaryCondition =
+      parsedSummary.conditions[0]?.name || "your health concerns";
+
+    setDoctorRecommendationData({
+      condition: primaryCondition,
+      specialty: "General Physician",
+    });
     setConversationSummary(consultSummary);
+    setShowDoctorRecommendationPopUp(true);
+  };
+
+  const handleFindSpecialistDoctorClick = () => {
+    setShowDoctorRecommendationPopUp(false);
+    setShowFacialScanPopUp(true);
+  };
+
+  const handleSkipDoctorRecommendation = () => {
+    setShowDoctorRecommendationPopUp(false);
+  };
+
+  const handleStartFacialScan = () => {
+    setIsScanning(true);
+    setShowFacialScanPopUp(false);
+
+    setTimeout(() => {
+      setIsScanning(false);
+      setVitalsData({
+        heartRate: 80,
+        spo2: 98,
+        temperature: 36.8,
+      });
+      setShowVitals(true);
+    }, 1500);
+  };
+
+  const handleSkipFacialScan = () => {
+    setShowFacialScanPopUp(false);
+  };
+
+  const handleContinueFromVitals = () => {
+    setShowVitals(false);
+    setShowDoctorRecommendation(true);
+  };
+
+  const handleSelectDoctor = (doctor) => {
+    setSelectedDoctor(doctor);
+    setShowDoctorRecommendation(false);
+    setShowPayment(true);
+  };
+
+  const handleSkipDoctor = () => {
+    setShowDoctorRecommendation(false);
+  };
+
+  const handlePaymentSuccess = (details) => {
+    setShowPayment(false);
+    setBookingDetails(details);
+    setShowAppointment(true);
+  };
+
+  const handlePaymentBack = () => {
+    setShowPayment(false);
+    setShowDoctorRecommendation(true);
+  };
+
+  const handleBookingSuccess = (details) => {
+    setShowAppointment(false);
+    setBookingDetails(details);
+    setShowConfirmation(true);
+  };
+
+  const handleAppointmentBack = () => {
+    setShowAppointment(false);
+    setShowPayment(true);
+  };
+
+  const handleConfirmationClose = () => {
+    setShowConfirmation(false);
+    setSelectedDoctor(null);
+    setBookingDetails(null);
   };
 
   return (
@@ -1167,6 +1249,7 @@ const handleDownloadPDF = () => {
         <div className="fixed top-0 left-0 right-0 z-50 md:z-0">
           <Header />
         </div>
+
         <motion.div
           ref={scrollAreaRef}
           className="flex-1 overflow-y-auto"
@@ -1462,36 +1545,81 @@ const handleDownloadPDF = () => {
         </motion.footer>
       </div>
 
-      {/* Modal Flow Renderer */}
-      <ModalFlowRenderer
-        isAnyModalOpen={modalFlow.isAnyModalOpen}
-        showDoctorRecommendationPopUp={modalFlow.showDoctorRecommendationPopUp}
-        doctorRecommendationData={modalFlow.doctorRecommendationData}
-        showFacialScanPopUp={modalFlow.showFacialScanPopUp}
-        isScanning={modalFlow.isScanning}
-        showVitals={modalFlow.showVitals}
-        vitalsData={modalFlow.vitalsData}
-        showDoctorRecommendation={modalFlow.showDoctorRecommendation}
-        selectedDoctor={modalFlow.selectedDoctor}
-        showPayment={modalFlow.showPayment}
-        showAppointment={modalFlow.showAppointment}
-        showConfirmation={modalFlow.showConfirmation}
-        bookingDetails={modalFlow.bookingDetails}
-        conversationSummary={conversationSummary}
-        onFindDoctor={modalFlow.handleFindSpecialistDoctorClick}
-        onSkipDoctorRecommendation={modalFlow.handleSkipDoctorRecommendation}
-        onStartScan={modalFlow.handleStartFacialScan}
-        onSkipScan={modalFlow.handleSkipFacialScan}
-        onCloseVitals={modalFlow.handleContinueFromVitals}
-        onStartConversation={modalFlow.handleContinueFromVitals}
-        onSelectDoctor={modalFlow.handleSelectDoctor}
-        onSkipDoctor={modalFlow.handleSkipDoctor}
-        onPaymentSuccess={modalFlow.handlePaymentSuccess}
-        onPaymentBack={modalFlow.handlePaymentBack}
-        onBookingSuccess={modalFlow.handleBookingSuccess}
-        onAppointmentBack={modalFlow.handleAppointmentBack}
-        onConfirmationClose={modalFlow.handleConfirmationClose}
-      />
+      {/* Modals with overlay – block background interaction */}
+      <AnimatePresence>
+        {isAnyModalOpen && (
+          <motion.div
+            className="fixed inset-0 z-40 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {showDoctorRecommendationPopUp && (
+              <DoctorRecommendationPopUp
+                condition={
+                  doctorRecommendationData?.condition ||
+                  "your health concerns"
+                }
+                recommendedSpecialty={
+                  doctorRecommendationData?.specialty ||
+                  "General Physician"
+                }
+                onFindDoctor={handleFindSpecialistDoctorClick}
+                onSkip={handleSkipDoctorRecommendation}
+                conversationSummary={conversationSummary}
+              />
+            )}
+
+            {showFacialScanPopUp && (
+              <FacialScanModal
+                onStartScan={handleStartFacialScan}
+                onSkipScan={handleSkipFacialScan}
+                isScanning={isScanning}
+              />
+            )}
+
+            {showVitals && vitalsData && (
+              <VitalSignsDisplay
+                vitals={vitalsData}
+                onClose={handleContinueFromVitals}
+                onStartConversation={handleContinueFromVitals}
+              />
+            )}
+
+            {showDoctorRecommendation && doctorRecommendationData && (
+              <DoctorRecommendationModal
+                condition={doctorRecommendationData.condition}
+                recommendedSpecialty={doctorRecommendationData.specialty}
+                onSelectDoctor={handleSelectDoctor}
+                onSkip={handleSkipDoctor}
+              />
+            )}
+
+            {showPayment && selectedDoctor && (
+              <PaymentModal
+                doctor={selectedDoctor}
+                onPaymentSuccess={handlePaymentSuccess}
+                onBack={handlePaymentBack}
+              />
+            )}
+
+            {showAppointment && selectedDoctor && (
+              <AppointmentModal
+                doctor={selectedDoctor}
+                onBookingSuccess={handleBookingSuccess}
+                onBack={handleAppointmentBack}
+              />
+            )}
+
+            {showConfirmation && bookingDetails && (
+              <BookingConfirmationModal
+                bookingDetails={bookingDetails}
+                onClose={handleConfirmationClose}
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

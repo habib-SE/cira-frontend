@@ -83,7 +83,7 @@ const HeroSection = ({ onStartChat }) => {
 
   return (
     <motion.section
-      className="flex flex-col px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-40 pb-20 md:pb-32 bg-[#FFF5F5] w-full min-h-screen"
+      className="flex flex-col px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-24 pb-20 md:pb-32 bg-[#FFF5F5] w-full min-h-screen"
       initial="hidden"
       animate="show"
       transition={{ staggerChildren: 0.15 }}
@@ -94,11 +94,11 @@ const HeroSection = ({ onStartChat }) => {
           variants={fadeUp} 
           className="flex flex-wrap justify-center gap-3 md:gap-6 text-[8px] md:text-[9px] text-gray-600 mb-7 md:mb-9"
         >
-          <motion.div variants={float} className="flex items-center gap-1 text-black">
+          <motion.div variants={float} className="flex items-center gap-3 text-black">
            
-            <div className="flex flex-row text-[10px] md:text-[12px]">
-              <strong>256</strong>
-              <p>-bit encryption</p>
+            <div className="flex flex-row text-[10px] md:text-[12px] ">
+              <strong>100%</strong>
+              <p>-Secure</p>
             </div>
           </motion.div>
           <motion.div variants={float} transition={{ delay: 0.1 }} className="flex items-center gap-1 text-black">
@@ -116,17 +116,54 @@ const HeroSection = ({ onStartChat }) => {
         {/* Centered Single Column Layout */}
         <div className="max-w-3xl mx-auto">
           <div className="space-y-8">
-            {/* Heading with Small Avatar */}
-            <motion.div variants={fadeUp} className="flex items-center gap-3 md:gap-4">
-              <img 
-                src={Nurse} 
-                alt="Cira" 
-                className="w-12 h-12 md:w-16 md:h-16 rounded-full object-contain flex-shrink-0" 
-              />
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif font-normal text-gray-950 tracking-wide">
-                Hi, I'm <span className="text-pink-400">Cira</span>, your AI Nurse
-              </h1>
-            </motion.div>
+           {/* Heading with Small Avatar and caption */}
+<motion.div variants={fadeUp} className="flex flex-col gap-4">
+
+  {/* Avatar + Title Row */}
+  <div className="flex items-center gap-3 md:gap-4">
+    <img 
+      src={Nurse} 
+      alt="Cira" 
+      className="w-12 h-12 md:w-16 md:h-16 rounded-full object-contain flex-shrink-0" 
+    />
+<h1 className="text-2xl md:text-4xl lg:text-5xl font-serif font-normal text-gray-950 tracking-wide relative flex items-center gap-2">
+
+  Hi, I'm <span className="text-pink-400 relative inline-block">
+
+    Ci<span className="relative inline-block">
+      r
+      {/* BETA Badge */}
+      <span className="absolute -top-8 left-1/ -translate-x-1/2">
+        <span className="group relative">
+          <span className="bg-pink-500 text-white text-[9px] px-2 py-[2px] rounded-full cursor-pointer shadow-md">
+            BETA
+          </span>
+
+          {/* Tooltip */}
+          <span className="absolute top-1 left-48 -translate-x-1/2 
+            hidden group-hover:block 
+            bg-black text-white text-[11px] px-3 py-2 rounded-lg 
+            whitespace-nowrap shadow-lg z-20">
+            This version is for testing only. Features may change.
+          </span>
+        </span>
+      </span>
+    </span>a
+
+  </span>, your AI Nurse
+
+</h1>
+
+  </div>
+
+  {/* Caption Paragraph */}
+  <p className="text-[14px] md:text-[16px] text-gray-600 max-w-2xl leading-relaxed pl-1">
+    Your personal nurse in over 32 languages — always ready to listen. 
+    Cira understands how you feel, helps you explain your symptoms clearly, 
+    and supports your health journey with kindness, intelligence, and privacy-first care.
+  </p>
+
+</motion.div>
 
             {/* Sub-heading */}
             <motion.div
@@ -134,7 +171,8 @@ const HeroSection = ({ onStartChat }) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeInOut', delay: 0.2 } }}
             >
-              <p className="text-[15px] md:text-[18px] text-gray-800 font-bold mb-5">
+              
+              <p className="text-[15px] md:text-[18px] text-gray-800 font-bold -mt-4">
                 What can I help you with today?
               </p>
             </motion.div>

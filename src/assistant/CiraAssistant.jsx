@@ -1166,6 +1166,15 @@ const extractClinicalSummaryFromConversation = (log) => {
           <TestTube className="w-5 h-5" />
           <span className="text-lg">Test Modal Flow</span>
         </button>
+        {/* Disclaimer */}
+<div className="absolute bottom-4 left-4 right-4 flex justify-center">
+  <div className="max-w-3xl text-[11px] text-gray-500 bg-white/70 backdrop-blur-md px-4 py-2 rounded-lg shadow-md border border-gray-200">
+    ⚠️ <span className="font-medium">Medical Disclaimer:</span> Cira is an AI-based health assistant and is not a licensed medical professional. 
+    Information collected and shared by Cira is for documentation and informational support only 
+    and should not be considered a medical diagnosis, treatment, or substitute for professional healthcare advice.
+  </div>
+</div>
+
       </div>
 
       {/* Modals */}

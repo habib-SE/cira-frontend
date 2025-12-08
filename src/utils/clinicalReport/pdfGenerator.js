@@ -1,6 +1,6 @@
 // File: src/utils/pdfGenerator.js
 import { jsPDF } from "jspdf";
-import starsLogo from "../assets/stars.svg";
+import starsLogo from "../../assets/stars.svg";
 
 /* ----------------- Color helpers ----------------- */
 const COLORS = {
@@ -14,7 +14,6 @@ const COLORS = {
   grayLight: "#E5E7EB",
   white: "#FFFFFF",
 };
-
 
 function hexToRgb(hex) {
   const clean = hex.replace("#", "");
@@ -105,7 +104,6 @@ function cleanConditions(list) {
 }
 
 /* ----------------- MAIN CLINICAL REPORT LAYOUT ----------------- */
-/* ----------------- MAIN CLINICAL REPORT LAYOUT ----------------- */
 export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
   const { logoImage } = options; // optional HTMLImageElement
 
@@ -140,24 +138,22 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
   const pageW = PAGE_WIDTH;
   const pageH = PAGE_HEIGHT;
 
-// Tighter left/right padding
-const marginX = 8;              // horizontal margin (smaller)
-const marginY = 4;             // vertical margin (same as before)
+  // Tighter left/right padding
+  const marginX = 8;              // horizontal margin (smaller)
+  const marginY = 4;             // vertical margin (same as before)
 
-const cardX = marginX;
-const cardY = marginY;
-const cardW = pageW - marginX * 2;
-const cardH = pageH - marginY * 2 - 25;
+  const cardX = marginX;
+  const cardY = marginY;
+  const cardW = pageW - marginX * 2;
+  const cardH = pageH - marginY * 2 - 25;
 
-// Inner content inset
-const innerX = cardX + 6;       // was +8 → brings text closer to edges
-const innerW = cardW - 10;       // was -16 → wider content area
+  // Inner content inset
+  const innerX = cardX + 6;       // was +8 → brings text closer to edges
+  const innerW = cardW - 10;       // was -16 → wider content area
 
-
-// Page background (cream)
-setFillHex(doc, COLORS.pageBg);
-doc.rect(0, 0, pageW, pageH, "F");
-
+  // Page background (cream)
+  setFillHex(doc, COLORS.pageBg);
+  doc.rect(0, 0, pageW, pageH, "F");
 
   let y = cardY + 6;
 
@@ -193,47 +189,44 @@ doc.rect(0, 0, pageW, pageH, "F");
     align: "right",
   });
 
-// Gray underline under header (Cira + Date) – full width
-setStrokeHex(doc, COLORS.grayLight);
-doc.setLineWidth(0.3);
-const lineY = y + headerH;
-doc.line(0, lineY, pageW, lineY);   // ⬅️ full-bleed line across the page
+  // Gray underline under header (Cira + Date) – full width
+  setStrokeHex(doc, COLORS.grayLight);
+  doc.setLineWidth(0.3);
+  const lineY = y + headerH;
+  doc.line(0, lineY, pageW, lineY);   // ⬅️ full-bleed line across the page
 
-y += headerH + 4;
+  y += headerH + 4;
 
-
-
-/* ----------- PATIENT STRIP ----------- */
-const patientStripH = 18;
-
+  /* ----------- PATIENT STRIP ----------- */
+  const patientStripH = 18;
 
   let px = innerX;
   let py = y + 6;
 
-// Patient name
-doc.setFont("helvetica", "normal");
-doc.setFontSize(7);
-setTextHex(doc, "#6B7280");
-doc.text("Name:", px, py);
-doc.setFont("helvetica", "bold");
-doc.setFontSize(11);
-setTextHex(doc, "#111827");
-doc.text(patientName || "Patient", px, py + 5);
+  // Patient name
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  setTextHex(doc, "#6B7280");
+  doc.text("Name:", px, py);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  setTextHex(doc, "#111827");
+  doc.text(patientName || "Patient", px, py + 5);
 
-// Age & Sex – bring closer to Name
-px = innerX + 40;  // 👉 smaller offset instead of cardW * 0.35
-doc.setFont("helvetica", "normal");
-doc.setFontSize(7);
-setTextHex(doc, "#6B7280");
-doc.text("Age & Sex", px, py);
-doc.setFont("helvetica", "bold");
-doc.setFontSize(11);
-setTextHex(doc,"#111827");
-const ageGenderText =
-  patientAge || patientGender
-    ? `${patientAge || "--"} / ${patientGender || "--"}`
-    : "—";
-doc.text(ageGenderText, px, py + 5);
+  // Age & Sex – bring closer to Name
+  px = innerX + 40;  // 👉 smaller offset instead of cardW * 0.35
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  setTextHex(doc, "#6B7280");
+  doc.text("Age & Sex", px, py);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  setTextHex(doc,"#111827");
+  const ageGenderText =
+    patientAge || patientGender
+      ? `${patientAge || "--"} / ${patientGender || "--"}`
+      : "—";
+  doc.text(ageGenderText, px, py + 5);
 
   // Chief Complaint – stays right side but a bit closer
   px = innerX + cardW * 0.58; // was 0.6
@@ -278,12 +271,11 @@ doc.text(ageGenderText, px, py + 5);
 
   y += 6;
 
-/* ----------- ASSOCIATED SYMPTOMS (ROS) ----------- */
-setFillHex(doc, COLORS.white);
-setStrokeHex(doc, "#E5E7EB");
-const rosBoxH = 24;
-doc.roundedRect(innerX, y, innerW, rosBoxH, 3, 3, "FD");
-
+  /* ----------- ASSOCIATED SYMPTOMS (ROS) ----------- */
+  setFillHex(doc, COLORS.white);
+  setStrokeHex(doc, "#E5E7EB");
+  const rosBoxH = 24;
+  doc.roundedRect(innerX, y, innerW, rosBoxH, 3, 3, "FD");
 
   let ry = y + 6;
   let rx = innerX + 4;
@@ -294,7 +286,7 @@ doc.roundedRect(innerX, y, innerW, rosBoxH, 3, 3, "FD");
   doc.text("ASSOCIATED SYMPTOMS (ROS)", rx, ry);
   ry += 4;
 
-    const chips =
+  const chips =
     associatedSymptomsChips && associatedSymptomsChips.length
       ? associatedSymptomsChips
       : ["No other symptoms"];
@@ -326,7 +318,7 @@ doc.roundedRect(innerX, y, innerW, rosBoxH, 3, 3, "FD");
 
     // center text vertically in the pill
     setTextHex(doc, "#166534");
-    const textBaselineY = chipTopY + chipH / 2 + 1.5;
+    const textBaselineY = chipTopY + chipH / 2 + 1;
     doc.text(label, chipX + chipPaddingX * 2, textBaselineY);
 
     // update lowest chip bottom
@@ -357,8 +349,8 @@ doc.roundedRect(innerX, y, innerW, rosBoxH, 3, 3, "FD");
   setTextHex(doc, "#111827");
   const diffTitle =
     confidence != null
-      ? `DIFFERENTIAL DIAGNOSIS (AI Confidence: ${confidence}%)`
-      : "DIFFERENTIAL DIAGNOSIS";
+      ? `CLINICAL POSSIBILITIES (AI Confidence: ${confidence}%)`
+      : "CLINICAL POSSIBILITIES";
   doc.text(diffTitle, innerX, y);
   y += 4;
 
@@ -414,21 +406,20 @@ doc.roundedRect(innerX, y, innerW, rosBoxH, 3, 3, "FD");
 
   y += 6;
 
-/* ----------- CLINICAL PLAN & DISPOSITION ----------- */
-setFillHex(doc, COLORS.white);
-setStrokeHex(doc, COLORS.secondary);
+  /* ----------- CLINICAL PLAN & DISPOSITION ----------- */
+  setFillHex(doc, COLORS.white);
+  setStrokeHex(doc, COLORS.secondary);
 
-const planBoxSideMargin = 4;
-const planBoxX = cardX + planBoxSideMargin;
-const planBoxW = cardW - planBoxSideMargin * 2;
+  const planBoxSideMargin = 4;
+  const planBoxX = cardX + planBoxSideMargin;
+  const planBoxW = cardW - planBoxSideMargin * 2;
 
-const planBoxY = y;
-// 🔽 fixed smaller height instead of filling all remaining space
-let planBoxH = 50;       // try 40–60 to taste
-if (planBoxH < 20) planBoxH = 20;
+  const planBoxY = y;
+  // 🔽 fixed smaller height instead of filling all remaining space
+  let planBoxH = 50;       // try 40–60 to taste
+  if (planBoxH < 20) planBoxH = 20;
 
-doc.roundedRect(planBoxX, planBoxY, planBoxW, planBoxH, 3, 3, "FD");
-
+  doc.roundedRect(planBoxX, planBoxY, planBoxW, planBoxH, 3, 3, "FD");
 
   let py2 = planBoxY + 7;
   let px2 = planBoxX + 4;
@@ -449,6 +440,38 @@ doc.roundedRect(planBoxX, planBoxY, planBoxW, planBoxH, 3, 3, "FD");
       : "Based on the AI assessment, follow-up with a healthcare provider is recommended if symptoms worsen, persist, or if red-flag features develop.";
 
   py2 = addWrappedText(doc, planText, px2, py2, planBoxW - 8, 3.5);
+
+  /* ----------- DISCLAIMER AT BOTTOM ----------- */
+  // Calculate bottom position with some padding
+  const disclaimerY = pageH - 12; // Position from bottom with 12mm padding
+  
+  // Draw a light background for the disclaimer
+  setFillHex(doc, "#FEF3C7"); // Light yellow background
+  const disclaimerH = 8;
+  const disclaimerBgY = disclaimerY - disclaimerH - 1;
+  doc.rect(0, disclaimerBgY, pageW, disclaimerH + 2, "F");
+  
+  // Add top border line
+  setStrokeHex(doc, "#F59E0B"); // Amber border
+  doc.setLineWidth(0.2);
+  doc.line(0, disclaimerBgY, pageW, disclaimerBgY);
+  
+  // Disclaimer text
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(6);
+  setTextHex(doc, "#92400E"); // Dark amber text
+  
+  const disclaimerText = "Cira is an AI nurse assistant, not a licensed medical professional, and does not provide medical diagnosis, treatment, or professional healthcare advice.";
+  
+  // Center the disclaimer text
+  const disclaimerLines = doc.splitTextToSize(disclaimerText, pageW - 16);
+  const disclaimerStartY = disclaimerBgY + 4;
+  
+  disclaimerLines.forEach((line, index) => {
+    const textWidth = doc.getTextWidth(line);
+    const centeredX = (pageW - textWidth) / 2;
+    doc.text(line, centeredX, disclaimerStartY + (index * 3));
+  });
 
   return doc;
 };
@@ -615,5 +638,3 @@ export const downloadSOAPFromChatData = async (
     doc.save(filename);
   }
 };
-
-
