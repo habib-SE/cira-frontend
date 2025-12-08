@@ -89,6 +89,7 @@ import PatientDetail from '../Admin panel/doctor/doctorpages/PatientDetail';
 import DoctorMessages from '../Admin panel/doctor/doctorpages/DoctorMessages';
 import DoctorPayouts from '../Admin panel/doctor/doctorpages/DoctorPayouts';
 import Analytics from '../Admin panel/doctor/doctorpages/Analytics';
+import TermsAndConditions from '../pages/terms/TermsAndConditions';
 
 function MainRouter() {
   return (
@@ -97,6 +98,8 @@ function MainRouter() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/welcome" element={<WelcomePage />} />
 
+      {/* Terms & Conditions - Public Route */}
+      <Route path="/terms" element={<TermsAndConditions />} />
 
       {/* Authentication Routes - Using centralized login pages */}
       <Route path="/login" element={<MainLoginPage />} />

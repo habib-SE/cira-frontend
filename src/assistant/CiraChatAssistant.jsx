@@ -1282,10 +1282,7 @@ const handleDownloadPDF = () => {
                   <p className="text-sm mt-5 text-gray-500 mb-1">
                     Consult started: Today, {startedLabel}
                   </p>
-                  <p className="text-xs mt-5 text-black font-bold">
-                    If this is an emergency, call 999 or your local emergency
-                    number.
-                  </p>
+
                 </header>
 
                 {error && (
@@ -1511,26 +1508,31 @@ const handleDownloadPDF = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
         >
-          {!consultSummary && (
-            <div className="w-full bg-[#FFFEF9] max-w-xl rounded-2xl space-y-3">
-              {!hasStartedChat && (
-                <div className="flex items-start gap-2 text-[11px] text-gray-600 p-4 -mb-4 rounded-t-2xl bg-white">
-                  <input
-                    id="tos"
-                    type="checkbox"
-                    checked={hasAgreed}
-                    onChange={(e) => setHasAgreed(e.target.checked)}
-                    className="mb-2.5"
-                  />
-                  <label htmlFor="tos">
-                    I agree to the{" "}
-                    <button type="button" className="underline text-pink-500">
-                      The Cira Terms of Service
-                    </button>{" "}
-                    and will discuss all The Cira output with a doctor.
-                  </label>
-                </div>
-              )}
+
+{!consultSummary && (
+  <div className="w-full bg-[#FFFEF9] max-w-xl rounded-2xl space-y-3">
+    {!hasStartedChat && (
+      <div className="flex items-start gap-2 text-[11px] text-gray-600 p-4 -mb-4 rounded-t-2xl bg-white">
+        <input
+          id="tos"
+          type="checkbox"
+          checked={hasAgreed}
+          onChange={(e) => setHasAgreed(e.target.checked)}
+          className="mb-2.5"
+        />
+        <label htmlFor="tos">
+          I agree to the{" "}
+          <button 
+            type="button" 
+            className="underline text-pink-500"
+            onClick={() => navigate('/terms')}
+          >
+            The Cira Terms of Service
+          </button>{" "}
+          and will discuss all The Cira output with a doctor.
+        </label>
+      </div>
+    )}
 
               <ChatInput
                 onSendMessage={handleUserMessage}

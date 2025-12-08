@@ -204,24 +204,32 @@ const ChatInput = ({
       >
         <div className="bg-white rounded-xl w-full h-full p-0 overflow-hidden">
           <form onSubmit={handleSubmit} className="relative">
-            <div className="relative w-full">
-              {message === "" && (
-                <span className="absolute left-6 top-4 text-gray-400 text-xs md:text-sm lg:text-md pointer-events-none">
-                  {placeholder}
-                </span>
-              )}
+          <div className="relative w-full">
+  {message === "" && (
+    <span className="absolute left-6 top-4 text-gray-400 text-xs md:text-sm lg:text-md pointer-events-none">
+      {placeholder}
+    </span>
+  )}
 
-              {/* padding-right to make room for Get Started on the right */}
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                className="w-full h-28 pl-6 pr-44 pt-0 pb-14 text-lg bg-transparent rounded-2xl focus:outline-none border-0 placeholder-gray-400 text-start"
-                maxLength={characterLimit}
-                disabled={disabled}
-              />
+  <input
+    type="text"
+    value={message}
+    onChange={(e) => setMessage(e.target.value)}
+    onFocus={() => setIsFocused(true)}
+    onBlur={() => setIsFocused(false)}
+    className="w-full h-28 pl-6 pr-44 pt-0 pb-14 text-lg bg-transparent rounded-2xl focus:outline-none border-0 placeholder-gray-400 text-start"
+    maxLength={characterLimit}
+    disabled={disabled}
+  />
+
+  {/* ✅ Character Counter inside input (bottom-left) */}
+  <span
+    className={`absolute bottom-2 left-6 text-xs font-medium ${
+      remainingChars < 100 ? "text-red-500" : "text-gray-400"
+    }`}
+  >
+    {message.length}/{characterLimit}
+  </span>
 
               {/* 👈 Speak button on the left */}
               {showMic && (
@@ -258,21 +266,13 @@ const ChatInput = ({
       </motion.div>
 
   {/* Character Count */}
-<div className="flex justify-between mt-2 mb-4">
-        <div className="max-w-lg text-cente text-[12px] text-gray-500 bg-gray-100 rounded-2xl p-2 leading-relaxed">
-    <span className="font-semibold text-gray-600">Medical Disclaimer:</span> Cira is an AI nurse assistant, not a licensed medical professional, and does not provide medical diagnosis, treatment, or professional healthcare advice.
+
+        <div className="max-w-2xl text-center text-[12px] text-gray-500 pl-1 pt-2 pb-2 leading-relaxed">
+     Cira is an AI nurse assistant, not a licensed medical professional, and does not provide medical diagnosis, treatment, or professional healthcare advice.
   </div>
-  <span
-    className={`text-sm font-medium ${
-      remainingChars < 100 ? "text-red-500" : "text-gray-400"
-    }`}
-  >
-  
-    {message.length} / {characterLimit}
-  </span>
 
 </div>
-    </div>
+
   );
 };
 
