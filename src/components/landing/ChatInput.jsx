@@ -257,15 +257,21 @@ const ChatInput = ({
         </div>
       </motion.div>
 
-      <div className="flex justify-end mt-2">
-        <div
-          className={`text-sm font-medium ${
-            remainingChars < 100 ? "text-red-500" : "text-gray-400"
-          }`}
-        >
-          {message.length} / {characterLimit}
-        </div>
-      </div>
+  {/* Character Count */}
+<div className="flex justify-between mt-2 mb-4">
+        <div className="max-w-lg text-cente text-[12px] text-gray-500 bg-gray-100 rounded-2xl p-2 leading-relaxed">
+    <span className="font-semibold text-gray-600">Medical Disclaimer:</span> Cira is an AI nurse assistant, not a licensed medical professional, and does not provide medical diagnosis, treatment, or professional healthcare advice.
+  </div>
+  <span
+    className={`text-sm font-medium ${
+      remainingChars < 100 ? "text-red-500" : "text-gray-400"
+    }`}
+  >
+  
+    {message.length} / {characterLimit}
+  </span>
+
+</div>
     </div>
   );
 };

@@ -47,8 +47,8 @@ export default function HeroSection({ onStartChat }) {
         <motion.div variants={float} className="flex items-center gap-1 text-black">
           <Shield className="w-[10px] h-[10px] md:w-[13px] md:h-[13px] fill-current" />
           <div className="flex flex-row text-[10px] md:text-[12px]">
-            <strong>256</strong>
-            <p>-bit encryption</p>
+            <strong>100%</strong>
+            <p>-Secure</p>
           </div>
         </motion.div>
         <motion.div variants={float} transition={{ delay: 0.1 }} className="flex items-center gap-1 text-black">

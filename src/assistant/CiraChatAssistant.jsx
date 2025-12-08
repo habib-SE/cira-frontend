@@ -22,7 +22,7 @@ import BookingConfirmationModal from "./modal/BookingConfirmationModal";
 import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
 import FacialScanModal from "./modal/FacialScanModal";
 
-import { downloadSOAPFromChatData } from "../utils/pdfGenerator";
+import { downloadSOAPFromChatData } from "../utils/clinicalReport/pdfGenerator";
 
 const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 
