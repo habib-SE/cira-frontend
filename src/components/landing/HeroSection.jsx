@@ -449,7 +449,7 @@ const suggestedTopics = [
 
   return (
     <motion.section
-      className="flex flex-col px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-32 pb-20 md:pb-32 w-full min-h-screen"
+      className="flex flex-col px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-24 pb-20 md:pb-32 w-full min-h-screen"
       initial="hidden"
       animate="show"
       transition={{ staggerChildren: 0.15 }}
