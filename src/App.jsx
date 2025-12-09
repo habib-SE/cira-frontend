@@ -115,7 +115,7 @@ function App() {
 
           {/* ✅ Landing page with fixed header */}
           <Route
-            path="/home"
+            path="/old-home"
             element={
               // <FixedHeaderLayout>
                 <LandingPage />
@@ -125,7 +125,7 @@ function App() {
 
           {/* ✅ New modern landing page */}
           <Route
-            path="/newhome"
+            path="/home"
             element={<NewHome />}
           />
 
