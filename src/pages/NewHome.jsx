@@ -533,7 +533,7 @@ const HeroSection = ({ onStartChat }) => {
 
   return (
     <motion.section
-      className="flex flex-col px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-24 pb-20 md:pb-32 bg-[#FFF7F2] w-full min-h-screen"
+      className="flex flex-col px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-24 pb-20 md:pb-32 w-full min-h-screen"
       initial="hidden"
       animate="show"
       transition={{ staggerChildren: 0.15 }}
@@ -647,7 +647,7 @@ const HeroSection = ({ onStartChat }) => {
             <motion.div variants={fadeUp} className="w-full mb-10">
               <div
                 className={`relative bg-white rounded-4xl border transition-all duration-300 overflow-hidden ${
-                  isFocused ? "border-[#AC3893] shadow-lg" : "border-gray-200 shadow-sm"
+                  isFocused ? "border-gray-800 shadow-lg" : "border-gray-200 shadow-sm"
                 }`}
               >
                 <form onSubmit={handleSubmit} className="relative">
