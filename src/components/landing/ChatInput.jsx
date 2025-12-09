@@ -267,7 +267,7 @@ const ChatInput = ({
 
   {/* Character Count */}
 
-        <div className="max-w-2xl text-center text-[12px] text-gray-500 pl-1 pt-2 pb-2 leading-relaxed">
+        <div className="max-w-2xl text-center text-[11px] text-gray-500 pl-1 pt-2 pb-2 leading-relaxed">
      Cira is an AI nurse assistant, not a licensed medical professional, and does not provide medical diagnosis, treatment, or professional healthcare advice.
   </div>
 

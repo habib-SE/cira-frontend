@@ -1263,8 +1263,8 @@ const handleDownloadPDF = () => {
                 <header className="mb-6 px-4 pt-24">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-16 h-16 rounded-full border-2 flex items-center justify-center text-xs font-semibold">
-                        <img src={stars} className="w-12 h-12" alt="stars" />
+                      <div className="w-15 h-15 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-semibold">
+                        <img src={stars} className="w-9 h-9" alt="stars" />
                       </div>
                       <div className="flex -space-x-2">
                         <img
