@@ -434,7 +434,7 @@ const suggestedTopics = [
   },
   {
     label: "Weight Management",
-    prompt: "I'm worried about my weight and want safe advice.",
+    prompt: "I'm worried about my weight.",
   },
   {
     label: "Hair & Skin",
