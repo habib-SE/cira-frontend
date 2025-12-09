@@ -1,5 +1,5 @@
 // File: src/components/terms/TermsAndConditions.jsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
@@ -10,8 +10,6 @@ export default function TermsAndConditions() {
   const navigate = useNavigate();
   const [hasAgreed, setHasAgreed] = useState(false);
   const [expandedSections, setExpandedSections] = useState(new Set());
-  const scrollAreaRef = useRef(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
 
   const toggleSection = (sectionId) => {
     setExpandedSections(prev => {
@@ -25,21 +23,6 @@ export default function TermsAndConditions() {
     });
   };
 
-  const handleScroll = () => {
-    if (!scrollAreaRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
-    const progress = (scrollTop / (scrollHeight - clientHeight)) * 100;
-    setScrollProgress(Math.min(100, Math.max(0, progress)));
-  };
-
-  useEffect(() => {
-    const container = scrollAreaRef.current;
-    if (container) {
-      container.addEventListener("scroll", handleScroll);
-      return () => container.removeEventListener("scroll", handleScroll);
-    }
-  }, []);
-
   const handleAccept = () => {
     if (!hasAgreed) return;
     localStorage.setItem("terms_accepted", "true");
@@ -48,6 +31,12 @@ export default function TermsAndConditions() {
 
   const handleDecline = () => {
     navigate("/newhome");
+  };
+
+  // Same animation variants as landing page
+  const fadeUp = {
+    hidden: { opacity: 0, y: 40 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
   };
 
   const termsSections = [
@@ -239,21 +228,11 @@ Effective Date: Upon user acceptance`
         <Header />
       </div>
 
-      {/* Scroll Progress Bar */}
-      <div className="fixed top-16 left-0 right-0 h-1 bg-gray-100 z-40">
-        <div 
-          className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300"
-          style={{ width: `${scrollProgress}%` }}
-        />
-      </div>
-
       <motion.div
-        ref={scrollAreaRef}
         className="flex-1 overflow-y-auto pt-20"
         initial={{ opacity: 0, y: 60 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        onScroll={handleScroll}
       >
         <div className="w-full flex justify-center min-h-full pb-48">
           <div className="w-full max-w-3xl">
@@ -353,9 +332,48 @@ Effective Date: Upon user acceptance`
                 </a>
               </div>
 
-     
+              {/* Acceptance Section - Same as landing page */}
+              <motion.div 
+                className="mt-10 bg-white rounded-xl border border-gray-200 p-6"
+                variants={fadeUp}
+                initial="hidden"
+                animate="show"
+                transition={{ delay: 0.1 }}
+              >
+                <div className="flex items-start gap-3 mb-6">
+                  <div className="flex items-center h-6">
+                    <input
+                      id="accept-terms"
+                      type="checkbox"
+                      checked={hasAgreed}
+                      onChange={(e) => setHasAgreed(e.target.checked)}
+                      className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="accept-terms" className="text-sm font-medium text-gray-900 block mb-2">
+                      I have read and agree to the Terms & Conditions
+                    </label>
+                    <p className="text-xs text-gray-600">
+                      By checking this box, you acknowledge that you have read, understood, and agree to be bound by all terms, including HIPAA and GDPR provisions, AI limitations, and medical disclaimers.
+                    </p>
+                  </div>
+                </div>
+
+
+                <p className="text-xs text-gray-500 mt-4 text-center">
+                  Need help? Contact our support team at support@cirahealth.com
+                </p>
+              </motion.div>
+
               {/* Legal Footer */}
-              <div className="mt-8 pt-6 border-t border-gray-200">
+              <motion.div 
+                className="mt-8 pt-6 border-t border-gray-200"
+                variants={fadeUp}
+                initial="hidden"
+                animate="show"
+                transition={{ delay: 0.2 }}
+              >
                 <div className="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
                   <div className="mb-2 md:mb-0">
                     <p>Cira Health AI Clinical Assistant</p>
@@ -370,7 +388,7 @@ Effective Date: Upon user acceptance`
                     <p>Compliance: HIPAA/GDPR Certified</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
