@@ -533,13 +533,17 @@ export const convertChatSummaryToSOAP = (
   } = patientInfo;
 
   // SUBJECTIVE – keep the one-paragraph clinical summary only
-  let subjective = "";
-  if (narrativeSummary && narrativeSummary.trim()) {
-    subjective = narrativeSummary.trim();
-  } else {
-    subjective =
-      "Patient reported symptoms as described in the consultation transcript.";
-  }
+let subjective = "";
+if (narrativeSummary && narrativeSummary.trim()) {
+  subjective = narrativeSummary
+    .replace(/please\s+book\s+an\s+appointment\s+with\s+a\s+doctor[^.]*\./gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+} else {
+  subjective =
+    "Patient reported symptoms as described in the consultation transcript.";
+}
+
 
   // OBJECTIVE – brief note + vitals if present
   let objective =

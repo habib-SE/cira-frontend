@@ -32,45 +32,166 @@ const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 
 // 🔎 Helper to extract conditions + confidence from plain summary text (fallback)
 // 🔎 Helper to extract conditions + confidence from plain summary text (fallback)
-function parseConditionsAndConfidence(summary) {
-  if (!summary) return { conditions: [], confidence: null };
-
-  const conditions = [];
-  let confidence = null;
-
-  // e.g. "I'm about 85% confident..."
-  const confMatch = summary.match(/(\d{1,3})\s*%[^.\n]*confiden/i);
-  if (confMatch) confidence = Number(confMatch[1]);
-
-  // Try to isolate the "TOP 3 CONDITIONS (PROBABILITIES)" block
-  const blockMatch =
-    summary.match(
-      /TOP\s*\d*\s*CONDITIONS[^(]*\(PROBABILITIES\)[^:]*:\s*([\s\S]+)/i
-    ) ||
-    summary.match(
-      /TOP\s*\d*\s*(?:POSSIBLE\s*)?CONDITIONS[^:]*:\s*([\s\S]+)/i
-    );
-
-  const searchText = blockMatch ? blockMatch[1] : summary;
-
-  // Lines like: "1) Acute Gastroenteritis (Viral) – 60%"
-  const numberedLineRegex =
-    /^\s*\d+\)\s*(.+?)\s*[–-]\s*(\d{1,3})\s*%/gm;
-
-  let m;
-  while ((m = numberedLineRegex.exec(searchText)) !== null) {
-    const rawName = m[1].trim().replace(/[.;]+$/, "");
-    const pct = Number(m[2]);
-    if (!rawName || Number.isNaN(pct)) continue;
-
-    // Never treat self-care as a condition
-    if (/self-care|when to seek help/i.test(rawName)) continue;
-
-    conditions.push({ name: rawName, percentage: pct });
+export function parseConditionsAndConfidence(summary) {
+  if (!summary || typeof summary !== "string") {
+    return { conditions: [], confidence: null };
   }
 
-  return { conditions, confidence };
+  let confidence = null;
+  const conditions = [];
+  const usedNames = new Set();
+
+  /* -----------------------------
+     ✅ CONFIDENCE EXTRACTOR
+  ----------------------------- */
+
+  const confidencePatterns = [
+    /\babout\s*(\d{1,3})\s*%/i,
+    /\bconfidence[^0-9]*(\d{1,3})\s*%/i,
+    /\bAI\s*confidence[^0-9]*(\d{1,3})\s*%/i,
+    /\bconfidence\s*level[^0-9]*(\d{1,3})\s*%/i,
+    /\bI’m\s*about\s*(\d{1,3})\s*%\s*confident/i,
+  ];
+
+  for (const pat of confidencePatterns) {
+    const match = summary.match(pat);
+    if (match && match[1]) {
+      const conf = Number(match[1]);
+      if (!isNaN(conf) && conf <= 100) {
+        confidence = conf;
+        break;
+      }
+    }
+  }
+
+  /* -----------------------------
+     ❌ JUNK FILTER
+  ----------------------------- */
+
+  const bannedWords = [
+    "confidence",
+    "confident",
+    "represents",
+    "assessment",
+    "analysis",
+    "estimate",
+    "likelihood",
+    "probability",
+    "overall",
+    "this represents",
+  ];
+
+  const isJunk = (text) =>
+    bannedWords.some(word => text.toLowerCase().includes(word));
+
+  /* -----------------------------
+     ✅ CONDITION PATTERNS
+  ----------------------------- */
+
+  const patterns = [
+    // 1) 70% Condition
+    /(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g,
+
+    // 2) Condition - 70%
+    /([A-Za-z][A-Za-z ()\-]+)\s*[-–—]\s*(\d{1,3})\s*%/g,
+
+    // 3) Condition (70%)
+    /([A-Za-z][A-Za-z ()\-]+)\s*\(\s*(\d{1,3})\s*%\s*\)/g,
+
+    // 4) Bullet format
+    /[•*]\s*([A-Za-z][A-Za-z ()\-]+)\s*(\d{1,3})\s*%/g,
+
+    // 5) Newline format:
+    // Condition\n70%
+    /([A-Za-z][A-Za-z ()\-]+)\s*\n\s*(\d{1,3})\s*%/g,
+  ];
+
+  /* -----------------------------
+     ✅ RUN EXTRACTOR
+  ----------------------------- */
+
+  for (const pattern of patterns) {
+    let match;
+
+    while ((match = pattern.exec(summary)) !== null) {
+      let name, pct;
+
+      // percent first format
+      if (pattern.source.startsWith("(\\d")) {
+        pct = Number(match[1]);
+        name = match[2];
+      } 
+      // name first format
+      else {
+        name = match[1];
+        pct = Number(match[2]);
+      }
+
+      name = name
+        .replace(/[\r\n]+/g, " ")
+        .replace(/\s{2,}/g, " ")
+        .replace(/[-–—]+$/, "")
+        .trim();
+
+      if (!name || isNaN(pct)) continue;
+      if (pct < 1 || pct > 100) continue;
+      if (isJunk(name)) continue;
+
+      const key = name.toLowerCase();
+
+      // ❌ NEVER ALLOW CONFIDENCE TO BECOME CONDITION
+      if (key.includes("confidence")) continue;
+
+      if (!usedNames.has(key)) {
+        usedNames.add(key);
+        conditions.push({ name, percentage: pct });
+      }
+    }
+  }
+
+  /* -----------------------------
+     ✅ HARSH FALLBACK MODE
+     (if AI format is broken)
+  ----------------------------- */
+
+  if (conditions.length < 3) {
+    const loose = summary.matchAll(/(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g);
+
+    for (const match of loose) {
+      if (conditions.length >= 3) break;
+
+      const pct = Number(match[1]);
+      const name = match[2].trim();
+      const key = name.toLowerCase();
+
+      if (
+        !usedNames.has(key) &&
+        pct <= 100 &&
+        !isNaN(pct) &&
+        !isJunk(name) &&
+        !key.includes("confidence")
+      ) {
+        usedNames.add(key);
+        conditions.push({ name, percentage: pct });
+      }
+    }
+  }
+
+  /* -----------------------------
+     ✅ SORT & RETURN
+  ----------------------------- */
+
+  return {
+    conditions: conditions
+      .sort((a, b) => b.percentage - a.percentage)
+      .slice(0, 3),
+
+    confidence,
+  };
 }
+
+
+
 
 
 
@@ -901,7 +1022,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
         confidence: summaryStats.confidence,
       }
     : { conditions: [], confidence: null };
-
+  
   let displaySummary = "";
   let selfCareText = "";
 
@@ -959,6 +1080,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
       }
     }
   }
+
 
   const handleUserMessage = async (text) => {
     if (!hasAgreed) return;
