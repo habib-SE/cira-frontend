@@ -539,7 +539,7 @@ const suggestedTopics = [
                 transition: { duration: 0.8, ease: "easeInOut", delay: 0.2 },
               }}
             >
-              <p className="text-[15px] md:text-[18px] text-gray-800 font-bold ">
+              <p className="text-[10px] md:text-[15px] text-gray-800 font-semibold ">
                 What can I help you with today?
               </p>
             </motion.div>
@@ -643,7 +643,7 @@ const suggestedTopics = [
                   mt-2 pr-2 sm:pr-4
                 "
               >
-                <div className="sm:max-w-xl text-[10px] sm:text-[11px] text-gray-500 leading-relaxed text-center sm:text-left">
+                <div className="sm:max-w-xl text-[10px] sm:text-[11px] text-gray-500 text-center">
                   Cira is an AI nurse assistant, not a licensed medical professional, and does not
                   provide medical diagnosis, treatment, or professional healthcare advice.
                 </div>

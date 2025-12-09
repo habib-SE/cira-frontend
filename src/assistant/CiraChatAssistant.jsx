@@ -851,89 +851,203 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     showAppointment ||
     showConfirmation;
 
-  const conversation = useConversation({
-    textOnly: true,
-    onConnect: () => {
-      console.log("✅ Connected to chat_cira");
-      setIsConnected(true);
-      setError("");
-    },
-    onDisconnect: () => {
-      console.log("🔌 Disconnected from chat_cira");
-      setIsConnected(false);
-    },
-    onMessage: (payload) => {
-      let text = "";
-      let role = "unknown";
+  // const conversation = useConversation({
+  //   textOnly: true,
+  //   onConnect: () => {
+  //     console.log("✅ Connected to chat_cira");
+  //     setIsConnected(true);
+  //     setError("");
+  //   },
+  //   onDisconnect: () => {
+  //     console.log("🔌 Disconnected from chat_cira");
+  //     setIsConnected(false);
+  //   },
+  //   onMessage: (payload) => {
+  //     let text = "";
+  //     let role = "unknown";
 
-      if (typeof payload === "string") {
-        text = payload;
-      } else if (payload) {
-        text =
-          payload.message ||
-          payload.text ||
-          payload.formatted?.text ||
-          payload.formatted?.transcript ||
-          "";
-        role = payload.role || payload.source || "unknown";
-      }
+  //     if (typeof payload === "string") {
+  //       text = payload;
+  //     } else if (payload) {
+  //       text =
+  //         payload.message ||
+  //         payload.text ||
+  //         payload.formatted?.text ||
+  //         payload.formatted?.transcript ||
+  //         "";
+  //       role = payload.role || payload.source || "unknown";
+  //     }
 
-      if (!text || !text.trim()) return;
+  //     if (!text || !text.trim()) return;
 
-      const isAssistant =
-        role === "assistant" || role === "ai" || role === "agent";
+  //     const isAssistant =
+  //       role === "assistant" || role === "ai" || role === "agent";
 
-      if (!isAssistant) {
-        console.log("💬 Non-assistant message from SDK:", payload);
-        return;
-      }
+  //     if (!isAssistant) {
+  //       console.log("💬 Non-assistant message from SDK:", payload);
+  //       return;
+  //     }
 
-      const trimmedText = text.trim();
-      const lower = trimmedText.toLowerCase();
+  //     const trimmedText = text.trim();
+  //     const lower = trimmedText.toLowerCase();
 
-      const looksLikeSummary =
-        lower.includes("please consider booking an appointment with a doctor") ||
-        lower.includes("please book an appointment with a doctor") ||
-        lower.includes("take care of yourself") ||
-        trimmedText.length > 300;
+  //     const looksLikeSummary =
+  //       lower.includes("please consider booking an appointment with a doctor") ||
+  //       lower.includes("please book an appointment with a doctor") ||
+  //       lower.includes("take care of yourself") ||
+  //       trimmedText.length > 300;
 
-      setIsThinking(false);
+  //     setIsThinking(false);
 
-      if (looksLikeSummary) {
-        console.log("📝 Captured consult summary.");
+  //     if (looksLikeSummary) {
+  //       console.log("📝 Captured consult summary.");
 
-        const extracted = extractConsultDataFromMessage(trimmedText);
+  //       const extracted = extractConsultDataFromMessage(trimmedText);
 
-        setConsultSummary(extracted.summaryText);
-        setSummaryCreatedAt(new Date());
-        setConversationSummary(extracted.summaryText);
-        setSummaryStats({
-          conditions: extracted.conditions || [],
-          confidence:
-            typeof extracted.confidence === "number"
-              ? extracted.confidence
-              : null,
-        });
-        setConsultReport(extracted.report || null);
+  //       setConsultSummary(extracted.summaryText);
+  //       setSummaryCreatedAt(new Date());
+  //       setConversationSummary(extracted.summaryText);
+  //       setSummaryStats({
+  //         conditions: extracted.conditions || [],
+  //         confidence:
+  //           typeof extracted.confidence === "number"
+  //             ? extracted.confidence
+  //             : null,
+  //       });
+  //       setConsultReport(extracted.report || null);
 
-        return;
-      }
+  //       return;
+  //     }
 
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       {
+  //         id: nextId(),
+  //         role: "assistant",
+  //         text: trimmedText,
+  //       },
+  //     ]);
+  //   },
+  //   onError: (err) => {
+  //     console.error("❌ ElevenLabs chat error:", err);
+  //     setError("Something went wrong while talking to Cira. Please try again.");
+  //     setIsThinking(false);
+  //   },
+  // });
+const conversation = useConversation({
+  textOnly: true,
+  onConnect: () => {
+    console.log("✅ Connected to chat_cira");
+    setIsConnected(true);
+    setError("");
+  },
+  onDisconnect: () => {
+    console.log("🔌 Disconnected from chat_cira");
+    setIsConnected(false);
+  },
+  onMessage: (payload) => {
+    let text = "";
+    let role = "unknown";
+
+    if (typeof payload === "string") {
+      text = payload;
+    } else if (payload) {
+      text =
+        payload.message ||
+        payload.text ||
+        payload.formatted?.text ||
+        payload.formatted?.transcript ||
+        "";
+      role = payload.role || payload.source || "unknown";
+    }
+
+    if (!text || !text.trim()) return;
+
+    const trimmedText = text.trim();
+
+    const isAssistant =
+      role === "assistant" || role === "ai" || role === "agent";
+
+    if (!isAssistant) {
+      console.log("💬 Non-assistant message from SDK:", payload);
+      return;
+    }
+
+    // const lower = trimmedText.toLowerCase();
+
+    // const looksLikeSummary =
+    //   lower.includes("please consider booking an appointment with a doctor") ||
+    //   lower.includes("please book an appointment with a doctor") ||
+    //   lower.includes("take care of yourself") ||
+    //   trimmedText.length > 300;
+const lower = trimmedText.toLowerCase();
+
+// 🔐 Only treat as final consult summary when the closing lines appear
+const looksLikeSummary =
+  // your strict final line
+  lower.includes(
+    "please book an appointment with a doctor so you can make sure you’re getting the best care possible"
+  ) ||
+  lower.includes(
+    "please book an appointment with a doctor so you can make sure you're getting the best care possible"
+  ) ||
+  // optional older wording if you still use it anywhere
+  lower.includes("please consider booking an appointment with a doctor") ||
+  lower.includes("please book an appointment with a doctor") ||
+  // your final goodbye line
+  lower.includes("take care of yourself, and i hope you feel better soon") ||
+  lower.includes("take care of yourself 💙") ||
+  // safety: if you ever include the JSON marker
+  lower.includes("cira_consult_report");
+
+    setIsThinking(false);
+
+    if (looksLikeSummary) {
+      console.log("📝 Captured consult summary.");
+
+      const extracted = extractConsultDataFromMessage(trimmedText);
+
+      setConsultSummary(extracted.summaryText);
+      setSummaryCreatedAt(new Date());
+      setConversationSummary(extracted.summaryText);
+      setSummaryStats({
+        conditions: extracted.conditions || [],
+        confidence:
+          typeof extracted.confidence === "number"
+            ? extracted.confidence
+            : null,
+      });
+      setConsultReport(extracted.report || null);
+
+      // 🔹 ALSO push this as the last assistant message in the chat
       setMessages((prev) => [
         ...prev,
         {
           id: nextId(),
           role: "assistant",
-          text: trimmedText,
+          text: extracted.summaryText || trimmedText,
         },
       ]);
-    },
-    onError: (err) => {
-      console.error("❌ ElevenLabs chat error:", err);
-      setError("Something went wrong while talking to Cira. Please try again.");
-      setIsThinking(false);
-    },
-  });
+
+      return;
+    }
+
+    // Normal assistant message
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: nextId(),
+        role: "assistant",
+        text: trimmedText,
+      },
+    ]);
+  },
+  onError: (err) => {
+    console.error("❌ ElevenLabs chat error:", err);
+    setError("Something went wrong while talking to Cira. Please try again.");
+    setIsThinking(false);
+  },
+});
 
   const { status, sendUserMessage } = conversation;
 
