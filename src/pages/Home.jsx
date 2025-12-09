@@ -64,6 +64,7 @@ import PrivacySection from "../components/landing/PrivacySection";
 import Footer from "../components/landing/Footer";
 import CiraChatAssistant from "../assistant/CiraChatAssistant";
 import Header from "../components/Header";
+import GlobalVoiceSection from "../components/landing/GlobalVoiceSection";
 
 function LandingPage() {
   const [showChat, setShowChat] = useState(false);
@@ -101,6 +102,7 @@ function LandingPage() {
       {!showChat && (
         <div className="pt-20 w-full max-w-4xl mx-auto px-4 py-2 md:px-4 md:py-6">
           <HeroSection onStartChat={handleStartChat} />
+          <GlobalVoiceSection />
           <FriendlyExplanationSection />
           <DoctorConnectionSection />
           <PrivacySection />
