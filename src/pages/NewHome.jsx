@@ -26,7 +26,7 @@ import {
   Check,
   ClipboardList,
 } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import CiraChatAssistant from "../assistant/CiraChatAssistant";
 import Nurse from "../assets/nurse.png";
 import FriendlyNurse from "../assets/FriendlyNurse.png";
@@ -540,15 +540,14 @@ const HeroSection = ({ onStartChat }) => {
     >
       <div className="max-w-7xl mx-auto w-full">
         {/* Trust Badges */}
-        <motion.div
-          variants={fadeUp}
+        <motion.div 
+          variants={fadeUp} 
           className="flex flex-wrap justify-center gap-4 md:gap-8 text-[10px] md:text-xs text-gray-500 mb-8 md:mb-10"
         >
-          <motion.div variants={float} className="flex items-center gap-2">
-            <span className="inline-flex h-6 px-3 items-center rounded-full border border-gray-200 bg-white shadow-sm text-[10px] md:text-xs font-medium text-gray-700">
-              256-bit encryption
-            </span>
-          </motion.div>
+            <motion.div variants={float} className="flex items-center gap-1 text-gray-600">
+
+              <span className="text-[10px] md:text-[12px]"><strong className="font-bold">100%</strong>-Secure</span>
+            </motion.div>
 
           <motion.div variants={float} transition={{ delay: 0.1 }} className="flex items-center gap-1 text-gray-600">
             <Users className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -569,9 +568,9 @@ const HeroSection = ({ onStartChat }) => {
             {/* Avatar + Heading + Caption */}
             <motion.div variants={fadeUp} className="flex flex-col gap-4">
               <div className="flex items-center gap-3 md:gap-4">
-                <img
-                  src={Nurse}
-                  alt="Cira"
+              <img 
+                src={Nurse} 
+                alt="Cira" 
                   className="w-12 h-12 md:w-14 md:h-14 rounded-full object-contain flex-shrink-0"
                 />
 
@@ -603,7 +602,7 @@ const HeroSection = ({ onStartChat }) => {
                     </span>
                   </span>
                   <span>, your AI Nurse</span>
-                </h1>
+              </h1>
               </div>
 
               <p className="text-[13px] md:text-sm lg:text-base text-gray-600 max-w-2xl leading-relaxed pl-1">
@@ -635,7 +634,7 @@ const HeroSection = ({ onStartChat }) => {
                 <motion.button
                   key={index}
                   onClick={() => handleTopicClick(topic)}
-                  className="px-4 py-1.5 md:px-5 md:py-2 bg-white hover:bg-gray-100 border border-gray-200 rounded-full text-[11px] md:text-xs font-medium text-gray-800 transition-all duration-200"
+                  className="px-4 py-1.5 md:px-5 md:py-2 bg-white hover:bg-gray-100 border border-gray-200 rounded-xl text-[11px] md:text-xs font-medium text-gray-800 transition-all duration-200"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.96 }}
                 >
@@ -647,7 +646,7 @@ const HeroSection = ({ onStartChat }) => {
             {/* Chat Input */}
             <motion.div variants={fadeUp} className="w-full mb-10">
               <div
-                className={`relative bg-white rounded-[2.5rem] border transition-all duration-300 overflow-hidden ${
+                className={`relative bg-white rounded-4xl border transition-all duration-300 overflow-hidden ${
                   isFocused ? "border-[#AC3893] shadow-lg" : "border-gray-200 shadow-sm"
                 }`}
               >
@@ -660,7 +659,7 @@ const HeroSection = ({ onStartChat }) => {
                       onBlur={() => setIsFocused(false)}
                       onKeyDown={handleKeyDown}   // 👈 ENTER = submit
                       placeholder="Ask me anything about your health…"
-                      className="w-full min-h-[110px] pl-6 pr-44 pt-4 pb-16 text-[15px] md:text-[16px] bg-white rounded-[2.5rem] focus:outline-none border-0 placeholder:text-gray-400 text-start resize-none font-sans"
+                      className="w-full min-h-[110px] pl-6 pr-44 pt-4 pb-16 text-[15px] md:text-[16px] bg-white rounded-full focus:outline-none border-0 placeholder:text-gray-400 text-start resize-none font-sans"
                       maxLength={characterLimit}
                     />
 
@@ -681,7 +680,7 @@ const HeroSection = ({ onStartChat }) => {
                         className="bg-gradient-to-r from-[#DC2B8E] to-[#AC3893]
                           hover:from-[#E53596] hover:to-[#B03A9A]
                           disabled:from-gray-300 disabled:to-gray-300
-                          disabled:cursor-not-allowed
+                          disabled:cursor-not-allowed 
                           text-white font-semibold px-6 md:px-7 py-2.5 rounded-full
                           text-sm md:text-[15px] shadow-md whitespace-nowrap"
                         whileHover={{ scale: message.trim() ? 1.05 : 1 }}
@@ -733,7 +732,7 @@ const FriendlySection = () => {
           variants={fadeUp}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          Cira listens like a friend,<br />
+            Cira listens like a friend,<br />
           <span className="text-gray-950">explains like a nurse.</span>
         </motion.h2>
 
@@ -764,9 +763,9 @@ const FriendlySection = () => {
       </div>
 
       {/* Avatar + Listening Indicator */}
-      <motion.div
+        <motion.div
         className="flex flex-col items-center mt-8 md:mt-12"
-        initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
@@ -776,7 +775,7 @@ const FriendlySection = () => {
           alt="Friendly nurse assistant illustration"
           className="w-[90%] md:w-[50%]"
         />
-      </motion.div>
+        </motion.div>
     </section>
   );
 };
@@ -856,8 +855,8 @@ const DoctorConnectionSection = () => {
           variants={fadeUp}
           transition={{ duration: 0.8, ease: 'easeOut' }}
         >
-          When we're done chatting, I can<br />
-          connect you to a human doctor for<br />
+            When we're done chatting, I can<br />
+            connect you to a human doctor for<br />
           <span className="text-pink-400">just £49</span>
         </motion.h2>
 
@@ -880,9 +879,9 @@ const DoctorConnectionSection = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
         >
-          If you want, you can book a follow up with one of our doctors to get your
-          prescriptions, talk about our AI findings, confirm a diagnosis, or get specialist
-          help, all from the comfort of your phone.
+            If you want, you can book a follow up with one of our doctors to get your
+            prescriptions, talk about our AI findings, confirm a diagnosis, or get specialist
+            help, all from the comfort of your phone.
         </motion.p>
 
         {/* Feature Cards */}
@@ -960,8 +959,8 @@ const PrivacySection = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
         >
-          Don't worry, everything is private,<br />
-          GDPR secure, and your data is<br />
+            Don't worry, everything is private,<br />
+            GDPR secure, and your data is<br />
           <span className="text-pink-400">yours</span>
         </motion.h2>
 
@@ -973,9 +972,9 @@ const PrivacySection = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
         >
-          Every conversation, diagnosis, and health detail is encrypted and stored securely. 
-          I never use your chat data for AI training and only share data with your doctor 
-          if you want me to.
+            Every conversation, diagnosis, and health detail is encrypted and stored securely. 
+            I never use your chat data for AI training and only share data with your doctor 
+            if you want me to.
         </motion.p>
 
         {/* Trust Icons Row */}
@@ -1037,18 +1036,18 @@ const ModernFooter = () => {
           <div className="flex-shrink-0 flex items-center gap-2">
             <img src={Stars} alt="stars logo" className="w-[20%] md:w-[25%]"/>           
             <p className="text-lg md:text-xl font-semibold text-gray-900">Cira</p>
-          </div>
+              </div>
         </motion.div>
 
         {/* Social Icons */}
         <motion.div className="flex justify-center gap-6 md:gap-8 mb-6 md:mb-10" variants={container}>
-          <motion.a
+                  <motion.a
             href="#"
             className="text-gray-600 hover:text-purple-600 transition"
             whileHover={iconHover}
           >
             <Facebook className="w-5 h-5 md:w-6 md:h-6" />
-          </motion.a>
+                  </motion.a>
           <motion.a
             href="#"
             className="text-gray-600 hover:text-purple-600 transition"
@@ -1079,7 +1078,7 @@ const ModernFooter = () => {
         >
           © 2025 Cira. All rights reserved
         </motion.p>
-      </div>
+          </div>
     </motion.footer>
   );
 };
