@@ -30,8 +30,172 @@ const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 /*  Helpers: parsing summary / report                                 */
 /* ------------------------------------------------------------------ */
 
-// 🔎 Helper to extract conditions + confidence from plain summary text (fallback)
-// 🔎 Helper to extract conditions + confidence from plain summary text (fallback)
+// export function parseConditionsAndConfidence(summary) {
+//   if (!summary || typeof summary !== "string") {
+//     return { conditions: [], confidence: null };
+//   }
+
+//   let confidence = null;
+//   const conditions = [];
+//   const usedNames = new Set();
+
+//   /* -----------------------------
+//      ✅ CONFIDENCE EXTRACTOR
+//   ----------------------------- */
+
+//   const confidencePatterns = [
+//     /\babout\s*(\d{1,3})\s*%/i,
+//     /\bconfidence[^0-9]*(\d{1,3})\s*%/i,
+//     /\bAI\s*confidence[^0-9]*(\d{1,3})\s*%/i,
+//     /\bconfidence\s*level[^0-9]*(\d{1,3})\s*%/i,
+//     /\bI’m\s*about\s*(\d{1,3})\s*%\s*confident/i,
+//   ];
+
+//   for (const pat of confidencePatterns) {
+//     const match = summary.match(pat);
+//     if (match && match[1]) {
+//       const conf = Number(match[1]);
+//       if (!isNaN(conf) && conf <= 100) {
+//         confidence = conf;
+//         break;
+//       }
+//     }
+//   }
+
+//   /* -----------------------------
+//      ❌ JUNK FILTER
+//   ----------------------------- */
+
+//   const bannedWords = [
+//     "confidence",
+//     "confident",
+//     "represents",
+//     "assessment",
+//     "analysis",
+//     "estimate",
+//     "likelihood",
+//     "probability",
+//     "overall",
+//     "this represents",
+//   ];
+
+//   const isJunk = (text) =>
+//     bannedWords.some(word => text.toLowerCase().includes(word));
+
+//   /* -----------------------------
+//      ✅ CONDITION PATTERNS
+//   ----------------------------- */
+
+//   const patterns = [
+//     // 1) 70% Condition
+//     /(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g,
+
+//     // 2) Condition - 70%
+//     /([A-Za-z][A-Za-z ()\-]+)\s*[-–—]\s*(\d{1,3})\s*%/g,
+
+//     // 3) Condition (70%)
+//     /([A-Za-z][A-Za-z ()\-]+)\s*\(\s*(\d{1,3})\s*%\s*\)/g,
+
+//     // 4) Bullet format
+//     /[•*]\s*([A-Za-z][A-Za-z ()\-]+)\s*(\d{1,3})\s*%/g,
+
+//     // 5) Newline format:
+//     // Condition\n70%
+//     /([A-Za-z][A-Za-z ()\-]+)\s*\n\s*(\d{1,3})\s*%/g,
+//   ];
+
+//   /* -----------------------------
+//      ✅ RUN EXTRACTOR
+//   ----------------------------- */
+
+//   for (const pattern of patterns) {
+//     let match;
+
+//     while ((match = pattern.exec(summary)) !== null) {
+//       let name, pct;
+
+//       // percent first format
+//       if (pattern.source.startsWith("(\\d")) {
+//         pct = Number(match[1]);
+//         name = match[2];
+//       }
+//       // name first format
+//       else {
+//         name = match[1];
+//         pct = Number(match[2]);
+//       }
+
+//       name = name
+//         .replace(/[\r\n]+/g, " ")
+//         .replace(/\s{2,}/g, " ")
+//         .replace(/[-–—]+$/, "")
+//         .trim();
+
+//       if (!name || isNaN(pct)) continue;
+//       if (pct < 1 || pct > 100) continue;
+//       if (isJunk(name)) continue;
+
+//       const key = name.toLowerCase();
+
+//       // ❌ NEVER ALLOW CONFIDENCE TO BECOME CONDITION
+//       if (key.includes("confidence")) continue;
+
+//       if (!usedNames.has(key)) {
+//         usedNames.add(key);
+//         conditions.push({ name, percentage: pct });
+//       }
+//     }
+//   }
+
+//   /* -----------------------------
+//      ✅ HARSH FALLBACK MODE
+//      (if AI format is broken)
+//   ----------------------------- */
+
+//   if (conditions.length < 3) {
+//     const loose = summary.matchAll(/(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g);
+
+//     for (const match of loose) {
+//       if (conditions.length >= 3) break;
+
+//       const pct = Number(match[1]);
+//       const name = match[2].trim();
+//       const key = name.toLowerCase();
+
+//       if (
+//         !usedNames.has(key) &&
+//         pct <= 100 &&
+//         !isNaN(pct) &&
+//         !isJunk(name) &&
+//         !key.includes("confidence")
+//       ) {
+//         usedNames.add(key);
+//         conditions.push({ name, percentage: pct });
+//       }
+//     }
+//   }
+
+//   /* -----------------------------
+//      ✅ SORT & RETURN
+//   ----------------------------- */
+
+//   return {
+//     conditions: conditions
+//       .sort((a, b) => b.percentage - a.percentage)
+//       .slice(0, 3),
+
+//     confidence,
+//   };
+// }
+
+
+
+
+
+
+// 🧼 Helper to remove confidence sentence + raw condition lines from the summary
+// 🧼 Helper to remove confidence sentence + raw condition lines from the summary
+
 export function parseConditionsAndConfidence(summary) {
   if (!summary || typeof summary !== "string") {
     return { conditions: [], confidence: null };
@@ -43,21 +207,20 @@ export function parseConditionsAndConfidence(summary) {
 
   /* -----------------------------
      ✅ CONFIDENCE EXTRACTOR
+     Matches: "I'm about 85% confident in the following assessment."
   ----------------------------- */
 
   const confidencePatterns = [
-    /\babout\s*(\d{1,3})\s*%/i,
+    /I(?:\s+am|['’]m)\s+about\s*(\d{1,3})\s*%\s*confident\s+in\s+the\s+following\s+assessment/i,
+    /\babout\s*(\d{1,3})\s*%[^.\n]*confident/i,
     /\bconfidence[^0-9]*(\d{1,3})\s*%/i,
-    /\bAI\s*confidence[^0-9]*(\d{1,3})\s*%/i,
-    /\bconfidence\s*level[^0-9]*(\d{1,3})\s*%/i,
-    /\bI’m\s*about\s*(\d{1,3})\s*%\s*confident/i,
   ];
 
   for (const pat of confidencePatterns) {
     const match = summary.match(pat);
     if (match && match[1]) {
       const conf = Number(match[1]);
-      if (!isNaN(conf) && conf <= 100) {
+      if (!isNaN(conf) && conf > 0 && conf <= 100) {
         confidence = conf;
         break;
       }
@@ -67,7 +230,6 @@ export function parseConditionsAndConfidence(summary) {
   /* -----------------------------
      ❌ JUNK FILTER
   ----------------------------- */
-
   const bannedWords = [
     "confidence",
     "confident",
@@ -79,79 +241,111 @@ export function parseConditionsAndConfidence(summary) {
     "probability",
     "overall",
     "this represents",
+    "self-care",
+    "when to seek help",
   ];
 
   const isJunk = (text) =>
-    bannedWords.some(word => text.toLowerCase().includes(word));
+    bannedWords.some((word) => text.toLowerCase().includes(word));
 
   /* -----------------------------
-     ✅ CONDITION PATTERNS
+     ✅ PRIMARY: TOP 3 CONDITIONS BLOCK
+     Expects:
+
+     TOP 3 CONDITIONS (PROBABILITIES):
+     70% Viral upper respiratory infection
+     20% Early influenza
+     10% Early COVID
   ----------------------------- */
 
-  const patterns = [
-    // 1) 70% Condition
-    /(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g,
+  const topBlockMatch = summary.match(
+    /TOP\s*3\s*CONDITIONS\s*\(PROBABILITIES\)\s*:\s*([\s\S]*?)(?=SELF-CARE\s*&\s*WHEN\s+TO\s+SEEK\s+HELP|$)/i
+  );
 
-    // 2) Condition - 70%
-    /([A-Za-z][A-Za-z ()\-]+)\s*[-–—]\s*(\d{1,3})\s*%/g,
+  if (topBlockMatch) {
+    const block = topBlockMatch[1];
 
-    // 3) Condition (70%)
-    /([A-Za-z][A-Za-z ()\-]+)\s*\(\s*(\d{1,3})\s*%\s*\)/g,
+    block
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .forEach((line) => {
+        // 70% Condition name
+        const m = line.match(/(\d{1,3})\s*%\s*(.+)$/);
+        if (!m) return;
 
-    // 4) Bullet format
-    /[•*]\s*([A-Za-z][A-Za-z ()\-]+)\s*(\d{1,3})\s*%/g,
+        const pct = Number(m[1]);
+        let name = m[2]
+          .replace(/[\r\n]+/g, " ")
+          .replace(/\s{2,}/g, " ")
+          .replace(/[-–—]+$/, "")
+          .trim();
 
-    // 5) Newline format:
-    // Condition\n70%
-    /([A-Za-z][A-Za-z ()\-]+)\s*\n\s*(\d{1,3})\s*%/g,
-  ];
+        if (!name || isNaN(pct) || pct <= 0 || pct > 100) return;
+        if (isJunk(name)) return;
+
+        const key = name.toLowerCase();
+        if (key.includes("confidence")) return;
+
+        if (!usedNames.has(key)) {
+          usedNames.add(key);
+          conditions.push({ name, percentage: pct });
+        }
+      });
+  }
 
   /* -----------------------------
-     ✅ RUN EXTRACTOR
+     🔁 FALLBACK: old flexible patterns
+     (in case AI slightly breaks the format)
   ----------------------------- */
 
-  for (const pattern of patterns) {
-    let match;
+  if (conditions.length < 3) {
+    const patterns = [
+      // 1) 70% Condition
+      /(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g,
+      // 2) Condition - 70%
+      /([A-Za-z][A-Za-z ()\-]+)\s*[-–—]\s*(\d{1,3})\s*%/g,
+      // 3) Condition (70%)
+      /([A-Za-z][A-Za-z ()\-]+)\s*\(\s*(\d{1,3})\s*%\s*\)/g,
+    ];
 
-    while ((match = pattern.exec(summary)) !== null) {
-      let name, pct;
+    for (const pattern of patterns) {
+      let match;
 
-      // percent first format
-      if (pattern.source.startsWith("(\\d")) {
-        pct = Number(match[1]);
-        name = match[2];
-      } 
-      // name first format
-      else {
-        name = match[1];
-        pct = Number(match[2]);
-      }
+      while ((match = pattern.exec(summary)) !== null) {
+        let name, pct;
 
-      name = name
-        .replace(/[\r\n]+/g, " ")
-        .replace(/\s{2,}/g, " ")
-        .replace(/[-–—]+$/, "")
-        .trim();
+        if (pattern.source.startsWith("(\\d")) {
+          pct = Number(match[1]);
+          name = match[2];
+        } else {
+          name = match[1];
+          pct = Number(match[2]);
+        }
 
-      if (!name || isNaN(pct)) continue;
-      if (pct < 1 || pct > 100) continue;
-      if (isJunk(name)) continue;
+        name = name
+          .replace(/[\r\n]+/g, " ")
+          .replace(/\s{2,}/g, " ")
+          .replace(/[-–—]+$/, "")
+          .trim();
 
-      const key = name.toLowerCase();
+        if (!name || isNaN(pct)) continue;
+        if (pct < 1 || pct > 100) continue;
+        if (isJunk(name)) continue;
 
-      // ❌ NEVER ALLOW CONFIDENCE TO BECOME CONDITION
-      if (key.includes("confidence")) continue;
+        const key = name.toLowerCase();
+        if (key.includes("confidence")) continue;
 
-      if (!usedNames.has(key)) {
-        usedNames.add(key);
-        conditions.push({ name, percentage: pct });
+        if (!usedNames.has(key)) {
+          usedNames.add(key);
+          conditions.push({ name, percentage: pct });
+        }
       }
     }
   }
 
   /* -----------------------------
-     ✅ HARSH FALLBACK MODE
-     (if AI format is broken)
+     ✅ SUPER LOOSE FALLBACK
   ----------------------------- */
 
   if (conditions.length < 3) {
@@ -177,44 +371,40 @@ export function parseConditionsAndConfidence(summary) {
     }
   }
 
-  /* -----------------------------
-     ✅ SORT & RETURN
-  ----------------------------- */
-
   return {
     conditions: conditions
       .sort((a, b) => b.percentage - a.percentage)
       .slice(0, 3),
-
     confidence,
   };
 }
 
 
-
-
-
-
-// 🧼 Helper to remove confidence sentence + raw condition lines from the summary
 function stripTopConditionsFromSummary(summary) {
   if (!summary) return "";
 
   let cleaned = summary;
 
-  // remove the confidence sentence that talks about "following possibilities/conditions"
+  // 1️⃣ Remove the OLD style confidence sentence
+  //    (the new one "in the following assessment" we KEEP)
   cleaned = cleaned.replace(
-    /I\s+am[^.\n]*\d+\s*%[^.\n]*following\s+(?:possibilities|conditions)[^.\n]*:?/i,
+    /I(?:\s+am|['’]m)[^.!\n]*\d+\s*%[^.\n]*following\s+(?:possibilities|conditions)[^.!\n]*[:.]?/gi,
     ""
   );
 
-  // remove the whole "TOP 3 CONDITIONS (PROBABILITIES)" block,
-  // but keep anything after it (e.g. SELF-CARE, DOCTOR RECOMMENDATION)
+  // 2️⃣ Remove the whole "TOP 3 CONDITIONS (PROBABILITIES)" block
   cleaned = cleaned.replace(
-    /TOP\s*\d*\s*CONDITIONS(?:\s*\(PROBABILITIES\))?\s*:\s*[\s\S]*?(?=SELF-CARE\s*&\s*WHEN\s+TO\s+SEEK\s+HELP|For\s+(?:self-care|now|immediate relief)|DOCTOR RECOMMENDATION|Please book an appointment|Take care of yourself|$)/i,
+    /TOP\s*\d*\s*CONDITIONS(?:\s*\(PROBABILITIES\))?\s*:\s*[\s\S]*?(?=SELF-CARE\s*&\s*WHEN\s+TO\s+SEEK\s+HELP|For\s+(?:self-care|now|immediate relief)|DOCTOR RECOMMENDATION|Please book an appointment|Please book|Take care of yourself|$)/gi,
     ""
   );
 
-  // remove any standalone lines that start with "60%" style percentages
+  // 3️⃣ Remove any "CLINICAL POSSIBILITIES" diagnostic list
+  cleaned = cleaned.replace(
+    /CLINICAL\s+POSSIBILITIES[\s\S]*?(?=CLINICAL\s+PLAN\s*&\s*DISPOSITION|For\s+self-care|For\s+now|AI assessment confidence|$)/gi,
+    ""
+  );
+
+  // 4️⃣ Remove standalone lines that start with "60%" style percentages
   cleaned = cleaned
     .split("\n")
     .filter((line) => !/^\s*\d+\s*%/.test(line.trim()))
@@ -224,24 +414,26 @@ function stripTopConditionsFromSummary(summary) {
 }
 
 
-// 🧼 Helper to pull out the self-care paragraph and leave rest
 function splitOutSelfCare(summary) {
   if (!summary) return { cleaned: "", selfCare: "" };
 
-  // 1) new format: "SELF-CARE & WHEN TO SEEK HELP: For now, ..."
+  // 1️⃣ New format with heading:
+  // SELF-CARE & WHEN TO SEEK HELP:
+  // For self-care, ...
+  // Based on the information you've shared, I recommend...
   const selfCareBlockRegex =
     /SELF-CARE\s*&\s*WHEN\s+TO\s+SEEK\s+HELP\s*:?\s*(For[\s\S]*?)(?=DOCTOR RECOMMENDATION|Please book an appointment|Please book|Take care of yourself|$)/i;
 
   let match = summary.match(selfCareBlockRegex);
   if (match) {
-    const selfCare = match[1].trim();
+    const selfCare = match[1].trim(); // "For self-care, ..." + doctor recommendation line
     const cleaned =
       (summary.slice(0, match.index) +
         summary.slice(match.index + match[0].length)).trim();
     return { cleaned, selfCare };
   }
 
-  // 2) fallback: old format without the "SELF-CARE…" heading
+  // 2️⃣ Fallback: old format without heading
   const pattern =
     /(For\s+(?:self-care|now|immediate relief)[\s\S]*?)(?=\n\s*\n|DOCTOR RECOMMENDATION|Please book an appointment|Please book|Take care of yourself|$)/i;
 
@@ -257,7 +449,6 @@ function splitOutSelfCare(summary) {
 
   return { cleaned, selfCare };
 }
-
 
 
 
@@ -420,21 +611,6 @@ function shortConditionName(name = "") {
   const beforeParen = beforeColon.split("(")[0];
   const trimmed = beforeParen.trim();
   return trimmed || raw;
-}
-// 🧹 Normalise condition labels (strip numbers / bullets / trailing dash)
-function cleanConditionLabel(raw = "") {
-  let s = String(raw || "").trim();
-
-  // remove leading "1) ", "2) ", etc.
-  s = s.replace(/^\d+\)\s*/, "");
-
-  // remove leading bullets / dashes
-  s = s.replace(/^[•\-–]+\s*/, "");
-
-  // remove trailing dash-only
-  s = s.replace(/\s*[–\-]\s*$/g, "");
-
-  return s.trim();
 }
 
 // 🔎 Extract a short main symptom label for Chief Complaint
@@ -664,7 +840,7 @@ function extractDemographicsFromSummary(text = "") {
 
 
 
-// 🔎 Extract ROS chips + note from the summary
+// 🔎 Extract ROS chips + note from the summary (NEGATIVE findings only)
 function extractRosFromSummary(text = "") {
   const chipsSet = new Set();
   if (!text) {
@@ -679,10 +855,9 @@ function extractRosFromSummary(text = "") {
     if (label) chipsSet.add(label);
   };
 
-  // ----------------- CHIP PATTERNS -----------------
-  // No treatments tried
+  // No treatments tried – e.g. "has not tried any treatments"
   if (
-    /(haven't|have not|hasn't|no)\s+(tried|taken|used)\s+(any\s+)?(treatments?|medications?|medicine|drugs|remedies)/i.test(
+    /(haven't|have not|hasn't|has not|didn't|did not|no)\s+(really\s+)?(tried|taken|used)\s+(any\s+)?(treatments?|medications?|medicine|drugs|remedies)/i.test(
       text
     )
   ) {
@@ -699,26 +874,35 @@ function extractRosFromSummary(text = "") {
   }
 
   // No recent travel
-  if (/(no|not|haven't|have not)\s+(recent\s+)?travel(led)?/i.test(text)) {
+  if (
+    /(no|not|haven't|have not|hasn't)\s+(recent\s+)?travel(led)?/i.test(text)
+  ) {
     addChip("No recent travel");
   }
 
-  // "No other symptoms"
-  if (/(no|without|denies)\s+other\s+symptoms/i.test(text)) {
+  // "No other / associated / concurrent symptoms"
+  if (
+    /(no|without|denies)\s+(other|associated|concurrent)\s+symptoms?/i.test(
+      text
+    )
+  ) {
     addChip("No other symptoms");
   }
 
-  // No other medical conditions
+  // No other medical conditions – includes "no known medical conditions"
   if (
-    /(no|without|denies)\s+(other\s+)?(chronic\s+)?(medical|health)\s+conditions?/i.test(
+    /(no|without|denies)\s+(other\s+)?(chronic\s+)?(known\s+)?(medical|health)\s+conditions?/i.test(
       text
     )
   ) {
     addChip("No other medical conditions");
   }
 
-  // No current medications
-  if (/(no|without|denies)\s+(current\s+)?medications?/i.test(text)) {
+  // No current medications – includes "takes no medications"
+  if (
+    /(no|without|denies)\s+(current\s+)?medications?/i.test(text) ||
+    /(takes|on)\s+no\s+medications?/i.test(text)
+  ) {
     addChip("No current medications");
   }
 
@@ -732,7 +916,9 @@ function extractRosFromSummary(text = "") {
   }
 
   // Not pregnant
-  if (/(not pregnant|denies pregnancy|no possibility of pregnancy)/i.test(text)) {
+  if (
+    /(not pregnant|denies pregnancy|no possibility of pregnancy)/i.test(text)
+  ) {
     addChip("Not pregnant");
   }
 
@@ -750,21 +936,19 @@ function extractRosFromSummary(text = "") {
     addChip("Negative for shortness of breath");
   }
 
-  // If we still got nothing, but there is some "no symptoms" type phrase
+  // Fallback: generic "no symptoms" phrase
   if (!chipsSet.size && /no (other )?symptoms?/i.test(text)) {
     addChip("No other symptoms");
   }
 
-  // Limit to max 4 chips to keep the layout clean
   const chips = Array.from(chipsSet).slice(0, 4);
 
-  // ----------------- NOTE SELECTION -----------------
-  // Pick the first sentence that has strong negatives
+  // Note: pick one sentence that captures these negatives
   const sentences = text.split(/(?<=[.!?])\s+/);
   let rosNote = "";
   for (const s of sentences) {
     if (
-      /(haven't|have not|hasn't|no other symptoms|no symptoms|denies|without|no recent travel|no sick contacts)/i.test(
+      /(haven't|have not|hasn't|has not|no other symptoms|no symptoms|denies|without|no recent travel|no sick contacts|no known medical conditions|no medications)/i.test(
         s
       )
     ) {
@@ -783,6 +967,8 @@ function extractRosFromSummary(text = "") {
     note: rosNote,
   };
 }
+
+
 
 
 
@@ -851,203 +1037,97 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     showAppointment ||
     showConfirmation;
 
-  // const conversation = useConversation({
-  //   textOnly: true,
-  //   onConnect: () => {
-  //     console.log("✅ Connected to chat_cira");
-  //     setIsConnected(true);
-  //     setError("");
-  //   },
-  //   onDisconnect: () => {
-  //     console.log("🔌 Disconnected from chat_cira");
-  //     setIsConnected(false);
-  //   },
-  //   onMessage: (payload) => {
-  //     let text = "";
-  //     let role = "unknown";
 
-  //     if (typeof payload === "string") {
-  //       text = payload;
-  //     } else if (payload) {
-  //       text =
-  //         payload.message ||
-  //         payload.text ||
-  //         payload.formatted?.text ||
-  //         payload.formatted?.transcript ||
-  //         "";
-  //       role = payload.role || payload.source || "unknown";
-  //     }
+  const conversation = useConversation({
+    textOnly: true,
+    onConnect: () => {
+      console.log("✅ Connected to chat_cira");
+      setIsConnected(true);
+      setError("");
+    },
+    onDisconnect: () => {
+      console.log("🔌 Disconnected from chat_cira");
+      setIsConnected(false);
+    },
+    onMessage: (payload) => {
+      let text = "";
+      let role = "unknown";
 
-  //     if (!text || !text.trim()) return;
+      if (typeof payload === "string") {
+        text = payload;
+      } else if (payload) {
+        text =
+          payload.message ||
+          payload.text ||
+          payload.formatted?.text ||
+          payload.formatted?.transcript ||
+          "";
+        role = payload.role || payload.source || "unknown";
+      }
 
-  //     const isAssistant =
-  //       role === "assistant" || role === "ai" || role === "agent";
+      if (!text || !text.trim()) return;
 
-  //     if (!isAssistant) {
-  //       console.log("💬 Non-assistant message from SDK:", payload);
-  //       return;
-  //     }
+      const trimmedText = text.trim();
+      const isAssistant =
+        role === "assistant" || role === "ai" || role === "agent";
 
-  //     const trimmedText = text.trim();
-  //     const lower = trimmedText.toLowerCase();
+      if (!isAssistant) {
+        console.log("💬 Non-assistant message from SDK:", payload);
+        return;
+      }
 
-  //     const looksLikeSummary =
-  //       lower.includes("please consider booking an appointment with a doctor") ||
-  //       lower.includes("please book an appointment with a doctor") ||
-  //       lower.includes("take care of yourself") ||
-  //       trimmedText.length > 300;
+      const lower = trimmedText.toLowerCase();
 
-  //     setIsThinking(false);
+      // 🔐 Only treat as final consult summary when the strict closing lines appear
+      const looksLikeSummary =
+        lower.includes(
+          "please book an appointment with a doctor so you can make sure you’re getting the best care possible"
+        ) ||
+        lower.includes(
+          "please book an appointment with a doctor so you can make sure you're getting the best care possible"
+        ) ||
+        lower.includes("take care of yourself, and i hope you feel better soon") ||
+        lower.includes("cira_consult_report");
 
-  //     if (looksLikeSummary) {
-  //       console.log("📝 Captured consult summary.");
+      setIsThinking(false);
 
-  //       const extracted = extractConsultDataFromMessage(trimmedText);
+      if (looksLikeSummary) {
+        console.log("📝 Captured consult summary.");
 
-  //       setConsultSummary(extracted.summaryText);
-  //       setSummaryCreatedAt(new Date());
-  //       setConversationSummary(extracted.summaryText);
-  //       setSummaryStats({
-  //         conditions: extracted.conditions || [],
-  //         confidence:
-  //           typeof extracted.confidence === "number"
-  //             ? extracted.confidence
-  //             : null,
-  //       });
-  //       setConsultReport(extracted.report || null);
+        const extracted = extractConsultDataFromMessage(trimmedText);
 
-  //       return;
-  //     }
+        setConsultSummary(extracted.summaryText);
+        setSummaryCreatedAt(new Date());
+        setConversationSummary(extracted.summaryText);
+        setSummaryStats({
+          conditions: extracted.conditions || [],
+          confidence:
+            typeof extracted.confidence === "number"
+              ? extracted.confidence
+              : null,
+        });
+        setConsultReport(extracted.report || null);
 
-  //     setMessages((prev) => [
-  //       ...prev,
-  //       {
-  //         id: nextId(),
-  //         role: "assistant",
-  //         text: trimmedText,
-  //       },
-  //     ]);
-  //   },
-  //   onError: (err) => {
-  //     console.error("❌ ElevenLabs chat error:", err);
-  //     setError("Something went wrong while talking to Cira. Please try again.");
-  //     setIsThinking(false);
-  //   },
-  // });
-const conversation = useConversation({
-  textOnly: true,
-  onConnect: () => {
-    console.log("✅ Connected to chat_cira");
-    setIsConnected(true);
-    setError("");
-  },
-  onDisconnect: () => {
-    console.log("🔌 Disconnected from chat_cira");
-    setIsConnected(false);
-  },
-  onMessage: (payload) => {
-    let text = "";
-    let role = "unknown";
+        // ❌ Don't show this as a chat bubble
+        return;
+      }
 
-    if (typeof payload === "string") {
-      text = payload;
-    } else if (payload) {
-      text =
-        payload.message ||
-        payload.text ||
-        payload.formatted?.text ||
-        payload.formatted?.transcript ||
-        "";
-      role = payload.role || payload.source || "unknown";
-    }
-
-    if (!text || !text.trim()) return;
-
-    const trimmedText = text.trim();
-
-    const isAssistant =
-      role === "assistant" || role === "ai" || role === "agent";
-
-    if (!isAssistant) {
-      console.log("💬 Non-assistant message from SDK:", payload);
-      return;
-    }
-
-    // const lower = trimmedText.toLowerCase();
-
-    // const looksLikeSummary =
-    //   lower.includes("please consider booking an appointment with a doctor") ||
-    //   lower.includes("please book an appointment with a doctor") ||
-    //   lower.includes("take care of yourself") ||
-    //   trimmedText.length > 300;
-const lower = trimmedText.toLowerCase();
-
-// 🔐 Only treat as final consult summary when the closing lines appear
-const looksLikeSummary =
-  // your strict final line
-  lower.includes(
-    "please book an appointment with a doctor so you can make sure you’re getting the best care possible"
-  ) ||
-  lower.includes(
-    "please book an appointment with a doctor so you can make sure you're getting the best care possible"
-  ) ||
-  // optional older wording if you still use it anywhere
-  lower.includes("please consider booking an appointment with a doctor") ||
-  lower.includes("please book an appointment with a doctor") ||
-  // your final goodbye line
-  lower.includes("take care of yourself, and i hope you feel better soon") ||
-  lower.includes("take care of yourself 💙") ||
-  // safety: if you ever include the JSON marker
-  lower.includes("cira_consult_report");
-
-    setIsThinking(false);
-
-    if (looksLikeSummary) {
-      console.log("📝 Captured consult summary.");
-
-      const extracted = extractConsultDataFromMessage(trimmedText);
-
-      setConsultSummary(extracted.summaryText);
-      setSummaryCreatedAt(new Date());
-      setConversationSummary(extracted.summaryText);
-      setSummaryStats({
-        conditions: extracted.conditions || [],
-        confidence:
-          typeof extracted.confidence === "number"
-            ? extracted.confidence
-            : null,
-      });
-      setConsultReport(extracted.report || null);
-
-      // 🔹 ALSO push this as the last assistant message in the chat
+      // Normal assistant chat bubble
       setMessages((prev) => [
         ...prev,
         {
           id: nextId(),
           role: "assistant",
-          text: extracted.summaryText || trimmedText,
+          text: trimmedText,
         },
       ]);
-
-      return;
-    }
-
-    // Normal assistant message
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: nextId(),
-        role: "assistant",
-        text: trimmedText,
-      },
-    ]);
-  },
-  onError: (err) => {
-    console.error("❌ ElevenLabs chat error:", err);
-    setError("Something went wrong while talking to Cira. Please try again.");
-    setIsThinking(false);
-  },
-});
+    },
+    onError: (err) => {
+      console.error("❌ ElevenLabs chat error:", err);
+      setError("Something went wrong while talking to Cira. Please try again.");
+      setIsThinking(false);
+    },
+  });
 
   const { status, sendUserMessage } = conversation;
 
@@ -1132,11 +1212,11 @@ const looksLikeSummary =
   // 🔄 Use pre-parsed stats, but dedupe condition list
   const parsedSummary = consultSummary
     ? {
-        conditions: dedupeConditions(summaryStats.conditions || []),
-        confidence: summaryStats.confidence,
-      }
+      conditions: dedupeConditions(summaryStats.conditions || []),
+      confidence: summaryStats.confidence,
+    }
     : { conditions: [], confidence: null };
-  
+
   let displaySummary = "";
   let selfCareText = "";
 
@@ -1157,7 +1237,14 @@ const looksLikeSummary =
     selfCareText = split.selfCare;
 
     displaySummary = displaySummary
-      .replace(/^\s*CLINICAL SUMMARY\s*:?\s*[\r\n]?/im, "")
+      // remove the label "CLINICAL SUMMARY" anywhere in the text
+      .replace(/CLINICAL SUMMARY\s*:?\s*/gi, "")
+      // remove the confidence sentence with percentages
+      .replace(
+        /I(?:\s+am|['’]m)[^.!\n]*\d+\s*%[^.\n]*following\s+(?:possibilities|conditions|assessment)[^.!\n]*[.?!]/gi,
+        ""
+      )
+
       .replace(/^\s*Here are the[^\n]*\n?/gim, "")
       .replace(/Take care of yourself,[^\n]*\n?/gi, "")
       .split("\n")
@@ -1176,6 +1263,7 @@ const looksLikeSummary =
       .join("\n")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
+
 
     if (!displaySummary) {
       if (parsedSummary.conditions.length) {
@@ -1237,9 +1325,10 @@ const looksLikeSummary =
     };
   }, []);
 
-/* ------------------------------------------------------------------ */
-/*  PDF download – NAME / AGE / SEX / CC / ROS all fixed              */
-/* ------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------ */
+  /*  PDF download – NAME / AGE / SEX / CC / ROS all fixed              */
+  /* ------------------------------------------------------------------ */
+
 const handleDownloadPDF = () => {
   if (!consultSummary) return;
 
@@ -1278,8 +1367,7 @@ const handleDownloadPDF = () => {
     return null;
   };
 
-  // 1b️⃣ If an old CIRA_CONSULT_REPORT JSON is present, use it only
-  // to fill *missing* fields (never overwrite summary-derived values).
+  // 🔹 Use CIRA_CONSULT_REPORT JSON only to fill missing patient info
   if (consultReport && typeof consultReport === "object") {
     const ptSection = deepFind(consultReport, "👤 PATIENT INFORMATION");
     if (ptSection && typeof ptSection === "object") {
@@ -1299,29 +1387,52 @@ const handleDownloadPDF = () => {
     }
   }
 
-  // Final defaults (never leave undefined)
+  // Final defaults
   if (!patientInfo.name) patientInfo.name = "User";
   if (!patientInfo.age) patientInfo.age = "";
   if (!patientInfo.gender) patientInfo.gender = "";
 
-  // 2️⃣ Chief Complaint: prefer structured extraction from the narrative
+  /* ------------------------------------------------------------------ */
+  /*  2️⃣ Chief Complaint (improved)                                      */
+  /* ------------------------------------------------------------------ */
+
+  // a) First: structured extraction from narrative
   let shortCC = extractMainSymptomFromText(combinedSummary);
 
-  // If not found, fall back to any JSON CC
-  let chiefComplaintFromJson = null;
-  if (consultReport && typeof consultReport === "object") {
-    chiefComplaintFromJson = deepFind(consultReport, "🩺 CHIEF COMPLAINT");
-  }
-  if (!shortCC && typeof chiefComplaintFromJson === "string") {
-    shortCC = chiefComplaintFromJson.trim();
+  // b) If not found, try JSON chief complaint
+  if (!shortCC && consultReport && typeof consultReport === "object") {
+    const ccFromJson = deepFind(consultReport, "🩺 CHIEF COMPLAINT");
+    if (typeof ccFromJson === "string" && ccFromJson.trim()) {
+      shortCC = ccFromJson.trim();
+    }
   }
 
-  // Last-resort CC: derive a compact phrase from first sentence
+  // c) If still empty, look for patterns like "guidance on X", "concerned about X"
   if (!shortCC && combinedSummary) {
-    let firstSentence = combinedSummary.split("\n")[0];
+    const patternMatch =
+      combinedSummary.match(/guidance on\s+([^.]{3,80})\./i) ||
+      combinedSummary.match(/concern(?:ed)? about\s+([^.]{3,80})\./i) ||
+      combinedSummary.match(/regarding\s+([^.]{3,80})\./i);
 
-    // Remove generic intro like "Thank you for confirming, Habib."
+    if (patternMatch && patternMatch[1]) {
+      shortCC = patternMatch[1].trim();
+    }
+  }
+
+  // d) Last-resort fallback – derive phrase from first sentence
+  if (!shortCC && combinedSummary) {
+    let firstSentence = combinedSummary.split("\n")[0] || "";
+
+    // Remove generic intro like "Thank you..., Habib."
     firstSentence = firstSentence.replace(/Thank you[^.]*\./i, "").trim();
+
+    // NEW: strip filler like "I understand, Habib."
+    firstSentence = firstSentence
+      .replace(
+        /^(I\s+understand|I\s+see|Okay|Ok|Alright)[^.]*\./i,
+        ""
+      )
+      .trim();
 
     // Strip name + age/sex fragments
     if (patientInfo.name) {
@@ -1332,6 +1443,7 @@ const handleDownloadPDF = () => {
       const nameRegex = new RegExp("^" + safeName + "[^a-zA-Z]+", "i");
       firstSentence = firstSentence.replace(nameRegex, "").trim();
     }
+
     firstSentence = firstSentence.replace(
       /\b(a|the)?\s*\d+\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b[, ]*/i,
       ""
@@ -1341,6 +1453,7 @@ const handleDownloadPDF = () => {
       ""
     );
 
+    // Cut at "which/that" etc.
     const cutAt = Math.min(
       ...["which", "that"].map((w) => {
         const i = firstSentence.toLowerCase().indexOf(w + " ");
@@ -1349,8 +1462,11 @@ const handleDownloadPDF = () => {
     );
     if (cutAt !== Infinity) firstSentence = firstSentence.slice(0, cutAt);
 
+    // Cut at first comma to avoid trailing text
     const commaIdx = firstSentence.indexOf(",");
     if (commaIdx !== -1) firstSentence = firstSentence.slice(0, commaIdx);
+
+    firstSentence = firstSentence.trim();
 
     if (firstSentence.length && firstSentence.length <= 80) {
       shortCC =
@@ -1358,15 +1474,23 @@ const handleDownloadPDF = () => {
     }
   }
 
-  if (!shortCC) {
+  // e) Safety: never use pure filler as chief complaint
+  if (
+    !shortCC ||
+    /^(i understand|i see|okay|ok|alright)$/i.test(shortCC.trim())
+  ) {
     shortCC = "Main symptom from consult summary";
   }
 
-  // 3️⃣ Associated Symptoms (ROS) from the same narrative
+  /* ------------------------------------------------------------------ */
+  /*  3️⃣ Associated Symptoms (ROS)                                      */
+  /* ------------------------------------------------------------------ */
   const { chips: rosChips, note: rosNote } =
     extractRosFromSummary(combinedSummary);
 
-  // 4️⃣ Build the payload for the PDF generator
+  /* ------------------------------------------------------------------ */
+  /*  4️⃣ Build payload & generate PDF                                   */
+  /* ------------------------------------------------------------------ */
   const consultationData = {
     conditions: parsedSummary.conditions,
     confidence: parsedSummary.confidence,
@@ -1379,15 +1503,12 @@ const handleDownloadPDF = () => {
     chiefComplaint: shortCC,
   };
 
-  // 5️⃣ Generate & download PDF
   downloadSOAPFromChatData(
     consultationData,
     patientInfo,
     `Cira_Consult_Report_${Date.now()}.pdf`
   );
 };
-
-
 
 
 
@@ -1535,17 +1656,15 @@ const handleDownloadPDF = () => {
                     return (
                       <div
                         key={m.id}
-                        className={`flex w-full ${
-                          isAssistant ? "justify-start" : "justify-end"
-                        }`}
+                        className={`flex w-full ${isAssistant ? "justify-start" : "justify-end"
+                          }`}
                       >
                         <div className="flex items-center">
                           <div
-                            className={`px-4 py-4 text-sm ${
-                              isAssistant
-                                ? "rounded-2xl text-gray-800"
-                                : "rounded-2xl rounded-tr-none bg-pink-500 text-white"
-                            }`}
+                            className={`px-4 py-4 text-sm ${isAssistant
+                              ? "rounded-2xl text-gray-800"
+                              : "rounded-2xl rounded-tr-none bg-pink-500 text-white"
+                              }`}
                           >
                             {m.text}
                           </div>
@@ -1664,8 +1783,8 @@ const handleDownloadPDF = () => {
                               {parsedSummary.confidence >= 80
                                 ? "Pretty sure"
                                 : parsedSummary.confidence >= 60
-                                ? "Somewhat sure"
-                                : "Low confidence"}
+                                  ? "Somewhat sure"
+                                  : "Low confidence"}
                             </span>
                             <span className="text-gray-600">
                               {parsedSummary.confidence}%
@@ -1745,30 +1864,30 @@ const handleDownloadPDF = () => {
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
         >
 
-{!consultSummary && (
-  <div className="w-full bg-[#FFFEF9] max-w-xl rounded-2xl space-y-3">
-    {!hasStartedChat && (
-      <div className="flex items-start gap-2 text-[11px] text-gray-600 p-4 -mb-4 rounded-t-2xl bg-white">
-        <input
-          id="tos"
-          type="checkbox"
-          checked={hasAgreed}
-          onChange={(e) => setHasAgreed(e.target.checked)}
-          className="mb-2.5"
-        />
-        <label htmlFor="tos">
-          I agree to the{" "}
-          <button 
-            type="button" 
-            className="underline text-pink-500"
-            onClick={() => navigate('/terms')}
-          >
-            The Cira Terms of Service
-          </button>{" "}
-          and will discuss all The Cira output with a doctor.
-        </label>
-      </div>
-    )}
+          {!consultSummary && (
+            <div className="w-full bg-[#FFFEF9] max-w-xl rounded-2xl space-y-3">
+              {!hasStartedChat && (
+                <div className="flex items-start gap-2 text-[11px] text-gray-600 p-4 -mb-4 rounded-t-2xl bg-white">
+                  <input
+                    id="tos"
+                    type="checkbox"
+                    checked={hasAgreed}
+                    onChange={(e) => setHasAgreed(e.target.checked)}
+                    className="mb-2.5"
+                  />
+                  <label htmlFor="tos">
+                    I agree to the{" "}
+                    <button
+                      type="button"
+                      className="underline text-pink-500"
+                      onClick={() => navigate('/terms')}
+                    >
+                      The Cira Terms of Service
+                    </button>{" "}
+                    and will discuss all The Cira output with a doctor.
+                  </label>
+                </div>
+              )}
 
               <ChatInput
                 onSendMessage={handleUserMessage}
