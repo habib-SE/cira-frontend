@@ -505,19 +505,44 @@ const suggestedTopics = [
                       <span className="relative inline-flex items-center">
                         r
                         {/* BETA badge */}
-                        <span className="absolute -top-5 -right-5 xs:-top-6 xs:-right-6 sm:-top-7 sm:-right-8 md:-top-8 md:-right-10">
+                        <span className="absolute -top-4 -right-5 sm:-top-6 sm:-right-7 md:-top-7 md:-right-8">
                           <span className="group relative inline-block">
-                            <span className="inline-block  text-blue-700 text-[8px] xs:text-[9px] sm:text-[10px] md:text-[11px] px-2 py-[2px] rounded-md font-sans font-semibold tracking-wide cursor-pointer hover:bg-blue-100 transition-colors whitespace-nowrap">
+                            <span className="inline-block  text-blue-700 text-[6px] xs:text-[7px] sm:text-[8px] md:text-[11px] px-2 py-[2px] font-sans font-semibold tracking-wide cursor-pointer transition-colors whitespace-nowrap">
                               BETA
                             </span>
-                            <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 
-                hidden group-hover:block 
-                bg-gray-900 text-white text-xs xs:text-xs sm:text-sm px-3 py-2 rounded-lg 
-                whitespace-nowrap shadow-xl z-50
-                max-w-[200px] xs:max-w-[250px] sm:max-w-none
-                before:content-[''] before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-gray-900">
-                              This version is for testing only. Features may change.
-                            </span>
+                          <span
+  className="absolute bottom-6 
+    left-1/3 -translate-x-1/2     /* Mobile = centered */
+    sm:left-0 sm:translate-x-0   /* Desktop = left aligned */
+
+    hidden group-hover:block
+    bg-gray-900 text-white text-xs sm:text-sm 
+    px-4 py-3 rounded-lg 
+    shadow-xl z-50
+
+    w-[40vw] 
+    sm:w-[20vw]
+    md:w-[30vw]
+  
+
+    whitespace-normal break-words
+
+    origin-bottom-left
+
+    before:content-[''] 
+    before:absolute 
+    before:top-full 
+    before:left-1/2 before:-translate-x-1/2   /* Arrow centered on mobile */
+    sm:before:left-4 sm:before:translate-x-0 /* Arrow moves left on desktop */
+
+    before:border-4 
+    before:border-transparent 
+    before:border-t-gray-900"
+>
+  This version is for testing only. Features may change.
+</span>
+
+
                           </span>
                         </span>
                       </span>
@@ -597,6 +622,12 @@ const suggestedTopics = [
                         placeholder:text-gray-800 placeholder:font-light
                       "
                       maxLength={characterLimit}
+                        onKeyDown={(e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault(); // prevent new line
+      handleSubmit(e);    // trigger submit
+    }
+  }}
                     />
 
                     {/* Mic button */}
