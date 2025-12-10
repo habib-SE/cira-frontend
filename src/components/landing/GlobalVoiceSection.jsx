@@ -49,15 +49,15 @@ const GlobalVoiceSection = () => {
         transition={{ duration: 0.6 }}
         className="text-center mb-16"
       >
-        <div className="inline-flex items-center gap-2 bg-pink-100 text-pink-700 px-4 py-2 rounded-full text-sm font-semibold mb-5 shadow-sm">
+        <div className="inline-flex font-serif items-center gap-2 bg-pink-100 text-pink-700 px-4 py-2 rounded-full text-sm font-semibold mb-5 shadow-sm">
           <Globe className="w-4 h-4" />
           Global & Human by Design
         </div>
 
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-snug">
+        <h1 className="text-4xl md:text-6xl font-serif font-normal text-gray-900 leading-snug">
           Speak in your language.
           <br />
-          <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-transparent bg-clip-text">
+          <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-transparent font-serif bg-clip-text">
             Cira will understand.
           </span>
         </h1>
@@ -67,7 +67,7 @@ const GlobalVoiceSection = () => {
         </p>
       </motion.div>
 
-      <div className="grid lg:grid-cols-2 gap-14 items-center">
+      <div className="grid lg:grid-cols-2 gap-14 items-center md:pl-10">
         {/* -------- LEFT CONTENT -------- */}
         <motion.div
           initial={{ opacity: 0, x: -40 }}
@@ -93,7 +93,7 @@ const GlobalVoiceSection = () => {
           ))}
 
           {/* LANG TAGS WITH FLAGS */}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             {languages.map((lang) => (
               <div
                 key={lang.name}
@@ -109,14 +109,14 @@ const GlobalVoiceSection = () => {
           </div>
 
           {/* CTA */}
-          <motion.button
+          {/* <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
             className="mt-6 inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full shadow-lg font-semibold"
           >
             Try Cira Now
             <ChevronRight className="w-4 h-4" />
-          </motion.button>
+          </motion.button> */}
         </motion.div>
 
         {/* -------- RIGHT VISUAL / GLOBE IMAGE -------- */}
@@ -125,7 +125,7 @@ const GlobalVoiceSection = () => {
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="relative flex justify-center items-center"
+          className="relative flex justify-center items-center md:pl-9"
         >
           {/* Smooth floating container */}
           <motion.div

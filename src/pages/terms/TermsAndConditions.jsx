@@ -23,16 +23,6 @@ export default function TermsAndConditions() {
     });
   };
 
-  const handleAccept = () => {
-    if (!hasAgreed) return;
-    localStorage.setItem("terms_accepted", "true");
-    navigate("/chat");
-  };
-
-  const handleDecline = () => {
-    navigate("/newhome");
-  };
-
   // Same animation variants as landing page
   const fadeUp = {
     hidden: { opacity: 0, y: 40 },
@@ -238,15 +228,15 @@ Effective Date: Upon user acceptance`
           <div className="w-full max-w-3xl">
             <div className="px-4 pt-6 pb-8">
               <header className="mb-8 px-4">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 rounded-full border-2 flex items-center justify-center">
-                    <img src={stars} className="w-12 h-12" alt="stars" />
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-15 h-15 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-semibold">
+                    <img src={stars} className="w-9 h-9" alt="stars" />
                   </div>
                   <div>
                     <img
                       src={AgentAvatar}
                       alt="Cira Assistant"
-                      className="w-16 h-16 rounded-full border-2 border-white object-cover"
+                      className="w-15 h-15 rounded-full border border-white object-cover"
                     />
                   </div>
                 </div>
@@ -332,39 +322,7 @@ Effective Date: Upon user acceptance`
                 </a>
               </div>
 
-              {/* Acceptance Section - Same as landing page */}
-              <motion.div 
-                className="mt-10 bg-white rounded-xl border border-gray-200 p-6"
-                variants={fadeUp}
-                initial="hidden"
-                animate="show"
-                transition={{ delay: 0.1 }}
-              >
-                <div className="flex items-start gap-3 mb-6">
-                  <div className="flex items-center h-6">
-                    <input
-                      id="accept-terms"
-                      type="checkbox"
-                      checked={hasAgreed}
-                      onChange={(e) => setHasAgreed(e.target.checked)}
-                      className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="accept-terms" className="text-sm font-medium text-gray-900 block mb-2">
-                      I have read and agree to the Terms & Conditions
-                    </label>
-                    <p className="text-xs text-gray-600">
-                      By checking this box, you acknowledge that you have read, understood, and agree to be bound by all terms, including HIPAA and GDPR provisions, AI limitations, and medical disclaimers.
-                    </p>
-                  </div>
-                </div>
-
-
-                <p className="text-xs text-gray-500 mt-4 text-center">
-                  Need help? Contact our support team at support@cirahealth.com
-                </p>
-              </motion.div>
+        
 
               {/* Legal Footer */}
               <motion.div 
@@ -374,16 +332,16 @@ Effective Date: Upon user acceptance`
                 animate="show"
                 transition={{ delay: 0.2 }}
               >
-                <div className="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+                <div className="flex flex-col md:flex-row justify-between text-left md:items-center text-xs text-gray-500">
                   <div className="mb-2 md:mb-0">
                     <p>Cira Health AI Clinical Assistant</p>
                     <p>© {new Date().getFullYear()} Cira Health. All rights reserved.</p>
                   </div>
-                  <div className="text-center">
+                  <div className="text-left md:text-center">
                     <p>Data Protection Officer: dpo@cirahealth.com</p>
                     <p>HIPAA Compliance Officer: compliance@cirahealth.com</p>
                   </div>
-                  <div className="mt-2 md:mt-0 text-right">
+                  <div className="mt-2 md:mt-0 text-left md:text-center">
                     <p>Version: 2.3.1</p>
                     <p>Compliance: HIPAA/GDPR Certified</p>
                   </div>
