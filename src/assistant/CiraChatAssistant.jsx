@@ -1,34 +1,200 @@
-// File: src/assistant/CiraChatAssistant.jsx
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useConversation } from "@11labs/react";
-import { motion, AnimatePresence } from "framer-motion";
+// // File: src/assistant/CiraChatAssistant.jsx
+// import React, {
+//   useCallback,
+//   useEffect,
+//   useRef,
+//   useState,
+// } from "react";
+// import { useLocation, useNavigate } from "react-router-dom";
+// import { useConversation } from "@11labs/react";
+// import { motion, AnimatePresence } from "framer-motion";
 
-import AgentAvatar from "../assets/nurse.png";
-import ChatInput from "../components/landing/ChatInput";
-import Header from "../components/Header";
-import stars from "../assets/stars.svg";
+// import AgentAvatar from "../assets/nurse.png";
+// import ChatInput from "../components/landing/ChatInput";
+// import Header from "../components/Header";
+// import stars from "../assets/stars.svg";
 
-import VitalSignsDisplay from "./modal/VitalSignsDisplay";
-import DoctorRecommendationModal from "./modal/DoctorRecommendationModal";
-import PaymentModal from "./modal/PaymentModal";
-import AppointmentModal from "./modal/AppointmentModal";
-import BookingConfirmationModal from "./modal/BookingConfirmationModal";
-import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
-import FacialScanModal from "./modal/FacialScanModal";
+// import VitalSignsDisplay from "./modal/VitalSignsDisplay";
+// import DoctorRecommendationModal from "./modal/DoctorRecommendationModal";
+// import PaymentModal from "./modal/PaymentModal";
+// import AppointmentModal from "./modal/AppointmentModal";
+// import BookingConfirmationModal from "./modal/BookingConfirmationModal";
+// import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
+// import FacialScanModal from "./modal/FacialScanModal";
 
-import { downloadSOAPFromChatData } from "../utils/clinicalReport/pdfGenerator";
+// import { downloadSOAPFromChatData } from "../utils/clinicalReport/pdfGenerator";
 
-const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
+// const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 
-/* ------------------------------------------------------------------ */
-/*  Helpers: parsing summary / report                                 */
-/* ------------------------------------------------------------------ */
+// /* ------------------------------------------------------------------ */
+// /*  Helpers: parsing summary / report                                 */
+// /* ------------------------------------------------------------------ */
+
+// // export function parseConditionsAndConfidence(summary) {
+// //   if (!summary || typeof summary !== "string") {
+// //     return { conditions: [], confidence: null };
+// //   }
+
+// //   let confidence = null;
+// //   const conditions = [];
+// //   const usedNames = new Set();
+
+// //   /* -----------------------------
+// //      ✅ CONFIDENCE EXTRACTOR
+// //   ----------------------------- */
+
+// //   const confidencePatterns = [
+// //     /\babout\s*(\d{1,3})\s*%/i,
+// //     /\bconfidence[^0-9]*(\d{1,3})\s*%/i,
+// //     /\bAI\s*confidence[^0-9]*(\d{1,3})\s*%/i,
+// //     /\bconfidence\s*level[^0-9]*(\d{1,3})\s*%/i,
+// //     /\bI’m\s*about\s*(\d{1,3})\s*%\s*confident/i,
+// //   ];
+
+// //   for (const pat of confidencePatterns) {
+// //     const match = summary.match(pat);
+// //     if (match && match[1]) {
+// //       const conf = Number(match[1]);
+// //       if (!isNaN(conf) && conf <= 100) {
+// //         confidence = conf;
+// //         break;
+// //       }
+// //     }
+// //   }
+
+// //   /* -----------------------------
+// //      ❌ JUNK FILTER
+// //   ----------------------------- */
+
+// //   const bannedWords = [
+// //     "confidence",
+// //     "confident",
+// //     "represents",
+// //     "assessment",
+// //     "analysis",
+// //     "estimate",
+// //     "likelihood",
+// //     "probability",
+// //     "overall",
+// //     "this represents",
+// //   ];
+
+// //   const isJunk = (text) =>
+// //     bannedWords.some(word => text.toLowerCase().includes(word));
+
+// //   /* -----------------------------
+// //      ✅ CONDITION PATTERNS
+// //   ----------------------------- */
+
+// //   const patterns = [
+// //     // 1) 70% Condition
+// //     /(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g,
+
+// //     // 2) Condition - 70%
+// //     /([A-Za-z][A-Za-z ()\-]+)\s*[-–—]\s*(\d{1,3})\s*%/g,
+
+// //     // 3) Condition (70%)
+// //     /([A-Za-z][A-Za-z ()\-]+)\s*\(\s*(\d{1,3})\s*%\s*\)/g,
+
+// //     // 4) Bullet format
+// //     /[•*]\s*([A-Za-z][A-Za-z ()\-]+)\s*(\d{1,3})\s*%/g,
+
+// //     // 5) Newline format:
+// //     // Condition\n70%
+// //     /([A-Za-z][A-Za-z ()\-]+)\s*\n\s*(\d{1,3})\s*%/g,
+// //   ];
+
+// //   /* -----------------------------
+// //      ✅ RUN EXTRACTOR
+// //   ----------------------------- */
+
+// //   for (const pattern of patterns) {
+// //     let match;
+
+// //     while ((match = pattern.exec(summary)) !== null) {
+// //       let name, pct;
+
+// //       // percent first format
+// //       if (pattern.source.startsWith("(\\d")) {
+// //         pct = Number(match[1]);
+// //         name = match[2];
+// //       }
+// //       // name first format
+// //       else {
+// //         name = match[1];
+// //         pct = Number(match[2]);
+// //       }
+
+// //       name = name
+// //         .replace(/[\r\n]+/g, " ")
+// //         .replace(/\s{2,}/g, " ")
+// //         .replace(/[-–—]+$/, "")
+// //         .trim();
+
+// //       if (!name || isNaN(pct)) continue;
+// //       if (pct < 1 || pct > 100) continue;
+// //       if (isJunk(name)) continue;
+
+// //       const key = name.toLowerCase();
+
+// //       // ❌ NEVER ALLOW CONFIDENCE TO BECOME CONDITION
+// //       if (key.includes("confidence")) continue;
+
+// //       if (!usedNames.has(key)) {
+// //         usedNames.add(key);
+// //         conditions.push({ name, percentage: pct });
+// //       }
+// //     }
+// //   }
+
+// //   /* -----------------------------
+// //      ✅ HARSH FALLBACK MODE
+// //      (if AI format is broken)
+// //   ----------------------------- */
+
+// //   if (conditions.length < 3) {
+// //     const loose = summary.matchAll(/(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g);
+
+// //     for (const match of loose) {
+// //       if (conditions.length >= 3) break;
+
+// //       const pct = Number(match[1]);
+// //       const name = match[2].trim();
+// //       const key = name.toLowerCase();
+
+// //       if (
+// //         !usedNames.has(key) &&
+// //         pct <= 100 &&
+// //         !isNaN(pct) &&
+// //         !isJunk(name) &&
+// //         !key.includes("confidence")
+// //       ) {
+// //         usedNames.add(key);
+// //         conditions.push({ name, percentage: pct });
+// //       }
+// //     }
+// //   }
+
+// //   /* -----------------------------
+// //      ✅ SORT & RETURN
+// //   ----------------------------- */
+
+// //   return {
+// //     conditions: conditions
+// //       .sort((a, b) => b.percentage - a.percentage)
+// //       .slice(0, 3),
+
+// //     confidence,
+// //   };
+// // }
+
+
+
+
+
+
+// // 🧼 Helper to remove confidence sentence + raw condition lines from the summary
+// // 🧼 Helper to remove confidence sentence + raw condition lines from the summary
 
 // export function parseConditionsAndConfidence(summary) {
 //   if (!summary || typeof summary !== "string") {
@@ -41,21 +207,20 @@ const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 
 //   /* -----------------------------
 //      ✅ CONFIDENCE EXTRACTOR
+//      Matches: "I'm about 85% confident in the following assessment."
 //   ----------------------------- */
 
 //   const confidencePatterns = [
-//     /\babout\s*(\d{1,3})\s*%/i,
+//     /I(?:\s+am|['’]m)\s+about\s*(\d{1,3})\s*%\s*confident\s+in\s+the\s+following\s+assessment/i,
+//     /\babout\s*(\d{1,3})\s*%[^.\n]*confident/i,
 //     /\bconfidence[^0-9]*(\d{1,3})\s*%/i,
-//     /\bAI\s*confidence[^0-9]*(\d{1,3})\s*%/i,
-//     /\bconfidence\s*level[^0-9]*(\d{1,3})\s*%/i,
-//     /\bI’m\s*about\s*(\d{1,3})\s*%\s*confident/i,
 //   ];
 
 //   for (const pat of confidencePatterns) {
 //     const match = summary.match(pat);
 //     if (match && match[1]) {
 //       const conf = Number(match[1]);
-//       if (!isNaN(conf) && conf <= 100) {
+//       if (!isNaN(conf) && conf > 0 && conf <= 100) {
 //         confidence = conf;
 //         break;
 //       }
@@ -65,7 +230,6 @@ const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 //   /* -----------------------------
 //      ❌ JUNK FILTER
 //   ----------------------------- */
-
 //   const bannedWords = [
 //     "confidence",
 //     "confident",
@@ -77,79 +241,111 @@ const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 //     "probability",
 //     "overall",
 //     "this represents",
+//     "self-care",
+//     "when to seek help",
 //   ];
 
 //   const isJunk = (text) =>
-//     bannedWords.some(word => text.toLowerCase().includes(word));
+//     bannedWords.some((word) => text.toLowerCase().includes(word));
 
 //   /* -----------------------------
-//      ✅ CONDITION PATTERNS
+//      ✅ PRIMARY: TOP 3 CONDITIONS BLOCK
+//      Expects:
+
+//      TOP 3 CONDITIONS (PROBABILITIES):
+//      70% Viral upper respiratory infection
+//      20% Early influenza
+//      10% Early COVID
 //   ----------------------------- */
 
-//   const patterns = [
-//     // 1) 70% Condition
-//     /(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g,
+//   const topBlockMatch = summary.match(
+//     /TOP\s*3\s*CONDITIONS\s*\(PROBABILITIES\)\s*:\s*([\s\S]*?)(?=SELF-CARE\s*&\s*WHEN\s+TO\s+SEEK\s+HELP|$)/i
+//   );
 
-//     // 2) Condition - 70%
-//     /([A-Za-z][A-Za-z ()\-]+)\s*[-–—]\s*(\d{1,3})\s*%/g,
+//   if (topBlockMatch) {
+//     const block = topBlockMatch[1];
 
-//     // 3) Condition (70%)
-//     /([A-Za-z][A-Za-z ()\-]+)\s*\(\s*(\d{1,3})\s*%\s*\)/g,
+//     block
+//       .split("\n")
+//       .map((line) => line.trim())
+//       .filter(Boolean)
+//       .forEach((line) => {
+//         // 70% Condition name
+//         const m = line.match(/(\d{1,3})\s*%\s*(.+)$/);
+//         if (!m) return;
 
-//     // 4) Bullet format
-//     /[•*]\s*([A-Za-z][A-Za-z ()\-]+)\s*(\d{1,3})\s*%/g,
+//         const pct = Number(m[1]);
+//         let name = m[2]
+//           .replace(/[\r\n]+/g, " ")
+//           .replace(/\s{2,}/g, " ")
+//           .replace(/[-–—]+$/, "")
+//           .trim();
 
-//     // 5) Newline format:
-//     // Condition\n70%
-//     /([A-Za-z][A-Za-z ()\-]+)\s*\n\s*(\d{1,3})\s*%/g,
-//   ];
+//         if (!name || isNaN(pct) || pct <= 0 || pct > 100) return;
+//         if (isJunk(name)) return;
+
+//         const key = name.toLowerCase();
+//         if (key.includes("confidence")) return;
+
+//         if (!usedNames.has(key)) {
+//           usedNames.add(key);
+//           conditions.push({ name, percentage: pct });
+//         }
+//       });
+//   }
 
 //   /* -----------------------------
-//      ✅ RUN EXTRACTOR
+//      🔁 FALLBACK: old flexible patterns
+//      (in case AI slightly breaks the format)
 //   ----------------------------- */
 
-//   for (const pattern of patterns) {
-//     let match;
+//   if (conditions.length < 3) {
+//     const patterns = [
+//       // 1) 70% Condition
+//       /(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g,
+//       // 2) Condition - 70%
+//       /([A-Za-z][A-Za-z ()\-]+)\s*[-–—]\s*(\d{1,3})\s*%/g,
+//       // 3) Condition (70%)
+//       /([A-Za-z][A-Za-z ()\-]+)\s*\(\s*(\d{1,3})\s*%\s*\)/g,
+//     ];
 
-//     while ((match = pattern.exec(summary)) !== null) {
-//       let name, pct;
+//     for (const pattern of patterns) {
+//       let match;
 
-//       // percent first format
-//       if (pattern.source.startsWith("(\\d")) {
-//         pct = Number(match[1]);
-//         name = match[2];
-//       }
-//       // name first format
-//       else {
-//         name = match[1];
-//         pct = Number(match[2]);
-//       }
+//       while ((match = pattern.exec(summary)) !== null) {
+//         let name, pct;
 
-//       name = name
-//         .replace(/[\r\n]+/g, " ")
-//         .replace(/\s{2,}/g, " ")
-//         .replace(/[-–—]+$/, "")
-//         .trim();
+//         if (pattern.source.startsWith("(\\d")) {
+//           pct = Number(match[1]);
+//           name = match[2];
+//         } else {
+//           name = match[1];
+//           pct = Number(match[2]);
+//         }
 
-//       if (!name || isNaN(pct)) continue;
-//       if (pct < 1 || pct > 100) continue;
-//       if (isJunk(name)) continue;
+//         name = name
+//           .replace(/[\r\n]+/g, " ")
+//           .replace(/\s{2,}/g, " ")
+//           .replace(/[-–—]+$/, "")
+//           .trim();
 
-//       const key = name.toLowerCase();
+//         if (!name || isNaN(pct)) continue;
+//         if (pct < 1 || pct > 100) continue;
+//         if (isJunk(name)) continue;
 
-//       // ❌ NEVER ALLOW CONFIDENCE TO BECOME CONDITION
-//       if (key.includes("confidence")) continue;
+//         const key = name.toLowerCase();
+//         if (key.includes("confidence")) continue;
 
-//       if (!usedNames.has(key)) {
-//         usedNames.add(key);
-//         conditions.push({ name, percentage: pct });
+//         if (!usedNames.has(key)) {
+//           usedNames.add(key);
+//           conditions.push({ name, percentage: pct });
+//         }
 //       }
 //     }
 //   }
 
 //   /* -----------------------------
-//      ✅ HARSH FALLBACK MODE
-//      (if AI format is broken)
+//      ✅ SUPER LOOSE FALLBACK
 //   ----------------------------- */
 
 //   if (conditions.length < 3) {
@@ -175,26 +371,1844 @@ const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 //     }
 //   }
 
-//   /* -----------------------------
-//      ✅ SORT & RETURN
-//   ----------------------------- */
-
 //   return {
 //     conditions: conditions
 //       .sort((a, b) => b.percentage - a.percentage)
 //       .slice(0, 3),
-
 //     confidence,
+//   };
+// }
+
+
+// function stripTopConditionsFromSummary(summary) {
+//   if (!summary) return "";
+
+//   let cleaned = summary;
+
+//   // 1️⃣ Remove the OLD style confidence sentence
+//   //    (the new one "in the following assessment" we KEEP)
+//   cleaned = cleaned.replace(
+//     /I(?:\s+am|['’]m)[^.!\n]*\d+\s*%[^.\n]*following\s+(?:possibilities|conditions)[^.!\n]*[:.]?/gi,
+//     ""
+//   );
+
+//   // 2️⃣ Remove the whole "TOP 3 CONDITIONS (PROBABILITIES)" block
+//   cleaned = cleaned.replace(
+//     /TOP\s*\d*\s*CONDITIONS(?:\s*\(PROBABILITIES\))?\s*:\s*[\s\S]*?(?=SELF-CARE\s*&\s*WHEN\s+TO\s+SEEK\s+HELP|For\s+(?:self-care|now|immediate relief)|DOCTOR RECOMMENDATION|Please book an appointment|Please book|Take care of yourself|$)/gi,
+//     ""
+//   );
+
+//   // 3️⃣ Remove any "CLINICAL POSSIBILITIES" diagnostic list
+//   cleaned = cleaned.replace(
+//     /CLINICAL\s+POSSIBILITIES[\s\S]*?(?=CLINICAL\s+PLAN\s*&\s*DISPOSITION|For\s+self-care|For\s+now|AI assessment confidence|$)/gi,
+//     ""
+//   );
+
+//   // 4️⃣ Remove standalone lines that start with "60%" style percentages
+//   cleaned = cleaned
+//     .split("\n")
+//     .filter((line) => !/^\s*\d+\s*%/.test(line.trim()))
+//     .join("\n");
+
+//   return cleaned.trim();
+// }
+
+
+// function splitOutSelfCare(summary) {
+//   if (!summary) return { cleaned: "", selfCare: "" };
+
+//   // 1️⃣ New format with heading:
+//   // SELF-CARE & WHEN TO SEEK HELP:
+//   // For self-care, ...
+//   // Based on the information you've shared, I recommend...
+//   const selfCareBlockRegex =
+//     /SELF-CARE\s*&\s*WHEN\s+TO\s+SEEK\s+HELP\s*:?\s*(For[\s\S]*?)(?=DOCTOR RECOMMENDATION|Please book an appointment|Please book|Take care of yourself|$)/i;
+
+//   let match = summary.match(selfCareBlockRegex);
+//   if (match) {
+//     const selfCare = match[1].trim(); // "For self-care, ..." + doctor recommendation line
+//     const cleaned =
+//       (summary.slice(0, match.index) +
+//         summary.slice(match.index + match[0].length)).trim();
+//     return { cleaned, selfCare };
+//   }
+
+//   // 2️⃣ Fallback: old format without heading
+//   const pattern =
+//     /(For\s+(?:self-care|now|immediate relief)[\s\S]*?)(?=\n\s*\n|DOCTOR RECOMMENDATION|Please book an appointment|Please book|Take care of yourself|$)/i;
+
+//   match = summary.match(pattern);
+//   if (!match) {
+//     return { cleaned: summary.trim(), selfCare: "" };
+//   }
+
+//   const selfCare = match[1].trim();
+//   const before = summary.slice(0, match.index);
+//   const after = summary.slice(match.index + match[0].length);
+//   const cleaned = (before + after).trim();
+
+//   return { cleaned, selfCare };
+// }
+
+
+
+// // 🔎 Helper to extract CIRA_CONSULT_REPORT JSON + plain summary
+// function extractConsultDataFromMessage(raw) {
+//   if (!raw) {
+//     return {
+//       summaryText: "",
+//       report: null,
+//       conditions: [],
+//       confidence: null,
+//     };
+//   }
+
+//   let summaryText = raw;
+//   let report = null;
+
+//   // ----------------- split JSON from plain text -----------------
+//   const jsonMatch = raw.match(/```json([\s\S]*?)```/i);
+//   if (jsonMatch) {
+//     const jsonText = jsonMatch[1].trim();
+//     summaryText = raw.slice(0, jsonMatch.index).trim();
+
+//     try {
+//       const parsed = JSON.parse(jsonText);
+//       report =
+//         parsed.CIRA_CONSULT_REPORT ||
+//         parsed["CIRA_CONSULT_REPORT"] ||
+//         parsed;
+//     } catch (e) {
+//       console.warn("Failed to parse CIRA_CONSULT_REPORT JSON:", e);
+//     }
+//   }
+
+//   summaryText = summaryText.replace(/```json|```/gi, "").trim();
+
+//   // helper: base key for dedupe
+//   const baseNameForDedup = (name) => {
+//     let s = String(name || "").toLowerCase();
+//     s = s.split(" – ")[0];
+//     s = s.split(" - ")[0];
+//     s = s.split("(")[0];
+//     s = s.replace(/[^a-z0-9]+/g, "");
+//     return s.trim();
+//   };
+
+//   const looksLikeNonCondition = (name) => {
+//     const s = String(name || "");
+//     return (
+//       /medication|pharmacist|recommendation|disclaimer/i.test(s) ||
+//       /self-care|when to seek help/i.test(s) || // 🚫 filter self-care
+//       /💊|⚠️|‼️/.test(s)
+//     );
+//   };
+
+//   let conditions = [];
+//   let confidence = null;
+
+//   // 1️⃣ Optional: conditions from JSON (we will override by summary later)
+//   if (report && report["📊 PROBABILITY ESTIMATES"]) {
+//     const prob = report["📊 PROBABILITY ESTIMATES"];
+//     if (prob && typeof prob === "object") {
+//       conditions = Object.entries(prob)
+//         .map(([name, value]) => {
+//           if (looksLikeNonCondition(name)) return null;
+//           const num = parseInt(String(value).replace(/[^\d]/g, ""), 10);
+//           if (Number.isNaN(num)) return null;
+//           return { name, percentage: num };
+//         })
+//         .filter(Boolean);
+//     }
+//   }
+
+//   // 2️⃣ Confidence from JSON if present
+//   if (report && report["🤖 SYSTEM INFO"]) {
+//     const info = report["🤖 SYSTEM INFO"];
+//     if (info && info["Confidence Level"]) {
+//       const m = String(info["Confidence Level"]).match(/(\d+)/);
+//       if (m) confidence = Number(m[1]);
+//     }
+//   }
+
+//   // 3️⃣ ALWAYS use conditions parsed from the summary text
+//   const parsedFromSummary = parseConditionsAndConfidence(summaryText);
+//   if (parsedFromSummary.conditions?.length) {
+//     conditions = parsedFromSummary.conditions;
+//   }
+
+//   // 4️⃣ Confidence: fall back to summary if JSON didn't give one
+//   if (confidence == null && parsedFromSummary.confidence != null) {
+//     confidence = parsedFromSummary.confidence;
+//   }
+
+//   // 5️⃣ Final cleanup – remove any stray self-care rows & dedupe
+//   conditions = (conditions || []).filter(
+//     (c) => c && !looksLikeNonCondition(c.name)
+//   );
+
+//   if (conditions.length) {
+//     const seen = new Set();
+//     const deduped = [];
+//     for (const c of conditions) {
+//       const key = baseNameForDedup(c.name);
+//       if (!key || seen.has(key)) continue;
+//       seen.add(key);
+//       deduped.push(c);
+//     }
+
+//     conditions = deduped
+//       .filter((c) => typeof c.percentage === "number" && c.percentage > 0)
+//       .sort((a, b) => b.percentage - a.percentage)
+//       .slice(0, 3); // 🔒 exactly 3 items
+//   }
+
+//   return { summaryText, report, conditions, confidence };
+// }
+
+
+// // 🔎 Helper: normalize + dedupe conditions by name
+// function normalizeConditionName(name = "") {
+//   return String(name)
+//     .toLowerCase()
+//     .replace(/[-–—]+/g, " ")
+//     .replace(/[^a-z0-9\s]/g, "")
+//     .replace(/\s+/g, " ")
+//     .trim();
+// }
+
+// function dedupeConditions(conditions = []) {
+//   const map = new Map();
+
+//   for (const c of conditions) {
+//     const rawName = (c && c.name) || "";
+//     const norm = normalizeConditionName(rawName);
+
+//     if (!norm || /^-+$/.test(rawName.trim())) continue;
+
+//     const pct = typeof c.percentage === "number" ? c.percentage : 0;
+
+//     if (!map.has(norm)) {
+//       map.set(norm, { ...c, percentage: pct });
+//     } else {
+//       const existing = map.get(norm);
+//       if (pct > (existing.percentage || 0)) {
+//         map.set(norm, { ...c, percentage: pct });
+//       }
+//     }
+//   }
+
+//   return Array.from(map.values()).sort(
+//     (a, b) => (b.percentage || 0) - (a.percentage || 0)
+//   );
+// }
+
+// // 🩺 Short display name for conditions (UI only)
+// function shortConditionName(name = "") {
+//   const raw = String(name);
+//   // cut at ":" or "(" to hide long explanation
+//   const beforeColon = raw.split(":")[0];
+//   const beforeParen = beforeColon.split("(")[0];
+//   const trimmed = beforeParen.trim();
+//   return trimmed || raw;
+// }
+
+// // 🔎 Extract a short main symptom label for Chief Complaint
+// function extractMainSymptomFromText(text = "") {
+//   const lower = text.toLowerCase();
+
+//   const has = (re) => re.test(lower);
+//   const not = (re) => !re.test(lower);
+
+//   // Explicit "chief complaint" style sentences
+//   const ccMatch = text.match(
+//     /(chief complaint[^:]*:\s*)(.+?)(?:\.|\n|$)/i
+//   );
+//   if (ccMatch && ccMatch[2]) {
+//     const cc = ccMatch[2].trim();
+//     if (cc.length <= 80) return cc.charAt(0).toUpperCase() + cc.slice(1);
+//   }
+
+//   // Pattern: "is presenting with X", "complaining of X"
+//   const presentMatch = text.match(
+//     /\b(presenting with|complaining of|experiencing)\s+([^.\n]{5,80})/i
+//   );
+//   if (presentMatch && presentMatch[2]) {
+//     let phrase = presentMatch[2].trim();
+//     // cut at "that/which/since"
+//     const cutWords = ["that", "which", "since", "for", "because"];
+//     const lowerPhrase = phrase.toLowerCase();
+//     let cutAt = Infinity;
+//     cutWords.forEach((w) => {
+//       const idx = lowerPhrase.indexOf(`${w} `);
+//       if (idx !== -1 && idx < cutAt) cutAt = idx;
+//     });
+//     if (cutAt !== Infinity) phrase = phrase.slice(0, cutAt).trim();
+//     if (phrase.length <= 80) {
+//       return phrase.charAt(0).toUpperCase() + phrase.slice(1);
+//     }
+//   }
+
+//   // Fall back to keyword-based mapping
+//   if (has(/\bheadache(s)?\b/i) && not(/no headache/i)) return "Headache";
+//   if (has(/\bback pain\b/i) && not(/no back pain/i)) return "Back pain";
+//   if (has(/\babdominal pain\b|\bstomach pain\b|\bbelly pain\b/i) && not(/no abdominal pain/i))
+//     return "Abdominal pain";
+//   if (has(/\bchest pain\b/i) && not(/no chest pain/i)) return "Chest pain";
+//   if (has(/\bshortness of breath\b|\bdifficulty breathing\b|\bbreathlessness\b/i) && not(/no shortness of breath/i))
+//     return "Shortness of breath";
+
+//   // Fever logic
+//   const feverPositive =
+//     /(have|having|with|got|developed|presenting with)\s+(a\s+)?fever\b/i.test(
+//       text
+//     ) ||
+//     /\bfever\b\s+(since|for)\b/i.test(text) ||
+//     /\bfever\b\s*(and|with)\b/i.test(text);
+
+//   if (feverPositive && not(/no fever|without fever|denies fever/i)) {
+//     if (/\bbody aches?\b|\bgeneralized aches?\b/i.test(lower)) {
+//       return "Fever with body aches";
+//     }
+//     return "Fever";
+//   }
+
+//   if (has(/\bsore throat\b/i) && not(/no sore throat/i)) return "Sore throat";
+
+//   if (has(/\bnausea\b|\bvomiting\b/i) && not(/no nausea|no vomiting/i))
+//     return "Nausea / vomiting";
+
+//   if (has(/\bdiarrhea\b/i) && not(/no diarrhea/i)) return "Diarrhea";
+//   if (has(/\brash\b/i) && not(/no rash/i)) return "Rash";
+
+//   return "";
+// }
+
+
+// // 🔎 Guess the patient's most likely first name from the summary text
+// function extractLikelyNameFromSummary(text = "") {
+//   if (!text) return null;
+
+//   // Capitalised words we should NEVER treat as names
+//   const IGNORE = new Set([
+//     "Thank",
+//     "Thanks",
+//     "Given",
+//     "Based",
+//     "Alright",
+//     "Okay",
+//     "Ok",
+//     "Just",
+//     "So",
+//     "Since",
+//     "Because",
+//     "While",
+//     "However",
+//     "Although",
+//     "This",
+//     "That",
+//     "There",
+//     "Here",
+//     "For",
+//     "From",
+//     "Please",
+//     "Viral",
+//     "Mild",
+//     "Other",
+//     "These",
+//     "Those",
+//     "Fever",
+//     "Back",
+//     "Abdominal",
+//     "Chest",
+//     "Headache",
+//     "Cira",
+//     "AI",
+//     "Clinical",
+//     "Your",
+//     "Summary",
+//     "Summarize",
+//     "Summarised",
+//     "Summarized",
+//   ]);
+
+//   const matches = text.match(/\b[A-Z][a-z]{2,}\b/g);
+//   if (!matches) return null;
+
+//   const counts = {};
+//   for (const w of matches) {
+//     if (IGNORE.has(w)) continue;
+//     counts[w] = (counts[w] || 0) + 1;
+//   }
+
+//   let best = null;
+//   let bestCount = 0;
+//   for (const [w, c] of Object.entries(counts)) {
+//     if (c > bestCount) {
+//       best = w;
+//       bestCount = c;
+//     }
+//   }
+
+//   // Extra safety: never return "summarize"-like words
+//   if (best && /summar/i.test(best)) return null;
+
+//   return bestCount > 0 ? best : null;
+// }
+
+// // 🔎 Extract name + age + gender from the summary narrative
+// function extractDemographicsFromSummary(text = "") {
+//   if (!text) return { name: null, age: null, gender: null };
+
+//   let name = null;
+//   let age = null;
+//   let gender = null;
+
+//   const normalizeSex = (s) => {
+//     const v = String(s || "").toLowerCase();
+//     if (v === "female" || v === "woman") return "Female";
+//     if (v === "male" || v === "man") return "Male";
+//     return null;
+//   };
+
+//   let m;
+
+//   // 0️⃣ Greeting style:
+//   // "Alright, Habib." / "Hi Habib" / "Hello Ziko" etc.
+//   m = text.match(
+//     /\b(?:Hi|Hello|Hey|Salaam|Salam|Assalam|Alright|Okay|Ok)[,!\s]+([A-Z][a-z]{2,})\b/
+//   );
+//   if (m) {
+//     name = m[1];
+//   }
+
+//   // 1️⃣ "Ziko, 34, female, is presenting with..."
+//   m =
+//     text.match(
+//       /\b([A-Z][a-z]{2,})\b\s*,\s*(\d{1,3})\s*,\s*(male|female|man|woman)\b/i
+//     ) || m;
+//   if (m && m.length >= 4) {
+//     if (!name) name = m[1];
+//     age = m[2];
+//     gender = normalizeSex(m[3]);
+//   }
+
+//   // 2️⃣ "Habib, a 24-year-old male ..."
+//   if (!age || !gender) {
+//     const m2 = text.match(
+//       /\b([A-Z][a-z]{2,})\b[^.\n]{0,120}?\b(\d{1,3})\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b/i
+//     );
+//     if (m2) {
+//       if (!name) name = m2[1];
+//       age = age || m2[2];
+//       gender = gender || normalizeSex(m2[3]);
+//     }
+//   }
+
+//   // 3️⃣ Any "24-year-old male" pattern
+//   if (!age || !gender) {
+//     const m3 = text.match(
+//       /\b(\d{1,3})\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b/i
+//     );
+//     if (m3) {
+//       age = age || m3[1];
+//       gender = gender || normalizeSex(m3[2]);
+//     }
+//   }
+
+//   // 4️⃣ Age only
+//   if (!age) {
+//     const m4 = text.match(/\b(\d{1,3})\s*[-–]?\s*year[- ]old\b/i);
+//     if (m4) {
+//       age = m4[1];
+//     }
+//   }
+
+//   // 5️⃣ Fallback name if nothing explicit matched
+//   if (!name) {
+//     name = extractLikelyNameFromSummary(text);
+//   }
+
+//   // If the fallback still produced something weird like "summarize", drop it
+//   if (name && /summar/i.test(name)) {
+//     name = null;
+//   }
+
+//   return { name, age, gender };
+// }
+
+
+
+
+// // 🔎 Extract ROS chips + note from the summary (NEGATIVE findings only)
+// // function extractRosFromSummary(text = "") {
+// //   const chipsSet = new Set();
+// //   if (!text) {
+// //     return {
+// //       chips: [],
+// //       note:
+// //         "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.",
+// //     };
+// //   }
+
+// //   const addChip = (label) => {
+// //     if (label) chipsSet.add(label);
+// //   };
+
+// //   // No treatments tried – e.g. "has not tried any treatments"
+// //   if (
+// //     /(haven't|have not|hasn't|has not|didn't|did not|no)\s+(really\s+)?(tried|taken|used)\s+(any\s+)?(treatments?|medications?|medicine|drugs|remedies)/i.test(
+// //       text
+// //     )
+// //   ) {
+// //     addChip("No treatments tried yet");
+// //   }
+
+// //   // No sick contacts
+// //   if (
+// //     /(haven't|have not|hasn't|no)\s+(been\s+)?(around|near|in contact with|exposed to)\s+(any(one)?\s+)?(who('s| is)?\s+)?(sick|ill|unwell)/i.test(
+// //       text
+// //     )
+// //   ) {
+// //     addChip("No sick contacts");
+// //   }
+
+// //   // No recent travel
+// //   if (
+// //     /(no|not|haven't|have not|hasn't)\s+(recent\s+)?travel(led)?/i.test(text)
+// //   ) {
+// //     addChip("No recent travel");
+// //   }
+
+// //   // "No other / associated / concurrent symptoms"
+// //   if (
+// //     /(no|without|denies)\s+(other|associated|concurrent)\s+symptoms?/i.test(
+// //       text
+// //     )
+// //   ) {
+// //     addChip("No other symptoms");
+// //   }
+
+// //   // No other medical conditions – includes "no known medical conditions"
+// //   if (
+// //     /(no|without|denies)\s+(other\s+)?(chronic\s+)?(known\s+)?(medical|health)\s+conditions?/i.test(
+// //       text
+// //     )
+// //   ) {
+// //     addChip("No other medical conditions");
+// //   }
+
+// //   // No current medications – includes "takes no medications"
+// //   if (
+// //     /(no|without|denies)\s+(current\s+)?medications?/i.test(text) ||
+// //     /(takes|on)\s+no\s+medications?/i.test(text)
+// //   ) {
+// //     addChip("No current medications");
+// //   }
+
+// //   // No allergies
+// //   if (
+// //     /(no|without|denies)\s+(known\s+)?(drug|medication|medicine)?\s*allerg(y|ies)/i.test(
+// //       text
+// //     )
+// //   ) {
+// //     addChip("No known allergies");
+// //   }
+
+// //   // Not pregnant
+// //   if (
+// //     /(not pregnant|denies pregnancy|no possibility of pregnancy)/i.test(text)
+// //   ) {
+// //     addChip("Not pregnant");
+// //   }
+
+// //   // Negative for chest pain
+// //   if (/(no|denies|without)\s+chest pain/i.test(text)) {
+// //     addChip("Negative for chest pain");
+// //   }
+
+// //   // Negative for shortness of breath
+// //   if (
+// //     /(no|denies|without)\s+(shortness of breath|difficulty breathing|trouble breathing)/i.test(
+// //       text
+// //     )
+// //   ) {
+// //     addChip("Negative for shortness of breath");
+// //   }
+
+// //   // Fallback: generic "no symptoms" phrase
+// //   if (!chipsSet.size && /no (other )?symptoms?/i.test(text)) {
+// //     addChip("No other symptoms");
+// //   }
+
+// //   const chips = Array.from(chipsSet).slice(0, 4);
+
+// //   // Note: pick one sentence that captures these negatives
+// //   const sentences = text.split(/(?<=[.!?])\s+/);
+// //   let rosNote = "";
+// //   for (const s of sentences) {
+// //     if (
+// //       /(haven't|have not|hasn't|has not|no other symptoms|no symptoms|denies|without|no recent travel|no sick contacts|no known medical conditions|no medications)/i.test(
+// //         s
+// //       )
+// //     ) {
+// //       rosNote = s.trim();
+// //       break;
+// //     }
+// //   }
+
+// //   if (!rosNote) {
+// //     rosNote =
+// //       "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.";
+// //   }
+
+// //   return {
+// //     chips,
+// //     note: rosNote,
+// //   };
+// // }
+
+
+// export function extractRosFromSummary(text = "") {
+//   if (!text) {
+//     return {
+//       chips: [],
+//       note: "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.",
+//     };
+//   }
+
+//   const chipsSet = new Set();
+
+//   const negativePatterns = [
+//     /\bno\s+([a-zA-Z0-9 ,\-\/]+)/gi,
+//     /\bdenies\s+([a-zA-Z0-9 ,\-\/]+)/gi,
+//     /\bwithout\s+([a-zA-Z0-9 ,\-\/]+)/gi,
+//     /\bnegative for\s+([a-zA-Z0-9 ,\-\/]+)/gi,
+//     /\bnot experiencing\s+([a-zA-Z0-9 ,\-\/]+)/gi,
+//   ];
+
+//   // Keywords that indicate we should stop capturing
+//   const stopWords = ["but", "however", "though", "although", "except", "despite"];
+
+//   const cleanSymptom = (sym) =>
+//     sym
+//       .replace(/(^and\s+|^\s*,\s*|^\s*or\s*|\s*\.$)/gi, "")
+//       .trim()
+//       .replace(/\s+/g, " ");
+
+//   const extractFromMatch = (match) => {
+//     if (!match) return;
+
+//     let list = match.split(/,|and|or/gi);
+//     list.forEach((raw) => {
+//       let symptom = cleanSymptom(raw);
+
+//       // stop if this item contains a stopword
+//       if (stopWords.some((w) => symptom.toLowerCase().startsWith(w))) return;
+
+//       if (symptom.length > 1) {
+//         chipsSet.add("No " + symptom);
+//       }
+//     });
+//   };
+
+//   // Run all negative capture patterns
+//   for (const pattern of negativePatterns) {
+//     let m;
+//     while ((m = pattern.exec(text)) !== null) {
+//       extractFromMatch(m[1]);
+//     }
+//   }
+
+//   // Remove extremely generic garbage
+//   [...chipsSet].forEach((c) => {
+//     if (/no symptoms?$/i.test(c) && chipsSet.size > 1) {
+//       chipsSet.delete(c);
+//     }
+//   });
+
+//   const chips = [...chipsSet].slice(0, 8); // show more because now symptoms are dynamic
+
+//   // Extract a ROS note: the first sentence containing negatives
+//   const sentences = text.split(/(?<=[.!?])\s+/);
+//   let rosNote = "";
+
+//   for (const s of sentences) {
+//     if (
+//       /(no\s+\w+|denies|without|negative for|not experiencing)/i.test(s)
+//     ) {
+//       rosNote = s.trim();
+//       break;
+//     }
+//   }
+
+//   if (!rosNote) {
+//     rosNote =
+//       "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.";
+//   }
+
+//   return {
+//     chips,
+//     note: rosNote,
 //   };
 // }
 
 
 
 
+// export default function CiraChatAssistant({ initialMessage: initialMessageProp }) {
+//   const location = useLocation();
+//   const navigate = useNavigate();
+
+//   const [hasAgreed, setHasAgreed] = useState(false);
+//   const [isConnecting, setIsConnecting] = useState(false);
+//   const [isConnected, setIsConnected] = useState(false);
+//   const [error, setError] = useState("");
+
+//   const msgIdRef = useRef(1);
+//   const nextId = () => `msg-${msgIdRef.current++}`;
+
+//   const [messages, setMessages] = useState([]);
+//   const initialSentRef = useRef(false);
+
+//   // 🔹 Final consult summary + metadata
+//   const [consultSummary, setConsultSummary] = useState(null);
+//   const [summaryCreatedAt, setSummaryCreatedAt] = useState(null);
+
+//   // 🔹 Parsed stats from report (conditions + confidence)
+//   const [summaryStats, setSummaryStats] = useState({
+//     conditions: [],
+//     confidence: null,
+//   });
+
+//   // 🔹 Parsed CIRA_CONSULT_REPORT JSON (used only for PDF)
+//   const [consultReport, setConsultReport] = useState(null);
+
+//   const [isThinking, setIsThinking] = useState(false);
+
+//   const scrollAreaRef = useRef(null);
+//   const [hasStartedChat, setHasStartedChat] = useState(false);
+
+//   // 🧩 Extra state for modal flow
+//   const [conversationSummary, setConversationSummary] = useState("");
+//   const [showDoctorRecommendationPopUp, setShowDoctorRecommendationPopUp] =
+//     useState(false);
+//   const [doctorRecommendationData, setDoctorRecommendationData] =
+//     useState(null);
+
+//   const [showFacialScanPopUp, setShowFacialScanPopUp] = useState(false);
+//   const [isScanning, setIsScanning] = useState(false);
+
+//   const [showVitals, setShowVitals] = useState(false);
+//   const [vitalsData, setVitalsData] = useState(null);
+
+//   const [showDoctorRecommendation, setShowDoctorRecommendation] =
+//     useState(false);
+//   const [selectedDoctor, setSelectedDoctor] = useState(null);
+//   const [showPayment, setShowPayment] = useState(false);
+//   const [showAppointment, setShowAppointment] = useState(false);
+//   const [showConfirmation, setShowConfirmation] = useState(false);
+//   const [bookingDetails, setBookingDetails] = useState(null);
+
+//   const isAnyModalOpen =
+//     showDoctorRecommendationPopUp ||
+//     showFacialScanPopUp ||
+//     showVitals ||
+//     showDoctorRecommendation ||
+//     showPayment ||
+//     showAppointment ||
+//     showConfirmation;
 
 
-// 🧼 Helper to remove confidence sentence + raw condition lines from the summary
-// 🧼 Helper to remove confidence sentence + raw condition lines from the summary
+//   const conversation = useConversation({
+//     textOnly: true,
+//     onConnect: () => {
+//       console.log("✅ Connected to chat_cira");
+//       setIsConnected(true);
+//       setError("");
+//     },
+//     onDisconnect: () => {
+//       console.log("🔌 Disconnected from chat_cira");
+//       setIsConnected(false);
+//     },
+//     onMessage: (payload) => {
+//       let text = "";
+//       let role = "unknown";
+
+//       if (typeof payload === "string") {
+//         text = payload;
+//       } else if (payload) {
+//         text =
+//           payload.message ||
+//           payload.text ||
+//           payload.formatted?.text ||
+//           payload.formatted?.transcript ||
+//           "";
+//         role = payload.role || payload.source || "unknown";
+//       }
+
+//       if (!text || !text.trim()) return;
+
+//       const trimmedText = text.trim();
+//       const isAssistant =
+//         role === "assistant" || role === "ai" || role === "agent";
+
+//       if (!isAssistant) {
+//         console.log("💬 Non-assistant message from SDK:", payload);
+//         return;
+//       }
+
+//       const lower = trimmedText.toLowerCase();
+
+//       // 🔐 Only treat as final consult summary when the strict closing lines appear
+//       const looksLikeSummary =
+//         lower.includes(
+//           "please book an appointment with a doctor so you can make sure you’re getting the best care possible"
+//         ) ||
+//         lower.includes(
+//           "please book an appointment with a doctor so you can make sure you're getting the best care possible"
+//         ) ||
+//         lower.includes("take care of yourself, and i hope you feel better soon") ||
+//         lower.includes("cira_consult_report");
+
+//       setIsThinking(false);
+
+//       if (looksLikeSummary) {
+//         console.log("📝 Captured consult summary.");
+
+//         const extracted = extractConsultDataFromMessage(trimmedText);
+
+//         setConsultSummary(extracted.summaryText);
+//         setSummaryCreatedAt(new Date());
+//         setConversationSummary(extracted.summaryText);
+//         setSummaryStats({
+//           conditions: extracted.conditions || [],
+//           confidence:
+//             typeof extracted.confidence === "number"
+//               ? extracted.confidence
+//               : null,
+//         });
+//         setConsultReport(extracted.report || null);
+
+//         // ❌ Don't show this as a chat bubble
+//         return;
+//       }
+
+//       // Normal assistant chat bubble
+//       setMessages((prev) => [
+//         ...prev,
+//         {
+//           id: nextId(),
+//           role: "assistant",
+//           text: trimmedText,
+//         },
+//       ]);
+//     },
+//     onError: (err) => {
+//       console.error("❌ ElevenLabs chat error:", err);
+//       setError("Something went wrong while talking to Cira. Please try again.");
+//       setIsThinking(false);
+//     },
+//   });
+
+//   const { status, sendUserMessage } = conversation;
+
+//   const ensureConnected = useCallback(
+//     async () => {
+//       if (status === "connected" || isConnecting) return;
+
+//       try {
+//         setIsConnecting(true);
+//         const convId = await conversation.startSession({
+//           agentId: CHAT_AGENT_ID,
+//         });
+//         console.log("🧵 Chat session started:", convId);
+//         setIsConnected(true);
+//       } catch (err) {
+//         console.error("Failed to start chat session:", err);
+//         setError("Couldn’t connect to Cira. Please refresh and try again.");
+//       } finally {
+//         setIsConnecting(false);
+//       }
+//     },
+//     [status, isConnecting, conversation]
+//   );
+
+//   const locationInitialMessage = location.state?.initialMessage;
+//   const effectiveInitialMessage = initialMessageProp ?? locationInitialMessage;
+
+//   useEffect(() => {
+//     if (!effectiveInitialMessage) return;
+//     if (initialSentRef.current) return;
+//     initialSentRef.current = true;
+
+//     const sendInitial = async () => {
+//       const trimmed = effectiveInitialMessage.trim();
+//       if (!trimmed) return;
+
+//       setMessages((prev) => [
+//         ...prev,
+//         { id: nextId(), role: "user", text: trimmed },
+//       ]);
+
+//       setIsThinking(true);
+
+//       try {
+//         await ensureConnected();
+//         if (sendUserMessage) sendUserMessage(trimmed);
+//         else setIsThinking(false);
+//       } catch (err) {
+//         console.error("Error sending initial message:", err);
+//         setError("Could not send your message. Please try again.");
+//         setIsThinking(false);
+//       }
+//     };
+
+//     sendInitial();
+//   }, [effectiveInitialMessage, ensureConnected, sendUserMessage]);
+
+//   // Auto-scroll messages
+//   useEffect(() => {
+//     const c = scrollAreaRef.current;
+//     if (!c) return;
+
+//     c.scrollTo({ top: c.scrollHeight, behavior: "smooth" });
+//   }, [messages, isThinking, consultSummary]);
+
+//   const startedTime = new Date();
+//   const startedLabel = startedTime.toLocaleTimeString([], {
+//     hour: "2-digit",
+//     minute: "2-digit",
+//   });
+
+//   const summaryDateLabel =
+//     summaryCreatedAt &&
+//     summaryCreatedAt.toLocaleString([], {
+//       year: "numeric",
+//       month: "short",
+//       day: "numeric",
+//       hour: "2-digit",
+//       minute: "2-digit",
+//     });
+
+//   // 🔄 Use pre-parsed stats, but dedupe condition list
+//   const parsedSummary = consultSummary
+//     ? {
+//       conditions: dedupeConditions(summaryStats.conditions || []),
+//       confidence: summaryStats.confidence,
+//     }
+//     : { conditions: [], confidence: null };
+
+//   let displaySummary = "";
+//   let selfCareText = "";
+
+//   if (consultSummary) {
+//     let baseSummary = consultSummary.trim();
+
+//     const markerRegex =
+//       /(CIRA_CONSULT_REPORT|🏥\s*CIRA HEALTH CONSULTATION REPORT|AI-Generated Medical Snapshot)/i;
+//     const markerMatch = baseSummary.match(markerRegex);
+
+//     if (markerMatch && markerMatch.index > 120) {
+//       baseSummary = baseSummary.slice(0, markerMatch.index).trim();
+//     }
+
+//     const withoutTop = stripTopConditionsFromSummary(baseSummary);
+//     const split = splitOutSelfCare(withoutTop);
+//     displaySummary = split.cleaned;
+//     selfCareText = split.selfCare;
+
+//     displaySummary = displaySummary
+//       // remove the label "CLINICAL SUMMARY" anywhere in the text
+//       .replace(/CLINICAL SUMMARY\s*:?\s*/gi, "")
+//       // remove the confidence sentence with percentages
+//       .replace(
+//         /I(?:\s+am|['’]m)[^.!\n]*\d+\s*%[^.\n]*following\s+(?:possibilities|conditions|assessment)[^.!\n]*[.?!]/gi,
+//         ""
+//       )
+
+//       .replace(/^\s*Here are the[^\n]*\n?/gim, "")
+//       .replace(/Take care of yourself,[^\n]*\n?/gi, "")
+//       .split("\n")
+//       .filter((line) => {
+//         const trimmed = line.trim();
+//         if (!trimmed) return false;
+//         if (/^\d+\s*%/.test(trimmed)) return false;
+//         if (/confident in the following possibilities/i.test(trimmed))
+//           return false;
+//         if (/top\s*\d*\s*possible\s*conditions/i.test(trimmed)) return false;
+//         if (/CIRA_CONSULT_REPORT/i.test(trimmed)) return false;
+//         if (/CIRA HEALTH CONSULTATION REPORT/i.test(trimmed)) return false;
+//         if (/AI-Generated Medical Snapshot/i.test(trimmed)) return false;
+//         return true;
+//       })
+//       .join("\n")
+//       .replace(/\n{3,}/g, "\n\n")
+//       .trim();
+
+
+//     if (!displaySummary) {
+//       if (parsedSummary.conditions.length) {
+//         const main = parsedSummary.conditions
+//           .slice(0, 3)
+//           .map((c) => `${c.name} (${c.percentage}%)`)
+//           .join(", ");
+//         displaySummary =
+//           `Based on what you told me, there are a few possible explanations for your symptoms. ` +
+//           `The main ones I'm considering are: ${main}. ` +
+//           `Please discuss these with a doctor for a full examination and diagnosis.`;
+//       } else {
+//         displaySummary =
+//           "Based on the information you shared, this most likely represents a mild, self-limiting problem, " +
+//           "but you should still speak with a doctor if your symptoms worsen, new symptoms appear, or you're worried at any point.";
+//       }
+//     }
+//   }
+
+
+//   const handleUserMessage = async (text) => {
+//     if (!hasAgreed) return;
+//     const trimmed = text.trim();
+//     if (!trimmed) return;
+
+//     setMessages((prev) => [
+//       ...prev,
+//       { id: nextId(), role: "user", text: trimmed },
+//     ]);
+
+//     setHasStartedChat(true);
+//     setIsThinking(true);
+
+//     try {
+//       await ensureConnected();
+//       if (sendUserMessage) sendUserMessage(trimmed);
+//       else setIsThinking(false);
+//     } catch (err) {
+//       console.error("Error sending user message:", err);
+//       setError("Could not send your message. Please try again.");
+//       setIsThinking(false);
+//     }
+//   };
+
+//   const handleExit = () => {
+//     try {
+//       conversation.endSession?.();
+//     } catch (e) {
+//       console.warn("Error ending session:", e);
+//     }
+//     navigate("/");
+//   };
+
+//   useEffect(() => {
+//     const prev = document.body.style.overflow;
+//     document.body.style.overflow = "auto";
+//     return () => {
+//       document.body.style.overflow = prev;
+//     };
+//   }, []);
+
+//   /* ------------------------------------------------------------------ */
+//   /*  PDF download – NAME / AGE / SEX / CC / ROS all fixed              */
+//   /* ------------------------------------------------------------------ */
+
+// const handleDownloadPDF = () => {
+//   if (!consultSummary) return;
+
+//   // Use both cleaned and raw text as sources
+//   const combinedSummary = `${displaySummary || ""}\n${consultSummary || ""}`.trim();
+
+//   // 1️⃣ Try to get demographics from the summary text
+//   const {
+//     name: nameFromSummary,
+//     age: ageFromSummary,
+//     gender: genderFromSummary,
+//   } = extractDemographicsFromSummary(combinedSummary);
+
+//   // Base info (will be completed/overridden below)
+//   let patientInfo = {
+//     name: nameFromSummary || null,
+//     age: ageFromSummary || null,
+//     gender: genderFromSummary || null,
+//     consultDate: summaryCreatedAt
+//       ? summaryCreatedAt.toLocaleDateString()
+//       : new Date().toLocaleDateString(),
+//   };
+
+//   // Helper to safely search nested JSON
+//   const deepFind = (obj, key) => {
+//     if (!obj || typeof obj !== "object") return null;
+//     if (Object.prototype.hasOwnProperty.call(obj, key)) {
+//       return obj[key];
+//     }
+//     for (const value of Object.values(obj)) {
+//       if (value && typeof value === "object") {
+//         const result = deepFind(value, key);
+//         if (result !== null && result !== undefined) return result;
+//       }
+//     }
+//     return null;
+//   };
+
+//   // 🔹 Use CIRA_CONSULT_REPORT JSON only to fill missing patient info
+//   if (consultReport && typeof consultReport === "object") {
+//     const ptSection = deepFind(consultReport, "👤 PATIENT INFORMATION");
+//     if (ptSection && typeof ptSection === "object") {
+//       if (!patientInfo.name) {
+//         patientInfo.name =
+//           ptSection.Name || ptSection["Name"] || patientInfo.name;
+//       }
+//       if (!patientInfo.age) {
+//         patientInfo.age = ptSection.Age || patientInfo.age;
+//       }
+//       if (!patientInfo.gender) {
+//         patientInfo.gender =
+//           ptSection["Biological Sex"] ||
+//           ptSection["Sex"] ||
+//           patientInfo.gender;
+//       }
+//     }
+//   }
+
+//   // Final defaults
+//   if (!patientInfo.name) patientInfo.name = "User";
+//   if (!patientInfo.age) patientInfo.age = "";
+//   if (!patientInfo.gender) patientInfo.gender = "";
+
+//   /* ------------------------------------------------------------------ */
+//   /*  2️⃣ Chief Complaint (improved)                                      */
+//   /* ------------------------------------------------------------------ */
+
+//   // a) First: structured extraction from narrative
+//   let shortCC = extractMainSymptomFromText(combinedSummary);
+
+//   // b) If not found, try JSON chief complaint
+//   if (!shortCC && consultReport && typeof consultReport === "object") {
+//     const ccFromJson = deepFind(consultReport, "🩺 CHIEF COMPLAINT");
+//     if (typeof ccFromJson === "string" && ccFromJson.trim()) {
+//       shortCC = ccFromJson.trim();
+//     }
+//   }
+
+//   // c) If still empty, look for patterns like "guidance on X", "concerned about X"
+//   if (!shortCC && combinedSummary) {
+//     const patternMatch =
+//       combinedSummary.match(/guidance on\s+([^.]{3,80})\./i) ||
+//       combinedSummary.match(/concern(?:ed)? about\s+([^.]{3,80})\./i) ||
+//       combinedSummary.match(/regarding\s+([^.]{3,80})\./i);
+
+//     if (patternMatch && patternMatch[1]) {
+//       shortCC = patternMatch[1].trim();
+//     }
+//   }
+
+//   // d) Last-resort fallback – derive phrase from first sentence
+//   if (!shortCC && combinedSummary) {
+//     let firstSentence = combinedSummary.split("\n")[0] || "";
+
+//     // Remove generic intro like "Thank you..., Habib."
+//     firstSentence = firstSentence.replace(/Thank you[^.]*\./i, "").trim();
+
+//     // NEW: strip filler like "I understand, Habib."
+//     firstSentence = firstSentence
+//       .replace(
+//         /^(I\s+understand|I\s+see|Okay|Ok|Alright)[^.]*\./i,
+//         ""
+//       )
+//       .trim();
+
+//     // Strip name + age/sex fragments
+//     if (patientInfo.name) {
+//       const safeName = patientInfo.name.replace(
+//         /[-/\\^$*+?.()|[\]{}]/g,
+//         "\\$&"
+//       );
+//       const nameRegex = new RegExp("^" + safeName + "[^a-zA-Z]+", "i");
+//       firstSentence = firstSentence.replace(nameRegex, "").trim();
+//     }
+
+//     firstSentence = firstSentence.replace(
+//       /\b(a|the)?\s*\d+\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b[, ]*/i,
+//       ""
+//     );
+//     firstSentence = firstSentence.replace(
+//       /\b(is experiencing|is having|is suffering from|is dealing with|has)\b\s*/i,
+//       ""
+//     );
+
+//     // Cut at "which/that" etc.
+//     const cutAt = Math.min(
+//       ...["which", "that"].map((w) => {
+//         const i = firstSentence.toLowerCase().indexOf(w + " ");
+//         return i === -1 ? Infinity : i;
+//       })
+//     );
+//     if (cutAt !== Infinity) firstSentence = firstSentence.slice(0, cutAt);
+
+//     // Cut at first comma to avoid trailing text
+//     const commaIdx = firstSentence.indexOf(",");
+//     if (commaIdx !== -1) firstSentence = firstSentence.slice(0, commaIdx);
+
+//     firstSentence = firstSentence.trim();
+
+//     if (firstSentence.length && firstSentence.length <= 80) {
+//       shortCC =
+//         firstSentence.charAt(0).toUpperCase() + firstSentence.slice(1);
+//     }
+//   }
+
+//   // e) Safety: never use pure filler as chief complaint
+//   if (
+//     !shortCC ||
+//     /^(i understand|i see|okay|ok|alright)$/i.test(shortCC.trim())
+//   ) {
+//     shortCC = "Main symptom from consult summary";
+//   }
+
+//   /* ------------------------------------------------------------------ */
+//   /*  3️⃣ Associated Symptoms (ROS)                                      */
+//   /* ------------------------------------------------------------------ */
+//   const { chips: rosChips, note: rosNote } =
+//     extractRosFromSummary(combinedSummary);
+
+//   /* ------------------------------------------------------------------ */
+//   /*  4️⃣ Build payload & generate PDF                                   */
+//   /* ------------------------------------------------------------------ */
+//   const consultationData = {
+//     conditions: parsedSummary.conditions,
+//     confidence: parsedSummary.confidence,
+//     narrativeSummary: displaySummary || consultSummary,
+//     selfCareText,
+//     vitalsData,
+//     hpi: {},
+//     associatedSymptomsChips: rosChips,
+//     associatedSymptomsNote: rosNote || undefined,
+//     chiefComplaint: shortCC,
+//   };
+
+//   downloadSOAPFromChatData(
+//     consultationData,
+//     patientInfo,
+//     `Cira_Consult_Report_${Date.now()}.pdf`
+//   );
+// };
+
+
+
+
+
+
+//   const handleFindDoctorSpecialistClick = () => {
+//     if (!consultSummary) return;
+
+//     const primaryCondition =
+//       parsedSummary.conditions[0]?.name || "your health concerns";
+
+//     setDoctorRecommendationData({
+//       condition: primaryCondition,
+//       specialty: "General Physician",
+//     });
+//     setConversationSummary(consultSummary);
+//     setShowDoctorRecommendationPopUp(true);
+//   };
+
+//   const handleFindSpecialistDoctorClick = () => {
+//     setShowDoctorRecommendationPopUp(false);
+//     setShowFacialScanPopUp(true);
+//   };
+
+//   const handleSkipDoctorRecommendation = () => {
+//     setShowDoctorRecommendationPopUp(false);
+//   };
+
+//   const handleStartFacialScan = () => {
+//     setIsScanning(true);
+//     setShowFacialScanPopUp(false);
+
+//     setTimeout(() => {
+//       setIsScanning(false);
+//       setVitalsData({
+//         heartRate: 80,
+//         spo2: 98,
+//         temperature: 36.8,
+//       });
+//       setShowVitals(true);
+//     }, 1500);
+//   };
+
+//   const handleSkipFacialScan = () => {
+//     setShowFacialScanPopUp(false);
+//   };
+
+//   const handleContinueFromVitals = () => {
+//     setShowVitals(false);
+//     setShowDoctorRecommendation(true);
+//   };
+
+//   const handleSelectDoctor = (doctor) => {
+//     setSelectedDoctor(doctor);
+//     setShowDoctorRecommendation(false);
+//     setShowPayment(true);
+//   };
+
+//   const handleSkipDoctor = () => {
+//     setShowDoctorRecommendation(false);
+//   };
+
+//   const handlePaymentSuccess = (details) => {
+//     setShowPayment(false);
+//     setBookingDetails(details);
+//     setShowAppointment(true);
+//   };
+
+//   const handlePaymentBack = () => {
+//     setShowPayment(false);
+//     setShowDoctorRecommendation(true);
+//   };
+
+//   const handleBookingSuccess = (details) => {
+//     setShowAppointment(false);
+//     setBookingDetails(details);
+//     setShowConfirmation(true);
+//   };
+
+//   const handleAppointmentBack = () => {
+//     setShowAppointment(false);
+//     setShowPayment(true);
+//   };
+
+//   const handleConfirmationClose = () => {
+//     setShowConfirmation(false);
+//     setSelectedDoctor(null);
+//     setBookingDetails(null);
+//   };
+
+//   return (
+//     <>
+//       <div className="fixed inset-0 w-full flex flex-col bg-[#FFFEF9]">
+//         <div className="fixed top-0 left-0 right-0 z-50 md:z-0">
+//           <Header />
+//         </div>
+
+//         <motion.div
+//           ref={scrollAreaRef}
+//           className="flex-1 overflow-y-auto"
+//           initial={{ opacity: 0, y: 60 }}
+//           animate={{ opacity: 1, y: 0 }}
+//           transition={{ duration: 0.6, ease: "easeOut" }}
+//         >
+//           <div className="w-full flex justify-center min-h-full pb-48">
+//             <div className="w-full max-w-xl">
+//               <div className="px-4 pt-6 pb-8">
+//                 <header className="mb-6 px-4 pt-24">
+//                   <div className="flex items-center justify-between mb-4">
+//                     <div className="flex items-center gap-2">
+//                       <div className="w-15 h-15 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-semibold">
+//                         <img src={stars} className="w-9 h-9" alt="stars" />
+//                       </div>
+//                       <div className="flex -space-x-2">
+//                         <img
+//                           src={AgentAvatar}
+//                           alt="Clinician 2"
+//                           className="w-15 h-15 rounded-full border border-white object-cover"
+//                         />
+//                       </div>
+//                     </div>
+//                   </div>
+
+//                   <h1 className="text-3xl md:text-4xl font-semibold text-[#111827] mb-2">
+//                     Cira Consult
+//                   </h1>
+//                   <p className="text-sm mt-5 text-gray-500 mb-1">
+//                     Consult started: Today, {startedLabel}
+//                   </p>
+
+//                 </header>
+
+//                 {error && (
+//                   <div className="mb-4 text-xs text-red-600 bg-red-50 border border-red-100 px-3 py-2 rounded-full">
+//                     {error}
+//                   </div>
+//                 )}
+
+//                 <div className="border border-gray-200 mb-5" />
+
+//                 <div className="space-y-4">
+//                   {messages.map((m) => {
+//                     const isAssistant = m.role === "assistant";
+//                     return (
+//                       <div
+//                         key={m.id}
+//                         className={`flex w-full ${isAssistant ? "justify-start" : "justify-end"
+//                           }`}
+//                       >
+//                         <div className="flex items-center">
+//                           <div
+//                             className={`px-4 py-4 text-sm ${isAssistant
+//                               ? "rounded-2xl text-gray-800"
+//                               : "rounded-2xl rounded-tr-none bg-pink-500 text-white"
+//                               }`}
+//                           >
+//                             {m.text}
+//                           </div>
+//                         </div>
+//                       </div>
+//                     );
+//                   })}
+
+//                   {isThinking && (
+//                     <div className="flex w-full justify-start">
+//                       <div className="flex items-center">
+//                         <div className="flex w-full justify-start">
+//                           <div className="flex items-center gap-2 max-w-[80%]">
+//                             <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed text-gray-500">
+//                               <span className="inline-flex gap-1 items-center">
+//                                 <span
+//                                   className="w-1.5 h-1.5 rounded-full bg-gray-400"
+//                                   style={{
+//                                     animation:
+//                                       "dotWave 1.2s infinite ease-in-out",
+//                                     animationDelay: "0s",
+//                                   }}
+//                                 />
+//                                 <span
+//                                   className="w-1.5 h-1.5 rounded-full bg-gray-400"
+//                                   style={{
+//                                     animation:
+//                                       "dotWave 1.2s infinite ease-in-out",
+//                                     animationDelay: "0.15s",
+//                                   }}
+//                                 />
+//                                 <span
+//                                   className="w-1.5 h-1.5 rounded-full bg-gray-400"
+//                                   style={{
+//                                     animation:
+//                                       "dotWave 1.2s infinite ease-in-out",
+//                                     animationDelay: "0.3s",
+//                                   }}
+//                                 />
+//                               </span>
+//                             </div>
+//                           </div>
+//                         </div>
+//                       </div>
+//                     </div>
+//                   )}
+//                 </div>
+
+//                 {/* SUMMARY CARD */}
+//                 {consultSummary && (
+//                   <section className="w-full mt-6 mb-2">
+//                     <div className="bg-white shadow-sm border border-[#E3E3F3] px-5 py-6">
+//                       <div className="w-full flex justify-center my-4">
+//                         <div className="rounded-xl overflow-hidden px-6 py-4 flex flex-col items-center">
+//                           <img
+//                             src={AgentAvatar}
+//                             alt=""
+//                             className="w-32 h-32 rounded-full mb-3"
+//                           />
+//                           <p className="text-xs text-gray-500">
+//                             Your AI clinician assistant, Cira
+//                           </p>
+//                         </div>
+//                       </div>
+
+//                       <div className="mb-3">
+//                         <h2 className="text-xl font-semibold text-gray-900 mb-1">
+//                           AI Consult Summary
+//                         </h2>
+//                         {summaryDateLabel && (
+//                           <p className="text-xs text-gray-400">
+//                             {summaryDateLabel}
+//                           </p>
+//                         )}
+//                       </div>
+
+//                       <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-4">
+//                         {displaySummary}
+//                       </p>
+
+//                       {parsedSummary.conditions.length > 0 && (
+//                         <div className="mt-4 border-t border-gray-100 pt-4">
+//                           <h3 className="text-sm font-semibold text-gray-900 mb-3">
+//                             Conditions Matching
+//                           </h3>
+
+//                           <div className="space-y-3">
+//                             {parsedSummary.conditions.map((c, idx) => (
+//                               <div
+//                                 key={idx}
+//                                 className="flex items-center justify-between text-sm"
+//                               >
+//                                 <div className="flex items-center gap-2">
+//                                   <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+//                                   <span className="text-gray-800 truncate">
+//                                     {shortConditionName(c.name)}
+//                                   </span>
+//                                 </div>
+//                                 <span className="font-medium text-gray-900">
+//                                   {c.percentage}%
+//                                 </span>
+//                               </div>
+//                             ))}
+//                           </div>
+//                         </div>
+//                       )}
+
+//                       {parsedSummary.confidence != null && (
+//                         <div className="mt-5">
+//                           <p className="text-xs text-gray-500 mb-1">
+//                             Assessment confidence
+//                           </p>
+
+//                           <div className="flex items-center justify-between text-xs mb-1">
+//                             <span className="font-medium text-emerald-600">
+//                               {parsedSummary.confidence >= 80
+//                                 ? "Pretty sure"
+//                                 : parsedSummary.confidence >= 60
+//                                   ? "Somewhat sure"
+//                                   : "Low confidence"}
+//                             </span>
+//                             <span className="text-gray-600">
+//                               {parsedSummary.confidence}%
+//                             </span>
+//                           </div>
+
+//                           <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+//                             <div
+//                               className="h-full rounded-full bg-emerald-500"
+//                               style={{
+//                                 width: `${Math.min(
+//                                   parsedSummary.confidence,
+//                                   100
+//                                 )}%`,
+//                               }}
+//                             />
+//                           </div>
+//                         </div>
+//                       )}
+
+//                       <div className="mt-5 border-t border-gray-100 pt-4">
+//                         <h3 className="text-sm font-semibold text-gray-900 mb-1">
+//                           Self-care & when to seek help
+//                         </h3>
+
+//                         {selfCareText ? (
+//                           <p className="text-xs text-gray-600 mb-2 whitespace-pre-line">
+//                             {selfCareText}
+//                           </p>
+//                         ) : (
+//                           <p className="text-xs text-gray-600 mb-2">
+//                             Home care with rest, fluids, and over-the-counter
+//                             pain relievers is usually enough for most mild
+//                             illnesses. If your fever rises, breathing becomes
+//                             difficult, or your symptoms last more than a few
+//                             days or suddenly worsen, contact a doctor or urgent
+//                             care.
+//                           </p>
+//                         )}
+
+//                         <p className="text-[11px] text-gray-400">
+//                           These are rough estimates and do not replace medical
+//                           advice. Always consult a healthcare professional if
+//                           you&apos;re worried.
+//                         </p>
+//                       </div>
+
+//                       <div className="mt-6 flex flex-col sm:flex-row gap-3">
+//                         <button
+//                           type="button"
+//                           className="flex-1 inline-flex items-center justify-center px-4 py-2 sm:py-3 text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-colors"
+//                           onClick={handleDownloadPDF}
+//                         >
+//                           Download Report Note (PDF)
+//                         </button>
+
+//                         <button
+//                           type="button"
+//                           onClick={handleFindDoctorSpecialistClick}
+//                           className="flex-1 bg-[#E4ECFF] text-[#2F4EBB] rounded-lg text-sm py-2.5"
+//                         >
+//                           Find Doctor Specialist
+//                         </button>
+//                       </div>
+//                     </div>
+//                   </section>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         </motion.div>
+
+//         <motion.footer
+//           className="w-full flex-shrink-0 flex justify-center px-4 bg-transparent fixed bottom-0"
+//           initial={{ y: -60, opacity: 0 }}
+//           animate={{ y: 0, opacity: 1 }}
+//           transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
+//         >
+
+//           {!consultSummary && (
+//             <div className="w-full bg-[#FFFEF9] max-w-xl rounded-2xl space-y-3">
+//               {!hasStartedChat && (
+//                 <div className="flex items-start gap-2 text-[11px] text-gray-600 p-4 -mb-4 rounded-t-2xl bg-white">
+//                   <input
+//                     id="tos"
+//                     type="checkbox"
+//                     checked={hasAgreed}
+//                     onChange={(e) => setHasAgreed(e.target.checked)}
+//                     className="mb-2.5"
+//                   />
+//                   <label htmlFor="tos">
+//                     I agree to the{" "}
+//                     <button
+//                       type="button"
+//                       className="underline text-pink-500"
+//                       onClick={() => navigate('/terms')}
+//                     >
+//                       The Cira Terms of Service
+//                     </button>{" "}
+//                     and will discuss all The Cira output with a doctor.
+//                   </label>
+//                 </div>
+//               )}
+
+//               <ChatInput
+//                 onSendMessage={handleUserMessage}
+//                 label=""
+//                 disabled={!hasAgreed}
+//                 submitText=""
+//                 showMic={false}
+//                 placeholder="Reply to Cira..."
+//               />
+//             </div>
+//           )}
+//         </motion.footer>
+//       </div>
+
+//       {/* Modals with overlay – block background interaction */}
+//       <AnimatePresence>
+//         {isAnyModalOpen && (
+//           <motion.div
+//             className="fixed inset-0 z-40 flex items-center justify-center"
+//             initial={{ opacity: 0 }}
+//             animate={{ opacity: 1 }}
+//             exit={{ opacity: 0 }}
+//           >
+//             {showDoctorRecommendationPopUp && (
+//               <DoctorRecommendationPopUp
+//                 condition={
+//                   doctorRecommendationData?.condition ||
+//                   "your health concerns"
+//                 }
+//                 recommendedSpecialty={
+//                   doctorRecommendationData?.specialty ||
+//                   "General Physician"
+//                 }
+//                 onFindDoctor={handleFindSpecialistDoctorClick}
+//                 onSkip={handleSkipDoctorRecommendation}
+//                 conversationSummary={conversationSummary}
+//               />
+//             )}
+
+//             {showFacialScanPopUp && (
+//               <FacialScanModal
+//                 onStartScan={handleStartFacialScan}
+//                 onSkipScan={handleSkipFacialScan}
+//                 isScanning={isScanning}
+//               />
+//             )}
+
+//             {showVitals && vitalsData && (
+//               <VitalSignsDisplay
+//                 vitals={vitalsData}
+//                 onClose={handleContinueFromVitals}
+//                 onStartConversation={handleContinueFromVitals}
+//               />
+//             )}
+
+//             {showDoctorRecommendation && doctorRecommendationData && (
+//               <DoctorRecommendationModal
+//                 condition={doctorRecommendationData.condition}
+//                 recommendedSpecialty={doctorRecommendationData.specialty}
+//                 onSelectDoctor={handleSelectDoctor}
+//                 onSkip={handleSkipDoctor}
+//               />
+//             )}
+
+//             {showPayment && selectedDoctor && (
+//               <PaymentModal
+//                 doctor={selectedDoctor}
+//                 onPaymentSuccess={handlePaymentSuccess}
+//                 onBack={handlePaymentBack}
+//               />
+//             )}
+
+//             {showAppointment && selectedDoctor && (
+//               <AppointmentModal
+//                 doctor={selectedDoctor}
+//                 onBookingSuccess={handleBookingSuccess}
+//                 onBack={handleAppointmentBack}
+//               />
+//             )}
+
+//             {showConfirmation && bookingDetails && (
+//               <BookingConfirmationModal
+//                 bookingDetails={bookingDetails}
+//                 onClose={handleConfirmationClose}
+//               />
+//             )}
+//           </motion.div>
+//         )}
+//       </AnimatePresence>
+//     </>
+//   );
+// }
+
+
+
+// File: src/assistant/CiraChatAssistant.jsx
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useConversation } from "@11labs/react";
+import { motion, AnimatePresence } from "framer-motion";
+
+import AgentAvatar from "../assets/nurse.png";
+import ChatInput from "../components/landing/ChatInput";
+import Header from "../components/Header";
+import stars from "../assets/stars.svg";
+
+import VitalSignsDisplay from "./modal/VitalSignsDisplay";
+import DoctorRecommendationModal from "./modal/DoctorRecommendationModal";
+import PaymentModal from "./modal/PaymentModal";
+import AppointmentModal from "./modal/AppointmentModal";
+import BookingConfirmationModal from "./modal/BookingConfirmationModal";
+import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
+import FacialScanModal from "./modal/FacialScanModal";
+
+// Import the new PDF generator functions
+import { 
+  downloadDoctorsReport, 
+  downloadPatientReport, 
+  downloadSOAPNotes 
+} from "../utils/clinicalReport/index";
+
+const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
+
+/* ------------------------------------------------------------------ */
+/*  PDF Data Extraction Helpers                                       */
+/* ------------------------------------------------------------------ */
+
+// 🔎 Extract Objective data for PDFs
+function extractObjectiveData(consultSummary = "", vitalsData = null) {
+  let objective = "Assessment based on patient-reported symptoms and AI analysis.";
+  
+  if (vitalsData) {
+    const vitalsLines = [];
+    if (vitalsData.heartRate != null) vitalsLines.push(`Heart rate: ${vitalsData.heartRate} bpm`);
+    if (vitalsData.spo2 != null) vitalsLines.push(`Oxygen saturation (SpO₂): ${vitalsData.spo2}%`);
+    if (vitalsData.temperature != null) vitalsLines.push(`Temperature: ${vitalsData.temperature}°C`);
+    if (vitalsData.bloodPressure) vitalsLines.push(`Blood pressure: ${vitalsData.bloodPressure}`);
+    if (vitalsData.respiratoryRate != null) vitalsLines.push(`Respiratory rate: ${vitalsData.respiratoryRate}`);
+
+    if (vitalsLines.length > 0) {
+      objective += `\n\nObserved / AI-estimated vitals:\n${vitalsLines
+        .map((l) => `• ${l}`)
+        .join("\n")}`;
+    }
+  }
+  
+  return objective;
+}
+
+// 🔎 Extract Assessment data for PDFs
+function extractAssessmentData(conditions = [], confidence = null) {
+  let assessment = "";
+  
+  if (conditions.length > 0) {
+    assessment = `Differential diagnosis includes:\n\n${conditions
+      .map((c) => `• ${c.name}: ${c.percentage}% likelihood`)
+      .join("\n")}`;
+  } else {
+    assessment = "Differential diagnosis to be determined based on clinical evaluation and any additional tests.";
+  }
+  
+  if (confidence != null) {
+    assessment += `\n\nAI assessment confidence: ${confidence}%.`;
+  }
+  
+  return assessment;
+}
+
+// 🔎 Extract Plan data for PDFs
+function extractPlanData(selfCareText = "", confidence = null) {
+  const planParts = [];
+
+  if (selfCareText && selfCareText.trim()) {
+    planParts.push(selfCareText.trim());
+  }
+
+  if (confidence != null) {
+    planParts.push(
+      `AI assessment confidence: ${confidence}%. Recommended follow-up with a healthcare provider for a full clinical evaluation and any appropriate diagnostic testing.`
+    );
+  } else {
+    planParts.push(
+      "Recommended follow-up with a healthcare provider for a full clinical evaluation and any appropriate diagnostic testing."
+    );
+  }
+
+  return planParts.join("\n\n");
+}
+
+// 🔎 Extract HPI (History of Present Illness) data
+function extractHPIData(consultSummary = "") {
+  if (!consultSummary) return {};
+  
+  // Extract duration if mentioned
+  const durationMatch = consultSummary.match(/(\d+)\s*(day|week|month|hour)s?\s*(ago|for)/i);
+  const duration = durationMatch ? `${durationMatch[1]} ${durationMatch[2]}s` : null;
+  
+  // Extract onset
+  const onsetMatch = consultSummary.match(/(sudden|gradual|acute|chronic)\s+(onset|start)/i);
+  const onset = onsetMatch ? onsetMatch[1] : null;
+  
+  // Extract location if mentioned
+  const locationKeywords = [
+    { pattern: /\b(head|forehead|temple)\b/i, label: "Head" },
+    { pattern: /\b(chest|thoracic)\b/i, label: "Chest" },
+    { pattern: /\b(abdomen|stomach|belly)\b/i, label: "Abdomen" },
+    { pattern: /\b(back|spine)\b/i, label: "Back" },
+    { pattern: /\b(throat|pharynx)\b/i, label: "Throat" },
+  ];
+  
+  let location = null;
+  for (const { pattern, label } of locationKeywords) {
+    if (pattern.test(consultSummary)) {
+      location = label;
+      break;
+    }
+  }
+  
+  return {
+    duration,
+    onset,
+    location,
+    character: null, // Could extract "sharp", "dull", "burning", etc.
+    radiation: null,
+    timing: null,
+    exacerbatingFactors: null,
+    relievingFactors: null,
+    severity: null,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Existing Helper Functions (unchanged)                             */
+/* ------------------------------------------------------------------ */
 
 export function parseConditionsAndConfidence(summary) {
   if (!summary || typeof summary !== "string") {
@@ -205,13 +2219,8 @@ export function parseConditionsAndConfidence(summary) {
   const conditions = [];
   const usedNames = new Set();
 
-  /* -----------------------------
-     ✅ CONFIDENCE EXTRACTOR
-     Matches: "I'm about 85% confident in the following assessment."
-  ----------------------------- */
-
   const confidencePatterns = [
-    /I(?:\s+am|['’]m)\s+about\s*(\d{1,3})\s*%\s*confident\s+in\s+the\s+following\s+assessment/i,
+    /I(?:\s+am|['']m)\s+about\s*(\d{1,3})\s*%\s*confident\s+in\s+the\s+following\s+assessment/i,
     /\babout\s*(\d{1,3})\s*%[^.\n]*confident/i,
     /\bconfidence[^0-9]*(\d{1,3})\s*%/i,
   ];
@@ -227,9 +2236,6 @@ export function parseConditionsAndConfidence(summary) {
     }
   }
 
-  /* -----------------------------
-     ❌ JUNK FILTER
-  ----------------------------- */
   const bannedWords = [
     "confidence",
     "confident",
@@ -248,16 +2254,6 @@ export function parseConditionsAndConfidence(summary) {
   const isJunk = (text) =>
     bannedWords.some((word) => text.toLowerCase().includes(word));
 
-  /* -----------------------------
-     ✅ PRIMARY: TOP 3 CONDITIONS BLOCK
-     Expects:
-
-     TOP 3 CONDITIONS (PROBABILITIES):
-     70% Viral upper respiratory infection
-     20% Early influenza
-     10% Early COVID
-  ----------------------------- */
-
   const topBlockMatch = summary.match(
     /TOP\s*3\s*CONDITIONS\s*\(PROBABILITIES\)\s*:\s*([\s\S]*?)(?=SELF-CARE\s*&\s*WHEN\s+TO\s+SEEK\s+HELP|$)/i
   );
@@ -270,7 +2266,6 @@ export function parseConditionsAndConfidence(summary) {
       .map((line) => line.trim())
       .filter(Boolean)
       .forEach((line) => {
-        // 70% Condition name
         const m = line.match(/(\d{1,3})\s*%\s*(.+)$/);
         if (!m) return;
 
@@ -294,18 +2289,10 @@ export function parseConditionsAndConfidence(summary) {
       });
   }
 
-  /* -----------------------------
-     🔁 FALLBACK: old flexible patterns
-     (in case AI slightly breaks the format)
-  ----------------------------- */
-
   if (conditions.length < 3) {
     const patterns = [
-      // 1) 70% Condition
       /(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g,
-      // 2) Condition - 70%
       /([A-Za-z][A-Za-z ()\-]+)\s*[-–—]\s*(\d{1,3})\s*%/g,
-      // 3) Condition (70%)
       /([A-Za-z][A-Za-z ()\-]+)\s*\(\s*(\d{1,3})\s*%\s*\)/g,
     ];
 
@@ -344,10 +2331,6 @@ export function parseConditionsAndConfidence(summary) {
     }
   }
 
-  /* -----------------------------
-     ✅ SUPER LOOSE FALLBACK
-  ----------------------------- */
-
   if (conditions.length < 3) {
     const loose = summary.matchAll(/(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g);
 
@@ -379,32 +2362,26 @@ export function parseConditionsAndConfidence(summary) {
   };
 }
 
-
 function stripTopConditionsFromSummary(summary) {
   if (!summary) return "";
 
   let cleaned = summary;
 
-  // 1️⃣ Remove the OLD style confidence sentence
-  //    (the new one "in the following assessment" we KEEP)
   cleaned = cleaned.replace(
-    /I(?:\s+am|['’]m)[^.!\n]*\d+\s*%[^.\n]*following\s+(?:possibilities|conditions)[^.!\n]*[:.]?/gi,
+    /I(?:\s+am|['']m)[^.!\n]*\d+\s*%[^.\n]*following\s+(?:possibilities|conditions)[^.!\n]*[:.]?/gi,
     ""
   );
 
-  // 2️⃣ Remove the whole "TOP 3 CONDITIONS (PROBABILITIES)" block
   cleaned = cleaned.replace(
     /TOP\s*\d*\s*CONDITIONS(?:\s*\(PROBABILITIES\))?\s*:\s*[\s\S]*?(?=SELF-CARE\s*&\s*WHEN\s+TO\s+SEEK\s+HELP|For\s+(?:self-care|now|immediate relief)|DOCTOR RECOMMENDATION|Please book an appointment|Please book|Take care of yourself|$)/gi,
     ""
   );
 
-  // 3️⃣ Remove any "CLINICAL POSSIBILITIES" diagnostic list
   cleaned = cleaned.replace(
     /CLINICAL\s+POSSIBILITIES[\s\S]*?(?=CLINICAL\s+PLAN\s*&\s*DISPOSITION|For\s+self-care|For\s+now|AI assessment confidence|$)/gi,
     ""
   );
 
-  // 4️⃣ Remove standalone lines that start with "60%" style percentages
   cleaned = cleaned
     .split("\n")
     .filter((line) => !/^\s*\d+\s*%/.test(line.trim()))
@@ -413,27 +2390,21 @@ function stripTopConditionsFromSummary(summary) {
   return cleaned.trim();
 }
 
-
 function splitOutSelfCare(summary) {
   if (!summary) return { cleaned: "", selfCare: "" };
 
-  // 1️⃣ New format with heading:
-  // SELF-CARE & WHEN TO SEEK HELP:
-  // For self-care, ...
-  // Based on the information you've shared, I recommend...
   const selfCareBlockRegex =
     /SELF-CARE\s*&\s*WHEN\s+TO\s+SEEK\s+HELP\s*:?\s*(For[\s\S]*?)(?=DOCTOR RECOMMENDATION|Please book an appointment|Please book|Take care of yourself|$)/i;
 
   let match = summary.match(selfCareBlockRegex);
   if (match) {
-    const selfCare = match[1].trim(); // "For self-care, ..." + doctor recommendation line
+    const selfCare = match[1].trim();
     const cleaned =
       (summary.slice(0, match.index) +
         summary.slice(match.index + match[0].length)).trim();
     return { cleaned, selfCare };
   }
 
-  // 2️⃣ Fallback: old format without heading
   const pattern =
     /(For\s+(?:self-care|now|immediate relief)[\s\S]*?)(?=\n\s*\n|DOCTOR RECOMMENDATION|Please book an appointment|Please book|Take care of yourself|$)/i;
 
@@ -450,9 +2421,6 @@ function splitOutSelfCare(summary) {
   return { cleaned, selfCare };
 }
 
-
-
-// 🔎 Helper to extract CIRA_CONSULT_REPORT JSON + plain summary
 function extractConsultDataFromMessage(raw) {
   if (!raw) {
     return {
@@ -466,7 +2434,6 @@ function extractConsultDataFromMessage(raw) {
   let summaryText = raw;
   let report = null;
 
-  // ----------------- split JSON from plain text -----------------
   const jsonMatch = raw.match(/```json([\s\S]*?)```/i);
   if (jsonMatch) {
     const jsonText = jsonMatch[1].trim();
@@ -485,7 +2452,6 @@ function extractConsultDataFromMessage(raw) {
 
   summaryText = summaryText.replace(/```json|```/gi, "").trim();
 
-  // helper: base key for dedupe
   const baseNameForDedup = (name) => {
     let s = String(name || "").toLowerCase();
     s = s.split(" – ")[0];
@@ -499,7 +2465,7 @@ function extractConsultDataFromMessage(raw) {
     const s = String(name || "");
     return (
       /medication|pharmacist|recommendation|disclaimer/i.test(s) ||
-      /self-care|when to seek help/i.test(s) || // 🚫 filter self-care
+      /self-care|when to seek help/i.test(s) ||
       /💊|⚠️|‼️/.test(s)
     );
   };
@@ -507,7 +2473,6 @@ function extractConsultDataFromMessage(raw) {
   let conditions = [];
   let confidence = null;
 
-  // 1️⃣ Optional: conditions from JSON (we will override by summary later)
   if (report && report["📊 PROBABILITY ESTIMATES"]) {
     const prob = report["📊 PROBABILITY ESTIMATES"];
     if (prob && typeof prob === "object") {
@@ -522,7 +2487,6 @@ function extractConsultDataFromMessage(raw) {
     }
   }
 
-  // 2️⃣ Confidence from JSON if present
   if (report && report["🤖 SYSTEM INFO"]) {
     const info = report["🤖 SYSTEM INFO"];
     if (info && info["Confidence Level"]) {
@@ -531,18 +2495,15 @@ function extractConsultDataFromMessage(raw) {
     }
   }
 
-  // 3️⃣ ALWAYS use conditions parsed from the summary text
   const parsedFromSummary = parseConditionsAndConfidence(summaryText);
   if (parsedFromSummary.conditions?.length) {
     conditions = parsedFromSummary.conditions;
   }
 
-  // 4️⃣ Confidence: fall back to summary if JSON didn't give one
   if (confidence == null && parsedFromSummary.confidence != null) {
     confidence = parsedFromSummary.confidence;
   }
 
-  // 5️⃣ Final cleanup – remove any stray self-care rows & dedupe
   conditions = (conditions || []).filter(
     (c) => c && !looksLikeNonCondition(c.name)
   );
@@ -560,14 +2521,12 @@ function extractConsultDataFromMessage(raw) {
     conditions = deduped
       .filter((c) => typeof c.percentage === "number" && c.percentage > 0)
       .sort((a, b) => b.percentage - a.percentage)
-      .slice(0, 3); // 🔒 exactly 3 items
+      .slice(0, 3);
   }
 
   return { summaryText, report, conditions, confidence };
 }
 
-
-// 🔎 Helper: normalize + dedupe conditions by name
 function normalizeConditionName(name = "") {
   return String(name)
     .toLowerCase()
@@ -603,24 +2562,20 @@ function dedupeConditions(conditions = []) {
   );
 }
 
-// 🩺 Short display name for conditions (UI only)
 function shortConditionName(name = "") {
   const raw = String(name);
-  // cut at ":" or "(" to hide long explanation
   const beforeColon = raw.split(":")[0];
   const beforeParen = beforeColon.split("(")[0];
   const trimmed = beforeParen.trim();
   return trimmed || raw;
 }
 
-// 🔎 Extract a short main symptom label for Chief Complaint
 function extractMainSymptomFromText(text = "") {
   const lower = text.toLowerCase();
 
   const has = (re) => re.test(lower);
   const not = (re) => !re.test(lower);
 
-  // Explicit "chief complaint" style sentences
   const ccMatch = text.match(
     /(chief complaint[^:]*:\s*)(.+?)(?:\.|\n|$)/i
   );
@@ -629,13 +2584,11 @@ function extractMainSymptomFromText(text = "") {
     if (cc.length <= 80) return cc.charAt(0).toUpperCase() + cc.slice(1);
   }
 
-  // Pattern: "is presenting with X", "complaining of X"
   const presentMatch = text.match(
     /\b(presenting with|complaining of|experiencing)\s+([^.\n]{5,80})/i
   );
   if (presentMatch && presentMatch[2]) {
     let phrase = presentMatch[2].trim();
-    // cut at "that/which/since"
     const cutWords = ["that", "which", "since", "for", "because"];
     const lowerPhrase = phrase.toLowerCase();
     let cutAt = Infinity;
@@ -649,7 +2602,6 @@ function extractMainSymptomFromText(text = "") {
     }
   }
 
-  // Fall back to keyword-based mapping
   if (has(/\bheadache(s)?\b/i) && not(/no headache/i)) return "Headache";
   if (has(/\bback pain\b/i) && not(/no back pain/i)) return "Back pain";
   if (has(/\babdominal pain\b|\bstomach pain\b|\bbelly pain\b/i) && not(/no abdominal pain/i))
@@ -658,7 +2610,6 @@ function extractMainSymptomFromText(text = "") {
   if (has(/\bshortness of breath\b|\bdifficulty breathing\b|\bbreathlessness\b/i) && not(/no shortness of breath/i))
     return "Shortness of breath";
 
-  // Fever logic
   const feverPositive =
     /(have|having|with|got|developed|presenting with)\s+(a\s+)?fever\b/i.test(
       text
@@ -684,12 +2635,9 @@ function extractMainSymptomFromText(text = "") {
   return "";
 }
 
-
-// 🔎 Guess the patient's most likely first name from the summary text
 function extractLikelyNameFromSummary(text = "") {
   if (!text) return null;
 
-  // Capitalised words we should NEVER treat as names
   const IGNORE = new Set([
     "Thank",
     "Thanks",
@@ -750,13 +2698,11 @@ function extractLikelyNameFromSummary(text = "") {
     }
   }
 
-  // Extra safety: never return "summarize"-like words
   if (best && /summar/i.test(best)) return null;
 
   return bestCount > 0 ? best : null;
 }
 
-// 🔎 Extract name + age + gender from the summary narrative
 function extractDemographicsFromSummary(text = "") {
   if (!text) return { name: null, age: null, gender: null };
 
@@ -773,8 +2719,6 @@ function extractDemographicsFromSummary(text = "") {
 
   let m;
 
-  // 0️⃣ Greeting style:
-  // "Alright, Habib." / "Hi Habib" / "Hello Ziko" etc.
   m = text.match(
     /\b(?:Hi|Hello|Hey|Salaam|Salam|Assalam|Alright|Okay|Ok)[,!\s]+([A-Z][a-z]{2,})\b/
   );
@@ -782,7 +2726,6 @@ function extractDemographicsFromSummary(text = "") {
     name = m[1];
   }
 
-  // 1️⃣ "Ziko, 34, female, is presenting with..."
   m =
     text.match(
       /\b([A-Z][a-z]{2,})\b\s*,\s*(\d{1,3})\s*,\s*(male|female|man|woman)\b/i
@@ -793,7 +2736,6 @@ function extractDemographicsFromSummary(text = "") {
     gender = normalizeSex(m[3]);
   }
 
-  // 2️⃣ "Habib, a 24-year-old male ..."
   if (!age || !gender) {
     const m2 = text.match(
       /\b([A-Z][a-z]{2,})\b[^.\n]{0,120}?\b(\d{1,3})\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b/i
@@ -805,7 +2747,6 @@ function extractDemographicsFromSummary(text = "") {
     }
   }
 
-  // 3️⃣ Any "24-year-old male" pattern
   if (!age || !gender) {
     const m3 = text.match(
       /\b(\d{1,3})\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b/i
@@ -816,7 +2757,6 @@ function extractDemographicsFromSummary(text = "") {
     }
   }
 
-  // 4️⃣ Age only
   if (!age) {
     const m4 = text.match(/\b(\d{1,3})\s*[-–]?\s*year[- ]old\b/i);
     if (m4) {
@@ -824,150 +2764,16 @@ function extractDemographicsFromSummary(text = "") {
     }
   }
 
-  // 5️⃣ Fallback name if nothing explicit matched
   if (!name) {
     name = extractLikelyNameFromSummary(text);
   }
 
-  // If the fallback still produced something weird like "summarize", drop it
   if (name && /summar/i.test(name)) {
     name = null;
   }
 
   return { name, age, gender };
 }
-
-
-
-
-// 🔎 Extract ROS chips + note from the summary (NEGATIVE findings only)
-// function extractRosFromSummary(text = "") {
-//   const chipsSet = new Set();
-//   if (!text) {
-//     return {
-//       chips: [],
-//       note:
-//         "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.",
-//     };
-//   }
-
-//   const addChip = (label) => {
-//     if (label) chipsSet.add(label);
-//   };
-
-//   // No treatments tried – e.g. "has not tried any treatments"
-//   if (
-//     /(haven't|have not|hasn't|has not|didn't|did not|no)\s+(really\s+)?(tried|taken|used)\s+(any\s+)?(treatments?|medications?|medicine|drugs|remedies)/i.test(
-//       text
-//     )
-//   ) {
-//     addChip("No treatments tried yet");
-//   }
-
-//   // No sick contacts
-//   if (
-//     /(haven't|have not|hasn't|no)\s+(been\s+)?(around|near|in contact with|exposed to)\s+(any(one)?\s+)?(who('s| is)?\s+)?(sick|ill|unwell)/i.test(
-//       text
-//     )
-//   ) {
-//     addChip("No sick contacts");
-//   }
-
-//   // No recent travel
-//   if (
-//     /(no|not|haven't|have not|hasn't)\s+(recent\s+)?travel(led)?/i.test(text)
-//   ) {
-//     addChip("No recent travel");
-//   }
-
-//   // "No other / associated / concurrent symptoms"
-//   if (
-//     /(no|without|denies)\s+(other|associated|concurrent)\s+symptoms?/i.test(
-//       text
-//     )
-//   ) {
-//     addChip("No other symptoms");
-//   }
-
-//   // No other medical conditions – includes "no known medical conditions"
-//   if (
-//     /(no|without|denies)\s+(other\s+)?(chronic\s+)?(known\s+)?(medical|health)\s+conditions?/i.test(
-//       text
-//     )
-//   ) {
-//     addChip("No other medical conditions");
-//   }
-
-//   // No current medications – includes "takes no medications"
-//   if (
-//     /(no|without|denies)\s+(current\s+)?medications?/i.test(text) ||
-//     /(takes|on)\s+no\s+medications?/i.test(text)
-//   ) {
-//     addChip("No current medications");
-//   }
-
-//   // No allergies
-//   if (
-//     /(no|without|denies)\s+(known\s+)?(drug|medication|medicine)?\s*allerg(y|ies)/i.test(
-//       text
-//     )
-//   ) {
-//     addChip("No known allergies");
-//   }
-
-//   // Not pregnant
-//   if (
-//     /(not pregnant|denies pregnancy|no possibility of pregnancy)/i.test(text)
-//   ) {
-//     addChip("Not pregnant");
-//   }
-
-//   // Negative for chest pain
-//   if (/(no|denies|without)\s+chest pain/i.test(text)) {
-//     addChip("Negative for chest pain");
-//   }
-
-//   // Negative for shortness of breath
-//   if (
-//     /(no|denies|without)\s+(shortness of breath|difficulty breathing|trouble breathing)/i.test(
-//       text
-//     )
-//   ) {
-//     addChip("Negative for shortness of breath");
-//   }
-
-//   // Fallback: generic "no symptoms" phrase
-//   if (!chipsSet.size && /no (other )?symptoms?/i.test(text)) {
-//     addChip("No other symptoms");
-//   }
-
-//   const chips = Array.from(chipsSet).slice(0, 4);
-
-//   // Note: pick one sentence that captures these negatives
-//   const sentences = text.split(/(?<=[.!?])\s+/);
-//   let rosNote = "";
-//   for (const s of sentences) {
-//     if (
-//       /(haven't|have not|hasn't|has not|no other symptoms|no symptoms|denies|without|no recent travel|no sick contacts|no known medical conditions|no medications)/i.test(
-//         s
-//       )
-//     ) {
-//       rosNote = s.trim();
-//       break;
-//     }
-//   }
-
-//   if (!rosNote) {
-//     rosNote =
-//       "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.";
-//   }
-
-//   return {
-//     chips,
-//     note: rosNote,
-//   };
-// }
-
 
 export function extractRosFromSummary(text = "") {
   if (!text) {
@@ -987,7 +2793,6 @@ export function extractRosFromSummary(text = "") {
     /\bnot experiencing\s+([a-zA-Z0-9 ,\-\/]+)/gi,
   ];
 
-  // Keywords that indicate we should stop capturing
   const stopWords = ["but", "however", "though", "although", "except", "despite"];
 
   const cleanSymptom = (sym) =>
@@ -1003,7 +2808,6 @@ export function extractRosFromSummary(text = "") {
     list.forEach((raw) => {
       let symptom = cleanSymptom(raw);
 
-      // stop if this item contains a stopword
       if (stopWords.some((w) => symptom.toLowerCase().startsWith(w))) return;
 
       if (symptom.length > 1) {
@@ -1012,7 +2816,6 @@ export function extractRosFromSummary(text = "") {
     });
   };
 
-  // Run all negative capture patterns
   for (const pattern of negativePatterns) {
     let m;
     while ((m = pattern.exec(text)) !== null) {
@@ -1020,16 +2823,14 @@ export function extractRosFromSummary(text = "") {
     }
   }
 
-  // Remove extremely generic garbage
   [...chipsSet].forEach((c) => {
     if (/no symptoms?$/i.test(c) && chipsSet.size > 1) {
       chipsSet.delete(c);
     }
   });
 
-  const chips = [...chipsSet].slice(0, 8); // show more because now symptoms are dynamic
+  const chips = [...chipsSet].slice(0, 8);
 
-  // Extract a ROS note: the first sentence containing negatives
   const sentences = text.split(/(?<=[.!?])\s+/);
   let rosNote = "";
 
@@ -1053,8 +2854,9 @@ export function extractRosFromSummary(text = "") {
   };
 }
 
-
-
+/* ------------------------------------------------------------------ */
+/*  Main Component                                                    */
+/* ------------------------------------------------------------------ */
 
 export default function CiraChatAssistant({ initialMessage: initialMessageProp }) {
   const location = useLocation();
@@ -1089,6 +2891,11 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   const scrollAreaRef = useRef(null);
   const [hasStartedChat, setHasStartedChat] = useState(false);
 
+  // 🧩 PDF Download Dropdown State
+  const [showPDFDropdown, setShowPDFDropdown] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState(null);
+
   // 🧩 Extra state for modal flow
   const [conversationSummary, setConversationSummary] = useState("");
   const [showDoctorRecommendationPopUp, setShowDoctorRecommendationPopUp] =
@@ -1118,7 +2925,6 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     showPayment ||
     showAppointment ||
     showConfirmation;
-
 
   const conversation = useConversation({
     textOnly: true,
@@ -1160,11 +2966,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 
       const lower = trimmedText.toLowerCase();
 
-      // 🔐 Only treat as final consult summary when the strict closing lines appear
       const looksLikeSummary =
-        lower.includes(
-          "please book an appointment with a doctor so you can make sure you’re getting the best care possible"
-        ) ||
         lower.includes(
           "please book an appointment with a doctor so you can make sure you're getting the best care possible"
         ) ||
@@ -1190,11 +2992,9 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
         });
         setConsultReport(extracted.report || null);
 
-        // ❌ Don't show this as a chat bubble
         return;
       }
 
-      // Normal assistant chat bubble
       setMessages((prev) => [
         ...prev,
         {
@@ -1226,7 +3026,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
         setIsConnected(true);
       } catch (err) {
         console.error("Failed to start chat session:", err);
-        setError("Couldn’t connect to Cira. Please refresh and try again.");
+        setError("Couldn't connect to Cira. Please refresh and try again.");
       } finally {
         setIsConnecting(false);
       }
@@ -1319,14 +3119,11 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     selfCareText = split.selfCare;
 
     displaySummary = displaySummary
-      // remove the label "CLINICAL SUMMARY" anywhere in the text
       .replace(/CLINICAL SUMMARY\s*:?\s*/gi, "")
-      // remove the confidence sentence with percentages
       .replace(
-        /I(?:\s+am|['’]m)[^.!\n]*\d+\s*%[^.\n]*following\s+(?:possibilities|conditions|assessment)[^.!\n]*[.?!]/gi,
+        /I(?:\s+am|['']m)[^.!\n]*\d+\s*%[^.\n]*following\s+(?:possibilities|conditions|assessment)[^.!\n]*[.?!]/gi,
         ""
       )
-
       .replace(/^\s*Here are the[^\n]*\n?/gim, "")
       .replace(/Take care of yourself,[^\n]*\n?/gi, "")
       .split("\n")
@@ -1346,7 +3143,6 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
       .replace(/\n{3,}/g, "\n\n")
       .trim();
 
-
     if (!displaySummary) {
       if (parsedSummary.conditions.length) {
         const main = parsedSummary.conditions
@@ -1364,7 +3160,6 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
       }
     }
   }
-
 
   const handleUserMessage = async (text) => {
     if (!hasAgreed) return;
@@ -1408,194 +3203,215 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   }, []);
 
   /* ------------------------------------------------------------------ */
-  /*  PDF download – NAME / AGE / SEX / CC / ROS all fixed              */
+  /*  Enhanced PDF Download Functions                                   */
   /* ------------------------------------------------------------------ */
 
-const handleDownloadPDF = () => {
-  if (!consultSummary) return;
+  const preparePDFData = () => {
+    if (!consultSummary) return null;
 
-  // Use both cleaned and raw text as sources
-  const combinedSummary = `${displaySummary || ""}\n${consultSummary || ""}`.trim();
+    // Use both cleaned and raw text as sources
+    const combinedSummary = `${displaySummary || ""}\n${consultSummary || ""}`.trim();
 
-  // 1️⃣ Try to get demographics from the summary text
-  const {
-    name: nameFromSummary,
-    age: ageFromSummary,
-    gender: genderFromSummary,
-  } = extractDemographicsFromSummary(combinedSummary);
+    // 1️⃣ Extract demographics
+    const {
+      name: nameFromSummary,
+      age: ageFromSummary,
+      gender: genderFromSummary,
+    } = extractDemographicsFromSummary(combinedSummary);
 
-  // Base info (will be completed/overridden below)
-  let patientInfo = {
-    name: nameFromSummary || null,
-    age: ageFromSummary || null,
-    gender: genderFromSummary || null,
-    consultDate: summaryCreatedAt
-      ? summaryCreatedAt.toLocaleDateString()
-      : new Date().toLocaleDateString(),
-  };
+    // Base patient info
+    let patientInfo = {
+      name: nameFromSummary || "User",
+      age: ageFromSummary || "",
+      gender: genderFromSummary || "",
+      consultDate: summaryCreatedAt
+        ? summaryCreatedAt.toLocaleDateString()
+        : new Date().toLocaleDateString(),
+    };
 
-  // Helper to safely search nested JSON
-  const deepFind = (obj, key) => {
-    if (!obj || typeof obj !== "object") return null;
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      return obj[key];
-    }
-    for (const value of Object.values(obj)) {
-      if (value && typeof value === "object") {
-        const result = deepFind(value, key);
-        if (result !== null && result !== undefined) return result;
+    // Helper to safely search nested JSON
+    const deepFind = (obj, key) => {
+      if (!obj || typeof obj !== "object") return null;
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        return obj[key];
+      }
+      for (const value of Object.values(obj)) {
+        if (value && typeof value === "object") {
+          const result = deepFind(value, key);
+          if (result !== null && result !== undefined) return result;
+        }
+      }
+      return null;
+    };
+
+    // Use CIRA_CONSULT_REPORT JSON to fill missing patient info
+    if (consultReport && typeof consultReport === "object") {
+      const ptSection = deepFind(consultReport, "👤 PATIENT INFORMATION");
+      if (ptSection && typeof ptSection === "object") {
+        if (!patientInfo.name || patientInfo.name === "User") {
+          patientInfo.name = ptSection.Name || ptSection["Name"] || patientInfo.name;
+        }
+        if (!patientInfo.age) {
+          patientInfo.age = ptSection.Age || patientInfo.age;
+        }
+        if (!patientInfo.gender) {
+          patientInfo.gender =
+            ptSection["Biological Sex"] ||
+            ptSection["Sex"] ||
+            patientInfo.gender;
+        }
       }
     }
-    return null;
-  };
 
-  // 🔹 Use CIRA_CONSULT_REPORT JSON only to fill missing patient info
-  if (consultReport && typeof consultReport === "object") {
-    const ptSection = deepFind(consultReport, "👤 PATIENT INFORMATION");
-    if (ptSection && typeof ptSection === "object") {
-      if (!patientInfo.name) {
-        patientInfo.name =
-          ptSection.Name || ptSection["Name"] || patientInfo.name;
-      }
-      if (!patientInfo.age) {
-        patientInfo.age = ptSection.Age || patientInfo.age;
-      }
-      if (!patientInfo.gender) {
-        patientInfo.gender =
-          ptSection["Biological Sex"] ||
-          ptSection["Sex"] ||
-          patientInfo.gender;
+    // 2️⃣ Chief Complaint
+    let shortCC = extractMainSymptomFromText(combinedSummary);
+
+    if (!shortCC && consultReport && typeof consultReport === "object") {
+      const ccFromJson = deepFind(consultReport, "🩺 CHIEF COMPLAINT");
+      if (typeof ccFromJson === "string" && ccFromJson.trim()) {
+        shortCC = ccFromJson.trim();
       }
     }
-  }
 
-  // Final defaults
-  if (!patientInfo.name) patientInfo.name = "User";
-  if (!patientInfo.age) patientInfo.age = "";
-  if (!patientInfo.gender) patientInfo.gender = "";
+    if (!shortCC && combinedSummary) {
+      const patternMatch =
+        combinedSummary.match(/guidance on\s+([^.]{3,80})\./i) ||
+        combinedSummary.match(/concern(?:ed)? about\s+([^.]{3,80})\./i) ||
+        combinedSummary.match(/regarding\s+([^.]{3,80})\./i);
 
-  /* ------------------------------------------------------------------ */
-  /*  2️⃣ Chief Complaint (improved)                                      */
-  /* ------------------------------------------------------------------ */
-
-  // a) First: structured extraction from narrative
-  let shortCC = extractMainSymptomFromText(combinedSummary);
-
-  // b) If not found, try JSON chief complaint
-  if (!shortCC && consultReport && typeof consultReport === "object") {
-    const ccFromJson = deepFind(consultReport, "🩺 CHIEF COMPLAINT");
-    if (typeof ccFromJson === "string" && ccFromJson.trim()) {
-      shortCC = ccFromJson.trim();
+      if (patternMatch && patternMatch[1]) {
+        shortCC = patternMatch[1].trim();
+      }
     }
-  }
 
-  // c) If still empty, look for patterns like "guidance on X", "concerned about X"
-  if (!shortCC && combinedSummary) {
-    const patternMatch =
-      combinedSummary.match(/guidance on\s+([^.]{3,80})\./i) ||
-      combinedSummary.match(/concern(?:ed)? about\s+([^.]{3,80})\./i) ||
-      combinedSummary.match(/regarding\s+([^.]{3,80})\./i);
+    if (!shortCC && combinedSummary) {
+      let firstSentence = combinedSummary.split("\n")[0] || "";
+      firstSentence = firstSentence.replace(/Thank you[^.]*\./i, "").trim();
+      firstSentence = firstSentence
+        .replace(/^(I\s+understand|I\s+see|Okay|Ok|Alright)[^.]*\./i, "")
+        .trim();
 
-    if (patternMatch && patternMatch[1]) {
-      shortCC = patternMatch[1].trim();
-    }
-  }
+      if (patientInfo.name && patientInfo.name !== "User") {
+        const safeName = patientInfo.name.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+        const nameRegex = new RegExp("^" + safeName + "[^a-zA-Z]+", "i");
+        firstSentence = firstSentence.replace(nameRegex, "").trim();
+      }
 
-  // d) Last-resort fallback – derive phrase from first sentence
-  if (!shortCC && combinedSummary) {
-    let firstSentence = combinedSummary.split("\n")[0] || "";
-
-    // Remove generic intro like "Thank you..., Habib."
-    firstSentence = firstSentence.replace(/Thank you[^.]*\./i, "").trim();
-
-    // NEW: strip filler like "I understand, Habib."
-    firstSentence = firstSentence
-      .replace(
-        /^(I\s+understand|I\s+see|Okay|Ok|Alright)[^.]*\./i,
+      firstSentence = firstSentence.replace(
+        /\b(a|the)?\s*\d+\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b[, ]*/i,
         ""
-      )
-      .trim();
-
-    // Strip name + age/sex fragments
-    if (patientInfo.name) {
-      const safeName = patientInfo.name.replace(
-        /[-/\\^$*+?.()|[\]{}]/g,
-        "\\$&"
       );
-      const nameRegex = new RegExp("^" + safeName + "[^a-zA-Z]+", "i");
-      firstSentence = firstSentence.replace(nameRegex, "").trim();
+      firstSentence = firstSentence.replace(
+        /\b(is experiencing|is having|is suffering from|is dealing with|has)\b\s*/i,
+        ""
+      );
+
+      const cutAt = Math.min(
+        ...["which", "that"].map((w) => {
+          const i = firstSentence.toLowerCase().indexOf(w + " ");
+          return i === -1 ? Infinity : i;
+        })
+      );
+      if (cutAt !== Infinity) firstSentence = firstSentence.slice(0, cutAt);
+
+      const commaIdx = firstSentence.indexOf(",");
+      if (commaIdx !== -1) firstSentence = firstSentence.slice(0, commaIdx);
+
+      firstSentence = firstSentence.trim();
+
+      if (firstSentence.length && firstSentence.length <= 80) {
+        shortCC = firstSentence.charAt(0).toUpperCase() + firstSentence.slice(1);
+      }
     }
 
-    firstSentence = firstSentence.replace(
-      /\b(a|the)?\s*\d+\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b[, ]*/i,
-      ""
-    );
-    firstSentence = firstSentence.replace(
-      /\b(is experiencing|is having|is suffering from|is dealing with|has)\b\s*/i,
-      ""
-    );
-
-    // Cut at "which/that" etc.
-    const cutAt = Math.min(
-      ...["which", "that"].map((w) => {
-        const i = firstSentence.toLowerCase().indexOf(w + " ");
-        return i === -1 ? Infinity : i;
-      })
-    );
-    if (cutAt !== Infinity) firstSentence = firstSentence.slice(0, cutAt);
-
-    // Cut at first comma to avoid trailing text
-    const commaIdx = firstSentence.indexOf(",");
-    if (commaIdx !== -1) firstSentence = firstSentence.slice(0, commaIdx);
-
-    firstSentence = firstSentence.trim();
-
-    if (firstSentence.length && firstSentence.length <= 80) {
-      shortCC =
-        firstSentence.charAt(0).toUpperCase() + firstSentence.slice(1);
+    if (!shortCC || /^(i understand|i see|okay|ok|alright)$/i.test(shortCC.trim())) {
+      shortCC = "Main symptom from consult summary";
     }
-  }
 
-  // e) Safety: never use pure filler as chief complaint
-  if (
-    !shortCC ||
-    /^(i understand|i see|okay|ok|alright)$/i.test(shortCC.trim())
-  ) {
-    shortCC = "Main symptom from consult summary";
-  }
+    // 3️⃣ Associated Symptoms (ROS)
+    const { chips: rosChips, note: rosNote } = extractRosFromSummary(combinedSummary);
 
-  /* ------------------------------------------------------------------ */
-  /*  3️⃣ Associated Symptoms (ROS)                                      */
-  /* ------------------------------------------------------------------ */
-  const { chips: rosChips, note: rosNote } =
-    extractRosFromSummary(combinedSummary);
+    // 4️⃣ HPI Data
+    const hpiData = extractHPIData(combinedSummary);
 
-  /* ------------------------------------------------------------------ */
-  /*  4️⃣ Build payload & generate PDF                                   */
-  /* ------------------------------------------------------------------ */
-  const consultationData = {
-    conditions: parsedSummary.conditions,
-    confidence: parsedSummary.confidence,
-    narrativeSummary: displaySummary || consultSummary,
-    selfCareText,
-    vitalsData,
-    hpi: {},
-    associatedSymptomsChips: rosChips,
-    associatedSymptomsNote: rosNote || undefined,
-    chiefComplaint: shortCC,
+    // 5️⃣ Extract other medical data
+    const objectiveData = extractObjectiveData(combinedSummary, vitalsData);
+    const assessmentData = extractAssessmentData(parsedSummary.conditions, parsedSummary.confidence);
+    const planData = extractPlanData(selfCareText, parsedSummary.confidence);
+
+    // 6️⃣ Build complete consultation data
+    return {
+      patientInfo,
+      consultationData: {
+        // SOAP components
+        subjective: displaySummary || consultSummary,
+        objective: objectiveData,
+        assessment: assessmentData,
+        plan: planData,
+        
+        // Clinical data
+        conditions: parsedSummary.conditions,
+        confidence: parsedSummary.confidence,
+        narrativeSummary: displaySummary || consultSummary,
+        selfCareText,
+        vitalsData,
+        
+        // Additional data for PDFs
+        hpi: hpiData,
+        associatedSymptomsChips: rosChips,
+        associatedSymptomsNote: rosNote || undefined,
+        chiefComplaint: shortCC,
+        
+        // Original data for fallback
+        consultSummary: combinedSummary,
+        consultReport,
+      }
+    };
   };
 
-  downloadSOAPFromChatData(
-    consultationData,
-    patientInfo,
-    `Cira_Consult_Report_${Date.now()}.pdf`
-  );
-};
-
-
-
-
-
+  const handleDownloadPDF = async (type = 'soap') => {
+    if (!consultSummary) return;
+    
+    setIsDownloading(true);
+    setDownloadError(null);
+    setShowPDFDropdown(false);
+    
+    try {
+      const data = preparePDFData();
+      if (!data) {
+        throw new Error("Could not prepare PDF data");
+      }
+      
+      const { patientInfo, consultationData } = data;
+      const timestamp = Date.now();
+      
+      switch (type) {
+        case 'doctor':
+          await downloadDoctorsReport(consultationData, `Cira_Doctor_Report_${timestamp}.pdf`);
+          break;
+        case 'patient':
+          await downloadPatientReport(consultationData, `Cira_Patient_Summary_${timestamp}.pdf`);
+          break;
+        case 'soap':
+          await downloadSOAPNotes(consultationData, `Cira_SOAP_Notes_${timestamp}.pdf`);
+          break;
+        default:
+          await downloadSOAPNotes(consultationData, `Cira_Report_${timestamp}.pdf`);
+      }
+      
+      console.log(`✅ Successfully downloaded ${type} report`);
+    } catch (error) {
+      console.error("❌ Error downloading PDF:", error);
+      setDownloadError(`Failed to generate ${type} report. Please try again.`);
+      
+      // Show error for 3 seconds
+      setTimeout(() => {
+        setDownloadError(null);
+      }, 3000);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const handleFindDoctorSpecialistClick = () => {
     if (!consultSummary) return;
@@ -1681,6 +3497,20 @@ const handleDownloadPDF = () => {
     setSelectedDoctor(null);
     setBookingDetails(null);
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showPDFDropdown && !event.target.closest('.pdf-dropdown-container')) {
+        setShowPDFDropdown(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showPDFDropdown]);
 
   return (
     <>
@@ -1910,27 +3740,94 @@ const handleDownloadPDF = () => {
                         <p className="text-[11px] text-gray-400">
                           These are rough estimates and do not replace medical
                           advice. Always consult a healthcare professional if
-                          you&apos;re worried.
+                          you're worried.
                         </p>
                       </div>
 
-                      <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                        <button
-                          type="button"
-                          className="flex-1 inline-flex items-center justify-center px-4 py-2 sm:py-3 text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-colors"
-                          onClick={handleDownloadPDF}
-                        >
-                          Download Report Note (PDF)
-                        </button>
+                      <div className="mt-6 flex flex-col sm:flex-row gap-3 relative pdf-dropdown-container">
+                        {/* Download Report Dropdown */}
+                        <div className="relative flex-1">
+                          <button
+                            type="button"
+                            className="w-full inline-flex items-center justify-center px-4 py-3 text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => setShowPDFDropdown(!showPDFDropdown)}
+                            disabled={isDownloading}
+                          >
+                            {isDownloading ? (
+                              <span className="inline-flex items-center">
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Generating...
+                              </span>
+                            ) : (
+                              <>
+                                Download Report
+                                <svg className={`ml-2 w-4 h-4 transition-transform ${showPDFDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                              </>
+                            )}
+                          </button>
+                          
+                          {showPDFDropdown && (
+                            <div className="absolute z-10 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+                              <div className="py-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleDownloadPDF('doctor')}
+                                  className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2"
+                                >
+                                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                  <div className="flex-1">
+                                    <div className="font-medium">Doctor's Report</div>
+                                    <div className="text-xs text-gray-500">Comprehensive clinical report for healthcare providers</div>
+                                  </div>
+                                </button>
+                                
+                                <button
+                                  type="button"
+                                  onClick={() => handleDownloadPDF('patient')}
+                                  className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center gap-2 border-t border-gray-100"
+                                >
+                                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                  <div className="flex-1">
+                                    <div className="font-medium">Patient Summary</div>
+                                    <div className="text-xs text-gray-500">Simplified, patient-friendly health summary</div>
+                                  </div>
+                                </button>
+                                
+                                <button
+                                  type="button"
+                                  onClick={() => handleDownloadPDF('soap')}
+                                  className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 flex items-center gap-2 border-t border-gray-100"
+                                >
+                                  <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                                  <div className="flex-1">
+                                    <div className="font-medium">SOAP Notes</div>
+                                    <div className="text-xs text-gray-500">Structured medical documentation (S-O-A-P format)</div>
+                                  </div>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
 
                         <button
                           type="button"
                           onClick={handleFindDoctorSpecialistClick}
-                          className="flex-1 bg-[#E4ECFF] text-[#2F4EBB] rounded-lg text-sm py-2.5"
+                          className="flex-1 bg-[#E4ECFF] text-[#2F4EBB] rounded-lg text-sm py-2.5 hover:bg-[#D0DCF9] transition-colors"
                         >
                           Find Doctor Specialist
                         </button>
                       </div>
+                      
+                      {downloadError && (
+                        <div className="mt-3 text-xs text-red-600 bg-red-50 border border-red-100 px-3 py-2 rounded-lg">
+                          {downloadError}
+                        </div>
+                      )}
                     </div>
                   </section>
                 )}
