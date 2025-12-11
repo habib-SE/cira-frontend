@@ -272,74 +272,107 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
   y += 6;
 
   /* ----------- ASSOCIATED SYMPTOMS (ROS) ----------- */
-  setFillHex(doc, COLORS.white);
-  setStrokeHex(doc, "#E5E7EB");
-  const rosBoxH = 24;
-  doc.roundedRect(innerX, y, innerW, rosBoxH, 3, 3, "FD");
 
-  let ry = y + 6;
-  let rx = innerX + 4;
+// Calculate dynamic height before drawing box
+const chips =
+  associatedSymptomsChips && associatedSymptomsChips.length
+    ? associatedSymptomsChips
+    : ["No other symptoms"];
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  setTextHex(doc, "#111827");
-  doc.text("ASSOCIATED SYMPTOMS (ROS)", rx, ry);
-  ry += 4;
+doc.setFont("helvetica", "normal");
+doc.setFontSize(7);
 
-  const chips =
-    associatedSymptomsChips && associatedSymptomsChips.length
-      ? associatedSymptomsChips
-      : ["No other symptoms"];
+const chipPaddingX = 3;
+const chipH = 6;
+const chipGap = 3;
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  let chipX = rx;
-  let chipY = ry;
-  const chipPaddingX = 3;
-  const chipH = 6;
+let tempX = innerX + 4;
+let tempY = y + 6 + 4; // after title inside box
+let maxChipY = tempY;
 
-  // 🔹 track where the lowest chip ends
-  let lastChipBottomY = chipY;
+// First: calculate text width + simulate wrapping to compute height
+chips.forEach((label) => {
+  const textW = doc.getTextWidth(label);
+  const chipW = textW + chipPaddingX * 4;
 
-  chips.forEach((label) => {
-    const textW = doc.getTextWidth(label);
-    const chipW = textW + chipPaddingX * 4;
+  if (tempX + chipW > innerX + innerW - 4) {
+    tempX = innerX + 4;
+    tempY += chipH + chipGap;
+  }
 
-    if (chipX + chipW > innerX + innerW - 4) {
-      chipX = rx;
-      chipY += chipH + 3;
-    }
+  maxChipY = Math.max(maxChipY, tempY + chipH);
+  tempX += chipW + chipGap;
+});
 
-    const chipTopY = chipY - chipH + 4;
+// Now compute ROS note height
+const rosNote =
+  associatedSymptomsNote && associatedSymptomsNote.trim()
+    ? associatedSymptomsNote
+    : "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.";
 
-    doc.setFillColor(209, 250, 229); // light green
-    doc.setDrawColor(209, 250, 229);
-    doc.roundedRect(chipX, chipTopY, chipW, chipH, 3, 3, "FD");
+doc.setFontSize(7);
+const noteLines = doc.splitTextToSize(rosNote, innerW - 8);
+const noteHeight = noteLines.length * 3.2 + 4;
 
-    // center text vertically in the pill
-    setTextHex(doc, "#166534");
-    const textBaselineY = chipTopY + chipH / 2 + 1;
-    doc.text(label, chipX + chipPaddingX * 2, textBaselineY);
+// Final dynamic box height
+const rosBoxH =
+  (maxChipY - (y + 6)) + // chip area height
+  noteHeight +
+  10; // padding
 
-    // update lowest chip bottom
-    const chipBottomY = chipTopY + chipH;
-    if (chipBottomY > lastChipBottomY) lastChipBottomY = chipBottomY;
+// Draw Box
+setFillHex(doc, COLORS.white);
+setStrokeHex(doc, "#E5E7EB");
+doc.roundedRect(innerX, y, innerW, rosBoxH, 3, 3, "FD");
 
-    chipX += chipW + 3;
-  });
+// Begin rendering content inside box
+let ry = y + 6;
+let rx = innerX + 4;
 
-  // 🔹 NOW add a clear gap below chips before the paragraph
-  const textStartY = lastChipBottomY + 4; // increase 4 → 6/8 if you want more gap
-  const rosNote =
-    associatedSymptomsNote && associatedSymptomsNote.trim()
-      ? associatedSymptomsNote
-      : "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.";
+doc.setFont("helvetica", "bold");
+doc.setFontSize(9);
+setTextHex(doc, "#111827");
+doc.text("ASSOCIATED SYMPTOMS (ROS)", rx, ry);
+ry += 4;
 
-  setTextHex(doc, COLORS.grayText);
-  doc.setFontSize(7);
-  addWrappedText(doc, rosNote, rx, textStartY, innerW - 8, 3.2);
+// Render chips again (this time drawing them)
+doc.setFont("helvetica", "normal");
+doc.setFontSize(7);
 
-  y += rosBoxH + 8;
+let chipX = rx;
+let chipY = ry;
+
+chips.forEach((label) => {
+  const textW = doc.getTextWidth(label);
+  const chipW = textW + chipPaddingX * 4;
+
+  if (chipX + chipW > innerX + innerW - 4) {
+    chipX = rx;
+    chipY += chipH + chipGap;
+  }
+
+  const chipTopY = chipY - chipH + 4;
+
+  doc.setFillColor(209, 250, 229);
+  doc.setDrawColor(209, 250, 229);
+  doc.roundedRect(chipX, chipTopY, chipW, chipH, 3, 3, "FD");
+
+  setTextHex(doc, "#166534");
+  const textBaselineY = chipTopY + chipH / 2 + 1;
+  doc.text(label, chipX + chipPaddingX * 2, textBaselineY);
+
+  chipX += chipW + chipGap;
+});
+
+// ROS note below chips
+const noteYStart = maxChipY + 3;
+setTextHex(doc, COLORS.grayText);
+doc.setFontSize(7);
+addWrappedText(doc, rosNote, rx, noteYStart, innerW - 8, 3.2);
+
+// Move y below the box for the next section
+y += rosBoxH + 8;
+
 
   /* ----------- DIFFERENTIAL DIAGNOSIS WITH BARS ----------- */
   const diagList = cleanConditions(conditions || []);
