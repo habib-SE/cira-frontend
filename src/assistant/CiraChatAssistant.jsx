@@ -841,116 +841,201 @@ function extractDemographicsFromSummary(text = "") {
 
 
 // 🔎 Extract ROS chips + note from the summary (NEGATIVE findings only)
-function extractRosFromSummary(text = "") {
-  const chipsSet = new Set();
+// function extractRosFromSummary(text = "") {
+//   const chipsSet = new Set();
+//   if (!text) {
+//     return {
+//       chips: [],
+//       note:
+//         "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.",
+//     };
+//   }
+
+//   const addChip = (label) => {
+//     if (label) chipsSet.add(label);
+//   };
+
+//   // No treatments tried – e.g. "has not tried any treatments"
+//   if (
+//     /(haven't|have not|hasn't|has not|didn't|did not|no)\s+(really\s+)?(tried|taken|used)\s+(any\s+)?(treatments?|medications?|medicine|drugs|remedies)/i.test(
+//       text
+//     )
+//   ) {
+//     addChip("No treatments tried yet");
+//   }
+
+//   // No sick contacts
+//   if (
+//     /(haven't|have not|hasn't|no)\s+(been\s+)?(around|near|in contact with|exposed to)\s+(any(one)?\s+)?(who('s| is)?\s+)?(sick|ill|unwell)/i.test(
+//       text
+//     )
+//   ) {
+//     addChip("No sick contacts");
+//   }
+
+//   // No recent travel
+//   if (
+//     /(no|not|haven't|have not|hasn't)\s+(recent\s+)?travel(led)?/i.test(text)
+//   ) {
+//     addChip("No recent travel");
+//   }
+
+//   // "No other / associated / concurrent symptoms"
+//   if (
+//     /(no|without|denies)\s+(other|associated|concurrent)\s+symptoms?/i.test(
+//       text
+//     )
+//   ) {
+//     addChip("No other symptoms");
+//   }
+
+//   // No other medical conditions – includes "no known medical conditions"
+//   if (
+//     /(no|without|denies)\s+(other\s+)?(chronic\s+)?(known\s+)?(medical|health)\s+conditions?/i.test(
+//       text
+//     )
+//   ) {
+//     addChip("No other medical conditions");
+//   }
+
+//   // No current medications – includes "takes no medications"
+//   if (
+//     /(no|without|denies)\s+(current\s+)?medications?/i.test(text) ||
+//     /(takes|on)\s+no\s+medications?/i.test(text)
+//   ) {
+//     addChip("No current medications");
+//   }
+
+//   // No allergies
+//   if (
+//     /(no|without|denies)\s+(known\s+)?(drug|medication|medicine)?\s*allerg(y|ies)/i.test(
+//       text
+//     )
+//   ) {
+//     addChip("No known allergies");
+//   }
+
+//   // Not pregnant
+//   if (
+//     /(not pregnant|denies pregnancy|no possibility of pregnancy)/i.test(text)
+//   ) {
+//     addChip("Not pregnant");
+//   }
+
+//   // Negative for chest pain
+//   if (/(no|denies|without)\s+chest pain/i.test(text)) {
+//     addChip("Negative for chest pain");
+//   }
+
+//   // Negative for shortness of breath
+//   if (
+//     /(no|denies|without)\s+(shortness of breath|difficulty breathing|trouble breathing)/i.test(
+//       text
+//     )
+//   ) {
+//     addChip("Negative for shortness of breath");
+//   }
+
+//   // Fallback: generic "no symptoms" phrase
+//   if (!chipsSet.size && /no (other )?symptoms?/i.test(text)) {
+//     addChip("No other symptoms");
+//   }
+
+//   const chips = Array.from(chipsSet).slice(0, 4);
+
+//   // Note: pick one sentence that captures these negatives
+//   const sentences = text.split(/(?<=[.!?])\s+/);
+//   let rosNote = "";
+//   for (const s of sentences) {
+//     if (
+//       /(haven't|have not|hasn't|has not|no other symptoms|no symptoms|denies|without|no recent travel|no sick contacts|no known medical conditions|no medications)/i.test(
+//         s
+//       )
+//     ) {
+//       rosNote = s.trim();
+//       break;
+//     }
+//   }
+
+//   if (!rosNote) {
+//     rosNote =
+//       "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.";
+//   }
+
+//   return {
+//     chips,
+//     note: rosNote,
+//   };
+// }
+
+
+export function extractRosFromSummary(text = "") {
   if (!text) {
     return {
       chips: [],
-      note:
-        "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.",
+      note: "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.",
     };
   }
 
-  const addChip = (label) => {
-    if (label) chipsSet.add(label);
+  const chipsSet = new Set();
+
+  const negativePatterns = [
+    /\bno\s+([a-zA-Z0-9 ,\-\/]+)/gi,
+    /\bdenies\s+([a-zA-Z0-9 ,\-\/]+)/gi,
+    /\bwithout\s+([a-zA-Z0-9 ,\-\/]+)/gi,
+    /\bnegative for\s+([a-zA-Z0-9 ,\-\/]+)/gi,
+    /\bnot experiencing\s+([a-zA-Z0-9 ,\-\/]+)/gi,
+  ];
+
+  // Keywords that indicate we should stop capturing
+  const stopWords = ["but", "however", "though", "although", "except", "despite"];
+
+  const cleanSymptom = (sym) =>
+    sym
+      .replace(/(^and\s+|^\s*,\s*|^\s*or\s*|\s*\.$)/gi, "")
+      .trim()
+      .replace(/\s+/g, " ");
+
+  const extractFromMatch = (match) => {
+    if (!match) return;
+
+    let list = match.split(/,|and|or/gi);
+    list.forEach((raw) => {
+      let symptom = cleanSymptom(raw);
+
+      // stop if this item contains a stopword
+      if (stopWords.some((w) => symptom.toLowerCase().startsWith(w))) return;
+
+      if (symptom.length > 1) {
+        chipsSet.add("No " + symptom);
+      }
+    });
   };
 
-  // No treatments tried – e.g. "has not tried any treatments"
-  if (
-    /(haven't|have not|hasn't|has not|didn't|did not|no)\s+(really\s+)?(tried|taken|used)\s+(any\s+)?(treatments?|medications?|medicine|drugs|remedies)/i.test(
-      text
-    )
-  ) {
-    addChip("No treatments tried yet");
+  // Run all negative capture patterns
+  for (const pattern of negativePatterns) {
+    let m;
+    while ((m = pattern.exec(text)) !== null) {
+      extractFromMatch(m[1]);
+    }
   }
 
-  // No sick contacts
-  if (
-    /(haven't|have not|hasn't|no)\s+(been\s+)?(around|near|in contact with|exposed to)\s+(any(one)?\s+)?(who('s| is)?\s+)?(sick|ill|unwell)/i.test(
-      text
-    )
-  ) {
-    addChip("No sick contacts");
-  }
+  // Remove extremely generic garbage
+  [...chipsSet].forEach((c) => {
+    if (/no symptoms?$/i.test(c) && chipsSet.size > 1) {
+      chipsSet.delete(c);
+    }
+  });
 
-  // No recent travel
-  if (
-    /(no|not|haven't|have not|hasn't)\s+(recent\s+)?travel(led)?/i.test(text)
-  ) {
-    addChip("No recent travel");
-  }
+  const chips = [...chipsSet].slice(0, 8); // show more because now symptoms are dynamic
 
-  // "No other / associated / concurrent symptoms"
-  if (
-    /(no|without|denies)\s+(other|associated|concurrent)\s+symptoms?/i.test(
-      text
-    )
-  ) {
-    addChip("No other symptoms");
-  }
-
-  // No other medical conditions – includes "no known medical conditions"
-  if (
-    /(no|without|denies)\s+(other\s+)?(chronic\s+)?(known\s+)?(medical|health)\s+conditions?/i.test(
-      text
-    )
-  ) {
-    addChip("No other medical conditions");
-  }
-
-  // No current medications – includes "takes no medications"
-  if (
-    /(no|without|denies)\s+(current\s+)?medications?/i.test(text) ||
-    /(takes|on)\s+no\s+medications?/i.test(text)
-  ) {
-    addChip("No current medications");
-  }
-
-  // No allergies
-  if (
-    /(no|without|denies)\s+(known\s+)?(drug|medication|medicine)?\s*allerg(y|ies)/i.test(
-      text
-    )
-  ) {
-    addChip("No known allergies");
-  }
-
-  // Not pregnant
-  if (
-    /(not pregnant|denies pregnancy|no possibility of pregnancy)/i.test(text)
-  ) {
-    addChip("Not pregnant");
-  }
-
-  // Negative for chest pain
-  if (/(no|denies|without)\s+chest pain/i.test(text)) {
-    addChip("Negative for chest pain");
-  }
-
-  // Negative for shortness of breath
-  if (
-    /(no|denies|without)\s+(shortness of breath|difficulty breathing|trouble breathing)/i.test(
-      text
-    )
-  ) {
-    addChip("Negative for shortness of breath");
-  }
-
-  // Fallback: generic "no symptoms" phrase
-  if (!chipsSet.size && /no (other )?symptoms?/i.test(text)) {
-    addChip("No other symptoms");
-  }
-
-  const chips = Array.from(chipsSet).slice(0, 4);
-
-  // Note: pick one sentence that captures these negatives
+  // Extract a ROS note: the first sentence containing negatives
   const sentences = text.split(/(?<=[.!?])\s+/);
   let rosNote = "";
+
   for (const s of sentences) {
     if (
-      /(haven't|have not|hasn't|has not|no other symptoms|no symptoms|denies|without|no recent travel|no sick contacts|no known medical conditions|no medications)/i.test(
-        s
-      )
+      /(no\s+\w+|denies|without|negative for|not experiencing)/i.test(s)
     ) {
       rosNote = s.trim();
       break;
@@ -967,9 +1052,6 @@ function extractRosFromSummary(text = "") {
     note: rosNote,
   };
 }
-
-
-
 
 
 
