@@ -22,179 +22,19 @@ import BookingConfirmationModal from "./modal/BookingConfirmationModal";
 import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
 import FacialScanModal from "./modal/FacialScanModal";
 
-import { downloadSOAPFromChatData } from "../utils/clinicalReport/pdfGenerator";
+// import { downloadSOAPFromChatData } from "../utils/clinicalReport/pdfGenerator";
+
+import {
+  downloadSOAPFromChatData,
+  downloadPatientSummaryFromChatData,
+  downloadEHRSOAPFromChatData,
+} from "../utils/clinicalReport/pdfGenerator";
 
 const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 
 /* ------------------------------------------------------------------ */
 /*  Helpers: parsing summary / report                                 */
 /* ------------------------------------------------------------------ */
-
-// export function parseConditionsAndConfidence(summary) {
-//   if (!summary || typeof summary !== "string") {
-//     return { conditions: [], confidence: null };
-//   }
-
-//   let confidence = null;
-//   const conditions = [];
-//   const usedNames = new Set();
-
-//   /* -----------------------------
-//      ✅ CONFIDENCE EXTRACTOR
-//   ----------------------------- */
-
-//   const confidencePatterns = [
-//     /\babout\s*(\d{1,3})\s*%/i,
-//     /\bconfidence[^0-9]*(\d{1,3})\s*%/i,
-//     /\bAI\s*confidence[^0-9]*(\d{1,3})\s*%/i,
-//     /\bconfidence\s*level[^0-9]*(\d{1,3})\s*%/i,
-//     /\bI’m\s*about\s*(\d{1,3})\s*%\s*confident/i,
-//   ];
-
-//   for (const pat of confidencePatterns) {
-//     const match = summary.match(pat);
-//     if (match && match[1]) {
-//       const conf = Number(match[1]);
-//       if (!isNaN(conf) && conf <= 100) {
-//         confidence = conf;
-//         break;
-//       }
-//     }
-//   }
-
-//   /* -----------------------------
-//      ❌ JUNK FILTER
-//   ----------------------------- */
-
-//   const bannedWords = [
-//     "confidence",
-//     "confident",
-//     "represents",
-//     "assessment",
-//     "analysis",
-//     "estimate",
-//     "likelihood",
-//     "probability",
-//     "overall",
-//     "this represents",
-//   ];
-
-//   const isJunk = (text) =>
-//     bannedWords.some(word => text.toLowerCase().includes(word));
-
-//   /* -----------------------------
-//      ✅ CONDITION PATTERNS
-//   ----------------------------- */
-
-//   const patterns = [
-//     // 1) 70% Condition
-//     /(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g,
-
-//     // 2) Condition - 70%
-//     /([A-Za-z][A-Za-z ()\-]+)\s*[-–—]\s*(\d{1,3})\s*%/g,
-
-//     // 3) Condition (70%)
-//     /([A-Za-z][A-Za-z ()\-]+)\s*\(\s*(\d{1,3})\s*%\s*\)/g,
-
-//     // 4) Bullet format
-//     /[•*]\s*([A-Za-z][A-Za-z ()\-]+)\s*(\d{1,3})\s*%/g,
-
-//     // 5) Newline format:
-//     // Condition\n70%
-//     /([A-Za-z][A-Za-z ()\-]+)\s*\n\s*(\d{1,3})\s*%/g,
-//   ];
-
-//   /* -----------------------------
-//      ✅ RUN EXTRACTOR
-//   ----------------------------- */
-
-//   for (const pattern of patterns) {
-//     let match;
-
-//     while ((match = pattern.exec(summary)) !== null) {
-//       let name, pct;
-
-//       // percent first format
-//       if (pattern.source.startsWith("(\\d")) {
-//         pct = Number(match[1]);
-//         name = match[2];
-//       }
-//       // name first format
-//       else {
-//         name = match[1];
-//         pct = Number(match[2]);
-//       }
-
-//       name = name
-//         .replace(/[\r\n]+/g, " ")
-//         .replace(/\s{2,}/g, " ")
-//         .replace(/[-–—]+$/, "")
-//         .trim();
-
-//       if (!name || isNaN(pct)) continue;
-//       if (pct < 1 || pct > 100) continue;
-//       if (isJunk(name)) continue;
-
-//       const key = name.toLowerCase();
-
-//       // ❌ NEVER ALLOW CONFIDENCE TO BECOME CONDITION
-//       if (key.includes("confidence")) continue;
-
-//       if (!usedNames.has(key)) {
-//         usedNames.add(key);
-//         conditions.push({ name, percentage: pct });
-//       }
-//     }
-//   }
-
-//   /* -----------------------------
-//      ✅ HARSH FALLBACK MODE
-//      (if AI format is broken)
-//   ----------------------------- */
-
-//   if (conditions.length < 3) {
-//     const loose = summary.matchAll(/(\d{1,3})\s*%\s*([A-Za-z][A-Za-z ()\-]+)/g);
-
-//     for (const match of loose) {
-//       if (conditions.length >= 3) break;
-
-//       const pct = Number(match[1]);
-//       const name = match[2].trim();
-//       const key = name.toLowerCase();
-
-//       if (
-//         !usedNames.has(key) &&
-//         pct <= 100 &&
-//         !isNaN(pct) &&
-//         !isJunk(name) &&
-//         !key.includes("confidence")
-//       ) {
-//         usedNames.add(key);
-//         conditions.push({ name, percentage: pct });
-//       }
-//     }
-//   }
-
-//   /* -----------------------------
-//      ✅ SORT & RETURN
-//   ----------------------------- */
-
-//   return {
-//     conditions: conditions
-//       .sort((a, b) => b.percentage - a.percentage)
-//       .slice(0, 3),
-
-//     confidence,
-//   };
-// }
-
-
-
-
-
-
-// 🧼 Helper to remove confidence sentence + raw condition lines from the summary
-// 🧼 Helper to remove confidence sentence + raw condition lines from the summary
 
 export function parseConditionsAndConfidence(summary) {
   if (!summary || typeof summary !== "string") {
@@ -837,138 +677,6 @@ function extractDemographicsFromSummary(text = "") {
   return { name, age, gender };
 }
 
-
-
-
-// 🔎 Extract ROS chips + note from the summary (NEGATIVE findings only)
-// function extractRosFromSummary(text = "") {
-//   const chipsSet = new Set();
-//   if (!text) {
-//     return {
-//       chips: [],
-//       note:
-//         "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.",
-//     };
-//   }
-
-//   const addChip = (label) => {
-//     if (label) chipsSet.add(label);
-//   };
-
-//   // No treatments tried – e.g. "has not tried any treatments"
-//   if (
-//     /(haven't|have not|hasn't|has not|didn't|did not|no)\s+(really\s+)?(tried|taken|used)\s+(any\s+)?(treatments?|medications?|medicine|drugs|remedies)/i.test(
-//       text
-//     )
-//   ) {
-//     addChip("No treatments tried yet");
-//   }
-
-//   // No sick contacts
-//   if (
-//     /(haven't|have not|hasn't|no)\s+(been\s+)?(around|near|in contact with|exposed to)\s+(any(one)?\s+)?(who('s| is)?\s+)?(sick|ill|unwell)/i.test(
-//       text
-//     )
-//   ) {
-//     addChip("No sick contacts");
-//   }
-
-//   // No recent travel
-//   if (
-//     /(no|not|haven't|have not|hasn't)\s+(recent\s+)?travel(led)?/i.test(text)
-//   ) {
-//     addChip("No recent travel");
-//   }
-
-//   // "No other / associated / concurrent symptoms"
-//   if (
-//     /(no|without|denies)\s+(other|associated|concurrent)\s+symptoms?/i.test(
-//       text
-//     )
-//   ) {
-//     addChip("No other symptoms");
-//   }
-
-//   // No other medical conditions – includes "no known medical conditions"
-//   if (
-//     /(no|without|denies)\s+(other\s+)?(chronic\s+)?(known\s+)?(medical|health)\s+conditions?/i.test(
-//       text
-//     )
-//   ) {
-//     addChip("No other medical conditions");
-//   }
-
-//   // No current medications – includes "takes no medications"
-//   if (
-//     /(no|without|denies)\s+(current\s+)?medications?/i.test(text) ||
-//     /(takes|on)\s+no\s+medications?/i.test(text)
-//   ) {
-//     addChip("No current medications");
-//   }
-
-//   // No allergies
-//   if (
-//     /(no|without|denies)\s+(known\s+)?(drug|medication|medicine)?\s*allerg(y|ies)/i.test(
-//       text
-//     )
-//   ) {
-//     addChip("No known allergies");
-//   }
-
-//   // Not pregnant
-//   if (
-//     /(not pregnant|denies pregnancy|no possibility of pregnancy)/i.test(text)
-//   ) {
-//     addChip("Not pregnant");
-//   }
-
-//   // Negative for chest pain
-//   if (/(no|denies|without)\s+chest pain/i.test(text)) {
-//     addChip("Negative for chest pain");
-//   }
-
-//   // Negative for shortness of breath
-//   if (
-//     /(no|denies|without)\s+(shortness of breath|difficulty breathing|trouble breathing)/i.test(
-//       text
-//     )
-//   ) {
-//     addChip("Negative for shortness of breath");
-//   }
-
-//   // Fallback: generic "no symptoms" phrase
-//   if (!chipsSet.size && /no (other )?symptoms?/i.test(text)) {
-//     addChip("No other symptoms");
-//   }
-
-//   const chips = Array.from(chipsSet).slice(0, 4);
-
-//   // Note: pick one sentence that captures these negatives
-//   const sentences = text.split(/(?<=[.!?])\s+/);
-//   let rosNote = "";
-//   for (const s of sentences) {
-//     if (
-//       /(haven't|have not|hasn't|has not|no other symptoms|no symptoms|denies|without|no recent travel|no sick contacts|no known medical conditions|no medications)/i.test(
-//         s
-//       )
-//     ) {
-//       rosNote = s.trim();
-//       break;
-//     }
-//   }
-
-//   if (!rosNote) {
-//     rosNote =
-//       "Lack of systemic symptoms is noted, but the current presentation still requires monitoring for red-flag changes.";
-//   }
-
-//   return {
-//     chips,
-//     note: rosNote,
-//   };
-// }
-
-
 export function extractRosFromSummary(text = "") {
   if (!text) {
     return {
@@ -1118,6 +826,23 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     showPayment ||
     showAppointment ||
     showConfirmation;
+
+
+  const [isDownloadMenuOpen, setIsDownloadMenuOpen] = useState(false);
+  const downloadMenuRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        downloadMenuRef.current &&
+        !downloadMenuRef.current.contains(e.target)
+      ) {
+        setIsDownloadMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
 
   const conversation = useConversation({
@@ -1411,180 +1136,378 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   /*  PDF download – NAME / AGE / SEX / CC / ROS all fixed              */
   /* ------------------------------------------------------------------ */
 
-const handleDownloadPDF = () => {
-  if (!consultSummary) return;
+  // const handleDownloadPDF = () => {
+  //   if (!consultSummary) return;
 
-  // Use both cleaned and raw text as sources
-  const combinedSummary = `${displaySummary || ""}\n${consultSummary || ""}`.trim();
+  //   // Use both cleaned and raw text as sources
+  //   const combinedSummary = `${displaySummary || ""}\n${consultSummary || ""}`.trim();
 
-  // 1️⃣ Try to get demographics from the summary text
-  const {
-    name: nameFromSummary,
-    age: ageFromSummary,
-    gender: genderFromSummary,
-  } = extractDemographicsFromSummary(combinedSummary);
+  //   // 1️⃣ Try to get demographics from the summary text
+  //   const {
+  //     name: nameFromSummary,
+  //     age: ageFromSummary,
+  //     gender: genderFromSummary,
+  //   } = extractDemographicsFromSummary(combinedSummary);
 
-  // Base info (will be completed/overridden below)
-  let patientInfo = {
-    name: nameFromSummary || null,
-    age: ageFromSummary || null,
-    gender: genderFromSummary || null,
-    consultDate: summaryCreatedAt
-      ? summaryCreatedAt.toLocaleDateString()
-      : new Date().toLocaleDateString(),
-  };
+  //   // Base info (will be completed/overridden below)
+  //   let patientInfo = {
+  //     name: nameFromSummary || null,
+  //     age: ageFromSummary || null,
+  //     gender: genderFromSummary || null,
+  //     consultDate: summaryCreatedAt
+  //       ? summaryCreatedAt.toLocaleDateString()
+  //       : new Date().toLocaleDateString(),
+  //   };
 
-  // Helper to safely search nested JSON
-  const deepFind = (obj, key) => {
-    if (!obj || typeof obj !== "object") return null;
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      return obj[key];
-    }
-    for (const value of Object.values(obj)) {
-      if (value && typeof value === "object") {
-        const result = deepFind(value, key);
-        if (result !== null && result !== undefined) return result;
-      }
-    }
-    return null;
-  };
+  //   // Helper to safely search nested JSON
+  //   const deepFind = (obj, key) => {
+  //     if (!obj || typeof obj !== "object") return null;
+  //     if (Object.prototype.hasOwnProperty.call(obj, key)) {
+  //       return obj[key];
+  //     }
+  //     for (const value of Object.values(obj)) {
+  //       if (value && typeof value === "object") {
+  //         const result = deepFind(value, key);
+  //         if (result !== null && result !== undefined) return result;
+  //       }
+  //     }
+  //     return null;
+  //   };
 
-  // 🔹 Use CIRA_CONSULT_REPORT JSON only to fill missing patient info
-  if (consultReport && typeof consultReport === "object") {
-    const ptSection = deepFind(consultReport, "👤 PATIENT INFORMATION");
-    if (ptSection && typeof ptSection === "object") {
-      if (!patientInfo.name) {
-        patientInfo.name =
-          ptSection.Name || ptSection["Name"] || patientInfo.name;
-      }
-      if (!patientInfo.age) {
-        patientInfo.age = ptSection.Age || patientInfo.age;
-      }
-      if (!patientInfo.gender) {
-        patientInfo.gender =
-          ptSection["Biological Sex"] ||
-          ptSection["Sex"] ||
-          patientInfo.gender;
-      }
-    }
-  }
+  //   // 🔹 Use CIRA_CONSULT_REPORT JSON only to fill missing patient info
+  //   if (consultReport && typeof consultReport === "object") {
+  //     const ptSection = deepFind(consultReport, "👤 PATIENT INFORMATION");
+  //     if (ptSection && typeof ptSection === "object") {
+  //       if (!patientInfo.name) {
+  //         patientInfo.name =
+  //           ptSection.Name || ptSection["Name"] || patientInfo.name;
+  //       }
+  //       if (!patientInfo.age) {
+  //         patientInfo.age = ptSection.Age || patientInfo.age;
+  //       }
+  //       if (!patientInfo.gender) {
+  //         patientInfo.gender =
+  //           ptSection["Biological Sex"] ||
+  //           ptSection["Sex"] ||
+  //           patientInfo.gender;
+  //       }
+  //     }
+  //   }
 
-  // Final defaults
-  if (!patientInfo.name) patientInfo.name = "User";
-  if (!patientInfo.age) patientInfo.age = "";
-  if (!patientInfo.gender) patientInfo.gender = "";
+  //   // Final defaults
+  //   if (!patientInfo.name) patientInfo.name = "User";
+  //   if (!patientInfo.age) patientInfo.age = "";
+  //   if (!patientInfo.gender) patientInfo.gender = "";
+
+  //   /* ------------------------------------------------------------------ */
+  //   /*  2️⃣ Chief Complaint (improved)                                      */
+  //   /* ------------------------------------------------------------------ */
+
+  //   // a) First: structured extraction from narrative
+  //   let shortCC = extractMainSymptomFromText(combinedSummary);
+
+  //   // b) If not found, try JSON chief complaint
+  //   if (!shortCC && consultReport && typeof consultReport === "object") {
+  //     const ccFromJson = deepFind(consultReport, "🩺 CHIEF COMPLAINT");
+  //     if (typeof ccFromJson === "string" && ccFromJson.trim()) {
+  //       shortCC = ccFromJson.trim();
+  //     }
+  //   }
+
+  //   // c) If still empty, look for patterns like "guidance on X", "concerned about X"
+  //   if (!shortCC && combinedSummary) {
+  //     const patternMatch =
+  //       combinedSummary.match(/guidance on\s+([^.]{3,80})\./i) ||
+  //       combinedSummary.match(/concern(?:ed)? about\s+([^.]{3,80})\./i) ||
+  //       combinedSummary.match(/regarding\s+([^.]{3,80})\./i);
+
+  //     if (patternMatch && patternMatch[1]) {
+  //       shortCC = patternMatch[1].trim();
+  //     }
+  //   }
+
+  //   // d) Last-resort fallback – derive phrase from first sentence
+  //   if (!shortCC && combinedSummary) {
+  //     let firstSentence = combinedSummary.split("\n")[0] || "";
+
+  //     // Remove generic intro like "Thank you..., Habib."
+  //     firstSentence = firstSentence.replace(/Thank you[^.]*\./i, "").trim();
+
+  //     // NEW: strip filler like "I understand, Habib."
+  //     firstSentence = firstSentence
+  //       .replace(
+  //         /^(I\s+understand|I\s+see|Okay|Ok|Alright)[^.]*\./i,
+  //         ""
+  //       )
+  //       .trim();
+
+  //     // Strip name + age/sex fragments
+  //     if (patientInfo.name) {
+  //       const safeName = patientInfo.name.replace(
+  //         /[-/\\^$*+?.()|[\]{}]/g,
+  //         "\\$&"
+  //       );
+  //       const nameRegex = new RegExp("^" + safeName + "[^a-zA-Z]+", "i");
+  //       firstSentence = firstSentence.replace(nameRegex, "").trim();
+  //     }
+
+  //     firstSentence = firstSentence.replace(
+  //       /\b(a|the)?\s*\d+\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b[, ]*/i,
+  //       ""
+  //     );
+  //     firstSentence = firstSentence.replace(
+  //       /\b(is experiencing|is having|is suffering from|is dealing with|has)\b\s*/i,
+  //       ""
+  //     );
+
+  //     // Cut at "which/that" etc.
+  //     const cutAt = Math.min(
+  //       ...["which", "that"].map((w) => {
+  //         const i = firstSentence.toLowerCase().indexOf(w + " ");
+  //         return i === -1 ? Infinity : i;
+  //       })
+  //     );
+  //     if (cutAt !== Infinity) firstSentence = firstSentence.slice(0, cutAt);
+
+  //     // Cut at first comma to avoid trailing text
+  //     const commaIdx = firstSentence.indexOf(",");
+  //     if (commaIdx !== -1) firstSentence = firstSentence.slice(0, commaIdx);
+
+  //     firstSentence = firstSentence.trim();
+
+  //     if (firstSentence.length && firstSentence.length <= 80) {
+  //       shortCC =
+  //         firstSentence.charAt(0).toUpperCase() + firstSentence.slice(1);
+  //     }
+  //   }
+
+  //   // e) Safety: never use pure filler as chief complaint
+  //   if (
+  //     !shortCC ||
+  //     /^(i understand|i see|okay|ok|alright)$/i.test(shortCC.trim())
+  //   ) {
+  //     shortCC = "Main symptom from consult summary";
+  //   }
+
+  //   /* ------------------------------------------------------------------ */
+  //   /*  3️⃣ Associated Symptoms (ROS)                                      */
+  //   /* ------------------------------------------------------------------ */
+  //   const { chips: rosChips, note: rosNote } =
+  //     extractRosFromSummary(combinedSummary);
+
+  //   /* ------------------------------------------------------------------ */
+  //   /*  4️⃣ Build payload & generate PDF                                   */
+  //   /* ------------------------------------------------------------------ */
+  //   const consultationData = {
+  //     conditions: parsedSummary.conditions,
+  //     confidence: parsedSummary.confidence,
+  //     narrativeSummary: displaySummary || consultSummary,
+  //     selfCareText,
+  //     vitalsData,
+  //     hpi: {},
+  //     associatedSymptomsChips: rosChips,
+  //     associatedSymptomsNote: rosNote || undefined,
+  //     chiefComplaint: shortCC,
+  //   };
+
+  //   downloadSOAPFromChatData(
+  //     consultationData,
+  //     patientInfo,
+  //     `Cira_Consult_Report_${Date.now()}.pdf`
+  //   );
+  // };
+
 
   /* ------------------------------------------------------------------ */
-  /*  2️⃣ Chief Complaint (improved)                                      */
+  /*  PDF helpers – build shared payload once                           */
   /* ------------------------------------------------------------------ */
 
-  // a) First: structured extraction from narrative
-  let shortCC = extractMainSymptomFromText(combinedSummary);
+  const buildPdfPayload = () => {
+    if (!consultSummary) return null;
 
-  // b) If not found, try JSON chief complaint
-  if (!shortCC && consultReport && typeof consultReport === "object") {
-    const ccFromJson = deepFind(consultReport, "🩺 CHIEF COMPLAINT");
-    if (typeof ccFromJson === "string" && ccFromJson.trim()) {
-      shortCC = ccFromJson.trim();
+    // Use both cleaned and raw text as sources
+    const combinedSummary = `${displaySummary || ""}\n${consultSummary || ""
+      }`.trim();
+
+    // 1️⃣ Try to get demographics from the summary text
+    const {
+      name: nameFromSummary,
+      age: ageFromSummary,
+      gender: genderFromSummary,
+    } = extractDemographicsFromSummary(combinedSummary);
+
+    // Base info (will be completed/overridden below)
+    let patientInfo = {
+      name: nameFromSummary || null,
+      age: ageFromSummary || null,
+      gender: genderFromSummary || null,
+      consultDate: summaryCreatedAt
+        ? summaryCreatedAt.toLocaleDateString()
+        : new Date().toLocaleDateString(),
+    };
+
+    // Helper to safely search nested JSON
+    const deepFind = (obj, key) => {
+      if (!obj || typeof obj !== "object") return null;
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        return obj[key];
+      }
+      for (const value of Object.values(obj)) {
+        if (value && typeof value === "object") {
+          const result = deepFind(value, key);
+          if (result !== null && result !== undefined) return result;
+        }
+      }
+      return null;
+    };
+
+    // 🔹 Use CIRA_CONSULT_REPORT JSON only to fill missing patient info
+    if (consultReport && typeof consultReport === "object") {
+      const ptSection = deepFind(consultReport, "👤 PATIENT INFORMATION");
+      if (ptSection && typeof ptSection === "object") {
+        if (!patientInfo.name) {
+          patientInfo.name =
+            ptSection.Name || ptSection["Name"] || patientInfo.name;
+        }
+        if (!patientInfo.age) {
+          patientInfo.age = ptSection.Age || patientInfo.age;
+        }
+        if (!patientInfo.gender) {
+          patientInfo.gender =
+            ptSection["Biological Sex"] ||
+            ptSection["Sex"] ||
+            patientInfo.gender;
+        }
+      }
     }
-  }
 
-  // c) If still empty, look for patterns like "guidance on X", "concerned about X"
-  if (!shortCC && combinedSummary) {
-    const patternMatch =
-      combinedSummary.match(/guidance on\s+([^.]{3,80})\./i) ||
-      combinedSummary.match(/concern(?:ed)? about\s+([^.]{3,80})\./i) ||
-      combinedSummary.match(/regarding\s+([^.]{3,80})\./i);
+    // Final defaults
+    if (!patientInfo.name) patientInfo.name = "User";
+    if (!patientInfo.age) patientInfo.age = "";
+    if (!patientInfo.gender) patientInfo.gender = "";
 
-    if (patternMatch && patternMatch[1]) {
-      shortCC = patternMatch[1].trim();
+    /* ------------------------------------------------------------------ */
+    /*  Chief Complaint                                                   */
+    /* ------------------------------------------------------------------ */
+
+    // a) From narrative
+    let shortCC = extractMainSymptomFromText(combinedSummary);
+
+    // b) From JSON if needed
+    if (!shortCC && consultReport && typeof consultReport === "object") {
+      const ccFromJson = deepFind(consultReport, "🩺 CHIEF COMPLAINT");
+      if (typeof ccFromJson === "string" && ccFromJson.trim()) {
+        shortCC = ccFromJson.trim();
+      }
     }
-  }
 
-  // d) Last-resort fallback – derive phrase from first sentence
-  if (!shortCC && combinedSummary) {
-    let firstSentence = combinedSummary.split("\n")[0] || "";
+    // c) Other patterns
+    if (!shortCC && combinedSummary) {
+      const patternMatch =
+        combinedSummary.match(/guidance on\s+([^.]{3,80})\./i) ||
+        combinedSummary.match(/concern(?:ed)? about\s+([^.]{3,80})\./i) ||
+        combinedSummary.match(/regarding\s+([^.]{3,80})\./i);
 
-    // Remove generic intro like "Thank you..., Habib."
-    firstSentence = firstSentence.replace(/Thank you[^.]*\./i, "").trim();
+      if (patternMatch && patternMatch[1]) {
+        shortCC = patternMatch[1].trim();
+      }
+    }
 
-    // NEW: strip filler like "I understand, Habib."
-    firstSentence = firstSentence
-      .replace(
-        /^(I\s+understand|I\s+see|Okay|Ok|Alright)[^.]*\./i,
+    // d) Fallback from first sentence
+    if (!shortCC && combinedSummary) {
+      let firstSentence = combinedSummary.split("\n")[0] || "";
+
+      firstSentence = firstSentence.replace(/Thank you[^.]*\./i, "").trim();
+      firstSentence = firstSentence
+        .replace(/^(I\s+understand|I\s+see|Okay|Ok|Alright)[^.]*\./i, "")
+        .trim();
+
+      if (patientInfo.name) {
+        const safeName = patientInfo.name.replace(
+          /[-/\\^$*+?.()|[\]{}]/g,
+          "\\$&"
+        );
+        const nameRegex = new RegExp("^" + safeName + "[^a-zA-Z]+", "i");
+        firstSentence = firstSentence.replace(nameRegex, "").trim();
+      }
+
+      firstSentence = firstSentence.replace(
+        /\b(a|the)?\s*\d+\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b[, ]*/i,
         ""
-      )
-      .trim();
-
-    // Strip name + age/sex fragments
-    if (patientInfo.name) {
-      const safeName = patientInfo.name.replace(
-        /[-/\\^$*+?.()|[\]{}]/g,
-        "\\$&"
       );
-      const nameRegex = new RegExp("^" + safeName + "[^a-zA-Z]+", "i");
-      firstSentence = firstSentence.replace(nameRegex, "").trim();
+      firstSentence = firstSentence.replace(
+        /\b(is experiencing|is having|is suffering from|is dealing with|has)\b\s*/i,
+        ""
+      );
+
+      const cutAt = Math.min(
+        ...["which", "that"].map((w) => {
+          const i = firstSentence.toLowerCase().indexOf(w + " ");
+          return i === -1 ? Infinity : i;
+        })
+      );
+      if (cutAt !== Infinity) firstSentence = firstSentence.slice(0, cutAt);
+
+      const commaIdx = firstSentence.indexOf(",");
+      if (commaIdx !== -1) firstSentence = firstSentence.slice(0, commaIdx);
+
+      firstSentence = firstSentence.trim();
+
+      if (firstSentence.length && firstSentence.length <= 80) {
+        shortCC =
+          firstSentence.charAt(0).toUpperCase() + firstSentence.slice(1);
+      }
     }
 
-    firstSentence = firstSentence.replace(
-      /\b(a|the)?\s*\d+\s*[-–]?\s*year[- ]old\s+(male|female|man|woman)\b[, ]*/i,
-      ""
-    );
-    firstSentence = firstSentence.replace(
-      /\b(is experiencing|is having|is suffering from|is dealing with|has)\b\s*/i,
-      ""
-    );
-
-    // Cut at "which/that" etc.
-    const cutAt = Math.min(
-      ...["which", "that"].map((w) => {
-        const i = firstSentence.toLowerCase().indexOf(w + " ");
-        return i === -1 ? Infinity : i;
-      })
-    );
-    if (cutAt !== Infinity) firstSentence = firstSentence.slice(0, cutAt);
-
-    // Cut at first comma to avoid trailing text
-    const commaIdx = firstSentence.indexOf(",");
-    if (commaIdx !== -1) firstSentence = firstSentence.slice(0, commaIdx);
-
-    firstSentence = firstSentence.trim();
-
-    if (firstSentence.length && firstSentence.length <= 80) {
-      shortCC =
-        firstSentence.charAt(0).toUpperCase() + firstSentence.slice(1);
+    if (
+      !shortCC ||
+      /^(i understand|i see|okay|ok|alright)$/i.test(shortCC.trim())
+    ) {
+      shortCC = "Main symptom from consult summary";
     }
-  }
 
-  // e) Safety: never use pure filler as chief complaint
-  if (
-    !shortCC ||
-    /^(i understand|i see|okay|ok|alright)$/i.test(shortCC.trim())
-  ) {
-    shortCC = "Main symptom from consult summary";
-  }
+    /* ------------------------------------------------------------------ */
+    /*  Associated Symptoms (ROS)                                         */
+    /* ------------------------------------------------------------------ */
+    const { chips: rosChips, note: rosNote } =
+      extractRosFromSummary(combinedSummary);
 
-  /* ------------------------------------------------------------------ */
-  /*  3️⃣ Associated Symptoms (ROS)                                      */
-  /* ------------------------------------------------------------------ */
-  const { chips: rosChips, note: rosNote } =
-    extractRosFromSummary(combinedSummary);
+    /* ------------------------------------------------------------------ */
+    /*  Build unified chatData payload                                    */
+    /* ------------------------------------------------------------------ */
+    const consultationData = {
+      conditions: parsedSummary.conditions,
+      confidence: parsedSummary.confidence,
+      narrativeSummary: displaySummary || consultSummary,
+      selfCareText,
+      vitalsData,
+      hpi: {},
+      associatedSymptomsChips: rosChips,
+      associatedSymptomsNote: rosNote || undefined,
+      chiefComplaint: shortCC,
+       stripFollowupLines: true,
+    };
 
-  /* ------------------------------------------------------------------ */
-  /*  4️⃣ Build payload & generate PDF                                   */
-  /* ------------------------------------------------------------------ */
-  const consultationData = {
-    conditions: parsedSummary.conditions,
-    confidence: parsedSummary.confidence,
-    narrativeSummary: displaySummary || consultSummary,
-    selfCareText,
-    vitalsData,
-    hpi: {},
-    associatedSymptomsChips: rosChips,
-    associatedSymptomsNote: rosNote || undefined,
-    chiefComplaint: shortCC,
+    return { consultationData, patientInfo };
   };
 
+  const handleDownloadPatientSummaryPDF = () => {
+    const payload = buildPdfPayload();
+    if (!payload) return;
+    const { consultationData, patientInfo } = payload;
+
+    downloadPatientSummaryFromChatData(
+      consultationData,
+      patientInfo,
+      `Cira_Patient_Summary_${Date.now()}.pdf`
+    );
+  };
+
+const handleDownloadDoctorReportPDF = () => {
+  const payload = buildPdfPayload();
+  if (!payload) return;
+
+  const { consultationData, patientInfo } = payload;
   downloadSOAPFromChatData(
     consultationData,
     patientInfo,
@@ -1592,6 +1515,18 @@ const handleDownloadPDF = () => {
   );
 };
 
+
+  const handleDownloadEHRSOAPPDF = () => {
+    const payload = buildPdfPayload();
+    if (!payload) return;
+    const { consultationData, patientInfo } = payload;
+
+    downloadEHRSOAPFromChatData(
+      consultationData,
+      patientInfo,
+      `Cira_SOAP_Note_${Date.now()}.pdf`
+    );
+  };
 
 
 
@@ -1914,15 +1849,97 @@ const handleDownloadPDF = () => {
                         </p>
                       </div>
 
+                      {/* Primary actions */}
                       <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                        <button
-                          type="button"
-                          className="flex-1 inline-flex items-center justify-center px-4 py-2 sm:py-3 text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-colors"
-                          onClick={handleDownloadPDF}
-                        >
-                          Download Report Note (PDF)
-                        </button>
+                        {/* Download Reports dropdown */}
+                        <div className="relative flex-1" ref={downloadMenuRef}>
+                          <button
+                            type="button"
+                            onClick={() => setIsDownloadMenuOpen((prev) => !prev)}
+                            className="w-full inline-flex items-center justify-between px-4 py-2 sm:py-3 text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-colors"
+                          >
+                            <span>Download Reports</span>
+                            {/* simple chevron */}
+                            <svg
+                              className={`w-4 h-4 ml-2 transition-transform ${isDownloadMenuOpen ? "rotate-180" : ""
+                                }`}
+                              viewBox="0 0 20 20"
+                              fill="none"
+                            >
+                              <path
+                                d="M5 7l5 5 5-5"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </button>
 
+                          {isDownloadMenuOpen && (
+                            <div
+                              className="
+      absolute z-20 mt-2 w-full rounded-xl border border-gray-200
+      bg-white shadow-xl text-sm overflow-hidden
+      divide-y divide-gray-100
+    "
+                            >
+                              <button
+                                type="button"
+                                className="
+        group w-full flex items-center justify-between
+        px-4 py-2.5
+        hover:bg-purple-50 hover:text-purple-700
+        active:bg-purple-100
+        transition-colors
+      "
+                                onClick={() => {
+                                  setIsDownloadMenuOpen(false);
+                                  handleDownloadPatientSummaryPDF();
+                                }}
+                              >
+                                <span className="group-hover:underline">Patient Summary (PDF)</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                className="
+        group w-full flex items-center justify-between
+        px-4 py-2.5
+        hover:bg-purple-50 hover:text-purple-700
+        active:bg-purple-100
+        transition-colors
+      "
+                                onClick={() => {
+                                  setIsDownloadMenuOpen(false);
+                                  handleDownloadDoctorReportPDF(); // doctor clinical report
+                                }}
+                              >
+                                <span className="group-hover:underline">Doctor Clinical Report (PDF)</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                className="
+        group w-full flex items-center justify-between
+        px-4 py-2.5
+        hover:bg-purple-50 hover:text-purple-700
+        active:bg-purple-100
+        transition-colors
+      "
+                                onClick={() => {
+                                  setIsDownloadMenuOpen(false);
+                                  handleDownloadEHRSOAPPDF(); // SOAP / EHR note
+                                }}
+                              >
+                                <span className="group-hover:underline">SOAP / EHR Note (PDF)</span>
+                              </button>
+                            </div>
+                          )}
+
+                        </div>
+
+                        {/* Find doctor stays as a separate button */}
                         <button
                           type="button"
                           onClick={handleFindDoctorSpecialistClick}
@@ -1931,6 +1948,9 @@ const handleDownloadPDF = () => {
                           Find Doctor Specialist
                         </button>
                       </div>
+
+
+
                     </div>
                   </section>
                 )}
