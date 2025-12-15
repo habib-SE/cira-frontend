@@ -13,18 +13,18 @@ export default function DoctorConnectionSection() {
       <div className="max-w-4xl mx-auto text-center">
 
         {/* Headline */}
-        <motion.h2
-          className="text-2xl md:text-4xl lg:text-5xl font-serif font-normal text-gray-950 tracking-tight leading-tight px-2 md:px-0"
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          variants={fadeUp}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-        >
-          When we're done chatting, I can<br />
-          connect you to a human doctor for<br />
-          <span className="text-pink-400">just £49</span>
-        </motion.h2>
+<motion.h2
+  className="text-2xl md:text-4xl lg:text-5xl font-serif font-normal text-gray-950 tracking-tight leading-tight px-2 md:px-0"
+  initial="hidden"
+  whileInView="show"
+  viewport={{ once: true }}
+  variants={fadeUp}
+  transition={{ duration: 0.8, ease: 'easeOut' }}
+>
+  When we're done chatting, I can<br />
+  connect you to a human doctor for<br />
+  <span className="text-pink-400">a consultation</span>
+</motion.h2>
 
         {/* 24/7 Badge */}
         <motion.button
