@@ -109,7 +109,7 @@ function drawCard(doc, x, y, w, h, title) {
   doc.setLineWidth(0.2);
   doc.line(x + 3, y + 6.2, x + w - 3, y + 6.2);
 
-  return { innerX: x + 3, innerY: y + 9, innerW: w - 6, innerH: h - 12 };
+  return { innerX: x + 3, innerY: y + 11, innerW: w - 6, innerH: h - 12 };
 }
 
 function drawKV(doc, box, rows) {
@@ -136,15 +136,27 @@ function drawKV(doc, box, rows) {
 }
 
 function drawPill(doc, x, y, w, h, text, fillHex) {
+  const radius = h / 2; // cleaner pill
+
   setFillHex(doc, fillHex);
   doc.setDrawColor(0, 0, 0, 0);
-  doc.roundedRect(x, y - h + 1, w, h, 3, 3, "F");
 
+  // Draw pill
+  doc.roundedRect(x, y - h + 0.8, w, h, radius, radius, "F");
+
+  // Text
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
+  doc.setFontSize(6.5); // 🔽 smaller text
   setTextHex(doc, "#FFFFFF");
-  doc.text(String(text ?? ""), x + w / 2, y - 1.2, { align: "center" });
+
+  // ✅ Optical vertical centering
+  const textY = y - 0.5;
+
+  doc.text(String(text ?? ""), x + w / 2, textY, {
+    align: "center",
+  });
 }
+
 
 function pillColorFor(value) {
   const v = (value ?? "").toString().toLowerCase();
@@ -219,17 +231,20 @@ function addStatusMark(doc, x, y, ok = true) {
   doc.setFont("ZapfDingbats");
   doc.setFontSize(10);
 
+  const nudge = 3.5; // shift left slightly, adjust as needed
+
   if (ok) {
     setTextHex(doc, COLORS.greenCheck);
-    doc.text("4", x, y); // ✔
+    doc.text("4", x - nudge, y); // ✔
   } else {
     setTextHex(doc, COLORS.red);
-    doc.text("8", x, y); // ✖
+    doc.text("8", x - nudge, y); // ✖
   }
 
   doc.setFont(prev[0], prev[1]);
   doc.setFontSize(prevSize);
 }
+
 
 /* ----------------- MAIN: Generate Doctor Report (Intake-style) ----------------- */
 export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
@@ -245,6 +260,9 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
     conditions = [],
     confidence = null,
     chiefComplaint = "",
+
+    // Current issue data
+    currentIssueData = {},
 
     // JSON blocks (from your intake JSON)
     patient_identity_baseline = {},
@@ -288,7 +306,7 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
 
   // Tuned heights (no overlap)
   const H_TOP = 32;
-  const H_MID = 32;
+  const H_MID = 44;
   const H_POSS = 30;
   const H_VITAL = 40;
   const H_EXP = 40;
@@ -299,47 +317,94 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
   const ageVal = patient_identity_baseline?.age ?? patientAge ?? "—";
   const sexVal = patient_identity_baseline?.biological_sex || patientGender || "—";
 
-  // ---------- Row 1 ----------
-  {
-    const b1 = drawCard(doc, LEFT_X, gy, COL_W, H_TOP, "PATIENT IDENTITY & BASELINE");
-    drawKV(doc, b1, [
-      { label: "Name", value: nameVal },
-      { label: "Age/Gender", value: `${ageVal} / ${sexVal}` },
-      { label: "Height", value: patient_identity_baseline?.height || "—" },
-      { label: "BMI (Calculated)", value: "N/A" },
-      { label: "Date", value: consultDate || "—" },
-      { label: "Report Type", value: "AI Clinical Intake Summary" },
-    ]);
 
-    const b2 = drawCard(doc, RIGHT_X, gy, COL_W, H_TOP, "CHIEF COMPLAINT");
-    drawKV(doc, b2, [
-      { label: "Primary Concern:", value: chief_complaint?.primary_concern || chiefComplaint || "—" },
-      { label: "Onset:", value: chief_complaint?.onset || "—" },
-      { label: "Duration:", value: chief_complaint?.duration || "—" },
-      { label: "Previous Episodes:", value: chief_complaint?.previous_episodes || "Unknown" },
-    ]);
-  }
-  gy += H_TOP + G;
+// ---------- Row 1 ----------
+{
+  const b1 = drawCard(doc, LEFT_X, gy, COL_W, H_TOP, "PATIENT IDENTITY & BASELINE");
+  drawKV(doc, b1, [
+    { label: "Name", value: nameVal },
+    { label: "Age/Gender", value: `${ageVal} / ${sexVal}` },
+    { label: "Height", value: patient_identity_baseline?.height || "—" },
+    // { label: "BMI (Calculated)", value: "N/A" },
+    { label: "Date", value: consultDate || "—" },
+    { label: "Report Type", value: "AI Clinical Intake Summary" },
+  ]);
 
-  // ---------- Row 2 ----------
-  {
-    const b3 = drawCard(doc, LEFT_X, gy, COL_W, H_BOTTOM, "FUNCTIONAL STATUS");
-    drawKV(doc, b3, [
-      { label: "Eating/drinking normally", value: normalizeYesNoUnknown(functional_status?.eating_drinking_normally) },
-      { label: "Hydration", value: normalizeYesNoUnknown(functional_status?.hydration) },
-      { label: "Activity level", value: normalizeYesNoUnknown(functional_status?.activity_level) },
-    ]);
+  const b2 = drawCard(doc, RIGHT_X, gy, COL_W, H_TOP, "CHIEF COMPLAINT");
+  
+  // Get values from multiple sources
+  const primaryConcern = chief_complaint?.primary_concern || 
+                        currentIssueData?.primarySymptom || 
+                        chiefComplaint || 
+                        "—";
+  const onset = chief_complaint?.onset || 
+                currentIssueData?.onset || 
+                "—";
+  const pattern = chief_complaint?.pattern || 
+                  currentIssueData?.pattern || 
+                  history_of_present_illness_hpi?.progression_pattern || 
+                  "—";
+  const severity = currentIssueData?.severity || 
+                   (chief_complaint?.severity ? `${chief_complaint.severity}/10` : "—");
+  const recentInjury = currentIssueData?.recentInjury || "No";
+  const previousEpisodes = chief_complaint?.previous_episodes || "Unknown";
+  
+  drawKV(doc, b2, [
+    { label: "Primary Concern:", value: primaryConcern },
+    { label: "Onset:", value: onset },
+    { label: "Duration:", value: chief_complaint?.duration || "—" },
+    { label: "Severity (Pain):", value: severity },
+    { label: "Pattern:", value: pattern },
+    { label: "Previous Episodes:", value: previousEpisodes },
+    { label: "Recent Injury:", value: recentInjury },
+  ]);
+}
+gy += H_TOP + G;
 
-    const b4 = drawCard(doc, RIGHT_X, gy, COL_W, H_MID, "HISTORY OF PRESENT ILLNESS (HPI)");
-    drawKV(doc, b4, [
-      { label: "Location:", value: history_of_present_illness_hpi?.location_or_system || "—" },
-      { label: "Chronic Illnesses:", value: medical_background?.chronic_illnesses || "—" },
-      { label: "Previous Surgeries:", value: medical_background?.previous_surgeries || "—" },
-      { label: "Current Medications:", value: medical_background?.current_medications || "—" },
-      { label: "Family Allergies:", value: medical_background?.family_allergies || medical_background?.family_history || "—" },
-    ]);
-  }
-  gy += H_MID + G;
+// ---------- Row 2 ----------
+{
+  // ---------------- HPI Card ----------------
+  const H_HPI = H_MID + 5; // HPI card is taller
+  const b4 = drawCard(doc, LEFT_X, gy, COL_W, H_HPI, "HISTORY OF PRESENT ILLNESS (HPI)");
+
+  // Values for HPI
+  const location = history_of_present_illness_hpi?.location_or_system || "—";
+  const chronicIllnesses = medical_background?.chronic_illnesses || "—";
+  const previousSurgeries = medical_background?.previous_surgeries || "—";
+  const currentMedications = medical_background?.current_medications || "—";
+  const drugAllergies = medical_background?.drug_allergies || "—";
+  const familyHistory = medical_background?.family_history || "—";
+  const relievingFactors = history_of_present_illness_hpi?.relieving_factors || "None reported";
+  const worseningFactors = history_of_present_illness_hpi?.worsening_factors || "None reported";
+  const associatedSymptoms = history_of_present_illness_hpi?.associated_symptoms?.join(", ") || "None";
+
+  // Draw HPI fields
+  drawKV(doc, b4, [
+    { label: "Location:", value: location },
+    { label: "Chronic Illnesses:", value: chronicIllnesses },
+    { label: "Previous Surgeries:", value: previousSurgeries },
+    { label: "Current Medications:", value: currentMedications },
+    { label: "Drug Allergies:", value: drugAllergies },
+    { label: "Family History:", value: familyHistory },
+    { label: "Associated Symptoms:", value: associatedSymptoms },
+    { label: "Relieving Factors:", value: relievingFactors },
+    { label: "Worsening Factors:", value: worseningFactors },
+  ]);
+
+  // ---------------- Functional Status Card ----------------
+  const H_FUNC = H_BOTTOM; // Functional Status is shorter
+  const b3 = drawCard(doc, RIGHT_X, gy, COL_W, H_FUNC, "FUNCTIONAL STATUS");
+
+  // Draw Functional Status fields
+  drawKV(doc, b3, [
+    { label: "Eating/drinking normally", value: normalizeYesNoUnknown(functional_status?.eating_drinking_normally) },
+    { label: "Hydration", value: normalizeYesNoUnknown(functional_status?.hydration) },
+    { label: "Activity level", value: normalizeYesNoUnknown(functional_status?.activity_level) },
+  ]);
+  
+  // Move to next row based on the TALLER card to avoid extra space
+  gy += Math.max(H_HPI, H_FUNC) + G;
+}
 
   // ---------- Row 3 (full width): Clinical Possibilities ----------
   {
@@ -363,7 +428,7 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
           : "Not recorded",
       },
       {
-        label: "Oxygen Saturation (SpO₂)",
+        label: "Oxygen Saturation",
         value: vital_signs_current_status?.oxygen_saturation_spo2_percent
           ? `${vital_signs_current_status.oxygen_saturation_spo2_percent}%`
           : "Not recorded",
@@ -396,15 +461,15 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
       doc.text(lbl, b6.innerX, y);
 
       const pillText = normalizeYesNoUnknown(val);
-      drawPill(
-        doc,
-        b6.innerX + b6.innerW * 0.55,
-        y,
-        b6.innerW * 0.40,
-        4.6,
-        pillText,
-        pillColorFor(pillText)
-      );
+   drawPill(
+  doc,
+  b6.innerX + b6.innerW * 0.62, // push slightly right
+  y,
+  b6.innerW * 0.18,            // 🔽 narrower
+  3.8,                         // 🔽 shorter
+  pillText,
+  pillColorFor(pillText)
+);
     });
   }
   gy += H_VITAL + G;
@@ -423,26 +488,26 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
     const startY = b7.innerY;
     const rowH = 5.2;
 
-    exp.forEach(([lbl, val], i) => {
-      const y = startY + i * rowH;
-      if (y > b7.innerY + b7.innerH) return;
+   exp.forEach(([lbl, val], i) => {
+  const y = startY + i * rowH;
+  if (y > b7.innerY + b7.innerH) return;
 
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      setTextHex(doc, COLORS.grayText);
-      doc.text(lbl, b7.innerX, y);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  setTextHex(doc, COLORS.grayText);
+  doc.text(lbl, b7.innerX, y);
 
-      const pillText = normalizeYesNoUnknown(val);
-      drawPill(
-        doc,
-        b7.innerX + b7.innerW * 0.55,
-        y,
-        b7.innerW * 0.40,
-        4.6,
-        pillText,
-        pillColorFor(pillText)
-      );
-    });
+  const pillText = normalizeYesNoUnknown(val);
+  drawPill(
+    doc,
+    b7.innerX + b7.innerW * 0.62, // push slightly right like b6
+    y,
+    b7.innerW * 0.18,             // narrower pill
+    3.8,                           // shorter height
+    pillText,
+    pillColorFor(pillText)
+  );
+});
 
     const b8 = drawCard(doc, RIGHT_X, gy, COL_W, H_EXP, "REVIEW OF SYSTEMS (ROS) – TRAFFIC LIGHT VIEW");
     const ros = [
@@ -459,75 +524,72 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
     const rStartY = b8.innerY;
 
     ros.forEach(([lbl, val], i) => {
-      const y = rStartY + i * rowH;
-      if (y > b8.innerY + b8.innerH) return;
+  const y = rStartY + i * rowH;
+  if (y > b8.innerY + b8.innerH) return;
 
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      setTextHex(doc, COLORS.grayText);
-      doc.text(lbl, b8.innerX, y);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  setTextHex(doc, COLORS.grayText);
+  doc.text(lbl, b8.innerX, y);
 
-      const pillText = normalizeYesNoUnknown(val);
-      drawPill(
-        doc,
-        b8.innerX + b8.innerW * 0.55,
-        y,
-        b8.innerW * 0.40,
-        4.6,
-        pillText,
-        pillColorFor(pillText)
-      );
-    });
+  const pillText = normalizeYesNoUnknown(val);
+  drawPill(
+    doc,
+    b8.innerX + b8.innerW * 0.62, // push slightly right like b6
+    y,
+    b8.innerW * 0.18,             // narrower pill
+    3.8,                           // shorter height
+    pillText,
+    pillColorFor(pillText)
+  );
+});
   }
   gy += H_EXP + G;
 
-  // ---------- Row 6: Functional + Clinical Note ----------
-  {
-    const b9 = drawCard(doc, LEFT_X, gy, COL_W, H_MID, "AI CLINICAL ASSESSMENT");
+// ---------------- AI CLINICAL ASSESSMENT ----------------
+const b9 = drawCard(doc, LEFT_X, gy, COL_W, H_MID - 16, "AI CLINICAL ASSESSMENT"); // reduced height
 
-    // values (from your JSON)
-    const overall = ai_clinical_assessment?.overall_stability || "Unknown";
-    const redFlags = normalizeYesNoUnknown(ai_clinical_assessment?.red_flag_symptoms_present);
+// values (from your JSON)
+const overall = ai_clinical_assessment?.overall_stability || "Unknown";
+const redFlags = normalizeYesNoUnknown(ai_clinical_assessment?.red_flag_symptoms_present);
 
-    // decide mark color
-    const overallOk = String(overall).toLowerCase().includes("stable");
-    const redFlagOk = String(redFlags).toLowerCase().startsWith("no"); // NO = good
+// decide mark color
+const overallOk = String(overall).toLowerCase().includes("stable");
+const redFlagOk = String(redFlags).toLowerCase().startsWith("no");
 
-    const r1y = b9.innerY + 2;
-    const r2y = b9.innerY + 8;
+// vertical positions for text/marks
+const r1y = b9.innerY + 2; // Overall Stability
+const r2y = r1y + 6;       // Red-Flag Symptoms (keep close for reduced height)
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    setTextHex(doc, "#111827");
+doc.setFont("helvetica", "normal");
+doc.setFontSize(8);
+setTextHex(doc, "#111827");
 
-    doc.text("Overall Stability:", b9.innerX, r1y);
-    doc.text("Red-Flag Symptoms:", b9.innerX, r2y);
+// labels (optional, or can remove if only marks are needed)
+doc.text("Overall Stability:", b9.innerX, r1y);
+doc.text("Red-Flag Symptoms:", b9.innerX, r2y);
 
-    // right-side status like screenshot
-    const rightX = b9.innerX + b9.innerW - 4;
+// right-side marks only
+const rightX = b9.innerX + b9.innerW - 4;
+addStatusMark(doc, rightX, r1y, overallOk);
+addStatusMark(doc, rightX, r2y, redFlagOk);
 
-    addStatusMark(doc, rightX, r1y, overallOk);
+// ---------------- CLINICAL NOTE ----------------
+const b10 = drawCard(doc, RIGHT_X, gy, COL_W, H_BOTTOM, "CLINICAL NOTE TO PHYSICIAN");
+doc.setFont("helvetica", "normal");
+doc.setFontSize(7);
+setTextHex(doc, COLORS.grayText);
 
-    setTextHex(doc, redFlagOk ? "#111827" : COLORS.red);
-    doc.setFont("helvetica", "bold");
-    doc.text(redFlagOk ? "NO" : "YES", rightX, r2y, { align: "right" });
+textInBox(
+  doc,
+  ai_clinical_assessment?.clinical_note_to_physician || "—",
+  b10.innerX,
+  b10.innerY,
+  b10.innerW,
+  b10.innerH,
+  3.2
+);
 
-
-    const b10 = drawCard(doc, RIGHT_X, gy, COL_W, H_BOTTOM, "CLINICAL NOTE TO PHYSICIAN");
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    setTextHex(doc, COLORS.grayText);
-
-    textInBox(
-      doc,
-      ai_clinical_assessment?.clinical_note_to_physician || "—",
-      b10.innerX,
-      b10.innerY,
-      b10.innerW,
-      b10.innerH,
-      3.2
-    );
-  }
 
   // Footer disclaimer (no overlap)
   doc.setFont("helvetica", "italic");
@@ -1322,97 +1384,219 @@ export const generateEHRSOAPNotePDF = (
   const contentW = pageW - marginX * 2;
   let y = 22;
 
-  /* -------------------- Title: SOAP Note -------------------- */
-  doc.setFont("times", "bold");
-  doc.setFontSize(22);
-  doc.text("SOAP Note", marginX, y);
-  y += 14;
+  // -------------------- Title: SOAP Note --------------------
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.text("CLINICAL SOAP NOTE", pageW / 2, y, { align: "center" });
+  
+  // Optional logo
+  if (options.logoImage) {
+    try {
+      doc.addImage(options.logoImage, "PNG", marginX, y - 3, 15, 15);
+    } catch (_) { }
+  }
+  
+  y += 7;
 
-  /* -------------------- Header: Patient / Date --------------- */
-  doc.setFont("times", "normal");
+  // -------------------- Header: Patient Info --------------------
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.2);
+  doc.line(marginX, y, pageW - marginX, y);
+  y += 10;
+
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
+  doc.text("PATIENT INFORMATION", marginX, y);
+  
+  doc.setFont("helvetica", "normal");
+  doc.text(`Date: ${consultDate || new Date().toLocaleDateString("en-US")}`, pageW - marginX, y, { align: "right" });
+  
+  y += 8;
 
-  doc.text("Patient", marginX, y);
-  const dateLabel =
-    consultDate || new Date().toLocaleDateString("en-US");
-  doc.text(`Date: ${dateLabel}`, pageW - marginX, y, { align: "right" });
-
-  y += 12;
-
-  if (patientName || patientAge || patientGender) {
-    const headerBits = [
-      patientName ? `Name: ${patientName}` : null,
-      patientAge ? `Age: ${patientAge}` : null,
-      patientGender ? `Sex: ${patientGender}` : null,
-    ]
-      .filter(Boolean)
-      .join("    ");
-
-    if (headerBits) {
-      doc.setFont("times", "normal");
-      doc.setFontSize(11);
-      doc.text(headerBits, marginX, y);
-      y += 10;
-    }
+  const patientDetails = [];
+  if (patientName) patientDetails.push(`Name: ${patientName}`);
+  if (patientAge) patientDetails.push(`Age: ${patientAge}`);
+  if (patientGender) patientDetails.push(`Gender: ${patientGender}`);
+  
+  if (patientDetails.length > 0) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(patientDetails.join("   |   "), marginX, y);
+    y += 14;
   }
 
-  /* -------------------- Helper: add one SOAP section --------- */
-  const addSection = (title, textValue) => {
+  // -------------------- Helper: Format bullet points --------------------
+  const formatBulletPoints = (text, indent = 0) => {
+    if (!text) return [];
+    
+    const lines = [];
+    const sentences = text.split(/(?<=[.!?])\s+/);
+    
+    sentences.forEach((sentence, index) => {
+      const trimmed = sentence.trim();
+      if (!trimmed) return;
+      
+      if (index === 0 && trimmed.includes(":") && trimmed.split(":")[0].length < 20) {
+        // This is likely a label like "Measurements:" - keep it as a header
+        lines.push({ text: trimmed, isBullet: false, isHeader: true });
+      } else {
+        lines.push({ 
+          text: trimmed.replace(/^[•\-]\s*/, ""), // Remove existing bullets
+          isBullet: true,
+          isHeader: false 
+        });
+      }
+    });
+    
+    return lines;
+  };
+
+  // -------------------- Helper: Add measurements section --------------------
+  const addMeasurementsSection = (text) => {
+    if (!text) return;
+    
+    // Extract measurements section
+    const measurementsMatch = text.match(/Measurements:[\s\S]*/i);
+    if (!measurementsMatch) return text;
+    
+    const measurementsText = measurementsMatch[0];
+    const remainingText = text.replace(measurementsText, "").trim();
+    
+    // Parse measurements
+    const measurements = measurementsText
+      .replace(/^Measurements:\s*/i, "")
+      .split(/,\s*/)
+      .map(m => m.trim())
+      .filter(m => m);
+    
+    // Draw measurements in a table format
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("MEASUREMENTS:", marginX, y);
+    y += 7;
+    
+    doc.setFont("helvetica", "normal");
+    const measurementCols = 2;
+    const colWidth = (contentW - 10) / measurementCols;
+    
+    measurements.forEach((measurement, idx) => {
+      const col = idx % measurementCols;
+      const row = Math.floor(idx / measurementCols);
+      const x = marginX + 5 + (col * colWidth);
+      const measurementY = y + (row * 6);
+      
+      // Format measurement nicely
+      const formatted = measurement
+        .replace(/(\d+(\.\d+)?)\s*(°?[CF]|kg|feet|cm|in)/, "$1 $3") // Add space before units
+        .replace(/\s+/g, " ")
+        .trim();
+      
+      doc.text(`• ${formatted}`, x, measurementY);
+      
+      // Update y position if this is the last item in column
+      if (idx === measurements.length - 1 && col === measurementCols - 1) {
+        y += (row + 1) * 6;
+      } else if (idx === measurements.length - 1) {
+        y += (row + 1) * 6;
+      }
+    });
+    
+    y += 5;
+    return remainingText;
+  };
+
+  // -------------------- Helper: add one SOAP section --------------------
+  const addSOAPSection = (title, textValue) => {
     if (y > 260) {
       doc.addPage();
       y = 22;
     }
 
-    doc.setFont("times", "bold");
+    // Section header with underline
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    doc.text(title, marginX, y);
-    y += 8;
+    doc.text(title.toUpperCase(), marginX, y);
+    doc.setDrawColor(150, 150, 150);
+    doc.setLineWidth(0.3);
+    doc.line(marginX, y + 1, marginX + 40, y + 1);
+    
+    y += 10;
 
-    doc.setFont("times", "normal");
-    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
 
     const raw = (textValue || "").trim();
     if (!raw) {
-      doc.text("• [no data]", marginX, y);
-      y += 10;
+      doc.text("• No data available", marginX, y);
+      y += 8;
       return;
     }
 
-    const paragraphs = raw
-      .split(/\n{2,}/)
-      .map((p) => p.trim())
-      .filter(Boolean);
-
-    paragraphs.forEach((para) => {
+    // Handle measurements section first
+    const textWithoutMeasurements = addMeasurementsSection(raw);
+    
+    // Process remaining text as bullet points
+    const bulletLines = formatBulletPoints(textWithoutMeasurements);
+    
+    bulletLines.forEach((line) => {
       if (y > 280) {
         doc.addPage();
         y = 22;
       }
 
-      const trimmed = para.replace(/^\s+/, "");
-      let bulletText = trimmed;
-
-      if (!/^[•\-]/.test(trimmed)) {
-        bulletText = "• " + trimmed;
-      }
-
-      const lines = doc.splitTextToSize(bulletText, contentW);
-      lines.forEach((line) => {
-        doc.text(line, marginX, y);
+      if (line.isHeader) {
+        // Header line (like "Measurements:")
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text(line.text, marginX, y);
         y += 6;
-      });
-
-      y += 3;
+      } else if (line.isBullet) {
+        // Bullet point
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        
+        // Draw bullet character
+        doc.text("•", marginX, y);
+        
+        // Split text into multiple lines if needed
+        const textLines = doc.splitTextToSize(line.text, contentW - 8);
+        textLines.forEach((textLine, lineIndex) => {
+          const indent = lineIndex === 0 ? marginX + 4 : marginX + 8;
+          doc.text(textLine, indent, y + (lineIndex * 6));
+        });
+        
+        y += (textLines.length * 4.8) + 1.5;
+      } else {
+        // Regular text
+        const textLines = doc.splitTextToSize(line.text, contentW);
+        textLines.forEach((textLine) => {
+          doc.text(textLine, marginX, y);
+          y += 6;
+        });
+        y += 3;
+      }
     });
 
-    y += 3;
+    y += 8; // Extra space between sections
   };
 
-  /* -------------------- S / O / A / P in order ---------------- */
-  addSection("Subjective", subjective);
-  addSection("Objective", objective);
-  addSection("Assessment", assessment);
-  addSection("Plan", plan);
+  // -------------------- S / O / A / P in order --------------------
+  addSOAPSection("Subjective", subjective);
+  addSOAPSection("Objective", objective);
+  addSOAPSection("Assessment", assessment);
+  addSOAPSection("Plan", plan);
+
+  // -------------------- Footer --------------------
+  y = 280;
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.2);
+  doc.line(marginX, y, pageW - marginX, y);
+  y += 5;
+  
+  const footerText = "Generated by Cira AI Clinical Assistant. This SOAP note is for informational purposes only and should be reviewed by a qualified healthcare professional.";
+  doc.text(footerText, pageW / 2, y, { align: "center" });
 
   return doc;
 };

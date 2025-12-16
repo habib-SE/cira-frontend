@@ -1173,468 +1173,1108 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     };
   }, []);
 
+  // const buildPdfPayload = () => {
+  //   if (!consultSummary) {
+  //     console.warn("❌ No consultSummary available");
+  //     return null;
+  //   }
+
+  //   console.log("📝 Building PDF payload for Doctor Report...");
+
+  //   // Use both cleaned and raw text as sources
+  //   const combinedSummary = `${displaySummary || ""}\n${consultSummary || ""}`.trim();
+
+  //   // ------------------------------------------------------------------
+  //   // ADD THIS FUNCTION: Extract current issue data from summary
+  //   // ------------------------------------------------------------------
+  //   const extractCurrentIssueFromSummary = (text) => {
+  //     if (!text) return null;
+
+  //     const currentIssue = {
+  //       primarySymptom: "Not specified",
+  //       onset: "Not specified",
+  //       pattern: "Not specified",
+  //       severity: "Not specified",
+  //       recentInjury: "No",
+  //       associatedFactors: "None reported"
+  //     };
+
+  //     // Extract primary symptom - try to find the main complaint
+  //     const symptomKeywords = ['headache', 'pain', 'fever', 'cough', 'sore throat', 'nausea',
+  //       'fatigue', 'dizziness', 'shortness of breath', 'chest pain'];
+
+  //     for (const keyword of symptomKeywords) {
+  //       if (text.toLowerCase().includes(keyword)) {
+  //         // Try to get the full phrase
+  //         const regex = new RegExp(`([^.!?]*${keyword}[^.!?]*[.!?])`, 'i');
+  //         const match = text.match(regex);
+  //         if (match) {
+  //           currentIssue.primarySymptom = match[0].trim();
+  //           break;
+  //         } else {
+  //           currentIssue.primarySymptom = keyword.charAt(0).toUpperCase() + keyword.slice(1);
+  //         }
+  //       }
+  //     }
+
+  //     // If no symptom found, use the first sentence
+  //     if (currentIssue.primarySymptom === "Not specified") {
+  //       const firstSentence = text.split(/[.!?]/)[0].trim();
+  //       if (firstSentence.length > 10) {
+  //         currentIssue.primarySymptom = firstSentence;
+  //       }
+  //     }
+
+  //     // Extract onset time
+  //     const onsetPatterns = [
+  //       /(\d+)\s+(day|week|month|hour)s?\s+ago/i,
+  //       /(?:since|for)\s+(\d+)\s+(day|week|month|hour)/i,
+  //       /(?:onset|started|began)\s+(?:about|approximately)?\s*(\d+)\s+(day|week|month|hour)/i,
+  //       /last\s+(night|evening|morning|afternoon|week|month)/i,
+  //       /yesterday/i,
+  //       /today/i
+  //     ];
+
+  //     for (const pattern of onsetPatterns) {
+  //       const match = text.match(pattern);
+  //       if (match) {
+  //         if (pattern.toString().includes('last')) {
+  //           currentIssue.onset = `Last ${match[1]}`;
+  //         } else if (match[0].toLowerCase() === 'yesterday') {
+  //           currentIssue.onset = "Yesterday";
+  //         } else if (match[0].toLowerCase() === 'today') {
+  //           currentIssue.onset = "Today";
+  //         } else {
+  //           const num = match[1];
+  //           const unit = match[2];
+  //           currentIssue.onset = `Approximately ${num} ${unit}${parseInt(num) > 1 ? 's' : ''} ago`;
+  //         }
+  //         break;
+  //       }
+  //     }
+
+  //     // Extract pattern (persistent vs intermittent)
+  //     if (text.toLowerCase().includes('constant') ||
+  //       text.toLowerCase().includes('persistent') ||
+  //       text.toLowerCase().includes('continuous')) {
+  //       currentIssue.pattern = "Constant";
+  //     } else if (text.toLowerCase().includes('intermittent') ||
+  //       text.toLowerCase().includes('comes and goes') ||
+  //       text.toLowerCase().includes('on and off')) {
+  //       currentIssue.pattern = "Intermittent";
+  //     } else if (text.toLowerCase().includes('worse') && text.toLowerCase().includes('better')) {
+  //       currentIssue.pattern = "Waxing and waning";
+  //     }
+
+  //     // Extract severity/pain score
+  //     const severityPatterns = [
+  //       /(\d+(?:\.\d+)?)\s*\/\s*10/i,
+  //       /pain\s*(?:level|score|scale)?\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*(?:out of|of|\/)\s*10/i,
+  //       /severity\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*(?:out of|of|\/)\s*10/i,
+  //       /(\d+(?:\.\d+)?)\s*(?:out of|of|\/)\s*10/i
+  //     ];
+
+  //     for (const pattern of severityPatterns) {
+  //       const match = text.match(pattern);
+  //       if (match) {
+  //         currentIssue.severity = `${match[1]} / 10`;
+  //         break;
+  //       }
+  //     }
+
+  //     // If no numeric severity found, look for descriptive terms
+  //     if (currentIssue.severity === "Not specified") {
+  //       if (text.toLowerCase().includes('mild')) {
+  //         currentIssue.severity = "Mild (2-3/10)";
+  //       } else if (text.toLowerCase().includes('moderate')) {
+  //         currentIssue.severity = "Moderate (4-6/10)";
+  //       } else if (text.toLowerCase().includes('severe') || text.toLowerCase().includes('severe')) {
+  //         currentIssue.severity = "Severe (7-9/10)";
+  //       }
+  //     }
+
+  //     // Check for injury mention
+  //     const injuryKeywords = ['injury', 'trauma', 'fell', 'fall', 'accident', 'hit', 'struck', 'injured'];
+  //     for (const keyword of injuryKeywords) {
+  //       if (text.toLowerCase().includes(keyword)) {
+  //         currentIssue.recentInjury = "Yes";
+  //         break;
+  //       }
+  //     }
+
+  //     // Check for associated factors
+  //     const associatedFactors = [];
+
+  //     // Light sensitivity
+  //     if (text.toLowerCase().includes('light') ||
+  //       text.toLowerCase().includes('bright') ||
+  //       text.toLowerCase().includes('photophobia') ||
+  //       text.toLowerCase().includes('sensitivity to light')) {
+  //       associatedFactors.push("Light sensitivity");
+  //     }
+
+  //     // Sound sensitivity
+  //     if (text.toLowerCase().includes('sound') ||
+  //       text.toLowerCase().includes('noise') ||
+  //       text.toLowerCase().includes('phonophobia')) {
+  //       associatedFactors.push("Sound sensitivity");
+  //     }
+
+  //     // Nausea/vomiting
+  //     if (text.toLowerCase().includes('nausea') || text.toLowerCase().includes('vomit')) {
+  //       associatedFactors.push("Nausea");
+  //     }
+
+  //     // Fever/chills
+  //     if (text.toLowerCase().includes('fever') || text.toLowerCase().includes('chill')) {
+  //       associatedFactors.push("Fever/chills");
+  //     }
+
+  //     // Movement related
+  //     if (text.toLowerCase().includes('move') && text.toLowerCase().includes('worse')) {
+  //       associatedFactors.push("Worse with movement");
+  //     }
+
+  //     if (associatedFactors.length > 0) {
+  //       currentIssue.associatedFactors = associatedFactors.join(", ");
+  //     }
+
+  //     return currentIssue;
+  //   };
+
+  //   // Extract current issue data
+  //   const currentIssueData = extractCurrentIssueFromSummary(combinedSummary);
+  //   console.log("📋 Extracted current issue data:", currentIssueData);
+
+  //   // ------------------------------------------------------------------
+  //   // 1️⃣ PATIENT INFORMATION - Extract from both sources
+  //   // ------------------------------------------------------------------
+  //   const { name: nameFromSummary, age: ageFromSummary, gender: genderFromSummary } =
+  //     extractDemographicsFromSummary(combinedSummary);
+
+  //   let patientInfo = {
+  //     name: nameFromSummary || null,
+  //     age: ageFromSummary || null,
+  //     gender: genderFromSummary || null,
+  //     consultDate: summaryCreatedAt
+  //       ? summaryCreatedAt.toLocaleDateString()
+  //       : new Date().toLocaleDateString(),
+  //   };
+
+  //   // Helper to safely search nested JSON
+  //   const deepFind = (obj, key) => {
+  //     if (!obj || typeof obj !== "object") return null;
+  //     if (Object.prototype.hasOwnProperty.call(obj, key)) {
+  //       return obj[key];
+  //     }
+  //     for (const value of Object.values(obj)) {
+  //       if (value && typeof value === "object") {
+  //         const result = deepFind(value, key);
+  //         if (result !== null && result !== undefined) return result;
+  //       }
+  //     }
+  //     return null;
+  //   };
+
+  //   // Initialize JSON structure
+  //   let jsonData = {
+  //     patient_identity_baseline: {},
+  //     chief_complaint: {},
+  //     history_of_present_illness_hpi: {},
+  //     medical_background: {},
+  //     vital_signs_current_status: {},
+  //     lifestyle_risk_factors: {},
+  //     exposure_environment: {},
+  //     functional_status: {},
+  //     review_of_systems_traffic_light_view: {},
+  //     ai_clinical_assessment: {}
+  //   };
+
+  //   // 🔹 Extract from JSON report if available
+  //   if (consultReport && typeof consultReport === "object") {
+  //     console.log("📊 Extracting from JSON report:", consultReport);
+
+  //     // Merge JSON data
+  //     jsonData = {
+  //       ...jsonData,
+  //       ...consultReport
+  //     };
+  //   }
+
+  //   // ------------------------------------------------------------------
+  //   // 2️⃣ ENHANCE DATA WITH EXTRACTED INFO
+  //   // ------------------------------------------------------------------
+
+  //   // Patient Identity Baseline
+  //   jsonData.patient_identity_baseline = {
+  //     name: jsonData.patient_identity_baseline?.name ||
+  //       deepFind(jsonData, "name") ||
+  //       nameFromSummary ||
+  //       "User",
+  //     age: jsonData.patient_identity_baseline?.age ||
+  //       deepFind(jsonData, "age") ||
+  //       ageFromSummary ||
+  //       "",
+  //     biological_sex: jsonData.patient_identity_baseline?.biological_sex ||
+  //       deepFind(jsonData, "biological_sex") ||
+  //       deepFind(jsonData, "gender") ||
+  //       genderFromSummary ||
+  //       "",
+  //     weight: jsonData.patient_identity_baseline?.weight ||
+  //       deepFind(jsonData, "weight") ||
+  //       deepFind(jsonData, "Weight") ||
+  //       "Not specified",
+  //     height: jsonData.patient_identity_baseline?.height ||
+  //       deepFind(jsonData, "height") ||
+  //       deepFind(jsonData, "Height") ||
+  //       "Not specified"
+  //   };
+
+  //   // Chief Complaint
+  //   const extractedCC = extractMainSymptomFromText(combinedSummary);
+  //   jsonData.chief_complaint = {
+  //     primary_concern: jsonData.chief_complaint?.primary_concern ||
+  //       deepFind(jsonData, "primary_concern") ||
+  //       deepFind(jsonData, "chief_complaint") ||
+  //       extractedCC ||
+  //       (currentIssueData?.primarySymptom || "Not specified"), // Use current issue data as fallback
+  //     onset: jsonData.chief_complaint?.onset ||
+  //       deepFind(jsonData, "onset") ||
+  //       (currentIssueData?.onset || "Not specified"), // Use current issue data as fallback
+  //     duration: jsonData.chief_complaint?.duration ||
+  //       deepFind(jsonData, "duration") ||
+  //       "Not specified",
+  //     previous_episodes: jsonData.chief_complaint?.previous_episodes ||
+  //       deepFind(jsonData, "previous_episodes") ||
+  //       "None reported"
+  //   };
+
+  //   // HPI - Use current issue data to enhance this section
+  //   jsonData.history_of_present_illness_hpi = {
+  //     location_or_system: jsonData.history_of_present_illness_hpi?.location_or_system ||
+  //       deepFind(jsonData, "location") ||
+  //       "General-systems",
+  //     severity_0_to_10: jsonData.history_of_present_illness_hpi?.severity_0_to_10 ||
+  //       (currentIssueData?.severity ?
+  //         currentIssueData.severity.replace(/[^0-9.]/g, '').split('/')[0] :
+  //         null) ||
+  //       deepFind(jsonData, "severity") ||
+  //       null,
+  //     progression_pattern: jsonData.history_of_present_illness_hpi?.progression_pattern ||
+  //       (currentIssueData?.pattern || "Recent onset"),
+  //     associated_symptoms: jsonData.history_of_present_illness_hpi?.associated_symptoms ||
+  //       (currentIssueData?.associatedFactors ?
+  //         [currentIssueData.associatedFactors] : []) ||
+  //       (deepFind(jsonData, "associated_symptoms") ?
+  //         Array.isArray(deepFind(jsonData, "associated_symptoms"))
+  //           ? deepFind(jsonData, "associated_symptoms")
+  //           : [deepFind(jsonData, "associated_symptoms")]
+  //         : []),
+  //     relieving_factors: jsonData.history_of_present_illness_hpi?.relieving_factors || null,
+  //     worsening_factors: jsonData.history_of_present_illness_hpi?.worsening_factors || null
+  //   };
+
+  //   // Medical Background
+  //   jsonData.medical_background = {
+  //     chronic_illnesses: jsonData.medical_background?.chronic_illnesses ||
+  //       deepFind(jsonData, "chronic_conditions") ||
+  //       deepFind(jsonData, "chronicIllnesses") ||
+  //       "None reported",
+  //     previous_surgeries: jsonData.medical_background?.previous_surgeries || null,
+  //     current_medications: jsonData.medical_background?.current_medications ||
+  //       deepFind(jsonData, "currentMedications") ||
+  //       "None reported",
+  //     drug_allergies: jsonData.medical_background?.drug_allergies ||
+  //       deepFind(jsonData, "allergies") ||
+  //       "None reported",
+  //     family_history: jsonData.medical_background?.family_history || null,
+  //     pregnancy_status: jsonData.medical_background?.pregnancy_status || "Not_applicable"
+  //   };
+
+  //   // Vital Signs
+  //   jsonData.vital_signs_current_status = {
+  //     heart_rate_bpm: jsonData.vital_signs_current_status?.heart_rate_bpm ||
+  //       (vitalsData?.heartRate ? `${vitalsData.heartRate}` : null),
+  //     oxygen_saturation_spo2_percent: jsonData.vital_signs_current_status?.oxygen_saturation_spo2_percent ||
+  //       (vitalsData?.spo2 ? `${vitalsData.spo2}` : null),
+  //     core_temperature: jsonData.vital_signs_current_status?.core_temperature ||
+  //       (vitalsData?.temperature ? `${vitalsData.temperature}` : null),
+  //     reported_fever: jsonData.vital_signs_current_status?.reported_fever ||
+  //       (vitalsData?.hasFever ? "Yes" : "No"),
+  //     blood_pressure: jsonData.vital_signs_current_status?.blood_pressure || "Not measured",
+  //     blood_pressure_measured: jsonData.vital_signs_current_status?.blood_pressure_measured || "No",
+  //     temperature_measured: jsonData.vital_signs_current_status?.temperature_measured || "Yes"
+  //   };
+
+  //   // Lifestyle Factors
+  //   jsonData.lifestyle_risk_factors = {
+  //     smoking: jsonData.lifestyle_risk_factors?.smoking ||
+  //       deepFind(jsonData, "smoking") ||
+  //       "No",
+  //     alcohol_use: jsonData.lifestyle_risk_factors?.alcohol_use ||
+  //       deepFind(jsonData, "alcoholUse") ||
+  //       "No",
+  //     recreational_drugs: jsonData.lifestyle_risk_factors?.recreational_drugs || "No",
+  //     diet: jsonData.lifestyle_risk_factors?.diet || "Normal",
+  //     exercise_routine: jsonData.lifestyle_risk_factors?.exercise_routine || "Not specified",
+  //     stress_level: jsonData.lifestyle_risk_factors?.stress_level || "Mild"
+  //   };
+
+  //   // Exposure & Environment
+  //   jsonData.exposure_environment = {
+  //     recent_travel: jsonData.exposure_environment?.recent_travel || "No",
+  //     sick_contacts: jsonData.exposure_environment?.sick_contacts || "No",
+  //     crowded_events: jsonData.exposure_environment?.crowded_events || "No",
+  //     workplace_chemical_exposure: jsonData.exposure_environment?.workplace_chemical_exposure || "No",
+  //     weather_exposure: jsonData.exposure_environment?.weather_exposure || "None",
+  //     food_water_hygiene_concern: jsonData.exposure_environment?.food_water_hygiene_concern || "No"
+  //   };
+
+  //   // Functional Status
+  //   jsonData.functional_status = {
+  //     eating_drinking_normally: jsonData.functional_status?.eating_drinking_normally || "Yes",
+  //     hydration: jsonData.functional_status?.hydration || "Adequate",
+  //     activity_level: jsonData.functional_status?.activity_level || "Normal"
+  //   };
+
+  //   // Review of Systems
+  //   const { chips: rosChips } = extractRosFromSummary(combinedSummary);
+  //   jsonData.review_of_systems_traffic_light_view = {
+  //     shortness_of_breath: {
+  //       present: false,
+  //       answer: rosChips.some(chip => chip.toLowerCase().includes('breath')) ? "No" : "Unknown",
+  //       flag_level: "green"
+  //     },
+  //     chest_pain: {
+  //       present: false,
+  //       answer: rosChips.some(chip => chip.toLowerCase().includes('chest')) ? "No" : "Unknown",
+  //       flag_level: "green"
+  //     },
+  //     sore_throat: {
+  //       present: false,
+  //       answer: rosChips.some(chip => chip.toLowerCase().includes('throat')) ? "No" : "Unknown",
+  //       flag_level: "green"
+  //     },
+  //     body_aches_fatigue: {
+  //       present: false,
+  //       answer: rosChips.some(chip => chip.toLowerCase().includes('ache') || chip.toLowerCase().includes('fatigue')) ? "No" : "Unknown",
+  //       flag_level: "green"
+  //     },
+  //     vomiting_diarrhea: {
+  //       present: false,
+  //       answer: rosChips.some(chip => chip.toLowerCase().includes('vomit') || chip.toLowerCase().includes('diarrhea')) ? "No" : "Unknown",
+  //       flag_level: "green"
+  //     }
+  //   };
+
+  //   // AI Clinical Assessment
+  //   const { selfCare } = splitOutSelfCare(consultSummary || "");
+  //   jsonData.ai_clinical_assessment = {
+  //     overall_stability: jsonData.ai_clinical_assessment?.overall_stability || "Stable",
+  //     red_flag_symptoms: jsonData.ai_clinical_assessment?.red_flag_symptoms || "None identified",
+  //     clinical_note_to_physician: jsonData.ai_clinical_assessment?.clinical_note_to_physician ||
+  //       deepFind(jsonData, "clinicalAssessment") ||
+  //       displaySummary ||
+  //       "Clinical assessment based on patient-reported symptoms."
+  //   };
+
+  //   // Final defaults for patient info
+  //   if (!patientInfo.name) patientInfo.name = jsonData.patient_identity_baseline.name || "User";
+  //   if (!patientInfo.age) patientInfo.age = jsonData.patient_identity_baseline.age || "";
+  //   if (!patientInfo.gender) patientInfo.gender = jsonData.patient_identity_baseline.biological_sex || "";
+
+  //   // ------------------------------------------------------------------
+  //   // 3️⃣ BUILD FINAL CONSULTATION DATA
+  //   // ------------------------------------------------------------------
+  //   const consultationData = {
+  //     // Include all JSON data
+  //     ...jsonData,
+
+  //     // Patient info for PDF header
+  //     patientName: patientInfo.name,
+  //     patientAge: patientInfo.age,
+  //     patientGender: patientInfo.gender,
+  //     consultDate: patientInfo.consultDate,
+
+  //     // ADD THIS: Current issue data
+  //     currentIssueData: currentIssueData || {
+  //       primarySymptom: jsonData.chief_complaint?.primary_concern || "Not specified",
+  //       onset: jsonData.chief_complaint?.onset || "Not specified",
+  //       pattern: jsonData.history_of_present_illness_hpi?.progression_pattern || "Constant",
+  //       severity: jsonData.history_of_present_illness_hpi?.severity_0_to_10 ?
+  //         `${jsonData.history_of_present_illness_hpi.severity_0_to_10} / 10` :
+  //         "Not specified",
+  //       recentInjury: "No",
+  //       associatedFactors: jsonData.history_of_present_illness_hpi?.associated_symptoms?.join(", ") || "None reported"
+  //     },
+
+  //     // Additional clinical data
+  //     conditions: parsedSummary.conditions || [],
+  //     confidence: parsedSummary.confidence || null,
+  //     narrativeSummary: displaySummary || consultSummary || "",
+  //     selfCareText: selfCare || selfCareText || "",
+  //     vitalsData: vitalsData || {},
+  //     chiefComplaint: jsonData.chief_complaint.primary_concern,
+
+  //     // Associated symptoms
+  //     associatedSymptomsChips: rosChips,
+  //     associatedSymptomsNote: extractRosFromSummary(combinedSummary).note,
+
+  //     // Flags
+  //     stripFollowupLines: true,
+  //     includeComprehensiveData: true
+  //   };
+
+  //   console.log("✅ Built Doctor Report PDF payload:", {
+  //     patientInfo,
+  //     hasJSONData: !!consultationData.patient_identity_baseline,
+  //     chiefComplaint: consultationData.chief_complaint,
+  //     conditionsCount: consultationData.conditions?.length,
+  //     currentIssueData: consultationData.currentIssueData // Log current issue data
+  //   });
+
+  //   return { consultationData, patientInfo };
+  // };
+
   const buildPdfPayload = () => {
-    if (!consultSummary) {
-      console.warn("❌ No consultSummary available");
-      return null;
+  if (!consultSummary) {
+    console.warn("❌ No consultSummary available");
+    return null;
+  }
+
+  console.log("📝 Building PDF payload for Doctor Report...");
+
+  // Use both cleaned and raw text as sources
+  const combinedSummary = `${displaySummary || ""}\n${consultSummary || ""}`.trim();
+
+  // ------------------------------------------------------------------
+  // ENHANCED EXTRACTION FUNCTION WITH RELIEVING/WORSENING FACTORS
+  // ------------------------------------------------------------------
+  const extractCurrentIssueFromSummary = (text) => {
+    if (!text) return null;
+
+    const currentIssue = {
+      primarySymptom: "Not specified",
+      onset: "Not specified",
+      pattern: "Not specified",
+      severity: "Not specified",
+      recentInjury: "No",
+      associatedFactors: "None reported",
+      // NEW FIELDS FOR HPI
+      location: "Not specified",
+      relievingFactors: "None reported",
+      worseningFactors: "None reported",
+      // Medical history fields
+      chronicIllnesses: "None reported",
+      previousSurgeries: "None reported",
+      medications: "None reported",
+      allergies: "None reported"
+    };
+
+    // ========== EXTRACT PRIMARY SYMPTOM ==========
+    const symptomPatterns = [
+      /(?:complains of|reporting|presenting with|symptoms? of|has|experiencing|feeling)\s+([^.!?]+?)(?:for|since|\.|\?|!|$)/i,
+      /(?:chief complaint|main concern|primary issue)[:\-]?\s*([^.!?]+)/i,
+      /(?:symptom|pain|ache|discomfort|problem)[:\-]?\s*([^.!?]+)/i
+    ];
+    
+    for (const pattern of symptomPatterns) {
+      const match = text.match(pattern);
+      if (match && match[1].trim().length > 3) {
+        currentIssue.primarySymptom = match[1].trim();
+        break;
+      }
+    }
+    
+    if (currentIssue.primarySymptom === "Not specified") {
+      const commonSymptoms = [
+        'headache', 'migraine', 'fever', 'cough', 'sore throat', 'runny nose',
+        'nausea', 'vomiting', 'diarrhea', 'constipation', 'fatigue', 'weakness',
+        'dizziness', 'vertigo', 'shortness of breath', 'chest pain', 'abdominal pain',
+        'back pain', 'neck pain', 'joint pain', 'muscle ache', 'rash', 'itch'
+      ];
+      
+      for (const symptom of commonSymptoms) {
+        if (text.toLowerCase().includes(symptom)) {
+          currentIssue.primarySymptom = symptom.charAt(0).toUpperCase() + symptom.slice(1);
+          break;
+        }
+      }
     }
 
-    console.log("📝 Building PDF payload for Doctor Report...");
+    // ========== EXTRACT ONSET ==========
+    const onsetPatterns = [
+      /(\d+)\s+(day|week|month|hour)s?\s+ago/i,
+      /(?:since|for)\s+(\d+)\s+(day|week|month|hour)/i,
+      /(?:onset|started|began)\s+(?:about|approximately)?\s*(\d+)\s+(day|week|month|hour)/i,
+      /last\s+(night|evening|morning|afternoon|week|month)/i,
+      /yesterday/i,
+      /today/i
+    ];
 
-    // Use both cleaned and raw text as sources
-    const combinedSummary = `${displaySummary || ""}\n${consultSummary || ""}`.trim();
-
-    // ------------------------------------------------------------------
-    // ADD THIS FUNCTION: Extract current issue data from summary
-    // ------------------------------------------------------------------
-    const extractCurrentIssueFromSummary = (text) => {
-      if (!text) return null;
-
-      const currentIssue = {
-        primarySymptom: "Not specified",
-        onset: "Not specified",
-        pattern: "Not specified",
-        severity: "Not specified",
-        recentInjury: "No",
-        associatedFactors: "None reported"
-      };
-
-      // Extract primary symptom - try to find the main complaint
-      const symptomKeywords = ['headache', 'pain', 'fever', 'cough', 'sore throat', 'nausea',
-        'fatigue', 'dizziness', 'shortness of breath', 'chest pain'];
-
-      for (const keyword of symptomKeywords) {
-        if (text.toLowerCase().includes(keyword)) {
-          // Try to get the full phrase
-          const regex = new RegExp(`([^.!?]*${keyword}[^.!?]*[.!?])`, 'i');
-          const match = text.match(regex);
-          if (match) {
-            currentIssue.primarySymptom = match[0].trim();
-            break;
-          } else {
-            currentIssue.primarySymptom = keyword.charAt(0).toUpperCase() + keyword.slice(1);
-          }
+    for (const pattern of onsetPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        if (pattern.toString().includes('last')) {
+          currentIssue.onset = `Last ${match[1]}`;
+        } else if (match[0].toLowerCase() === 'yesterday') {
+          currentIssue.onset = "Yesterday";
+        } else if (match[0].toLowerCase() === 'today') {
+          currentIssue.onset = "Today";
+        } else {
+          const num = match[1];
+          const unit = match[2];
+          currentIssue.onset = `Approximately ${num} ${unit}${parseInt(num) > 1 ? 's' : ''} ago`;
         }
+        break;
       }
-
-      // If no symptom found, use the first sentence
-      if (currentIssue.primarySymptom === "Not specified") {
-        const firstSentence = text.split(/[.!?]/)[0].trim();
-        if (firstSentence.length > 10) {
-          currentIssue.primarySymptom = firstSentence;
-        }
-      }
-
-      // Extract onset time
-      const onsetPatterns = [
-        /(\d+)\s+(day|week|month|hour)s?\s+ago/i,
-        /(?:since|for)\s+(\d+)\s+(day|week|month|hour)/i,
-        /(?:onset|started|began)\s+(?:about|approximately)?\s*(\d+)\s+(day|week|month|hour)/i,
-        /last\s+(night|evening|morning|afternoon|week|month)/i,
-        /yesterday/i,
-        /today/i
-      ];
-
-      for (const pattern of onsetPatterns) {
-        const match = text.match(pattern);
-        if (match) {
-          if (pattern.toString().includes('last')) {
-            currentIssue.onset = `Last ${match[1]}`;
-          } else if (match[0].toLowerCase() === 'yesterday') {
-            currentIssue.onset = "Yesterday";
-          } else if (match[0].toLowerCase() === 'today') {
-            currentIssue.onset = "Today";
-          } else {
-            const num = match[1];
-            const unit = match[2];
-            currentIssue.onset = `Approximately ${num} ${unit}${parseInt(num) > 1 ? 's' : ''} ago`;
-          }
-          break;
-        }
-      }
-
-      // Extract pattern (persistent vs intermittent)
-      if (text.toLowerCase().includes('constant') ||
-        text.toLowerCase().includes('persistent') ||
-        text.toLowerCase().includes('continuous')) {
-        currentIssue.pattern = "Constant";
-      } else if (text.toLowerCase().includes('intermittent') ||
-        text.toLowerCase().includes('comes and goes') ||
-        text.toLowerCase().includes('on and off')) {
-        currentIssue.pattern = "Intermittent";
-      } else if (text.toLowerCase().includes('worse') && text.toLowerCase().includes('better')) {
-        currentIssue.pattern = "Waxing and waning";
-      }
-
-      // Extract severity/pain score
-      const severityPatterns = [
-        /(\d+(?:\.\d+)?)\s*\/\s*10/i,
-        /pain\s*(?:level|score|scale)?\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*(?:out of|of|\/)\s*10/i,
-        /severity\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*(?:out of|of|\/)\s*10/i,
-        /(\d+(?:\.\d+)?)\s*(?:out of|of|\/)\s*10/i
-      ];
-
-      for (const pattern of severityPatterns) {
-        const match = text.match(pattern);
-        if (match) {
-          currentIssue.severity = `${match[1]} / 10`;
-          break;
-        }
-      }
-
-      // If no numeric severity found, look for descriptive terms
-      if (currentIssue.severity === "Not specified") {
-        if (text.toLowerCase().includes('mild')) {
-          currentIssue.severity = "Mild (2-3/10)";
-        } else if (text.toLowerCase().includes('moderate')) {
-          currentIssue.severity = "Moderate (4-6/10)";
-        } else if (text.toLowerCase().includes('severe') || text.toLowerCase().includes('severe')) {
-          currentIssue.severity = "Severe (7-9/10)";
-        }
-      }
-
-      // Check for injury mention
-      const injuryKeywords = ['injury', 'trauma', 'fell', 'fall', 'accident', 'hit', 'struck', 'injured'];
-      for (const keyword of injuryKeywords) {
-        if (text.toLowerCase().includes(keyword)) {
-          currentIssue.recentInjury = "Yes";
-          break;
-        }
-      }
-
-      // Check for associated factors
-      const associatedFactors = [];
-
-      // Light sensitivity
-      if (text.toLowerCase().includes('light') ||
-        text.toLowerCase().includes('bright') ||
-        text.toLowerCase().includes('photophobia') ||
-        text.toLowerCase().includes('sensitivity to light')) {
-        associatedFactors.push("Light sensitivity");
-      }
-
-      // Sound sensitivity
-      if (text.toLowerCase().includes('sound') ||
-        text.toLowerCase().includes('noise') ||
-        text.toLowerCase().includes('phonophobia')) {
-        associatedFactors.push("Sound sensitivity");
-      }
-
-      // Nausea/vomiting
-      if (text.toLowerCase().includes('nausea') || text.toLowerCase().includes('vomit')) {
-        associatedFactors.push("Nausea");
-      }
-
-      // Fever/chills
-      if (text.toLowerCase().includes('fever') || text.toLowerCase().includes('chill')) {
-        associatedFactors.push("Fever/chills");
-      }
-
-      // Movement related
-      if (text.toLowerCase().includes('move') && text.toLowerCase().includes('worse')) {
-        associatedFactors.push("Worse with movement");
-      }
-
-      if (associatedFactors.length > 0) {
-        currentIssue.associatedFactors = associatedFactors.join(", ");
-      }
-
-      return currentIssue;
-    };
-
-    // Extract current issue data
-    const currentIssueData = extractCurrentIssueFromSummary(combinedSummary);
-    console.log("📋 Extracted current issue data:", currentIssueData);
-
-    // ------------------------------------------------------------------
-    // 1️⃣ PATIENT INFORMATION - Extract from both sources
-    // ------------------------------------------------------------------
-    const { name: nameFromSummary, age: ageFromSummary, gender: genderFromSummary } =
-      extractDemographicsFromSummary(combinedSummary);
-
-    let patientInfo = {
-      name: nameFromSummary || null,
-      age: ageFromSummary || null,
-      gender: genderFromSummary || null,
-      consultDate: summaryCreatedAt
-        ? summaryCreatedAt.toLocaleDateString()
-        : new Date().toLocaleDateString(),
-    };
-
-    // Helper to safely search nested JSON
-    const deepFind = (obj, key) => {
-      if (!obj || typeof obj !== "object") return null;
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        return obj[key];
-      }
-      for (const value of Object.values(obj)) {
-        if (value && typeof value === "object") {
-          const result = deepFind(value, key);
-          if (result !== null && result !== undefined) return result;
-        }
-      }
-      return null;
-    };
-
-    // Initialize JSON structure
-    let jsonData = {
-      patient_identity_baseline: {},
-      chief_complaint: {},
-      history_of_present_illness_hpi: {},
-      medical_background: {},
-      vital_signs_current_status: {},
-      lifestyle_risk_factors: {},
-      exposure_environment: {},
-      functional_status: {},
-      review_of_systems_traffic_light_view: {},
-      ai_clinical_assessment: {}
-    };
-
-    // 🔹 Extract from JSON report if available
-    if (consultReport && typeof consultReport === "object") {
-      console.log("📊 Extracting from JSON report:", consultReport);
-
-      // Merge JSON data
-      jsonData = {
-        ...jsonData,
-        ...consultReport
-      };
     }
 
-    // ------------------------------------------------------------------
-    // 2️⃣ ENHANCE DATA WITH EXTRACTED INFO
-    // ------------------------------------------------------------------
+    // ========== EXTRACT PATTERN ==========
+    if (text.toLowerCase().match(/(constant|persistent|continuous|all the time|steady)/)) {
+      currentIssue.pattern = "Constant";
+    } else if (text.toLowerCase().match(/(intermittent|comes and goes|on and off|waxing and waning|episodic)/)) {
+      currentIssue.pattern = "Intermittent";
+    } else if (text.toLowerCase().match(/(variable|changes|fluctuates)/)) {
+      currentIssue.pattern = "Variable";
+    }
 
-    // Patient Identity Baseline
-    jsonData.patient_identity_baseline = {
-      name: jsonData.patient_identity_baseline?.name ||
-        deepFind(jsonData, "name") ||
-        nameFromSummary ||
-        "User",
-      age: jsonData.patient_identity_baseline?.age ||
-        deepFind(jsonData, "age") ||
-        ageFromSummary ||
-        "",
-      biological_sex: jsonData.patient_identity_baseline?.biological_sex ||
-        deepFind(jsonData, "biological_sex") ||
-        deepFind(jsonData, "gender") ||
-        genderFromSummary ||
-        "",
-      weight: jsonData.patient_identity_baseline?.weight ||
-        deepFind(jsonData, "weight") ||
-        deepFind(jsonData, "Weight") ||
-        "Not specified",
-      height: jsonData.patient_identity_baseline?.height ||
-        deepFind(jsonData, "height") ||
-        deepFind(jsonData, "Height") ||
-        "Not specified"
-    };
+    // ========== EXTRACT SEVERITY ==========
+    const severityPatterns = [
+      /(\d+(?:\.\d+)?)\s*\/\s*10/i,
+      /pain\s*(?:level|score|scale)?\s*(?:is|:)?\s*(\d+(?:\.\d+)?)\s*(?:out of|of|\/)\s*10/i,
+      /severity\s*(?:is|:)?\s*(\d+(?:\.\d+)?)\s*(?:out of|of|\/)\s*10/i,
+      /(\d+(?:\.\d+)?)\s*(?:out of|of|\/)\s*10/i
+    ];
 
-    // Chief Complaint
-    const extractedCC = extractMainSymptomFromText(combinedSummary);
-    jsonData.chief_complaint = {
-      primary_concern: jsonData.chief_complaint?.primary_concern ||
-        deepFind(jsonData, "primary_concern") ||
-        deepFind(jsonData, "chief_complaint") ||
-        extractedCC ||
-        (currentIssueData?.primarySymptom || "Not specified"), // Use current issue data as fallback
-      onset: jsonData.chief_complaint?.onset ||
-        deepFind(jsonData, "onset") ||
-        (currentIssueData?.onset || "Not specified"), // Use current issue data as fallback
-      duration: jsonData.chief_complaint?.duration ||
-        deepFind(jsonData, "duration") ||
-        "Not specified",
-      previous_episodes: jsonData.chief_complaint?.previous_episodes ||
-        deepFind(jsonData, "previous_episodes") ||
-        "None reported"
-    };
-
-    // HPI - Use current issue data to enhance this section
-    jsonData.history_of_present_illness_hpi = {
-      location_or_system: jsonData.history_of_present_illness_hpi?.location_or_system ||
-        deepFind(jsonData, "location") ||
-        "General-systems",
-      severity_0_to_10: jsonData.history_of_present_illness_hpi?.severity_0_to_10 ||
-        (currentIssueData?.severity ?
-          currentIssueData.severity.replace(/[^0-9.]/g, '').split('/')[0] :
-          null) ||
-        deepFind(jsonData, "severity") ||
-        null,
-      progression_pattern: jsonData.history_of_present_illness_hpi?.progression_pattern ||
-        (currentIssueData?.pattern || "Recent onset"),
-      associated_symptoms: jsonData.history_of_present_illness_hpi?.associated_symptoms ||
-        (currentIssueData?.associatedFactors ?
-          [currentIssueData.associatedFactors] : []) ||
-        (deepFind(jsonData, "associated_symptoms") ?
-          Array.isArray(deepFind(jsonData, "associated_symptoms"))
-            ? deepFind(jsonData, "associated_symptoms")
-            : [deepFind(jsonData, "associated_symptoms")]
-          : []),
-      relieving_factors: jsonData.history_of_present_illness_hpi?.relieving_factors || null,
-      worsening_factors: jsonData.history_of_present_illness_hpi?.worsening_factors || null
-    };
-
-    // Medical Background
-    jsonData.medical_background = {
-      chronic_illnesses: jsonData.medical_background?.chronic_illnesses ||
-        deepFind(jsonData, "chronic_conditions") ||
-        deepFind(jsonData, "chronicIllnesses") ||
-        "None reported",
-      previous_surgeries: jsonData.medical_background?.previous_surgeries || null,
-      current_medications: jsonData.medical_background?.current_medications ||
-        deepFind(jsonData, "currentMedications") ||
-        "None reported",
-      drug_allergies: jsonData.medical_background?.drug_allergies ||
-        deepFind(jsonData, "allergies") ||
-        "None reported",
-      family_history: jsonData.medical_background?.family_history || null,
-      pregnancy_status: jsonData.medical_background?.pregnancy_status || "Not_applicable"
-    };
-
-    // Vital Signs
-    jsonData.vital_signs_current_status = {
-      heart_rate_bpm: jsonData.vital_signs_current_status?.heart_rate_bpm ||
-        (vitalsData?.heartRate ? `${vitalsData.heartRate}` : null),
-      oxygen_saturation_spo2_percent: jsonData.vital_signs_current_status?.oxygen_saturation_spo2_percent ||
-        (vitalsData?.spo2 ? `${vitalsData.spo2}` : null),
-      core_temperature: jsonData.vital_signs_current_status?.core_temperature ||
-        (vitalsData?.temperature ? `${vitalsData.temperature}` : null),
-      reported_fever: jsonData.vital_signs_current_status?.reported_fever ||
-        (vitalsData?.hasFever ? "Yes" : "No"),
-      blood_pressure: jsonData.vital_signs_current_status?.blood_pressure || "Not measured",
-      blood_pressure_measured: jsonData.vital_signs_current_status?.blood_pressure_measured || "No",
-      temperature_measured: jsonData.vital_signs_current_status?.temperature_measured || "Yes"
-    };
-
-    // Lifestyle Factors
-    jsonData.lifestyle_risk_factors = {
-      smoking: jsonData.lifestyle_risk_factors?.smoking ||
-        deepFind(jsonData, "smoking") ||
-        "No",
-      alcohol_use: jsonData.lifestyle_risk_factors?.alcohol_use ||
-        deepFind(jsonData, "alcoholUse") ||
-        "No",
-      recreational_drugs: jsonData.lifestyle_risk_factors?.recreational_drugs || "No",
-      diet: jsonData.lifestyle_risk_factors?.diet || "Normal",
-      exercise_routine: jsonData.lifestyle_risk_factors?.exercise_routine || "Not specified",
-      stress_level: jsonData.lifestyle_risk_factors?.stress_level || "Mild"
-    };
-
-    // Exposure & Environment
-    jsonData.exposure_environment = {
-      recent_travel: jsonData.exposure_environment?.recent_travel || "No",
-      sick_contacts: jsonData.exposure_environment?.sick_contacts || "No",
-      crowded_events: jsonData.exposure_environment?.crowded_events || "No",
-      workplace_chemical_exposure: jsonData.exposure_environment?.workplace_chemical_exposure || "No",
-      weather_exposure: jsonData.exposure_environment?.weather_exposure || "None",
-      food_water_hygiene_concern: jsonData.exposure_environment?.food_water_hygiene_concern || "No"
-    };
-
-    // Functional Status
-    jsonData.functional_status = {
-      eating_drinking_normally: jsonData.functional_status?.eating_drinking_normally || "Yes",
-      hydration: jsonData.functional_status?.hydration || "Adequate",
-      activity_level: jsonData.functional_status?.activity_level || "Normal"
-    };
-
-    // Review of Systems
-    const { chips: rosChips } = extractRosFromSummary(combinedSummary);
-    jsonData.review_of_systems_traffic_light_view = {
-      shortness_of_breath: {
-        present: false,
-        answer: rosChips.some(chip => chip.toLowerCase().includes('breath')) ? "No" : "Unknown",
-        flag_level: "green"
-      },
-      chest_pain: {
-        present: false,
-        answer: rosChips.some(chip => chip.toLowerCase().includes('chest')) ? "No" : "Unknown",
-        flag_level: "green"
-      },
-      sore_throat: {
-        present: false,
-        answer: rosChips.some(chip => chip.toLowerCase().includes('throat')) ? "No" : "Unknown",
-        flag_level: "green"
-      },
-      body_aches_fatigue: {
-        present: false,
-        answer: rosChips.some(chip => chip.toLowerCase().includes('ache') || chip.toLowerCase().includes('fatigue')) ? "No" : "Unknown",
-        flag_level: "green"
-      },
-      vomiting_diarrhea: {
-        present: false,
-        answer: rosChips.some(chip => chip.toLowerCase().includes('vomit') || chip.toLowerCase().includes('diarrhea')) ? "No" : "Unknown",
-        flag_level: "green"
+    for (const pattern of severityPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        currentIssue.severity = `${match[1]} / 10`;
+        break;
       }
-    };
+    }
 
-    // AI Clinical Assessment
-    const { selfCare } = splitOutSelfCare(consultSummary || "");
-    jsonData.ai_clinical_assessment = {
-      overall_stability: jsonData.ai_clinical_assessment?.overall_stability || "Stable",
-      red_flag_symptoms: jsonData.ai_clinical_assessment?.red_flag_symptoms || "None identified",
-      clinical_note_to_physician: jsonData.ai_clinical_assessment?.clinical_note_to_physician ||
-        deepFind(jsonData, "clinicalAssessment") ||
-        displaySummary ||
-        "Clinical assessment based on patient-reported symptoms."
-    };
+    if (currentIssue.severity === "Not specified") {
+      if (text.toLowerCase().match(/mild(?: pain)?/)) {
+        currentIssue.severity = "Mild (1-3/10)";
+      } else if (text.toLowerCase().match(/moderate(?: pain)?/)) {
+        currentIssue.severity = "Moderate (4-6/10)";
+      } else if (text.toLowerCase().match(/severe(?: pain)?/)) {
+        currentIssue.severity = "Severe (7-10/10)";
+      }
+    }
 
-    // Final defaults for patient info
-    if (!patientInfo.name) patientInfo.name = jsonData.patient_identity_baseline.name || "User";
-    if (!patientInfo.age) patientInfo.age = jsonData.patient_identity_baseline.age || "";
-    if (!patientInfo.gender) patientInfo.gender = jsonData.patient_identity_baseline.biological_sex || "";
+    // ========== EXTRACT LOCATION ==========
+    const locationPatterns = [
+      /(?:in|on|at)\s+(?:the\s+)?(head|neck|chest|back|abdomen|stomach|arm|leg|throat|nose|ear|eye)s?/i,
+      /(?:pain|ache|discomfort)\s+(?:in|on|at)\s+(?:the\s+)?([^.!?,]+)/i,
+      /(?:located|localized|felt)\s+(?:in|on|at)\s+(?:the\s+)?([^.!?,]+)/i
+    ];
+    
+    for (const pattern of locationPatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        currentIssue.location = match[1].trim();
+        break;
+      }
+    }
 
-    // ------------------------------------------------------------------
-    // 3️⃣ BUILD FINAL CONSULTATION DATA
-    // ------------------------------------------------------------------
-    const consultationData = {
-      // Include all JSON data
-      ...jsonData,
+    // ========== EXTRACT RELIEVING FACTORS ==========
+    const relievingPatterns = [
+      /(?:better|relieved|improves|helps|eases|alleviated)\s+(?:with|by)\s+([^.!?]+?)(?:\.|\?|!|$)/i,
+      /(?:relief|improvement)\s+(?:with|after)\s+([^.!?]+)/i,
+      /(?:rest|lying down|sitting up|standing|walking|massage|heat|ice|medication|painkillers|ibuprofen|acetaminophen|tylenol|aspirin|naproxen)/i,
+      /(?:improved|better)\s+(?:after|when)\s+([^.!?]+)/i
+    ];
+    
+    for (const pattern of relievingPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        if (pattern.toString().includes('rest')) {
+          currentIssue.relievingFactors = "Rest";
+          break;
+        } else if (pattern.toString().includes('medication') || pattern.toString().includes('painkillers')) {
+          currentIssue.relievingFactors = "Medication";
+          break;
+        } else if (match[1]) {
+          currentIssue.relievingFactors = match[1].trim();
+          break;
+        } else {
+          // Check common relieving factors
+          if (text.toLowerCase().includes('rest')) currentIssue.relievingFactors = "Rest";
+          else if (text.toLowerCase().includes('medication')) currentIssue.relievingFactors = "Medication";
+          else if (text.toLowerCase().includes('lying down')) currentIssue.relievingFactors = "Lying down";
+          else if (text.toLowerCase().includes('sitting up')) currentIssue.relievingFactors = "Sitting up";
+        }
+      }
+    }
 
-      // Patient info for PDF header
-      patientName: patientInfo.name,
-      patientAge: patientInfo.age,
-      patientGender: patientInfo.gender,
-      consultDate: patientInfo.consultDate,
+    // ========== EXTRACT WORSENING FACTORS ==========
+    const worseningPatterns = [
+      /(?:worse|worsens|exacerbated|aggravated)\s+(?:with|by)\s+([^.!?]+?)(?:\.|\?|!|$)/i,
+      /(?:worsening|aggravation)\s+(?:with|during)\s+([^.!?]+)/i,
+      /(?:movement|activity|standing|walking|talking|coughing|deep breath|bending|lifting|straining)/i,
+      /(?:worse|intensifies)\s+(?:when|during)\s+([^.!?]+)/i
+    ];
+    
+    for (const pattern of worseningPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        if (pattern.toString().includes('movement')) {
+          currentIssue.worseningFactors = "Movement/Activity";
+          break;
+        } else if (pattern.toString().includes('coughing')) {
+          currentIssue.worseningFactors = "Coughing";
+          break;
+        } else if (match[1]) {
+          currentIssue.worseningFactors = match[1].trim();
+          break;
+        } else {
+          // Check common worsening factors
+          if (text.toLowerCase().includes('movement')) currentIssue.worseningFactors = "Movement";
+          else if (text.toLowerCase().includes('activity')) currentIssue.worseningFactors = "Physical activity";
+          else if (text.toLowerCase().includes('standing')) currentIssue.worseningFactors = "Standing";
+          else if (text.toLowerCase().includes('coughing')) currentIssue.worseningFactors = "Coughing";
+        }
+      }
+    }
 
-      // ADD THIS: Current issue data
-      currentIssueData: currentIssueData || {
-        primarySymptom: jsonData.chief_complaint?.primary_concern || "Not specified",
-        onset: jsonData.chief_complaint?.onset || "Not specified",
-        pattern: jsonData.history_of_present_illness_hpi?.progression_pattern || "Constant",
-        severity: jsonData.history_of_present_illness_hpi?.severity_0_to_10 ?
-          `${jsonData.history_of_present_illness_hpi.severity_0_to_10} / 10` :
-          "Not specified",
-        recentInjury: "No",
-        associatedFactors: jsonData.history_of_present_illness_hpi?.associated_symptoms?.join(", ") || "None reported"
-      },
+    // ========== EXTRACT INJURY ==========
+    const injuryKeywords = ['injury', 'trauma', 'fell', 'fall', 'accident', 'hit', 'struck', 'injured'];
+    for (const keyword of injuryKeywords) {
+      if (text.toLowerCase().includes(keyword)) {
+        currentIssue.recentInjury = "Yes";
+        break;
+      }
+    }
 
-      // Additional clinical data
-      conditions: parsedSummary.conditions || [],
-      confidence: parsedSummary.confidence || null,
-      narrativeSummary: displaySummary || consultSummary || "",
-      selfCareText: selfCare || selfCareText || "",
-      vitalsData: vitalsData || {},
-      chiefComplaint: jsonData.chief_complaint.primary_concern,
+    // ========== EXTRACT ASSOCIATED FACTORS ==========
+    const factors = [];
+    if (text.toLowerCase().match(/(light|bright|photophobia)/)) factors.push("Light sensitivity");
+    if (text.toLowerCase().match(/(sound|noise|phonophobia)/)) factors.push("Sound sensitivity");
+    if (text.toLowerCase().match(/(nausea|vomit)/)) factors.push("Nausea/Vomiting");
+    if (text.toLowerCase().match(/(fever|chill|sweat)/)) factors.push("Fever/Chills");
+    if (text.toLowerCase().match(/(dizziness|vertigo)/)) factors.push("Dizziness");
+    if (text.toLowerCase().match(/(fatigue|tired|weak)/)) factors.push("Fatigue");
+    if (text.toLowerCase().match(/(congestion|runny nose|sneezing)/)) factors.push("Nasal symptoms");
+    if (factors.length > 0) {
+      currentIssue.associatedFactors = factors.join(", ");
+    }
 
-      // Associated symptoms
-      associatedSymptomsChips: rosChips,
-      associatedSymptomsNote: extractRosFromSummary(combinedSummary).note,
+    // ========== EXTRACT MEDICAL HISTORY ==========
+    // Chronic illnesses
+    const medKeywords = ['diabetes', 'hypertension', 'high blood pressure', 'asthma', 
+                         'allergy', 'migraine', 'arthritis', 'heart disease', 'copd',
+                         'kidney disease', 'liver disease', 'thyroid', 'anemia'];
+    const foundConditions = [];
+    
+    for (const condition of medKeywords) {
+      if (text.toLowerCase().includes(condition)) {
+        foundConditions.push(condition.charAt(0).toUpperCase() + condition.slice(1));
+      }
+    }
+    
+    if (foundConditions.length > 0) {
+      currentIssue.chronicIllnesses = foundConditions.join(", ");
+    }
 
-      // Flags
-      stripFollowupLines: true,
-      includeComprehensiveData: true
-    };
+    // Previous surgeries
+    const surgeryPatterns = [
+      /(?:surgery|operation|procedure)\s+(?:for|on)\s+([^.!?]+)/i,
+      /(?:had|underwent)\s+(?:a\s+)?(?:surgery|operation)\s+(?:for|on)?\s*([^.!?]+)/i,
+      /(?:appendectomy|tonsillectomy|cholecystectomy|hernia repair|knee surgery|hip replacement)/i
+    ];
+    
+    for (const pattern of surgeryPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        if (match[1]) {
+          currentIssue.previousSurgeries = match[1].trim();
+        } else {
+          if (text.toLowerCase().includes('appendectomy')) currentIssue.previousSurgeries = "Appendectomy";
+          else if (text.toLowerCase().includes('tonsillectomy')) currentIssue.previousSurgeries = "Tonsillectomy";
+          else if (text.toLowerCase().includes('hernia')) currentIssue.previousSurgeries = "Hernia repair";
+        }
+        break;
+      }
+    }
 
-    console.log("✅ Built Doctor Report PDF payload:", {
-      patientInfo,
-      hasJSONData: !!consultationData.patient_identity_baseline,
-      chiefComplaint: consultationData.chief_complaint,
-      conditionsCount: consultationData.conditions?.length,
-      currentIssueData: consultationData.currentIssueData // Log current issue data
-    });
+    // Medications
+    const medicationPatterns = [
+      /(?:taking|on|using|prescribed)\s+([^.!?]+?)(?:for|\.|\?|!|$)/i,
+      /medications?\s*(?:include|are|:)?\s*([^.!?]+)/i,
+      /(?:ibuprofen|acetaminophen|tylenol|aspirin|naproxen|antibiotic|antihistamine)/i
+    ];
+    
+    for (const pattern of medicationPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        if (match[1]) {
+          currentIssue.medications = match[1].trim();
+        } else {
+          if (text.toLowerCase().includes('ibuprofen')) currentIssue.medications = "Ibuprofen";
+          else if (text.toLowerCase().includes('tylenol')) currentIssue.medications = "Tylenol";
+          else if (text.toLowerCase().includes('antibiotic')) currentIssue.medications = "Antibiotic";
+        }
+        break;
+      }
+    }
 
-    return { consultationData, patientInfo };
+    // Allergies
+    const allergyPatterns = [
+      /(?:allerg(?:ic|y|ies) to|allergic reaction to)\s+([^.!?]+)/i,
+      /(?:penicillin|sulfa|aspirin|ibuprofen|codeine|morphine)/i
+    ];
+    
+    for (const pattern of allergyPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        if (match[1]) {
+          currentIssue.allergies = match[1].trim();
+        } else {
+          if (text.toLowerCase().includes('penicillin')) currentIssue.allergies = "Penicillin";
+          else if (text.toLowerCase().includes('sulfa')) currentIssue.allergies = "Sulfa drugs";
+        }
+        break;
+      }
+    }
+
+    return currentIssue;
   };
+
+  // Extract current issue data
+  const currentIssueData = extractCurrentIssueFromSummary(combinedSummary);
+  console.log("📋 Extracted enhanced current issue data:", currentIssueData);
+
+  // ------------------------------------------------------------------
+  // 1️⃣ PATIENT INFORMATION - Extract from both sources
+  // ------------------------------------------------------------------
+  const { name: nameFromSummary, age: ageFromSummary, gender: genderFromSummary } =
+    extractDemographicsFromSummary(combinedSummary);
+
+  let patientInfo = {
+    name: nameFromSummary || null,
+    age: ageFromSummary || null,
+    gender: genderFromSummary || null,
+    consultDate: summaryCreatedAt
+      ? summaryCreatedAt.toLocaleDateString()
+      : new Date().toLocaleDateString(),
+  };
+
+  // Helper to safely search nested JSON
+  const deepFind = (obj, key) => {
+    if (!obj || typeof obj !== "object") return null;
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      return obj[key];
+    }
+    for (const value of Object.values(obj)) {
+      if (value && typeof value === "object") {
+        const result = deepFind(value, key);
+        if (result !== null && result !== undefined) return result;
+      }
+    }
+    return null;
+  };
+
+  // Initialize JSON structure
+  let jsonData = {
+    patient_identity_baseline: {},
+    chief_complaint: {},
+    history_of_present_illness_hpi: {},
+    medical_background: {},
+    vital_signs_current_status: {},
+    lifestyle_risk_factors: {},
+    exposure_environment: {},
+    functional_status: {},
+    review_of_systems_traffic_light_view: {},
+    ai_clinical_assessment: {}
+  };
+
+  // 🔹 Extract from JSON report if available
+  if (consultReport && typeof consultReport === "object") {
+    console.log("📊 Extracting from JSON report:", consultReport);
+
+    // Merge JSON data
+    jsonData = {
+      ...jsonData,
+      ...consultReport
+    };
+  }
+
+  // ------------------------------------------------------------------
+  // 2️⃣ ENHANCE DATA WITH EXTRACTED INFO
+  // ------------------------------------------------------------------
+
+  // Patient Identity Baseline
+  jsonData.patient_identity_baseline = {
+    name: jsonData.patient_identity_baseline?.name ||
+      deepFind(jsonData, "name") ||
+      nameFromSummary ||
+      "User",
+    age: jsonData.patient_identity_baseline?.age ||
+      deepFind(jsonData, "age") ||
+      ageFromSummary ||
+      "",
+    biological_sex: jsonData.patient_identity_baseline?.biological_sex ||
+      deepFind(jsonData, "biological_sex") ||
+      deepFind(jsonData, "gender") ||
+      genderFromSummary ||
+      "",
+    weight: jsonData.patient_identity_baseline?.weight ||
+      deepFind(jsonData, "weight") ||
+      deepFind(jsonData, "Weight") ||
+      "Not specified",
+    height: jsonData.patient_identity_baseline?.height ||
+      deepFind(jsonData, "height") ||
+      deepFind(jsonData, "Height") ||
+      "Not specified"
+  };
+
+  // Chief Complaint
+  const extractedCC = extractMainSymptomFromText(combinedSummary);
+  jsonData.chief_complaint = {
+    primary_concern: jsonData.chief_complaint?.primary_concern ||
+      deepFind(jsonData, "primary_concern") ||
+      deepFind(jsonData, "chief_complaint") ||
+      extractedCC ||
+      (currentIssueData?.primarySymptom || "Not specified"),
+    onset: jsonData.chief_complaint?.onset ||
+      deepFind(jsonData, "onset") ||
+      (currentIssueData?.onset || "Not specified"),
+    duration: jsonData.chief_complaint?.duration ||
+      deepFind(jsonData, "duration") ||
+      "Not specified",
+    pattern: jsonData.chief_complaint?.pattern ||
+      currentIssueData?.pattern ||
+      "Not specified",
+    severity: jsonData.chief_complaint?.severity ||
+      (currentIssueData?.severity ? currentIssueData.severity.split('/')[0] : null),
+    previous_episodes: jsonData.chief_complaint?.previous_episodes ||
+      deepFind(jsonData, "previous_episodes") ||
+      "None reported",
+    recent_injury: currentIssueData?.recentInjury || "No"
+  };
+
+  // HPI - Enhanced with all extracted data
+  jsonData.history_of_present_illness_hpi = {
+    location_or_system: jsonData.history_of_present_illness_hpi?.location_or_system ||
+      deepFind(jsonData, "location") ||
+      currentIssueData?.location ||
+      "General-systems",
+    severity_0_to_10: jsonData.history_of_present_illness_hpi?.severity_0_to_10 ||
+      (currentIssueData?.severity ? currentIssueData.severity.replace(/[^0-9.]/g, '').split('/')[0] : null) ||
+      deepFind(jsonData, "severity") ||
+      null,
+    progression_pattern: jsonData.history_of_present_illness_hpi?.progression_pattern ||
+      currentIssueData?.pattern ||
+      "Not specified",
+    associated_symptoms: jsonData.history_of_present_illness_hpi?.associated_symptoms ||
+      (currentIssueData?.associatedFactors ?
+        [currentIssueData.associatedFactors] : []) ||
+      (deepFind(jsonData, "associated_symptoms") ?
+        Array.isArray(deepFind(jsonData, "associated_symptoms"))
+          ? deepFind(jsonData, "associated_symptoms")
+          : [deepFind(jsonData, "associated_symptoms")]
+        : []),
+    // NEW FIELDS - These will now be extracted and show in UI
+    relieving_factors: jsonData.history_of_present_illness_hpi?.relieving_factors ||
+      currentIssueData?.relievingFactors ||
+      "None reported",
+    worsening_factors: jsonData.history_of_present_illness_hpi?.worsening_factors ||
+      currentIssueData?.worseningFactors ||
+      "None reported"
+  };
+
+  // Medical Background - Enhanced with extracted data
+  jsonData.medical_background = {
+    chronic_illnesses: jsonData.medical_background?.chronic_illnesses ||
+      deepFind(jsonData, "chronic_conditions") ||
+      deepFind(jsonData, "chronicIllnesses") ||
+      currentIssueData?.chronicIllnesses ||
+      "None reported",
+    previous_surgeries: jsonData.medical_background?.previous_surgeries ||
+      deepFind(jsonData, "previous_surgeries") ||
+      currentIssueData?.previousSurgeries ||
+      "None reported",
+    current_medications: jsonData.medical_background?.current_medications ||
+      deepFind(jsonData, "currentMedications") ||
+      currentIssueData?.medications ||
+      "None reported",
+    drug_allergies: jsonData.medical_background?.drug_allergies ||
+      deepFind(jsonData, "allergies") ||
+      currentIssueData?.allergies ||
+      "None reported",
+    family_history: jsonData.medical_background?.family_history ||
+      deepFind(jsonData, "family_history") ||
+      deepFind(jsonData, "familyHistory") ||
+      deepFind(jsonData, "family_medical_history") ||
+      deepFind(jsonData, "relevant_family_history") ||
+      
+      "None reported", // CHANGED: From null to "None reported"
+    pregnancy_status: jsonData.medical_background?.pregnancy_status || "Not_applicable"
+  };
+
+  // Vital Signs
+  jsonData.vital_signs_current_status = {
+    heart_rate_bpm: jsonData.vital_signs_current_status?.heart_rate_bpm ||
+      (vitalsData?.heartRate ? `${vitalsData.heartRate}` : null),
+    oxygen_saturation_spo2_percent: jsonData.vital_signs_current_status?.oxygen_saturation_spo2_percent ||
+      (vitalsData?.spo2 ? `${vitalsData.spo2}` : null),
+    core_temperature: jsonData.vital_signs_current_status?.core_temperature ||
+      (vitalsData?.temperature ? `${vitalsData.temperature}` : null),
+    reported_fever: jsonData.vital_signs_current_status?.reported_fever ||
+      (vitalsData?.hasFever ? "Yes" : "No"),
+    blood_pressure: jsonData.vital_signs_current_status?.blood_pressure || "Not measured",
+    blood_pressure_measured: jsonData.vital_signs_current_status?.blood_pressure_measured || "No",
+    temperature_measured: jsonData.vital_signs_current_status?.temperature_measured || "Yes"
+  };
+
+  // Lifestyle Factors
+  jsonData.lifestyle_risk_factors = {
+    smoking: jsonData.lifestyle_risk_factors?.smoking ||
+      deepFind(jsonData, "smoking") ||
+      "No",
+    alcohol_use: jsonData.lifestyle_risk_factors?.alcohol_use ||
+      deepFind(jsonData, "alcoholUse") ||
+      "No",
+    recreational_drugs: jsonData.lifestyle_risk_factors?.recreational_drugs || "No",
+    diet: jsonData.lifestyle_risk_factors?.diet || "Normal",
+    exercise_routine: jsonData.lifestyle_risk_factors?.exercise_routine || "Not specified",
+    stress_level: jsonData.lifestyle_risk_factors?.stress_level || "Mild"
+  };
+
+  // Exposure & Environment
+  jsonData.exposure_environment = {
+    recent_travel: jsonData.exposure_environment?.recent_travel || "No",
+    sick_contacts: jsonData.exposure_environment?.sick_contacts || "No",
+    crowded_events: jsonData.exposure_environment?.crowded_events || "No",
+    workplace_chemical_exposure: jsonData.exposure_environment?.workplace_chemical_exposure || "No",
+    weather_exposure: jsonData.exposure_environment?.weather_exposure || "None",
+    food_water_hygiene_concern: jsonData.exposure_environment?.food_water_hygiene_concern || "No"
+  };
+
+  // Functional Status
+  jsonData.functional_status = {
+    eating_drinking_normally: jsonData.functional_status?.eating_drinking_normally || "Yes",
+    hydration: jsonData.functional_status?.hydration || "Adequate",
+    activity_level: jsonData.functional_status?.activity_level || "Normal"
+  };
+
+  // Review of Systems
+  const { chips: rosChips } = extractRosFromSummary(combinedSummary);
+  jsonData.review_of_systems_traffic_light_view = {
+    shortness_of_breath: {
+      present: false,
+      answer: rosChips.some(chip => chip.toLowerCase().includes('breath')) ? "No" : "Unknown",
+      flag_level: "green"
+    },
+    chest_pain: {
+      present: false,
+      answer: rosChips.some(chip => chip.toLowerCase().includes('chest')) ? "No" : "Unknown",
+      flag_level: "green"
+    },
+    sore_throat: {
+      present: false,
+      answer: rosChips.some(chip => chip.toLowerCase().includes('throat')) ? "No" : "Unknown",
+      flag_level: "green"
+    },
+    body_aches_fatigue: {
+      present: false,
+      answer: rosChips.some(chip => chip.toLowerCase().includes('ache') || chip.toLowerCase().includes('fatigue')) ? "No" : "Unknown",
+      flag_level: "green"
+    },
+    vomiting_diarrhea: {
+      present: false,
+      answer: rosChips.some(chip => chip.toLowerCase().includes('vomit') || chip.toLowerCase().includes('diarrhea')) ? "No" : "Unknown",
+      flag_level: "green"
+    }
+  };
+
+  // AI Clinical Assessment
+  const { selfCare } = splitOutSelfCare(consultSummary || "");
+  
+  // Fix for confidence error - get it safely
+  const parsedConfidence = parsedSummary?.confidence || null;
+  
+  jsonData.ai_clinical_assessment = {
+    overall_stability: jsonData.ai_clinical_assessment?.overall_stability || "Stable",
+    red_flag_symptoms: jsonData.ai_clinical_assessment?.red_flag_symptoms || "None identified",
+    clinical_note_to_physician: jsonData.ai_clinical_assessment?.clinical_note_to_physician ||
+      deepFind(jsonData, "clinicalAssessment") ||
+      displaySummary ||
+      "Clinical assessment based on patient-reported symptoms.",
+    confidence: parsedConfidence
+  };
+
+  // Final defaults for patient info
+  if (!patientInfo.name) patientInfo.name = jsonData.patient_identity_baseline.name || "User";
+  if (!patientInfo.age) patientInfo.age = jsonData.patient_identity_baseline.age || "";
+  if (!patientInfo.gender) patientInfo.gender = jsonData.patient_identity_baseline.biological_sex || "";
+
+  // ------------------------------------------------------------------
+  // 3️⃣ BUILD FINAL CONSULTATION DATA
+  // ------------------------------------------------------------------
+  const consultationData = {
+    // Include all JSON data
+    ...jsonData,
+
+    // Patient info for PDF header
+    patientName: patientInfo.name,
+    patientAge: patientInfo.age,
+    patientGender: patientInfo.gender,
+    consultDate: patientInfo.consultDate,
+
+    // Current issue data - Now includes all extracted fields
+    currentIssueData: currentIssueData || {
+      primarySymptom: jsonData.chief_complaint?.primary_concern || "Not specified",
+      onset: jsonData.chief_complaint?.onset || "Not specified",
+      pattern: jsonData.chief_complaint?.pattern || "Not specified",
+      severity: jsonData.chief_complaint?.severity || "Not specified",
+      recentInjury: jsonData.chief_complaint?.recent_injury || "No",
+      associatedFactors: jsonData.history_of_present_illness_hpi?.associated_symptoms?.join(", ") || "None reported",
+      location: jsonData.history_of_present_illness_hpi?.location_or_system || "Not specified",
+      relievingFactors: jsonData.history_of_present_illness_hpi?.relieving_factors || "None reported", // NEW
+      worseningFactors: jsonData.history_of_present_illness_hpi?.worsening_factors || "None reported", // NEW
+      chronicIllnesses: jsonData.medical_background?.chronic_illnesses || "None reported",
+      previousSurgeries: jsonData.medical_background?.previous_surgeries || "None reported",
+      medications: jsonData.medical_background?.current_medications || "None reported",
+      allergies: jsonData.medical_background?.drug_allergies || "None reported"
+    },
+
+    // Additional clinical data
+    conditions: parsedSummary?.conditions || [],
+    confidence: parsedConfidence,
+    narrativeSummary: displaySummary || consultSummary || "",
+    selfCareText: selfCare || selfCareText || "",
+    vitalsData: vitalsData || {},
+    chiefComplaint: jsonData.chief_complaint.primary_concern,
+
+    // Associated symptoms
+    associatedSymptomsChips: rosChips,
+    associatedSymptomsNote: extractRosFromSummary(combinedSummary).note,
+
+    // Flags
+    stripFollowupLines: true,
+    includeComprehensiveData: true
+  };
+
+  console.log("✅ Built COMPLETE Doctor Report PDF payload:", {
+    patientInfo,
+    hasJSONData: !!consultationData.patient_identity_baseline,
+    chiefComplaint: consultationData.chief_complaint,
+    conditionsCount: consultationData.conditions?.length,
+    currentIssueData: consultationData.currentIssueData,
+    hpiData: consultationData.history_of_present_illness_hpi,
+    // Log the new fields to verify extraction
+    hasRelievingFactors: !!currentIssueData?.relievingFactors,
+    hasWorseningFactors: !!currentIssueData?.worseningFactors,
+    hasLocation: !!currentIssueData?.location,
+    hasPreviousSurgeries: !!currentIssueData?.previousSurgeries
+  });
+
+  return { consultationData, patientInfo };
+};
 
   const handleDownloadPatientSummaryPDF = () => {
     const payload = buildPdfPayload();

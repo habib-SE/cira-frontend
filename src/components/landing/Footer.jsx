@@ -40,7 +40,7 @@ export default function Footer() {
 
         {/* Social Icons */}
         <motion.div className="flex justify-center gap-6 md:gap-8 mb-6 md:mb-10" variants={container}>
-          <motion.a
+          {/* <motion.a
             href="#"
             className="text-gray-600 hover:text-purple-600 transition"
             whileHover={iconHover}
@@ -60,7 +60,7 @@ export default function Footer() {
             whileHover={iconHover}
           >
             <Twitter className="w-5 h-5 md:w-6 md:h-6" />
-          </motion.a>
+          </motion.a> */}
           <motion.a
             href="#"
             className="text-gray-600 hover:text-purple-600 transition"

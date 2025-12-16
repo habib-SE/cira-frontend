@@ -555,24 +555,34 @@ const suggestedTopics = [
             </motion.div>
 
             {/* Sub-heading */}
-            <motion.div
-              variants={fadeUp}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                transition: { duration: 0.8, ease: "easeInOut", delay: 0.2 },
-              }}
-            >
-              <p className="text-[10px] md:text-[15px] text-gray-800 font-semibold ">
-                What can I help you with today?
-              </p>
-            </motion.div>
+         <motion.div
+  variants={fadeUp}
+  initial={{ opacity: 0, y: 20 }}
+  animate={{
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: "easeInOut", delay: 0.2 },
+  }}
+  className="max-w-3xl"
+>
+ 
+  <div className=" mt-2 pl-2 text-[9px] md:text-[14px] text-gray-600 font-normal leading-5 md:leading-6">
+    <p className="mt-1 mb-3 ">
+      I’ll ask a few structured questions (about <span className="font-medium">3–5 minutes</span>) 
+      to help understand your symptoms and prepare your medical consultation, should you choose to see a doctor.
+    </p>
+
+   <p className="text-[10px] md:text-[15px] text-gray-800 font-semibold">
+    Let’s start with what’s been bothering you.
+  </p>
+  </div>
+</motion.div>
+
 
             {/* Suggested Topics */}
             <motion.div
               variants={fadeUp}
-              className="flex flex-wrap gap-2 mb-7"
+              className="flex flex-wrap gap-2 mb-7 pl-1"
               initial={{ opacity: 0, y: 20 }}
               animate={{
                 opacity: 1,
@@ -631,13 +641,13 @@ const suggestedTopics = [
                     />
 
                     {/* Mic button */}
-                    <button
+                    {/* <button
                       type="button"
                       onClick={handleMicClick}
                       className="absolute bottom-3 left-4 md:left-5 p-2 rounded-full bg-pink-500/20 hover:bg-pink-500/30 text-pink-500 hover:text-pink-600 transition-all duration-200"
                     >
                       <img src={mic} alt="mic" className="w-5 h-5" />
-                    </button>
+                    </button> */}
 
                     {/* Get Started */}
                     <div className="absolute bottom-3 right-3">
