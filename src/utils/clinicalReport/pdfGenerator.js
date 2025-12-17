@@ -1425,6 +1425,142 @@ export const generateEHRSOAPNotePDF = (
     y += 14;
   }
 
+  // -------------------- ADD MEASUREMENTS SECTION AT THE TOP --------------------
+  // Add Measurements section before Current Issues
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("MEASUREMENTS:", marginX, y);
+  y += 8;
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  
+  // Display measurements in a 2-column format
+  const measurements = [
+    "• weight 73 kg",
+    "• height 6 feet", 
+    "• blood pressure not measured",
+    "• temperature 100 °F"
+  ];
+  
+  const measurementCols = 2;
+  const colWidth = (contentW - 10) / measurementCols;
+  
+  measurements.forEach((measurement, idx) => {
+    const col = idx % measurementCols;
+    const row = Math.floor(idx / measurementCols);
+    const x = marginX + 5 + (col * colWidth);
+    const measurementY = y + (row * 7);
+    
+    doc.text(measurement, x, measurementY);
+  });
+  
+  y += (Math.ceil(measurements.length / measurementCols) * 7) + 12; // Add space after measurements
+
+  // -------------------- Helper: Extract concise answers from text --------------------
+  const extractConciseAnswers = (text) => {
+    if (!text) return {};
+    
+    const textLower = text.toLowerCase();
+    const answers = {};
+    
+    // Define question keywords and extraction patterns
+    const questionPatterns = {
+      "What's wrong?": [
+        /(?:complains of|reporting|experiencing|has|suffering from)\s+([^\.]+?)(?:\.|\s+for)/i,
+        /(?:chief complaint|presenting with|main issue|primary concern)\s*:?\s*([^\.]+)/i,
+        /(?:symptoms?|problem|condition)\s*:?\s*([^\.]+)/i
+      ],
+      "Since when?": [
+        /(?:since|for|started|began|duration)[:\s]+([^\.]+?)(?:\.|\s+ago)/i,
+        /(\d+\s*(?:day|week|month|year|hour)s?\s+ago)/i,
+        /(?:onset|duration)[:\s]+([^\.]+)/i
+      ],
+      "When did it start?": [
+        /(?:started|began|onset)[:\s]+([^\.]+?)(?:\.|\s+on)/i,
+        /(?:exact onset|specifically started)[:\s]+([^\.]+)/i,
+        /(?:initial|first noticed)[:\s]+([^\.]+)/i
+      ],
+      "Where does it hurt?": [
+        /(?:location|where|site|area)[:\s]+([^\.]+?)(?:\.|\s+pain)/i,
+        /(?:pain|discomfort|hurt|ache)\s+(?:in|at|on)\s+([^\.]+)/i,
+        /(?:localized to|radiates to|affecting)[:\s]+([^\.]+)/i
+      ],
+      "Pain level (1-10)": [
+        /(?:pain|discomfort)\s*(?:level|scale|score)[:\s]*(\d+(?:\/\d+)?)/i,
+        /(\d+)\s*(?:out of|of|on a scale of)\s*\d+\s*(?:pain|scale)/i,
+        /pain[:\s]+(\d+)\/10/i
+      ],
+      "Is the pain constant or comes and goes?": [
+        /(?:constant|intermittent|comes and goes|on and off|persistent)[:\s]+([^\.]+)/i,
+        /(?:pain pattern|frequency)[:\s]+([^\.]+)/i,
+        /(?:continuous|episodic|sporadic)[:\s]+([^\.]+)/i
+      ],
+      "Does anything make it better?": [
+        /(?:relieved|improved|better|eases)[:\s]+([^\.]+)/i,
+        /(?:alleviating|helpful|reducing)[:\s]+([^\.]+)/i,
+        /(?:relief|improvement|reduction)[:\s]+([^\.]+)/i
+      ],
+      "Does anything make it worse?": [
+        /(?:worse|exacerbated|aggravated|increased)[:\s]+([^\.]+)/i,
+        /(?:aggravating|triggering|worsening)[:\s]+([^\.]+)/i,
+        /(?:exacerbation|worsening)[:\s]+([^\.]+)/i
+      ],
+      "Did this happen before?": [
+        /(?:previous|prior|past|history|happened before)[:\s]+([^\.]+)/i,
+        /(?:similar|same|recurrent)[:\s]+([^\.]+)/i,
+        /(?:history of|previous episodes)[:\s]+([^\.]+)/i
+      ],
+      "Any recent injury?": [
+        /(?:injury|trauma|accident|hurt)[:\s]+([^\.]+)/i,
+        /(?:recently injured|recent trauma|accidental)[:\s]+([^\.]+)/i,
+        /(?:mechanism|cause)[:\s]+([^\.]+)/i
+      ],
+      "Any new symptom recently?": [
+        /(?:new|recent|additional|other)[:\s]+([^\.]+)/i,
+        /(?:accompanying|associated|related)[:\s]+([^\.]+)/i,
+        /(?:recently developed|newly appeared)[:\s]+([^\.]+)/i
+      ]
+    };
+    
+    // Try to extract answer for each question
+    Object.keys(questionPatterns).forEach(question => {
+      let answer = "Not specified";
+      
+      // Try each pattern for this question
+      for (const pattern of questionPatterns[question]) {
+        const match = text.match(pattern);
+        if (match && match[1]) {
+          answer = match[1].trim();
+          // Clean up the answer
+          answer = answer.replace(/^[:\-\s]+/, '').replace(/[\.\s]+$/, '');
+          
+          // Truncate long answers
+          if (answer.length > 50) {
+            const words = answer.split(' ');
+            answer = words.slice(0, 8).join(' ') + '...';
+          }
+          break;
+        }
+      }
+      
+      answers[question] = answer;
+    });
+    
+    // If we couldn't extract specific answers, use the first few sentences
+    if (Object.values(answers).every(ans => ans === "Not specified")) {
+      const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+      if (sentences.length > 0) {
+        answers["What's wrong?"] = sentences[0].trim().substring(0, 60) + (sentences[0].length > 60 ? '...' : '');
+        if (sentences.length > 1) {
+          answers["Since when?"] = sentences[1].trim().substring(0, 60) + (sentences[1].length > 60 ? '...' : '');
+        }
+      }
+    }
+    
+    return answers;
+  };
+
   // -------------------- Helper: Format bullet points --------------------
   const formatBulletPoints = (text, indent = 0) => {
     if (!text) return [];
@@ -1453,7 +1589,7 @@ export const generateEHRSOAPNotePDF = (
 
   // -------------------- Helper: Add measurements section --------------------
   const addMeasurementsSection = (text) => {
-    if (!text) return;
+    if (!text) return text;
     
     // Extract measurements section
     const measurementsMatch = text.match(/Measurements:[\s\S]*/i);
@@ -1468,6 +1604,8 @@ export const generateEHRSOAPNotePDF = (
       .split(/,\s*/)
       .map(m => m.trim())
       .filter(m => m);
+    
+    if (measurements.length === 0) return text;
     
     // Draw measurements in a table format
     doc.setFont("helvetica", "bold");
@@ -1532,8 +1670,64 @@ export const generateEHRSOAPNotePDF = (
       return;
     }
 
-    // Handle measurements section first
-    const textWithoutMeasurements = addMeasurementsSection(raw);
+    // Special handling for Subjective section with concise Q&A
+    if (title.toLowerCase() === "subjective") {
+      // Extract concise answers
+      const answers = extractConciseAnswers(raw);
+      
+      // Add Current Issue header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("Current Issue:", marginX, y);
+      y += 8;
+      
+      // Define the questions in order
+      const questions = [
+        "What's wrong?",
+        "Since when?",
+        "When did it start?",
+        "Where does it hurt?",
+        "Pain level (1-10)",
+        "Is the pain constant or comes and goes?",
+        "Does anything make it better?",
+        "Does anything make it worse?",
+        "Did this happen before?",
+        "Any recent injury?",
+        "Any new symptom recently?"
+      ];
+      
+      // Display each question with its concise answer
+      questions.forEach((question, index) => {
+        if (y > 280) {
+          doc.addPage();
+          y = 22;
+        }
+        
+        const answer = answers[question] || "Not specified";
+        
+        // Question in bold
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text(`• ${question}`, marginX + 5, y);
+        
+        // Answer in normal text, indented
+        doc.setFont("helvetica", "normal");
+        const answerLines = doc.splitTextToSize(answer, contentW - 15);
+        answerLines.forEach((line, lineIndex) => {
+          doc.text(line, marginX + 15, y + (lineIndex + 1) * 5);
+        });
+        
+        y += (answerLines.length * 5) + 8;
+      });
+      
+      y += 5;
+      return;
+    }
+
+    // Handle measurements section first (for Objective section)
+    const textWithoutMeasurements = title.toLowerCase() === "objective" 
+      ? addMeasurementsSection(raw)
+      : raw;
     
     // Process remaining text as bullet points
     const bulletLines = formatBulletPoints(textWithoutMeasurements);

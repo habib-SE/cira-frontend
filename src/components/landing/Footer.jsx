@@ -61,13 +61,13 @@ export default function Footer() {
           >
             <Twitter className="w-5 h-5 md:w-6 md:h-6" />
           </motion.a> */}
-          <motion.a
+          {/* <motion.a
             href="#"
             className="text-gray-600 hover:text-purple-600 transition"
             whileHover={iconHover}
           >
             <Linkedin className="w-5 h-5 md:w-6 md:h-6" />
-          </motion.a>
+          </motion.a> */}
         </motion.div>
 
         {/* Copyright */}

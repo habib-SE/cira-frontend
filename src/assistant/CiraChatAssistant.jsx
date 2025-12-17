@@ -2535,7 +2535,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
                           <img
                             src={AgentAvatar}
                             alt=""
-                            className="w-32 h-32 rounded-full mb-3"
+                            className="w-32 rounded-full"
                           />
                           <p className="text-xs text-gray-500">
                             Your AI clinician assistant, Cira
