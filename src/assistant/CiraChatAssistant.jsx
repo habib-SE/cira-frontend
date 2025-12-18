@@ -794,6 +794,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   const [consultReport, setConsultReport] = useState(null);
 
   const [isThinking, setIsThinking] = useState(false);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
 
   const scrollAreaRef = useRef(null);
   const [hasStartedChat, setHasStartedChat] = useState(false);
@@ -844,8 +845,6 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-
 
 
   const conversation = useConversation({
@@ -924,40 +923,51 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 
       // Normal assistant chat bubble
 
-      if (looksLikeSummary) {
-        console.log("📝 Captured consult summary.");
+if (looksLikeSummary) {
+  console.log("📝 Captured consult summary.");
 
-        const extracted = extractConsultDataFromMessage(trimmedText);
+  // ⚠️ FIX: Stop thinking dots FIRST
+  setIsThinking(false);
 
-        setConsultSummary(extracted.summaryText);
-        setSummaryCreatedAt(new Date());
-        setConversationSummary(extracted.summaryText);
-        setSummaryStats({
-          conditions: extracted.conditions || [],
-          confidence:
-            typeof extracted.confidence === "number"
-              ? extracted.confidence
-              : null,
-        });
-        setConsultReport(extracted.report || null);
+  // ✅ THEN start summary loader
+  setIsGeneratingSummary(true);
 
-        setIsThinking(false);
+  const extracted = extractConsultDataFromMessage(trimmedText);
 
-        // ✅ Disconnect as soon as summary opens
-        disconnectAssistant();
+  setConsultSummary(extracted.summaryText);
+  setSummaryCreatedAt(new Date());
+  setConversationSummary(extracted.summaryText);
+  setSummaryStats({
+    conditions: extracted.conditions || [],
+    confidence:
+      typeof extracted.confidence === "number"
+        ? extracted.confidence
+        : null,
+  });
+  setConsultReport(extracted.report || null);
 
-        // ❌ Don't show this as a chat bubble
-        return;
-      }
+  // ⚠️ FIX: Show loader for longer (at least 1-2 seconds)
+  setTimeout(() => {
+    setIsGeneratingSummary(false);
+  }, 1500); // Increased from 300ms to 1500ms for better UX
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: nextId(),
-          role: "assistant",
-          text: trimmedText,
-        },
-      ]);
+  // ✅ Disconnect once summary arrives
+  disconnectAssistant();
+
+  return;
+}
+
+// Regular assistant message (not a summary)
+// ⚠️ FIX: Always stop thinking for regular messages too
+setIsThinking(false);
+setMessages((prev) => [
+  ...prev,
+  {
+    id: nextId(),
+    role: "assistant",
+    text: trimmedText,
+  },
+]);
     },
     onError: (err) => {
       console.error("❌ ElevenLabs chat error:", err);
@@ -2486,44 +2496,60 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
                     );
                   })}
 
-                  {isThinking && (
-                    <div className="flex w-full justify-start">
-                      <div className="flex items-center">
-                        <div className="flex w-full justify-start">
-                          <div className="flex items-center gap-2 max-w-[80%]">
-                            <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed text-gray-500">
-                              <span className="inline-flex gap-1 items-center">
-                                <span
-                                  className="w-1.5 h-1.5 rounded-full bg-gray-400"
-                                  style={{
-                                    animation:
-                                      "dotWave 1.2s infinite ease-in-out",
-                                    animationDelay: "0s",
-                                  }}
-                                />
-                                <span
-                                  className="w-1.5 h-1.5 rounded-full bg-gray-400"
-                                  style={{
-                                    animation:
-                                      "dotWave 1.2s infinite ease-in-out",
-                                    animationDelay: "0.15s",
-                                  }}
-                                />
-                                <span
-                                  className="w-1.5 h-1.5 rounded-full bg-gray-400"
-                                  style={{
-                                    animation:
-                                      "dotWave 1.2s infinite ease-in-out",
-                                    animationDelay: "0.3s",
-                                  }}
-                                />
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+{/* 1. Big gradient spinner for summary generation */}
+{/* {isGeneratingSummary && (
+  <div className="flex w-full justify-center">    
+      <div className="w-16 h-16 rounded-full animate-spin 
+        bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600
+        p-[3px]"
+      >
+        <div className="w-full h-full rounded-full bg-[#FFFEF9]" />
+      </div>
+    </div>
+            )} */}
+            
+{/* 2. Thinking dots for regular chat responses */}
+{/* {isThinking && !consultSummary && !isGeneratingSummary &&(  
+  <div className="flex w-full justify-start"> 
+  <div className="flex items-center"> 
+    <div className="flex w-full justify-start"> 
+      <div className="flex items-center gap-2 max-w-[80%]"> 
+        <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed text-gray-500"> 
+          <span className="inline-flex gap-1 items-center"> 
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" 
+            style={{ animation: "dotWave 1.2s infinite ease-in-out", animationDelay: "0s", }} /> 
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" 
+            style={{ animation: "dotWave 1.2s infinite ease-in-out", animationDelay: "0.15s", }} /> 
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" 
+            style={{ animation: "dotWave 1.2s infinite ease-in-out", animationDelay: "0.3s", }} />
+             </span> 
+             </div> 
+             </div> 
+             </div> 
+             </div> 
+             </div> 
+            )} */}
+
+            {isThinking && (  
+  <div className="flex w-full justify-start"> 
+  <div className="flex items-center"> 
+    <div className="flex w-full justify-start"> 
+      <div className="flex items-center gap-2 max-w-[80%]"> 
+        <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed text-gray-500"> 
+          <span className="inline-flex gap-1 items-center"> 
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" 
+            style={{ animation: "dotWave 1.2s infinite ease-in-out", animationDelay: "0s", }} /> 
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" 
+            style={{ animation: "dotWave 1.2s infinite ease-in-out", animationDelay: "0.15s", }} /> 
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" 
+            style={{ animation: "dotWave 1.2s infinite ease-in-out", animationDelay: "0.3s", }} />
+             </span> 
+             </div> 
+             </div> 
+             </div> 
+             </div> 
+             </div> 
+            )}
                 </div>
 
                 {/* SUMMARY CARD */}
@@ -2788,13 +2814,14 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
               )}
 
               <ChatInput
-                onSendMessage={handleUserMessage}
-                label=""
-                disabled={!hasAgreed}
-                submitText=""
-                showMic={false}
-                placeholder="Reply to Cira..."
-              />
+  onSendMessage={handleUserMessage}
+  disabled={!hasAgreed || isThinking}
+  placeholder={isThinking ? "Thinking..." : "Reply to Cira..."}
+  showMic={false}
+  submitText=""
+  isThinking={isThinking}
+/>
+
             </div>
           )}
         </motion.footer>
