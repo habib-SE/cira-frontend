@@ -1796,9 +1796,9 @@ export const generateEHRSOAPNotePDF = (
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.text(title.toUpperCase(), marginX, y);
-    doc.setDrawColor(150, 150, 150);
-    doc.setLineWidth(0.3);
-    doc.line(marginX, y + 1, marginX + 40, y + 1);
+    // doc.setDrawColor(150, 150, 150);
+    // doc.setLineWidth(0.3);
+    // doc.line(marginX, y + 1, marginX + 40, y + 1);
     
     y += 10;
 
@@ -1816,12 +1816,6 @@ export const generateEHRSOAPNotePDF = (
     if (title.toLowerCase() === "subjective") {
       // Extract concise answers using both text and JSON data
       const answers = extractConciseAnswers(raw, chatData);
-      
-      // Add Current Issue header
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.text("Current Issue:", marginX, y);
-      y += 8;
       
       // Define the questions in order
       const questions = [
@@ -1855,13 +1849,13 @@ export const generateEHRSOAPNotePDF = (
         // Question in bold
         doc.setFont("helvetica", "bold");
         doc.setFontSize(10);
-        doc.text(`• ${question}`, marginX + 5, y);
+       doc.text(question, marginX + 5, y);
         
         // Answer in normal text, indented
         doc.setFont("helvetica", "normal");
         const answerLines = doc.splitTextToSize(answer, contentW - 15);
         answerLines.forEach((line, lineIndex) => {
-          doc.text(line, marginX + 15, y + (lineIndex + 1) * 5);
+          doc.text(line, marginX + 5, y + (lineIndex + 1) * 5);
         });
         
         y += (answerLines.length * 5) + 8;
