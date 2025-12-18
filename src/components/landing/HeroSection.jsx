@@ -594,7 +594,7 @@ const suggestedTopics = [
             </motion.div>
 
             {/* Chat Input */}
-            <motion.div variants={fadeUp} className="w-full !mb-11">
+            <motion.div variants={fadeUp} className="w-full !mb-4 md:!mb-11">
               <div
                 className={`relative bg-white rounded-[2.5rem] border transition-all duration-300 overflow-hidden ${
                   isFocused ? "border-gray-800 shadow-md" : "border-gray-200 shadow-sm"
