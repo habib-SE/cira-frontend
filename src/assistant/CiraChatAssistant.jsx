@@ -2706,7 +2706,7 @@ setMessages((prev) => [
       divide-y divide-gray-100
     "
                             >
-                              <button
+                              {/* <button
                                 type="button"
                                 className="
         group w-full flex items-center justify-between
@@ -2721,7 +2721,7 @@ setMessages((prev) => [
                                 }}
                               >
                                 <span className="group-hover:underline">Patient Summary (PDF)</span>
-                              </button>
+                              </button> */}
 
                               <button
                                 type="button"
