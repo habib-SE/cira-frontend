@@ -1,6 +1,7 @@
 // components/DoctorConnectionSection.tsx
 import { Check, ClipboardList, Stethoscope } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Button from '../shared/Button';
 
 export default function DoctorConnectionSection() {
   const fadeUp = {
@@ -13,29 +14,32 @@ export default function DoctorConnectionSection() {
       <div className="max-w-4xl mx-auto text-center">
 
         {/* Headline */}
-        <motion.h2
-          className="text-2xl md:text-4xl lg:text-5xl font-serif font-normal text-gray-950 tracking-tight leading-tight px-2 md:px-0"
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          variants={fadeUp}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-        >
-          When we're done chatting, I can<br />
-          connect you to a human doctor for<br />
-          <span className="text-pink-400">just £49</span>
-        </motion.h2>
+<motion.h2
+  className="text-2xl md:text-4xl lg:text-5xl font-serif font-normal text-gray-950 tracking-tight leading-tight px-2 md:px-0"
+  initial="hidden"
+  whileInView="show"
+  viewport={{ once: true }}
+  variants={fadeUp}
+  transition={{ duration: 0.8, ease: 'easeOut' }}
+>
+  When we're done chatting, I can<br />
+  connect you to a human doctor for<br />
+  <span className="text-pink-400">a consultation</span>
+</motion.h2>
 
         {/* 24/7 Badge */}
-        <motion.button
-          className="mt-6 md:mt-10 inline-flex items-center text-teal-500 border-2 border-teal-500 hover:bg-teal-500 hover:text-gray-100 text-xs md:text-sm font-medium px-4 py-1.5 md:px-8 md:py-4 rounded-full transition-all duration-20"
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
         >
-          Appointments available instantly, 24/7
-        </motion.button>
+          <Button
+            preset="outline-teal"
+          >
+            Appointments available instantly, 24/7
+          </Button>
+        </motion.div>
 
         {/* Description */}
         <motion.p

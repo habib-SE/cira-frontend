@@ -23,7 +23,7 @@ export default function TermsAndConditionsModal({ onAccept, onStartConversation 
         initial={{ scale: 0.9, y: 20, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-       className="relative bg-white/40 backdrop-blur-md rounded-3xl p-6 w-full max-w-600px] md:max-w-[700px] max-h-[90vh] border border-white/30 shadow-2xl flex flex-col overflow-hidden"
+       className="relative bg-white/40 backdrop-blur-md rounded-3xl p-6 w-full max-w-[600px] md:max-w-[700px] max-h-[90vh] border border-white/30 shadow-2xl flex flex-col overflow-hidden"
       >
         {/* Header */}
         <div className="text-center mb-5">

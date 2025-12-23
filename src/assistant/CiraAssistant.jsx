@@ -635,6 +635,7 @@ import FacialScanModal from "./modal/FacialScanModal";
 import TermsAndConditionsModal from "./modal/TermsAndConditionsModal";
 
 import { useModalLogic } from "./modal/voiceModalHooks";
+import Button from "../components/shared/Button";
 
 /* ─────────────────────────────
    Main component
@@ -1125,47 +1126,45 @@ const extractClinicalSummaryFromConversation = (log) => {
       {/* Controls */}
       {isConnected && (
         <div className="flex gap-4 mt-2">
-          <button
+          <Button
+            preset="control-stop"
             onClick={handleEndConversation}
-            className="bg-red-600 text-white p-3 rounded-full hover:bg-red-700 transition-colors"
-          >
-            <StopCircle />
-          </button>
-          <button
+            icon={<StopCircle />}
+          />
+          <Button
+            preset={isMuted ? "control-mute-red" : "control-mute-green"}
             onClick={toggleMute}
-            className={`p-3 rounded-full ${
-              isMuted ? "bg-red-500" : "bg-green-500"
-            } text-white hover:opacity-90 transition-colors`}
-          >
-            {isMuted ? <Play /> : <Pause />}
-          </button>
+            icon={isMuted ? <Play /> : <Pause />}
+          />
         </div>
       )}
 
       {/* Buttons */}
       <div className="flex flex-col items-center gap-3 mt-4">
         {!isConnected && hasAgreed && !isAutoStarting && (
-          <button
+          <Button
+            preset={hasPermission ? "start-conversation" : "start-conversation-disabled"}
             onClick={handleStartConversationDirectly}
             disabled={!hasPermission}
-            className={`flex items-center gap-2 rounded-full px-4 py-3 text-white font-medium transition-all duration-300 ${
-              hasPermission
-                ? "bg-gradient-to-r from-pink-500 to-pink-600 hover:scale-105 hover:shadow-lg active:scale-95"
-                : "bg-gray-400 cursor-not-allowed"
-            }`}
+            icon={<Rocket className="w-5 h-5" />}
+            useMotion={hasPermission}
+            whileHover={hasPermission ? { scale: 1.05 } : undefined}
+            whileTap={hasPermission ? { scale: 0.95 } : undefined}
           >
-            <Rocket className="w-5 h-5" />
             <span className="text-lg">Start Conversation</span>
-          </button>
+          </Button>
         )}
 
-        <button
+        <Button
+          preset="test-flow"
           onClick={handleTestFlow}
-          className="flex items-center gap-2 rounded-full px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95"
+          icon={<TestTube className="w-5 h-5" />}
+          useMotion
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <TestTube className="w-5 h-5" />
           <span className="text-lg">Test Modal Flow</span>
-        </button>
+        </Button>
         {/* Disclaimer */}
 <div className="absolute bottom-4 left-4 right-4 flex justify-center">
   <div className="max-w-3xl text-[11px] text-gray-500 bg-white/70 backdrop-blur-md px-4 py-2 rounded-lg shadow-md border border-gray-200">

@@ -61,7 +61,7 @@ import React from "react";
 import MainRouter from "./routes/MainRouter";
 import Header from "./components/Header";
 import LandingPage from "./pages/Home";
-import NewHome from "./pages/NewHome";
+
 import CiraAssistant from "./assistant/CiraAssistant";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import CiraRealtimeAssistant from "./agent/realtime/CiraRealtimeAssistant";
@@ -121,12 +121,6 @@ function App() {
                 <LandingPage />
               // </FixedHeaderLayout>
             }
-          />
-
-          {/* ✅ New modern landing page */}
-          <Route
-            path="/old-home"
-            element={<NewHome />}
           />
 
           {/* Admin routes */}

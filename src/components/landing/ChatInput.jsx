@@ -138,6 +138,7 @@ import { Send } from "lucide-react";
 import { motion } from "framer-motion";
 import mic from "../../assets/mice.svg";
 import { useNavigate } from "react-router-dom";
+import Button from "../shared/Button";
 
 const ChatInput = ({
   onSendMessage,
@@ -233,33 +234,28 @@ const ChatInput = ({
 
               {/* 👈 Speak button on the left */}
               {showMic && (
-                <button
+                <Button
+                  preset="speak"
                   type="button"
                   onClick={handleMicClick}
-                  className="absolute bottom-2 left-3 flex items-center gap-1 px-3 py-2 rounded-full bg-white border border-gray-200 text-sm text-gray-800 shadow-sm hover:bg-pink-200 transition-all duration-200"
                   disabled={disabled}
+                  icon={<img src={mic} alt="mic" className="w-4 h-4" />}
                 >
-                  <img src={mic} alt="mic" className="w-4 h-4" />
-                  <span>Speak</span>
-                </button>
+                  Speak
+                </Button>
               )}
 
               {/* 👉 Get Started / Send on the right */}
-              <motion.button
+              <Button
+                preset="send"
                 type="submit"
                 disabled={isDisabled || !message.trim()}
-                className="absolute bottom-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 
-                  hover:from-purple-700 hover:to-pink-700 
-                  disabled:from-gray-400 disabled:to-gray-400 
-                  disabled:cursor-not-allowed 
-                  text-white font-semibold px-3 md:px-5 py-2 rounded-sm 
-                  transition-all duration-200 shadow-md text-sm whitespace-nowrap flex items-center gap-2 justify-center"
+                icon={<Send className="w-4 h-4" />}
                 whileHover={{ scale: isDisabled ? 1 : 1.05 }}
                 whileTap={{ scale: isDisabled ? 1 : 0.95 }}
               >
-                <Send className="w-4 h-4" />
                 {submitText && <span>{submitText}</span>}
-              </motion.button>
+              </Button>
             </div>
           </form>
         </div>

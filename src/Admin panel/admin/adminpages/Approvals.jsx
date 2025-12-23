@@ -200,6 +200,36 @@ const Approvals = () => {
         }
     };
 
+    const handleSuspend = (doctorId) => {
+        const doctor = pendingDoctors.find(d => d.id === doctorId);
+        if (doctor) {
+            // Remove from pending
+            setPendingDoctors(prev => prev.filter(d => d.id !== doctorId));
+            
+            // Add to suspended doctors in localStorage (for Doctors page)
+            const suspendedDoctors = JSON.parse(localStorage.getItem('suspendedDoctors') || '[]');
+            const suspendedDoctor = {
+                ...doctor,
+                status: 'Suspended',
+                verificationStatus: 'Suspended',
+                suspendedDate: new Date().toISOString().split('T')[0],
+                patients: doctor.patients || 0,
+                rating: doctor.rating || 0
+            };
+            // Check if already exists, if not add it
+            if (!suspendedDoctors.find(d => d.id === doctor.id)) {
+                suspendedDoctors.push(suspendedDoctor);
+                localStorage.setItem('suspendedDoctors', JSON.stringify(suspendedDoctors));
+            }
+            
+            // Dispatch custom event to notify Doctors page
+            window.dispatchEvent(new Event('doctorsUpdated'));
+            
+            setToast({ show: true, message: 'Doctor suspended', type: 'warning' });
+            setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
+        }
+    };
+
     const handleView = (doctor) => {
         navigate(`/admin/doctors/${doctor.id}`);
     };
@@ -365,6 +395,12 @@ const Approvals = () => {
                                         className="px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors"
                                     >
                                         Approve
+                                    </button>
+                                    <button
+                                        onClick={() => handleSuspend(doctor.id)}
+                                        className="px-3 py-1 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 transition-colors"
+                                    >
+                                        Suspend
                                     </button>
                                     <button
                                         onClick={() => handleReject(doctor.id)}

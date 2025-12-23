@@ -157,12 +157,11 @@ const AINurseInterface = ({
                 <strong>Disclaimer:</strong> This AI Nurse provides general health guidance only and is not a substitute for professional medical advice, diagnosis, or treatment.
               </p>
             </div>
-            <button
+            <Button
+              preset="disclaimer-close"
               onClick={() => setShowDisclaimer(false)}
-              className="text-yellow-600 hover:text-yellow-800"
-            >
-              <X className="w-4 h-4" />
-            </button>
+              icon={<X className="w-4 h-4" />}
+            />
           </div>
         </div>
       )}
@@ -241,17 +240,15 @@ const AINurseInterface = ({
                   size="sm"
                   onClick={handleVoiceRecording}
                   className={isRecording ? 'bg-red-500 text-white' : ''}
-                >
-                  {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                </Button>
+                  icon={isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                />
                 <Button
                   variant="primary"
                   size="sm"
                   onClick={handleSendMessage}
                   disabled={!inputText.trim() || isProcessing}
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
+                  icon={<Send className="w-4 h-4" />}
+                />
               </div>
             </div>
           </div>
@@ -267,19 +264,11 @@ const AINurseInterface = ({
               size="sm"
               onClick={handleVitalsScan}
               disabled={isVitalsScanning}
+              loading={isVitalsScanning}
               className="w-full"
+              icon={!isVitalsScanning ? <Camera className="w-4 h-4" /> : null}
             >
-              {isVitalsScanning ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                  Scanning...
-                </>
-              ) : (
-                <>
-                  <Camera className="w-4 h-4 mr-2" />
-                  Scan Vitals
-                </>
-              )}
+              {isVitalsScanning ? "Scanning..." : "Scan Vitals"}
             </Button>
           </div>
 
@@ -334,8 +323,8 @@ const AINurseInterface = ({
                 variant="secondary"
                 size="sm"
                 onClick={handleImageCapture}
+                icon={<Camera className="w-4 h-4" />}
               >
-                <Camera className="w-4 h-4 mr-1" />
                 Add
               </Button>
             </div>
@@ -357,12 +346,11 @@ const AINurseInterface = ({
                     alt="Captured"
                     className="w-full h-20 object-cover rounded-lg"
                   />
-                  <button
+                  <Button
+                    preset="image-remove"
                     onClick={() => removeImage(image.id)}
-                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
+                    icon={<X className="w-3 h-3" />}
+                  />
                 </div>
               ))}
             </div>
@@ -374,16 +362,16 @@ const AINurseInterface = ({
               variant="primary"
               onClick={generateReport}
               className="w-full"
+              icon={<Download className="w-4 h-4" />}
             >
-              <Download className="w-4 h-4 mr-2" />
               Generate Report
             </Button>
             <Button
               variant="secondary"
               onClick={bookDoctor}
               className="w-full"
+              icon={<User className="w-4 h-4" />}
             >
-              <User className="w-4 h-4 mr-2" />
               Book Doctor
             </Button>
           </div>

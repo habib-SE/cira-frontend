@@ -727,6 +727,7 @@ import {
   Plus,
 } from "lucide-react";
 import Card from "../../admin/admincomponents/Card";
+import Button from "../../../components/shared/Button";
 
 /** ───────────────────────── Dummy Data ───────────────────────── */
 const DOCTORS = [
@@ -800,13 +801,13 @@ const Tag = ({ children }) => (
 );
 
 const PillButton = ({ active, children, onClick }) => (
-  <button
+  <Button
+    preset="pill"
+    active={active}
     onClick={onClick}
-    className={`px-3 py-1.5 rounded-full text-sm border transition
-      ${active ? "bg-pink-600 text-white border-pink-600" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
   >
     {children}
-  </button>
+  </Button>
 );
 
 /** ───────────────────────── Referral Modal ───────────────────────── */
@@ -876,9 +877,9 @@ const ReferralModal = ({ open, onClose, onSubmit, doctor }) => {
             <HeartHandshake className="h-5 w-5 text-pink-600" />
             <h3 className="font-semibold">Refer Patient {doctor ? `to ${doctor.name}` : ""}</h3>
           </div>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100">
+          <Button preset="icon-close" onClick={onClose}>
             <X className="h-5 w-5 text-gray-500" />
-          </button>
+          </Button>
         </div>
 
         {success ? (
@@ -891,19 +892,19 @@ const ReferralModal = ({ open, onClose, onSubmit, doctor }) => {
               We've shared the patient details with {doctor?.name}. You can track status in <b>My Referrals</b>.
             </p>
             <div className="flex items-center justify-center gap-3">
-              <button
+              <Button
+                preset="modal-primary"
                 onClick={resetForm}
-                className="px-5 py-2.5 rounded-lg bg-pink-600 text-white hover:bg-pink-700 flex items-center gap-2"
+                icon={<Plus className="h-4 w-4" />}
               >
-                <Plus className="h-4 w-4" />
                 Add Another Referral
-              </button>
-              <button
+              </Button>
+              <Button
+                preset="modal-secondary"
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
               >
                 Close
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
@@ -961,26 +962,18 @@ const ReferralModal = ({ open, onClose, onSubmit, doctor }) => {
             </div>
 
             <div className="mt-5 flex items-center justify-end gap-3">
-              <button onClick={onClose} className="px-4 py-2 rounded-lg bg-pink-100 text-pink-700 hover:bg-pink-200">
+              <Button preset="modal-cancel" onClick={onClose}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                preset="modal-send"
                 onClick={handleSubmit}
                 disabled={submitting || !form.patientName}
-                className="px-5 py-2.5 rounded-lg bg-pink-600 text-white hover:bg-pink-700 disabled:opacity-60 flex items-center gap-2"
+                loading={submitting}
+                icon={!submitting ? <Send className="h-4 w-4" /> : null}
               >
-                {submitting ? (
-                  <>
-                    <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                    Sending…
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4" />
-                    Send Referral
-                  </>
-                )}
-              </button>
+                {submitting ? "Sending…" : "Send Referral"}
+              </Button>
             </div>
           </div>
         )}
@@ -1024,12 +1017,12 @@ const DoctorCard = ({ d, onRefer }) => (
               <Calendar className="h-4 w-4" /> {d.slotsToday > 0 ? `${d.slotsToday} slots today` : "No slots today"}
             </span>
           </div>
-          <button
+          <Button
+            preset="refer-patient"
             onClick={() => onRefer(d)}
-            className="w-full sm:w-auto px-4 py-2 rounded-lg bg-pink-600 text-white hover:bg-pink-700"
           >
             Refer Patient
-          </button>
+          </Button>
         </div>
       </div>
     </div>
