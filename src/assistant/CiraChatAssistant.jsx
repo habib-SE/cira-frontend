@@ -5122,7 +5122,66 @@ const [demoLead, setDemoLead] = useState(() => {
           {displaySummary}
         </p>
 
-        {/* ... KEEP your conditions + confidence + self care section as-is ... */}
+                          {parsedSummary.conditions.length > 0 && (
+                         <div className="mt-4 border-t border-gray-100 pt-4">
+                           <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                            Conditions Matching
+                         </h3>
+
+                          <div className="space-y-3">
+                           {parsedSummary.conditions.map((c, idx) => (
+                             <div
+                                key={idx}
+                                className="flex items-center justify-between text-sm"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                                   <span className="text-gray-800 truncate">
+                                     {shortConditionName(c.name)}
+                                   </span>
+                              </div>
+                                <span className="font-medium text-gray-900">
+                                  {c.percentage}%
+                                 </span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                   )}
+
+                      {parsedSummary.confidence != null && (
+                        <div className="mt-5">
+                          <p className="text-xs text-gray-500 mb-1">
+                            Assessment confidence
+                          </p>
+
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="font-medium text-emerald-600">
+                              {parsedSummary.confidence >= 80
+                                ? "Pretty sure"
+                                : parsedSummary.confidence >= 60
+                                  ? "Somewhat sure"
+                                  : "Low confidence"}
+                            </span>
+                            <span className="text-gray-600">
+                              {parsedSummary.confidence}%
+                            </span>
+                          </div>
+
+                          <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-emerald-500"
+                              style={{
+                                width: `${Math.min(
+                                  parsedSummary.confidence,
+                                  100
+                                )}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
 
         <div className="mt-5 border-t border-gray-100 pt-4">
           <h3 className="text-sm font-semibold text-gray-900 mb-1">
