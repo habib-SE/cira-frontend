@@ -143,10 +143,10 @@ const ChatInput = ({
   onSendMessage,
   characterLimit = 4608,
   disabled = false,
-  label = "What can I help you with today?.",
   placeholder = "Describe how you're feeling or what you're worried about...",
   submitText = "Get Started",
   showMic = true,   // 👈 control Speak visibility
+  isThinking = false,
 }) => {
   const [message, setMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -165,7 +165,7 @@ const ChatInput = ({
 
   const remainingChars = characterLimit - message.length;
   const isOverLimit = remainingChars < 0;
-  const isDisabled = disabled || isOverLimit;
+  const isDisabled = disabled || isOverLimit || isThinking;
 
   const wrapperClass = (() => {
     if (isDisabled) {
@@ -191,11 +191,6 @@ const ChatInput = ({
 
   return (
     <div className="w-full">
-      {label && (
-        <p className="text-[15px] text-gray-800 text-start mb-4 font-semibold">
-          {label}
-        </p>
-      )}
 
       <motion.div
         className={wrapperClass}
@@ -217,9 +212,10 @@ const ChatInput = ({
     onChange={(e) => setMessage(e.target.value)}
     onFocus={() => setIsFocused(true)}
     onBlur={() => setIsFocused(false)}
-    className="w-full h-28 pl-6 pr-44 pt-0 pb-14 text-lg bg-transparent rounded-2xl focus:outline-none border-0 placeholder-gray-400 text-start"
+   className={`w-full h-28 pl-6 pr-44 pt-0 pb-14 text-lg bg-transparent rounded-2xl focus:outline-none border-0 placeholder-gray-400 text-start
+    ${isThinking ? "caret-transparent" : "caret-black"}`}
     maxLength={characterLimit}
-    disabled={disabled}
+    disabled={false}
   />
 
   {/* ✅ Character Counter inside input (bottom-left) */}
@@ -257,8 +253,15 @@ const ChatInput = ({
                 whileHover={{ scale: isDisabled ? 1 : 1.05 }}
                 whileTap={{ scale: isDisabled ? 1 : 0.95 }}
               >
-                <Send className="w-4 h-4" />
-                {submitText && <span className="hidden md:inline">{submitText}</span>}
+               {isThinking ? (
+  /* Small white circular loader */
+  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+) : (
+  <>
+    <Send className="w-4 h-4" />
+    {submitText && <span>{submitText}</span>}
+  </>
+)}
               </motion.button>
             </div>
           </form>
