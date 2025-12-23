@@ -636,12 +636,47 @@ export const downloadDoctorReportPDF = async (
   try {
     const logoImage = await loadStarsLogo();
     const doc = generateDoctorReportPDF(combinedData, { logoImage });
-    doc.save(filename);
+    
+    // Instead of doc.save(), use this approach:
+    const pdfBlob = doc.output('blob');
+    const url = URL.createObjectURL(pdfBlob);
+    
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    
+    // Append to body, click, and clean up
+    document.body.appendChild(link);
+    link.click();
+    
+    // Clean up
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 100);
+    
     return doc;
   } catch (e) {
     console.warn("Logo load failed, generating without logo:", e);
     const doc = generateDoctorReportPDF(combinedData);
-    doc.save(filename);
+    
+    // Fallback to blob approach
+    const pdfBlob = doc.output('blob');
+    const url = URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 100);
+    
     return doc;
   }
 };
@@ -1820,7 +1855,6 @@ export const generateEHRSOAPNotePDF = (
       // Define the questions in order
       const questions = [
         "What's wrong?",
-        "Since when?",
         "When did it start?",
         "Where does it hurt?",
         "Pain level (1-10)",
