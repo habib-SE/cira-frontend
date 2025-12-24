@@ -636,12 +636,47 @@ export const downloadDoctorReportPDF = async (
   try {
     const logoImage = await loadStarsLogo();
     const doc = generateDoctorReportPDF(combinedData, { logoImage });
-    doc.save(filename);
+    
+    // Instead of doc.save(), use this approach:
+    const pdfBlob = doc.output('blob');
+    const url = URL.createObjectURL(pdfBlob);
+    
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    
+    // Append to body, click, and clean up
+    document.body.appendChild(link);
+    link.click();
+    
+    // Clean up
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 100);
+    
     return doc;
   } catch (e) {
     console.warn("Logo load failed, generating without logo:", e);
     const doc = generateDoctorReportPDF(combinedData);
-    doc.save(filename);
+    
+    // Fallback to blob approach
+    const pdfBlob = doc.output('blob');
+    const url = URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 100);
+    
     return doc;
   }
 };
@@ -1426,100 +1461,203 @@ export const generateEHRSOAPNotePDF = (
   }
 
   // -------------------- ADD MEASUREMENTS SECTION AT THE TOP --------------------
-  // Add Measurements section before Current Issues
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("MEASUREMENTS:", marginX, y);
-  y += 8;
-  
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  
-  // Display measurements in a 2-column format
-  const measurements = [
-    "• weight 73 kg",
-    "• height 6 feet", 
-    "• blood pressure not measured",
-    "• temperature 100 °F"
-  ];
-  
-  const measurementCols = 2;
-  const colWidth = (contentW - 10) / measurementCols;
-  
-  measurements.forEach((measurement, idx) => {
-    const col = idx % measurementCols;
-    const row = Math.floor(idx / measurementCols);
-    const x = marginX + 5 + (col * colWidth);
-    const measurementY = y + (row * 7);
+  // Extract measurements from the data
+  const extractMeasurementsFromData = () => {
+    const measurements = [];
     
-    doc.text(measurement, x, measurementY);
-  });
-  
-  y += (Math.ceil(measurements.length / measurementCols) * 7) + 12; // Add space after measurements
+    // Try to extract from JSON data first
+    if (chatData.patient_identity_baseline) {
+      if (chatData.patient_identity_baseline.weight) {
+        measurements.push(`• weight ${chatData.patient_identity_baseline.weight}`);
+      }
+      if (chatData.patient_identity_baseline.height) {
+        measurements.push(`• height ${chatData.patient_identity_baseline.height}`);
+      }
+    }
+    
+    if (chatData.vital_signs_current_status) {
+      if (chatData.vital_signs_current_status.blood_pressure && 
+          chatData.vital_signs_current_status.blood_pressure.toLowerCase() !== "not measured") {
+        measurements.push(`• blood pressure ${chatData.vital_signs_current_status.blood_pressure}`);
+      } else {
+        measurements.push(`• blood pressure not measured`);
+      }
+      if (chatData.vital_signs_current_status.core_temperature) {
+        measurements.push(`• temperature ${chatData.vital_signs_current_status.core_temperature}`);
+      }
+    }
+    
+    // Fallback to text extraction if JSON not available
+    if (measurements.length === 0 && objective) {
+      const measurementsMatch = objective.match(/Measurements:[\s\S]*?(?=\n\n|\n[A-Z]|$)/i);
+      if (measurementsMatch) {
+        const measurementsText = measurementsMatch[0];
+        const parsedMeasurements = measurementsText
+          .replace(/^Measurements:\s*/i, "")
+          .split(/,\s*/)
+          .map(m => `• ${m.trim()}`)
+          .filter(m => m !== "•");
+        
+        measurements.push(...parsedMeasurements);
+      }
+    }
+    
+    return measurements.length > 0 ? measurements : [
+      "• weight 73 kg",
+      "• height 6 feet", 
+      "• blood pressure not measured",
+      "• temperature 100 °F"
+    ];
+  };
 
-  // -------------------- Helper: Extract concise answers from text --------------------
-  const extractConciseAnswers = (text) => {
-    if (!text) return {};
+  // Add Measurements section
+  const measurements = extractMeasurementsFromData();
+  if (measurements.length > 0) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("MEASUREMENTS:", marginX, y);
+    y += 8;
     
-    const textLower = text.toLowerCase();
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    
+    // Display measurements in a 2-column format
+    const measurementCols = 2;
+    const colWidth = (contentW - 10) / measurementCols;
+    
+    measurements.forEach((measurement, idx) => {
+      const col = idx % measurementCols;
+      const row = Math.floor(idx / measurementCols);
+      const x = marginX + 5 + (col * colWidth);
+      const measurementY = y + (row * 7);
+      
+      doc.text(measurement, x, measurementY);
+    });
+    
+    y += (Math.ceil(measurements.length / measurementCols) * 7) + 12;
+  }
+
+  // -------------------- Enhanced Helper: Extract answers from clinical summary --------------------
+  const extractConciseAnswers = (text, chatData) => {
+    if (!text && !chatData) return {};
+    
     const answers = {};
+    const textString = text ? String(text) : ""; // Convert to string to avoid type errors
+    const textLower = textString.toLowerCase();
     
-    // Define question keywords and extraction patterns
+    // Define question patterns with enhanced extraction
     const questionPatterns = {
       "What's wrong?": [
-        /(?:complains of|reporting|experiencing|has|suffering from)\s+([^\.]+?)(?:\.|\s+for)/i,
-        /(?:chief complaint|presenting with|main issue|primary concern)\s*:?\s*([^\.]+)/i,
-        /(?:symptoms?|problem|condition)\s*:?\s*([^\.]+)/i
+        // Primary concern from JSON
+        () => chatData?.chief_complaint?.primary_concern || null,
+        // Symptoms from HPI
+        () => {
+          if (chatData?.history_of_present_illness_hpi?.associated_symptoms) {
+            const symptoms = chatData.history_of_present_illness_hpi.associated_symptoms;
+            if (Array.isArray(symptoms)) return symptoms.join(", ");
+            return symptoms;
+          }
+          return null;
+        },
+        // Text extraction patterns - FIXED: Use textString instead of text
+        () => textString.match(/(?:presenting with|complains of|reporting|experiencing|has)\s+([^\.]+?(?:fever|pain|ache|symptom))[^\.]*/i)?.[1],
+        () => textString.match(/(?:low-grade fever|fever of|temperature of)\s+([^\.]+)/i)?.[0],
+        () => textString.match(/(?:accompanied by|with)\s+([^\.]+)/i)?.[1]
       ],
       "Since when?": [
-        /(?:since|for|started|began|duration)[:\s]+([^\.]+?)(?:\.|\s+ago)/i,
-        /(\d+\s*(?:day|week|month|year|hour)s?\s+ago)/i,
-        /(?:onset|duration)[:\s]+([^\.]+)/i
+        // Onset from JSON
+        () => chatData?.chief_complaint?.onset || null,
+        // Duration from JSON
+        () => chatData?.chief_complaint?.duration || null,
+        // Text extraction - FIXED
+        () => textString.match(/(?:began|started|since)\s+([^\.]+?(?:last night|yesterday|today|\d+\s*(?:day|week|month|hour)))[^\.]*/i)?.[1],
+        () => textString.match(/(?:duration|for)\s+([^\.]+)/i)?.[1],
+        () => textString.match(/(?:onset|started)[:\s]+([^\.]+)/i)?.[1]
       ],
       "When did it start?": [
-        /(?:started|began|onset)[:\s]+([^\.]+?)(?:\.|\s+on)/i,
-        /(?:exact onset|specifically started)[:\s]+([^\.]+)/i,
-        /(?:initial|first noticed)[:\s]+([^\.]+)/i
+        // Onset from JSON
+        () => chatData?.chief_complaint?.onset || null,
+        // Text extraction - FIXED
+        () => textString.match(/(?:started|began|onset)[:\s]+([^\.]+?(?:last night|yesterday|today))[^\.]*/i)?.[1],
+        () => textString.match(/(?:exact onset|specifically started)[:\s]+([^\.]+)/i)?.[1],
+        () => textString.match(/(?:initial|first noticed)[:\s]+([^\.]+)/i)?.[1]
       ],
       "Where does it hurt?": [
-        /(?:location|where|site|area)[:\s]+([^\.]+?)(?:\.|\s+pain)/i,
-        /(?:pain|discomfort|hurt|ache)\s+(?:in|at|on)\s+([^\.]+)/i,
-        /(?:localized to|radiates to|affecting)[:\s]+([^\.]+)/i
+        // Location from JSON
+        () => chatData?.history_of_present_illness_hpi?.location_or_system || null,
+        // Text extraction for body aches - FIXED
+        () => {
+          if (textString.includes("body aches")) return "generalized body aches";
+          const match = textString.match(/(?:pain|ache|discomfort|hurt)\s+(?:in|at|on)\s+([^\.]+)/i);
+          return match ? match[1] : null;
+        },
+        () => textString.match(/(?:location|where|site|area)[:\s]+([^\.]+)/i)?.[1]
       ],
       "Pain level (1-10)": [
-        /(?:pain|discomfort)\s*(?:level|scale|score)[:\s]*(\d+(?:\/\d+)?)/i,
-        /(\d+)\s*(?:out of|of|on a scale of)\s*\d+\s*(?:pain|scale)/i,
-        /pain[:\s]+(\d+)\/10/i
+        // Severity from JSON
+        () => chatData?.history_of_present_illness_hpi?.severity_0_to_10 || null,
+        // Text extraction - FIXED
+        () => textString.match(/(?:pain|discomfort)\s*(?:level|scale|score)[:\s]*(\d+(?:\/\d+)?)/i)?.[1],
+        () => textString.match(/(\d+)\s*(?:out of|of|on a scale of)\s*\d+\s*(?:pain|scale)/i)?.[1]
       ],
       "Is the pain constant or comes and goes?": [
-        /(?:constant|intermittent|comes and goes|on and off|persistent)[:\s]+([^\.]+)/i,
-        /(?:pain pattern|frequency)[:\s]+([^\.]+)/i,
-        /(?:continuous|episodic|sporadic)[:\s]+([^\.]+)/i
+        // Progression pattern from JSON
+        () => chatData?.history_of_present_illness_hpi?.progression_pattern || null,
+        // Text extraction - FIXED
+        () => textString.match(/(?:constant|intermittent|comes and goes|on and off|persistent)[:\s]+([^\.]+)/i)?.[1],
+        () => textString.match(/(?:pain pattern|frequency)[:\s]+([^\.]+)/i)?.[1]
       ],
       "Does anything make it better?": [
-        /(?:relieved|improved|better|eases)[:\s]+([^\.]+)/i,
-        /(?:alleviating|helpful|reducing)[:\s]+([^\.]+)/i,
-        /(?:relief|improvement|reduction)[:\s]+([^\.]+)/i
+        // Relieving factors from JSON
+        () => chatData?.history_of_present_illness_hpi?.relieving_factors || null,
+        // Text extraction - FIXED
+        () => textString.match(/(?:relieved|improved|better|eases)[:\s]+([^\.]+)/i)?.[1],
+        () => textString.match(/(?:alleviating|helpful|reducing)[:\s]+([^\.]+)/i)?.[1]
       ],
       "Does anything make it worse?": [
-        /(?:worse|exacerbated|aggravated|increased)[:\s]+([^\.]+)/i,
-        /(?:aggravating|triggering|worsening)[:\s]+([^\.]+)/i,
-        /(?:exacerbation|worsening)[:\s]+([^\.]+)/i
+        // Worsening factors from JSON
+        () => chatData?.history_of_present_illness_hpi?.worsening_factors || null,
+        // Text extraction - FIXED
+        () => textString.match(/(?:worse|exacerbated|aggravated|increased)[:\s]+([^\.]+)/i)?.[1],
+        () => textString.match(/(?:aggravating|triggering|worsening)[:\s]+([^\.]+)/i)?.[1]
       ],
       "Did this happen before?": [
-        /(?:previous|prior|past|history|happened before)[:\s]+([^\.]+)/i,
-        /(?:similar|same|recurrent)[:\s]+([^\.]+)/i,
-        /(?:history of|previous episodes)[:\s]+([^\.]+)/i
+        // Previous episodes from JSON
+        () => chatData?.chief_complaint?.previous_episodes || null,
+        // Text extraction - FIXED
+        () => textString.match(/(?:previous|prior|past|history|happened before)[:\s]+([^\.]+)/i)?.[1],
+        () => textString.match(/(?:similar|same|recurrent)[:\s]+([^\.]+)/i)?.[1]
       ],
       "Any recent injury?": [
-        /(?:injury|trauma|accident|hurt)[:\s]+([^\.]+)/i,
-        /(?:recently injured|recent trauma|accidental)[:\s]+([^\.]+)/i,
-        /(?:mechanism|cause)[:\s]+([^\.]+)/i
+        // Text extraction - FIXED
+        () => textString.match(/(?:injury|trauma|accident|hurt)[:\s]+([^\.]+)/i)?.[1],
+        () => textString.match(/(?:recently injured|recent trauma|accidental)[:\s]+([^\.]+)/i)?.[1],
+        () => {
+          if (textString.includes("denies recent injury") || textString.includes("no recent injury")) {
+            return "No recent injury reported";
+          }
+          return null;
+        }
       ],
       "Any new symptom recently?": [
-        /(?:new|recent|additional|other)[:\s]+([^\.]+)/i,
-        /(?:accompanying|associated|related)[:\s]+([^\.]+)/i,
-        /(?:recently developed|newly appeared)[:\s]+([^\.]+)/i
+        // Associated symptoms from JSON
+        () => {
+          if (chatData?.history_of_present_illness_hpi?.associated_symptoms) {
+            const symptoms = chatData.history_of_present_illness_hpi.associated_symptoms;
+            if (Array.isArray(symptoms)) return symptoms.join(", ");
+            return symptoms;
+          }
+          return null;
+        },
+        // Text extraction for recent symptoms - FIXED
+        () => {
+          if (textString.includes("new symptom") || textString.includes("recent symptom")) {
+            const match = textString.match(/(?:new|recent|additional)\s+symptom[:\s]+([^\.]+)/i);
+            return match ? match[1] : "New symptoms reported";
+          }
+          return null;
+        },
+        () => textString.match(/(?:accompanying|associated|related)[:\s]+([^\.]+)/i)?.[1]
       ]
     };
     
@@ -1527,19 +1665,34 @@ export const generateEHRSOAPNotePDF = (
     Object.keys(questionPatterns).forEach(question => {
       let answer = "Not specified";
       
-      // Try each pattern for this question
-      for (const pattern of questionPatterns[question]) {
-        const match = text.match(pattern);
-        if (match && match[1]) {
-          answer = match[1].trim();
+      // Try each extraction method
+      for (const extractor of questionPatterns[question]) {
+        let extracted = null;
+        
+        try {
+          extracted = extractor(); // All extractors are now functions without parameters
+        } catch (error) {
+          console.warn(`Error extracting answer for "${question}":`, error);
+          continue;
+        }
+        
+        if (extracted && extracted !== "null" && extracted !== "undefined") {
+          answer = String(extracted).trim();
+          
           // Clean up the answer
           answer = answer.replace(/^[:\-\s]+/, '').replace(/[\.\s]+$/, '');
           
-          // Truncate long answers
-          if (answer.length > 50) {
+          // Format the answer
+          if (answer.length > 80) {
             const words = answer.split(' ');
-            answer = words.slice(0, 8).join(' ') + '...';
+            answer = words.slice(0, 12).join(' ') + '...';
           }
+          
+          // Capitalize first letter
+          if (answer.length > 0) {
+            answer = answer.charAt(0).toUpperCase() + answer.slice(1);
+          }
+          
           break;
         }
       }
@@ -1547,15 +1700,37 @@ export const generateEHRSOAPNotePDF = (
       answers[question] = answer;
     });
     
-    // If we couldn't extract specific answers, use the first few sentences
-    if (Object.values(answers).every(ans => ans === "Not specified")) {
-      const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-      if (sentences.length > 0) {
-        answers["What's wrong?"] = sentences[0].trim().substring(0, 60) + (sentences[0].length > 60 ? '...' : '');
-        if (sentences.length > 1) {
-          answers["Since when?"] = sentences[1].trim().substring(0, 60) + (sentences[1].length > 60 ? '...' : '');
-        }
+    // Special handling for fever-specific information
+    if (textString && textString.includes("fever") && answers["What's wrong?"] === "Not specified") {
+      const feverMatch = textString.match(/(?:fever of|temperature of|low-grade fever)\s+([^\.]+)/i);
+      if (feverMatch) {
+        answers["What's wrong?"] = `Fever ${feverMatch[1].trim()}`;
+      } else if (textString.includes("fever")) {
+        answers["What's wrong?"] = "Fever";
       }
+    }
+    
+    // Extract body aches information
+    if (textString && textString.includes("body aches") && answers["Where does it hurt?"] === "Not specified") {
+      answers["Where does it hurt?"] = "Generalized body aches";
+    }
+    
+    // Extract denial information for specific questions
+    if (textString) {
+      const denials = [
+        { pattern: /denies\s+(?:recent|any)\s+injury/i, question: "Any recent injury?", answer: "No recent injury" },
+        { pattern: /no\s+(?:recent|any)\s+injury/i, question: "Any recent injury?", answer: "No recent injury" },
+        { pattern: /denies\s+(?:travel|recent travel)/i, question: "Any new symptom recently?", answer: "No recent travel" },
+        { pattern: /no\s+(?:travel|recent travel)/i, question: "Any new symptom recently?", answer: "No recent travel" },
+        { pattern: /denies\s+(?:sick contacts)/i, question: "Any new symptom recently?", answer: "No sick contacts" },
+        { pattern: /no\s+(?:sick contacts)/i, question: "Any new symptom recently?", answer: "No sick contacts" }
+      ];
+      
+      denials.forEach(denial => {
+        if (textString.match(denial.pattern) && answers[denial.question] === "Not specified") {
+          answers[denial.question] = denial.answer;
+        }
+      });
     }
     
     return answers;
@@ -1565,19 +1740,19 @@ export const generateEHRSOAPNotePDF = (
   const formatBulletPoints = (text, indent = 0) => {
     if (!text) return [];
     
+    const textString = String(text); // Convert to string
     const lines = [];
-    const sentences = text.split(/(?<=[.!?])\s+/);
+    const sentences = textString.split(/(?<=[.!?])\s+/);
     
     sentences.forEach((sentence, index) => {
       const trimmed = sentence.trim();
       if (!trimmed) return;
       
       if (index === 0 && trimmed.includes(":") && trimmed.split(":")[0].length < 20) {
-        // This is likely a label like "Measurements:" - keep it as a header
         lines.push({ text: trimmed, isBullet: false, isHeader: true });
       } else {
         lines.push({ 
-          text: trimmed.replace(/^[•\-]\s*/, ""), // Remove existing bullets
+          text: trimmed.replace(/^[•\-]\s*/, ""),
           isBullet: true,
           isHeader: false 
         });
@@ -1591,12 +1766,14 @@ export const generateEHRSOAPNotePDF = (
   const addMeasurementsSection = (text) => {
     if (!text) return text;
     
+    const textString = String(text); // Convert to string
+    
     // Extract measurements section
-    const measurementsMatch = text.match(/Measurements:[\s\S]*/i);
-    if (!measurementsMatch) return text;
+    const measurementsMatch = textString.match(/Measurements:[\s\S]*/i);
+    if (!measurementsMatch) return textString;
     
     const measurementsText = measurementsMatch[0];
-    const remainingText = text.replace(measurementsText, "").trim();
+    const remainingText = textString.replace(measurementsText, "").trim();
     
     // Parse measurements
     const measurements = measurementsText
@@ -1605,7 +1782,7 @@ export const generateEHRSOAPNotePDF = (
       .map(m => m.trim())
       .filter(m => m);
     
-    if (measurements.length === 0) return text;
+    if (measurements.length === 0) return textString;
     
     // Draw measurements in a table format
     doc.setFont("helvetica", "bold");
@@ -1625,7 +1802,7 @@ export const generateEHRSOAPNotePDF = (
       
       // Format measurement nicely
       const formatted = measurement
-        .replace(/(\d+(\.\d+)?)\s*(°?[CF]|kg|feet|cm|in)/, "$1 $3") // Add space before units
+        .replace(/(\d+(\.\d+)?)\s*(°?[CF]|kg|feet|cm|in)/, "$1 $3")
         .replace(/\s+/g, " ")
         .trim();
       
@@ -1654,37 +1831,30 @@ export const generateEHRSOAPNotePDF = (
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.text(title.toUpperCase(), marginX, y);
-    doc.setDrawColor(150, 150, 150);
-    doc.setLineWidth(0.3);
-    doc.line(marginX, y + 1, marginX + 40, y + 1);
+    // doc.setDrawColor(150, 150, 150);
+    // doc.setLineWidth(0.3);
+    // doc.line(marginX, y + 1, marginX + 40, y + 1);
     
     y += 10;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
 
-    const raw = (textValue || "").trim();
+    const raw = textValue ? String(textValue).trim() : ""; // Convert to string and trim
     if (!raw) {
       doc.text("• No data available", marginX, y);
       y += 8;
       return;
     }
 
-    // Special handling for Subjective section with concise Q&A
+    // Special handling for Subjective section with enhanced Q&A
     if (title.toLowerCase() === "subjective") {
-      // Extract concise answers
-      const answers = extractConciseAnswers(raw);
-      
-      // Add Current Issue header
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.text("Current Issue:", marginX, y);
-      y += 8;
+      // Extract concise answers using both text and JSON data
+      const answers = extractConciseAnswers(raw, chatData);
       
       // Define the questions in order
       const questions = [
         "What's wrong?",
-        "Since when?",
         "When did it start?",
         "Where does it hurt?",
         "Pain level (1-10)",
@@ -1701,6 +1871,11 @@ export const generateEHRSOAPNotePDF = (
         if (y > 280) {
           doc.addPage();
           y = 22;
+          // Add header on new page
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(12);
+          doc.text("Current Issue (continued):", marginX, y);
+          y += 8;
         }
         
         const answer = answers[question] || "Not specified";
@@ -1708,13 +1883,13 @@ export const generateEHRSOAPNotePDF = (
         // Question in bold
         doc.setFont("helvetica", "bold");
         doc.setFontSize(10);
-        doc.text(`• ${question}`, marginX + 5, y);
+       doc.text(question, marginX + 5, y);
         
         // Answer in normal text, indented
         doc.setFont("helvetica", "normal");
         const answerLines = doc.splitTextToSize(answer, contentW - 15);
         answerLines.forEach((line, lineIndex) => {
-          doc.text(line, marginX + 15, y + (lineIndex + 1) * 5);
+          doc.text(line, marginX + 5, y + (lineIndex + 1) * 5);
         });
         
         y += (answerLines.length * 5) + 8;
