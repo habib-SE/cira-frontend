@@ -65,6 +65,8 @@ import Footer from "../components/landing/Footer";
 import CiraChatAssistant from "../assistant/CiraChatAssistant";
 import Header from "../components/Header";
 import GlobalVoiceSection from "../components/landing/GlobalVoiceSection";
+import BigFeaturesSection from "../components/landing/BigFeaturesSection";
+import HowCiraWorksSection from "../components/landing/HowCiraWorksSection";
 
 function LandingPage() {
   const [showChat, setShowChat] = useState(false);
@@ -103,6 +105,8 @@ function LandingPage() {
         <div className="pt-20 w-full max-w-4xl mx-auto px-4 py-2 md:px-4 md:py-6">
           <HeroSection onStartChat={handleStartChat} />
           <GlobalVoiceSection />
+          <BigFeaturesSection />
+          <HowCiraWorksSection />
           <FriendlyExplanationSection />
           <DoctorConnectionSection />
           <PrivacySection />
