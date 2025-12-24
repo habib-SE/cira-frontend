@@ -138,16 +138,15 @@ import { Send } from "lucide-react";
 import { motion } from "framer-motion";
 import mic from "../../assets/mice.svg";
 import { useNavigate } from "react-router-dom";
-import Button from "../shared/Button";
 
 const ChatInput = ({
   onSendMessage,
   characterLimit = 4608,
   disabled = false,
-  label = "What can I help you with today?.",
   placeholder = "Describe how you're feeling or what you're worried about...",
   submitText = "Get Started",
   showMic = true,   // 👈 control Speak visibility
+  isThinking = false,
 }) => {
   const [message, setMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -166,7 +165,7 @@ const ChatInput = ({
 
   const remainingChars = characterLimit - message.length;
   const isOverLimit = remainingChars < 0;
-  const isDisabled = disabled || isOverLimit;
+  const isDisabled = disabled || isOverLimit || isThinking;
 
   const wrapperClass = (() => {
     if (isDisabled) {
@@ -192,11 +191,6 @@ const ChatInput = ({
 
   return (
     <div className="w-full">
-      {label && (
-        <p className="text-[15px] text-gray-800 text-start mb-4 font-semibold">
-          {label}
-        </p>
-      )}
 
       <motion.div
         className={wrapperClass}
@@ -218,9 +212,10 @@ const ChatInput = ({
     onChange={(e) => setMessage(e.target.value)}
     onFocus={() => setIsFocused(true)}
     onBlur={() => setIsFocused(false)}
-    className="w-full h-28 pl-6 pr-44 pt-0 pb-14 text-lg bg-transparent rounded-2xl focus:outline-none border-0 placeholder-gray-400 text-start"
+   className={`w-full h-28 pl-6 pr-44 pt-0 pb-14 text-lg bg-transparent rounded-2xl focus:outline-none border-0 placeholder-gray-400 text-start
+    ${isThinking ? "caret-transparent" : "caret-black"}`}
     maxLength={characterLimit}
-    disabled={disabled}
+    disabled={false}
   />
 
   {/* ✅ Character Counter inside input (bottom-left) */}
@@ -234,28 +229,40 @@ const ChatInput = ({
 
               {/* 👈 Speak button on the left */}
               {showMic && (
-                <Button
-                  preset="speak"
+                <button
                   type="button"
                   onClick={handleMicClick}
+                  className="absolute bottom-2 left-3 flex items-center gap-1 px-3 py-2 rounded-full bg-white border border-gray-200 text-sm text-gray-800 shadow-sm hover:bg-pink-200 transition-all duration-200"
                   disabled={disabled}
-                  icon={<img src={mic} alt="mic" className="w-4 h-4" />}
                 >
-                  Speak
-                </Button>
+                  <img src={mic} alt="mic" className="w-4 h-4" />
+                  <span>Speak</span>
+                </button>
               )}
 
               {/* 👉 Get Started / Send on the right */}
-              <Button
-                preset="send"
+              <motion.button
                 type="submit"
                 disabled={isDisabled || !message.trim()}
-                icon={<Send className="w-4 h-4" />}
+                className="absolute bottom-2 right-2 bg-gradient-to-r from-purple-600 to-pink-600 
+                  hover:from-purple-700 hover:to-pink-700 
+                  disabled:from-gray-400 disabled:to-gray-400 
+                  disabled:cursor-not-allowed 
+                  text-white font-semibold px-3 md:px-5 py-2 rounded-sm 
+                  transition-all duration-200 shadow-md text-sm whitespace-nowrap flex items-center gap-2 justify-center"
                 whileHover={{ scale: isDisabled ? 1 : 1.05 }}
                 whileTap={{ scale: isDisabled ? 1 : 0.95 }}
               >
-                {submitText && <span>{submitText}</span>}
-              </Button>
+               {isThinking ? (
+  /* Small white circular loader */
+  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+) : (
+  <>
+    <Send className="w-4 h-4" />
+    {submitText && <span>{submitText}</span>}
+  </>
+)}
+              </motion.button>
             </div>
           </form>
         </div>

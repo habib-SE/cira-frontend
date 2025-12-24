@@ -112,8 +112,8 @@ const DoctorRecommendationModal = ({
                 className="border border-gray-200 rounded-xl p-4 hover:border-pink-300 hover:shadow-md transition-all cursor-pointer bg-white/60"
                 onClick={() => onSelectDoctor(doctor)}
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-gray-900 text-lg">{doctor.name}</h4>
                     <p className="text-gray-600 text-sm">{doctor.specialty}</p>
 
@@ -135,8 +135,8 @@ const DoctorRecommendationModal = ({
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <div className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                  <div className="text-right flex-shrink-0">
+                    <div className="bg-green-100 text-green-800 text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 rounded-full font-medium whitespace-nowrap">
                       {doctor.availability}
                     </div>
                   </div>
