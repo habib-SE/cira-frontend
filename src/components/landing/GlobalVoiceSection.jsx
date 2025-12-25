@@ -249,7 +249,7 @@ const GlobalVoiceSection = () => {
     {
       icon: <Languages className="w-5 h-5" />,
       title: "Automatic Language Detection",
-      desc: "Cira understands and detects your language instantly — no setup needed.",
+      desc: "Cira understands and detects your language instantly no setup needed.",
     },
     {
       icon: <RefreshCcw className="w-5 h-5" />,
@@ -266,7 +266,7 @@ const GlobalVoiceSection = () => {
   return (
     <>
       <motion.section
-        className="relative overflow-hidden py-16"
+        className="relative overflow-hidden pt-0 pb-16"
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
@@ -285,16 +285,17 @@ const GlobalVoiceSection = () => {
               Global & Human by Design
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-serif font-normal text-gray-900 leading-snug">
-              Speak in your language.
+            <h1 className="text-xl xs:text-2xl sm:text-2xl md:text-5xl font-serif font-normal text-gray-950 tracking-wide text-center flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+              Speak in your language
               <br />
               <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-transparent font-serif bg-clip-text">
-                Cira will understand.
+                Cira 
               </span>
+              will understand
             </h1>
 
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto mt-4">
-              Cira connects with you across languages — naturally, privately, and safely.
+            <p className="mt-2 pl-2 text-[9px] md:text-[14px] text-gray-600 font-normal leading-5 md:leading-6">
+              Cira connects with you across languages naturally, privately, and safely.
             </p>
           </motion.div>
 

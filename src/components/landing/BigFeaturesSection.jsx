@@ -74,7 +74,7 @@ export default function BigFeaturesSection() {
 
   return (
     <motion.section
-      className="relative py-16 md:py-24 lg:py-32 px-4 md:px-6 overflow-hidden  md:mb-4"
+      className="relative pt-16 pb-0 px-4 md:px-6 overflow-hidden"
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.2 }}
@@ -100,11 +100,11 @@ export default function BigFeaturesSection() {
             <span>Powered by Advanced AI</span>
           </motion.div>
           
-          <h2 className="text-4xl md:text-6xl font-serif font-normal text-gray-950 leading-tight mb-4">
-            Not Just <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-transparent font-serif bg-clip-text">an AI Nurse</span>
-          </h2>
+          <h1 className="text-xl xs:text-2xl sm:text-2xl md:text-5xl font-serif font-normal text-gray-950 tracking-wide text-center flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+            Not Just an <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-transparent font-serif bg-clip-text"> AI Nurse</span>
+          </h1>
           
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-tight mb-8 md:mb-10">
+          <p className="mt-2 pl-2 text-[9px] md:text-[14px] text-gray-600 font-normal leading-5 md:leading-6">
             From AI health guidance to expert doctor consultations all in one place.
           </p>
         </motion.div>
@@ -142,11 +142,11 @@ export default function BigFeaturesSection() {
                     {feature.value}
                   </div>
 
-                  <h4 className="text-lg font-semibold text-gray-950 mb-1">
+                  <h4 className="font-semibold text-gray-900 mb-1 mt-1">
                     {feature.title}
                   </h4>
                   
-                  <p className="text-sm text-gray-600 leading-tight">
+                  <p className="text-sm text-gray-600 mt-1">
                     {feature.description}
                   </p>
                 </div>

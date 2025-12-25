@@ -14,8 +14,8 @@ export default function DoctorConnectionSection() {
       <div className="max-w-4xl mx-auto text-center">
 
         {/* Headline */}
-<motion.h2
-  className="text-2xl md:text-4xl lg:text-5xl font-serif font-normal text-gray-950 tracking-tight leading-tight px-2 md:px-0"
+<motion.h1
+  className="text-xl xs:text-2xl sm:text-2xl md:text-5xl font-serif font-normal text-gray-950 tracking-wide text-center flex flex-wrap items-center justify-center gap-1 sm:gap-2"
   initial="hidden"
   whileInView="show"
   viewport={{ once: true }}
@@ -23,9 +23,9 @@ export default function DoctorConnectionSection() {
   transition={{ duration: 0.8, ease: 'easeOut' }}
 >
   When we're done chatting, I can<br />
-  connect you to a human doctor for<br />
-  <span className="text-pink-400">a consultation</span>
-</motion.h2>
+  connect you to a human doctor for a<br />
+  <span className="text-pink-400">consultation</span>
+</motion.h1>
 
         {/* 24/7 Badge */}
         <motion.div
