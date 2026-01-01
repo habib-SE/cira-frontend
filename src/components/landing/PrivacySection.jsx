@@ -22,8 +22,8 @@ export default function PrivacySection() {
       <div className="max-w-4xl mx-auto text-center">
 
         {/* Headline */}
-        <motion.h2
-          className="text-2xl md:text-4xl lg:text-5xl font-normal font-serif text-gray-950 leading-tight px-2 md:px-0"
+        <motion.h1
+          className="text-xl xs:text-2xl sm:text-2xl md:text-5xl font-serif font-normal text-gray-950 tracking-wide text-center flex flex-wrap items-center justify-center gap-1 sm:gap-2"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -32,7 +32,7 @@ export default function PrivacySection() {
           Don't worry, everything is private,<br />
           GDPR secure, and your data is<br />
           <span className="text-pink-400">yours</span>
-        </motion.h2>
+        </motion.h1>
 
         {/* Subtitle */}
         <motion.p
