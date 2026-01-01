@@ -22,7 +22,7 @@ export default function FriendlyExplanationSection() {
           variants={fadeUp}
           transition={{ duration: 0.8, ease: 'easeOut' }}
         >
-          <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-transparent font-serif bg-clip-text">
+          <span className="text-pink-400 relative inline-flex items-center whitespace-nowrap">
                 Cira 
               </span>listens like a friend,<br />
           <span className="text-gray-950">explains like a Nurse.</span>

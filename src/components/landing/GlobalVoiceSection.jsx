@@ -288,7 +288,7 @@ const GlobalVoiceSection = () => {
             <h1 className="text-xl xs:text-2xl sm:text-2xl md:text-5xl font-serif font-normal text-gray-950 tracking-wide text-center flex flex-wrap items-center justify-center gap-1 sm:gap-2">
               Speak in your language
               <br />
-              <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-transparent font-serif bg-clip-text">
+              <span className="text-pink-400 relative inline-flex items-center whitespace-nowrap">
                 Cira 
               </span>
               will understand
