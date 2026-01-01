@@ -118,7 +118,7 @@ export default function HowCiraWorksSection() {
           transition={{ duration: 0.8 }}
         >
           <h2 className="mt-0 text-xl xs:text-2xl sm:text-2xl md:text-5xl font-serif font-normal text-gray-950 tracking-wide text-center flex flex-wrap items-center justify-center gap-1 sm:gap-2">
-            How <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-transparent font-serif bg-clip-text">Cira</span> Works
+            How <span className="text-pink-400 relative inline-flex items-center whitespace-nowrap">Cira</span> Works
           </h2>
           <p className="mt-2 pl-2 text-[9px] md:text-[14px] text-gray-600 font-normal leading-5 md:leading-6">
             Get health insights in just a few simple steps

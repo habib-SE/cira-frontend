@@ -101,7 +101,7 @@ export default function BigFeaturesSection() {
           </motion.div>
           
           <h1 className="text-xl xs:text-2xl sm:text-2xl md:text-5xl font-serif font-normal text-gray-950 tracking-wide text-center flex flex-wrap items-center justify-center gap-1 sm:gap-2">
-            Not Just an <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-transparent font-serif bg-clip-text"> AI Nurse</span>
+            Not Just an <span className="text-pink-400 relative inline-flex items-center whitespace-nowrap"> AI Nurse</span>
           </h1>
           
           <p className="mt-2 pl-2 text-[9px] md:text-[14px] text-gray-600 font-normal leading-5 md:leading-6">

@@ -102,7 +102,7 @@ function LandingPage() {
 
       {/* Landing content (pushed down below header) */}
       {!showChat && (
-        <div className="pt-20 w-full max-w-4xl mx-auto px-4 py-2 md:px-4 md:py-6">
+        <div className="pt-20 w-full max-w-4xl mx-auto px-4 py-2 md:px-4 md:pt-6 md:pb-3">
           <HeroSection onStartChat={handleStartChat} />
           <GlobalVoiceSection />
           <BigFeaturesSection />
