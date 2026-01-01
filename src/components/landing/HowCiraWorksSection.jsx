@@ -169,7 +169,7 @@ export default function HowCiraWorksSection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative w-full carousel-container"
+            className="relative w-full carousel-container rounded-2xl shadow-[0_8px_40px_rgba(236,72,153,0.15)] p-2 bg-white"
           >
             <style>{`
               .carousel-container .swiper-button-next,
