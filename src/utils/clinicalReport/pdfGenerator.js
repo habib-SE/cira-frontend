@@ -361,6 +361,8 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
 }
 gy += H_TOP + G;
 
+// In the generateDoctorReportPDF function, find the HPI section and fix it:
+
 // ---------- Row 2 ----------
 {
   // ---------------- HPI Card ----------------
@@ -376,7 +378,17 @@ gy += H_TOP + G;
   const familyHistory = medical_background?.family_history || "—";
   const relievingFactors = history_of_present_illness_hpi?.relieving_factors || "None reported";
   const worseningFactors = history_of_present_illness_hpi?.worsening_factors || "None reported";
-  const associatedSymptoms = history_of_present_illness_hpi?.associated_symptoms?.join(", ") || "None";
+  
+  // FIX: Handle associated_symptoms whether it's an array or string
+  let associatedSymptoms = "None";
+  const associatedSymptomsValue = history_of_present_illness_hpi?.associated_symptoms;
+  if (associatedSymptomsValue) {
+    if (Array.isArray(associatedSymptomsValue)) {
+      associatedSymptoms = associatedSymptomsValue.join(", ");
+    } else if (typeof associatedSymptomsValue === 'string') {
+      associatedSymptoms = associatedSymptomsValue;
+    }
+  }
 
   // Draw HPI fields
   drawKV(doc, b4, [
@@ -390,7 +402,6 @@ gy += H_TOP + G;
     { label: "Relieving Factors:", value: relievingFactors },
     { label: "Worsening Factors:", value: worseningFactors },
   ]);
-
   // ---------------- Functional Status Card ----------------
   const H_FUNC = H_BOTTOM; // Functional Status is shorter
   const b3 = drawCard(doc, RIGHT_X, gy, COL_W, H_FUNC, "FUNCTIONAL STATUS");
@@ -625,62 +636,309 @@ export const downloadDoctorReportPDF = async (
   patientInfo = {},
   filename = "Cira_Clinical_Intake_Report.pdf"
 ) => {
-  const combinedData = {
-    ...clinicalData,
-    patientName: patientInfo.name || clinicalData?.patientName || "Patient",
-    patientAge: patientInfo.age || clinicalData?.patientAge || "",
-    patientGender: patientInfo.gender || clinicalData?.patientGender || "",
+  console.log("🔄 PDF Generation - Input Data:", {
+    clinicalDataKeys: Object.keys(clinicalData || {}),
+    patientInfo: patientInfo,
+    hasChiefComplaint: !!clinicalData?.chiefComplaint,
+    hasHPI: !!clinicalData?.hpi,
+    conditionsCount: clinicalData?.conditions?.length || 0,
+    confidence: clinicalData?.confidence
+  });
+
+  // FLATTEN the data structure to avoid [object Object] issues
+  const flattenedData = {
+    // Patient Information - FLAT
+    patientName: patientInfo.name || clinicalData?.patientName || clinicalData?.patientInfo?.name || "Patient",
+    patientAge: patientInfo.age || clinicalData?.patientAge || clinicalData?.patientInfo?.age || "",
+    patientGender: patientInfo.gender || clinicalData?.patientGender || clinicalData?.patientInfo?.gender || "",
+    patientHeight: clinicalData?.patientHeight || clinicalData?.patientInfo?.height || "—",
+    patientWeight: clinicalData?.patientWeight || clinicalData?.patientInfo?.weight || "—",
     consultDate: patientInfo.consultDate || clinicalData?.consultDate || new Date().toLocaleDateString(),
+    reportType: clinicalData?.reportType || "AI Clinical Intake Summary",
+
+    // Chief Complaint - FLAT (extract from object or use direct)
+    chiefComplaintPrimaryConcern: extractFlatValue(clinicalData, ['chiefComplaint', 'primaryConcern'], 'primaryConcern', 'Fever and cough'),
+    chiefComplaintOnset: extractFlatValue(clinicalData, ['chiefComplaint', 'onset'], 'onset', 'Not specified'),
+    chiefComplaintDuration: extractFlatValue(clinicalData, ['chiefComplaint', 'duration'], 'duration', 'Not specified'),
+    chiefComplaintSeverity: extractFlatValue(clinicalData, ['chiefComplaint', 'severity'], 'severity', 'Not specified'),
+    chiefComplaintPattern: extractFlatValue(clinicalData, ['chiefComplaint', 'pattern'], 'pattern', 'Not specified'),
+    chiefComplaintPreviousEpisodes: extractFlatValue(clinicalData, ['chiefComplaint', 'previousEpisodes'], 'previousEpisodes', 'Unknown'),
+
+    // HPI - FLAT
+    hpiLocation: extractFlatValue(clinicalData, ['hpi', 'location'], 'hpiLocation', '—'),
+    hpiAssociatedSymptoms: extractFlatValue(clinicalData, ['hpi', 'associatedSymptoms'], 'hpiAssociatedSymptoms', 'None'),
+    hpiRelievingFactors: extractFlatValue(clinicalData, ['hpi', 'relievingFactors'], 'hpiRelievingFactors', 'None reported'),
+    hpiWorseningFactors: extractFlatValue(clinicalData, ['hpi', 'worseningFactors'], 'hpiWorseningFactors', 'None reported'),
+
+    // Medical History - FLAT
+    medicalHistoryChronicIllnesses: extractFlatValue(clinicalData, ['medicalHistory', 'chronicIllnesses'], 'chronicIllnesses', '—'),
+    medicalHistoryPreviousSurgeries: extractFlatValue(clinicalData, ['medicalHistory', 'previousSurgeries'], 'previousSurgeries', '—'),
+    medicalHistoryFamilyHistory: extractFlatValue(clinicalData, ['medicalHistory', 'familyHistory'], 'familyHistory', '—'),
+    medicalHistoryCurrentMedications: extractFlatValue(clinicalData, ['medicalHistory', 'currentMedications'], 'currentMedications', '—'),
+    medicalHistoryDrugAllergies: extractFlatValue(clinicalData, ['medicalHistory', 'drugAllergies'], 'drugAllergies', '—'),
+
+    // Functional Status - FLAT
+    functionalStatusEatingDrinking: extractFlatValue(clinicalData, ['functionalStatus', 'eatingDrinkingNormally'], 'eatingDrinkingNormally', 'Unknown'),
+    functionalStatusHydration: extractFlatValue(clinicalData, ['functionalStatus', 'hydration'], 'hydration', 'Unknown'),
+    functionalStatusActivityLevel: extractFlatValue(clinicalData, ['functionalStatus', 'activityLevel'], 'activityLevel', 'Unknown'),
+
+    // AI Conditions
+    conditions: Array.isArray(clinicalData?.conditions) ? clinicalData.conditions : [],
+    confidence: clinicalData?.confidence || 0,
+
+    // Vital Signs - FLAT
+    vitalSignsHeartRate: extractFlatValue(clinicalData, ['vitalSigns', 'heartRate'], 'heartRate', 'Not recorded'),
+    vitalSignsOxygenSaturation: extractFlatValue(clinicalData, ['vitalSigns', 'oxygenSaturation'], 'oxygenSaturation', 'Not recorded'),
+    vitalSignsCoreTemperature: extractFlatValue(clinicalData, ['vitalSigns', 'coreTemperature'], 'coreTemperature', 'Not measured'),
+    vitalSignsReportedFever: extractFlatValue(clinicalData, ['vitalSigns', 'reportedFever'], 'reportedFever', 'Unknown'),
+    vitalSignsBloodPressure: extractFlatValue(clinicalData, ['vitalSigns', 'bloodPressure'], 'bloodPressure', 'Not measured'),
+
+    // Lifestyle - FLAT
+    lifestyleSmoking: extractFlatValue(clinicalData, ['lifestyleRiskFactors', 'smoking'], 'smoking', 'Unknown'),
+    lifestyleAlcoholUse: extractFlatValue(clinicalData, ['lifestyleRiskFactors', 'alcoholUse'], 'alcoholUse', 'Unknown'),
+    lifestyleRecreationalDrugs: extractFlatValue(clinicalData, ['lifestyleRiskFactors', 'recreationalDrugs'], 'recreationalDrugs', 'Unknown'),
+    lifestyleDiet: extractFlatValue(clinicalData, ['lifestyleRiskFactors', 'diet'], 'diet', 'Unknown'),
+    lifestyleExerciseRoutine: extractFlatValue(clinicalData, ['lifestyleRiskFactors', 'exerciseRoutine'], 'exerciseRoutine', 'Unknown'),
+    lifestyleStressLevel: extractFlatValue(clinicalData, ['lifestyleRiskFactors', 'stressLevel'], 'stressLevel', 'Unknown'),
+
+    // Exposure - FLAT
+    exposureRecentTravel: extractFlatValue(clinicalData, ['exposureEnvironment', 'recentTravel'], 'recentTravel', 'Unknown'),
+    exposureSickContacts: extractFlatValue(clinicalData, ['exposureEnvironment', 'sickContacts'], 'sickContacts', 'Unknown'),
+    exposureCrowdedEvents: extractFlatValue(clinicalData, ['exposureEnvironment', 'crowdedEvents'], 'crowdedEvents', 'Unknown'),
+    exposureWorkplaceChemical: extractFlatValue(clinicalData, ['exposureEnvironment', 'workplaceChemicalExposure'], 'workplaceChemicalExposure', 'Unknown'),
+    exposureWeather: extractFlatValue(clinicalData, ['exposureEnvironment', 'weatherExposure'], 'weatherExposure', 'Unknown'),
+
+    // ROS - FLAT
+    rosShortnessOfBreath: extractFlatValue(clinicalData, ['reviewOfSystems', 'shortnessOfBreath'], 'shortnessOfBreath', 'Unknown'),
+    rosChestPain: extractFlatValue(clinicalData, ['reviewOfSystems', 'chestPain'], 'chestPain', 'Unknown'),
+    rosSoreThroat: extractFlatValue(clinicalData, ['reviewOfSystems', 'soreThroat'], 'soreThroat', 'Unknown'),
+    rosBodyAchesFatigue: extractFlatValue(clinicalData, ['reviewOfSystems', 'bodyAchesFatigue'], 'bodyAchesFatigue', 'Unknown'),
+    rosVomitingDiarrhea: extractFlatValue(clinicalData, ['reviewOfSystems', 'vomitingDiarrhea'], 'vomitingDiarrhea', 'Unknown'),
+    rosUrinaryChanges: extractFlatValue(clinicalData, ['reviewOfSystems', 'urinaryChanges'], 'urinaryChanges', 'Unknown'),
+
+    // AI Assessment - FLAT
+    aiAssessmentConfidence: clinicalData?.confidence ? `${clinicalData.confidence}%` : "Not specified",
+    aiAssessmentOverallStability: extractFlatValue(clinicalData, ['aiAssessment', 'overallStability'], 'overallStability', 'X'),
+    aiAssessmentRedFlagSymptoms: extractFlatValue(clinicalData, ['aiAssessment', 'redFlagSymptoms'], 'redFlagSymptoms', 'X'),
+
+    // Narrative
+    narrativeSummary: clinicalData?.narrativeSummary || clinicalData?.toolSummary || "",
+    selfCareText: clinicalData?.selfCareText || "",
+    clinicalNoteToPhysician: clinicalData?.clinicalNoteToPhysician || 
+      "Cira is an AI clinical decision support assistant and doesn't replace professional medical judgment.",
   };
+
+  console.log("✅ Flattened PDF Data - Sample:", {
+    patientName: flattenedData.patientName,
+    chiefComplaintPrimaryConcern: flattenedData.chiefComplaintPrimaryConcern,
+    conditionsCount: flattenedData.conditions.length,
+    confidence: flattenedData.confidence
+  });
+
+  // Helper function to extract values from nested objects or flat properties
+  function extractFlatValue(data, nestedPath, flatKey, defaultValue) {
+    // Try nested path first (e.g., data.chiefComplaint.primaryConcern)
+    let value = data;
+    for (const key of nestedPath) {
+      if (value && typeof value === 'object' && key in value) {
+        value = value[key];
+      } else {
+        value = undefined;
+        break;
+      }
+    }
+    
+    // If nested path failed, try flat key (e.g., data.primaryConcern)
+    if (value === undefined && flatKey && data && data[flatKey] !== undefined) {
+      value = data[flatKey];
+    }
+    
+    // If still undefined, use default
+    if (value === undefined || value === null) {
+      return defaultValue;
+    }
+    
+    // Convert objects to string to avoid [object Object]
+    if (typeof value === 'object') {
+      console.warn(`⚠️ Object detected for ${flatKey}:`, value);
+      // Try to extract string value from object
+      if (value.primaryConcern !== undefined) return String(value.primaryConcern);
+      if (value.text !== undefined) return String(value.text);
+      if (value.value !== undefined) return String(value.value);
+      return JSON.stringify(value).substring(0, 100); // Truncate long JSON
+    }
+    
+    return String(value);
+  }
+
+  // CONVERT flattened data to the structured format that generateDoctorReportPDF expects
+  const structuredData = {
+  // Patient identity (matching what generateDoctorReportPDF expects)
+  patient_identity_baseline: {
+    name: flattenedData.patientName,
+    age: flattenedData.patientAge === "Not specified" ? "" : flattenedData.patientAge, // Fix for empty age
+    biological_sex: flattenedData.patientGender,
+    height: flattenedData.patientHeight === "—" ? "—" : (flattenedData.patientHeight || "—"),
+    weight: flattenedData.patientWeight === "—" ? "—" : (flattenedData.patientWeight || "—"),
+  },
+  
+  // Chief complaint (matching the expected structure)
+  chief_complaint: {
+    primary_concern: flattenedData.chiefComplaintPrimaryConcern || "—",
+    onset: flattenedData.chiefComplaintOnset || "Not specified",
+    duration: flattenedData.chiefComplaintDuration || "Not specified",
+    severity: flattenedData.chiefComplaintSeverity || "Not specified",
+    pattern: flattenedData.chiefComplaintPattern || "Not specified",
+    previous_episodes: flattenedData.chiefComplaintPreviousEpisodes || "Unknown",
+  },
+  
+  // HPI (History of Present Illness)
+  history_of_present_illness_hpi: {
+    location_or_system: flattenedData.hpiLocation || "—",
+    associated_symptoms: flattenedData.hpiAssociatedSymptoms || "None",
+    relieving_factors: flattenedData.hpiRelievingFactors || "None reported",
+    worsening_factors: flattenedData.hpiWorseningFactors || "None reported",
+  },
+  
+  // Medical background - IMPORTANT: Check if this data exists in the original clinicalData
+  medical_background: {
+    chronic_illnesses: flattenedData.medicalHistoryChronicIllnesses || clinicalData?.medicalHistory?.chronicIllnesses || "—",
+    previous_surgeries: flattenedData.medicalHistoryPreviousSurgeries || clinicalData?.medicalHistory?.previousSurgeries || "—",
+    family_history: flattenedData.medicalHistoryFamilyHistory || clinicalData?.medicalHistory?.familyHistory || "—",
+    current_medications: flattenedData.medicalHistoryCurrentMedications || clinicalData?.medicalHistory?.currentMedications || "—",
+    drug_allergies: flattenedData.medicalHistoryDrugAllergies || clinicalData?.medicalHistory?.drugAllergies || "—",
+  },
+  
+  // Functional status
+  functional_status: {
+    eating_drinking_normally: flattenedData.functionalStatusEatingDrinking || "Unknown",
+    hydration: flattenedData.functionalStatusHydration || "Unknown",
+    activity_level: flattenedData.functionalStatusActivityLevel || "Unknown",
+  },
+  
+  // Vital signs - Clean up the values
+  vital_signs_current_status: {
+    heart_rate_bpm: (flattenedData.vitalSignsHeartRate === "Not recorded" || !flattenedData.vitalSignsHeartRate) 
+      ? "Not recorded" 
+      : flattenedData.vitalSignsHeartRate,
+    oxygen_saturation_spo2_percent: (flattenedData.vitalSignsOxygenSaturation === "Not recorded" || !flattenedData.vitalSignsOxygenSaturation)
+      ? "Not recorded"
+      : flattenedData.vitalSignsOxygenSaturation,
+    core_temperature: flattenedData.vitalSignsCoreTemperature || "Not measured",
+    reported_fever: flattenedData.vitalSignsReportedFever || "Unknown",
+    blood_pressure: flattenedData.vitalSignsBloodPressure || "Not measured",
+  },
+  
+  // Lifestyle risk factors
+  lifestyle_risk_factors: {
+    smoking: flattenedData.lifestyleSmoking || "Unknown",
+    alcohol_use: flattenedData.lifestyleAlcoholUse || "Unknown",
+    recreational_drugs: flattenedData.lifestyleRecreationalDrugs || "Unknown",
+    diet: flattenedData.lifestyleDiet || "Unknown",
+    exercise_routine: flattenedData.lifestyleExerciseRoutine || "Unknown",
+    stress_level: flattenedData.lifestyleStressLevel || "Unknown",
+  },
+  
+  // Exposure & environment
+  exposure_environment: {
+    recent_travel: flattenedData.exposureRecentTravel || "Unknown",
+    sick_contacts: flattenedData.exposureSickContacts || "Unknown",
+    crowded_events: flattenedData.exposureCrowdedEvents || "Unknown",
+    workplace_chemical_exposure: flattenedData.exposureWorkplaceChemical || "Unknown",
+    weather_exposure: flattenedData.exposureWeather || "Unknown",
+  },
+  
+  // Review of systems
+  review_of_systems_traffic_light_view: {
+    shortness_of_breath: { answer: flattenedData.rosShortnessOfBreath || "Unknown" },
+    chest_pain: { answer: flattenedData.rosChestPain || "Unknown" },
+    sore_throat: { answer: flattenedData.rosSoreThroat || "Unknown" },
+    body_aches_fatigue: { answer: flattenedData.rosBodyAchesFatigue || "Unknown" },
+    vomiting_diarrhea: { answer: flattenedData.rosVomitingDiarrhea || "Unknown" },
+    urinary_changes: { answer: flattenedData.rosUrinaryChanges || "Unknown" },
+  },
+  
+  // AI clinical assessment
+  ai_clinical_assessment: {
+    overall_stability: flattenedData.aiAssessmentOverallStability || "X",
+    red_flag_symptoms_present: flattenedData.aiAssessmentRedFlagSymptoms || "X",
+    clinical_note_to_physician: flattenedData.clinicalNoteToPhysician || 
+      "Cira is an AI clinical decision support assistant and doesn't replace professional medical judgment.",
+  },
+  
+  // Other required fields
+  conditions: Array.isArray(flattenedData.conditions) ? flattenedData.conditions : [],
+  confidence: flattenedData.confidence || 0,
+  consultDate: flattenedData.consultDate,
+  patientName: flattenedData.patientName,
+  patientAge: flattenedData.patientAge,
+  patientGender: flattenedData.patientGender,
+  patientHeight: flattenedData.patientHeight,
+  patientWeight: flattenedData.patientWeight,
+  
+    // Keep the original data for backward compatibility
+    ...clinicalData,
+  };
+
+  console.log("✅ Structured Data for PDF:", {
+    patientName: structuredData.patientName,
+    chiefComplaint: structuredData.chief_complaint?.primary_concern,
+    conditionsCount: structuredData.conditions?.length,
+    confidence: structuredData.confidence,
+    hasHPI: !!structuredData.history_of_present_illness_hpi,
+    hasVitalSigns: !!structuredData.vital_signs_current_status,
+  });
 
   try {
     const logoImage = await loadStarsLogo();
-    const doc = generateDoctorReportPDF(combinedData, { logoImage });
+    const doc = generateDoctorReportPDF(structuredData, { logoImage });
     
-    // Instead of doc.save(), use this approach:
+    // Download logic
     const pdfBlob = doc.output('blob');
     const url = URL.createObjectURL(pdfBlob);
-    
-    // Create a temporary link element
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
     link.style.display = 'none';
     
-    // Append to body, click, and clean up
     document.body.appendChild(link);
     link.click();
     
-    // Clean up
     setTimeout(() => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     }, 100);
     
+    console.log("✅ PDF generated successfully:", filename);
     return doc;
   } catch (e) {
     console.warn("Logo load failed, generating without logo:", e);
-    const doc = generateDoctorReportPDF(combinedData);
     
-    // Fallback to blob approach
-    const pdfBlob = doc.output('blob');
-    const url = URL.createObjectURL(pdfBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    
-    setTimeout(() => {
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }, 100);
-    
-    return doc;
+    try {
+      const doc = generateDoctorReportPDF(structuredData);
+      
+      const pdfBlob = doc.output('blob');
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
+      
+      return doc;
+    } catch (innerError) {
+      console.error("❌ PDF generation failed:", innerError);
+      alert("Failed to generate PDF. Please check console for details.");
+      throw innerError;
+    }
   }
 };
-
 
 /* ----------------- Existing SOAP Note Generator (keep for compatibility) ----------------- */
 export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
