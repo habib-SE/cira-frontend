@@ -1507,9 +1507,9 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
       {/* ================= Actions (SHOW FOR ALL CASES) ================= */}
       <div className="relative mt-6 flex flex-col sm:flex-row gap-3">
         {/* Download dropdown - Only show when we have a real summary AND not Pro locked */}
-        {isConfidenceSufficient && displaySummary && !displaySummary.toLowerCase().includes("summary is not available") && !isProLocked && (
-          <div className="relative flex-1" ref={downloadMenuRef}>
-            <button
+        {isConfidenceSufficient && displaySummary && !displaySummary.toLowerCase().includes("summary is not available") && (
+  <div className="relative flex-1" ref={downloadMenuRef}>
+    <button
               type="button"
               onClick={() => setIsDownloadMenuOpen((prev) => !prev)}
               className="w-full inline-flex items-center justify-between px-4 py-2 sm:py-3 text-sm font-medium rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-colors"

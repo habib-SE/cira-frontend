@@ -33,7 +33,7 @@ export default function DemoAccessModal({
 
   const isValid = Object.keys(errors).length === 0;
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
   e.preventDefault();
   setTouched({ email: true, phone: true });
   if (!isValid) return;
@@ -46,18 +46,47 @@ export default function DemoAccessModal({
       createdAt: new Date().toISOString(),
     };
 
-    // ⏳ simulate 2-second saving delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    // ✅ send to backend (backend sends email to jm@asksteller.com)
+    const res = await fetch("http://localhost:5000/api/demo-access", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+});
 
-    // store for the demo flow
+// ✅ read response safely (works even if response is empty or HTML)
+const text = await res.text();
+let data = null;
+try {
+  data = text ? JSON.parse(text) : null;
+} catch {
+  data = null;
+}
+
+if (!res.ok) {
+  // show server response (HTML/text) if not JSON
+  const msg =
+    data?.message ||
+    (text ? text.slice(0, 200) : `Request failed (${res.status})`);
+  throw new Error(msg);
+}
+
+if (!data?.ok) {
+  throw new Error(data?.message || "Failed to submit");
+}
+
+    // optional local storage for your demo flow
     localStorage.setItem("cira_demo_contact", JSON.stringify(payload));
 
     onSuccess?.(payload);
     onClose?.();
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Something went wrong.");
   } finally {
     setSaving(false);
   }
 };
+
 
 
   return (
