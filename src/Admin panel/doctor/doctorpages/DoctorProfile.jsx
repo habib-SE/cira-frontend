@@ -31,6 +31,7 @@ const DoctorProfile = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [doctor, setDoctor] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
+    const [formData, setFormData] = useState({});
 
     // Sample doctor data - in real app, this would be fetched from API
     const doctorData = {
@@ -44,6 +45,7 @@ const DoctorProfile = () => {
         licenseNumber: 'MD12345',
         licenseExpiry: '2025-12-31',
         status: 'Active',
+        consultationType: 'online', // 'online', 'offline', 'busy'
         rating: 4.9,
         totalPatients: 245,
         totalAppointments: 450,
@@ -90,20 +92,28 @@ const DoctorProfile = () => {
 
     useEffect(() => {
         setDoctor(doctorData);
+        setFormData(doctorData);
     }, []);
 
     const handleEdit = () => {
         setIsEditing(true);
+        setFormData({ ...doctor });
     };
 
     const handleSave = () => {
+        setDoctor({ ...formData });
         setIsEditing(false);
-        // Save logic here
+        // Save to localStorage or API
+        localStorage.setItem('doctorProfile', JSON.stringify(formData));
     };
 
     const handleCancel = () => {
         setIsEditing(false);
-        // Reset form logic here
+        setFormData({ ...doctor });
+    };
+
+    const handleInputChange = (field, value) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
     };
 
     const getStatusColor = (status) => {
@@ -209,9 +219,33 @@ const DoctorProfile = () => {
                             <Star className="w-4 h-4 text-yellow-500 fill-current" />
                             <span className="text-sm font-medium text-gray-900">{doctor.rating}</span>
                         </div>
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                            {doctor.status}
-                        </span>
+                        <div className="flex flex-col items-center gap-2">
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                {doctor.status}
+                            </span>
+                            {isEditing ? (
+                                <select
+                                    value={formData.consultationType || 'online'}
+                                    onChange={(e) => handleInputChange('consultationType', e.target.value)}
+                                    className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    <option value="online">Online</option>
+                                    <option value="offline">Offline</option>
+                                    <option value="busy">Busy</option>
+                                </select>
+                            ) : (
+                                <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${
+                                    doctor.consultationType === 'online' ? 'bg-green-100 text-green-800' :
+                                    doctor.consultationType === 'offline' ? 'bg-gray-100 text-gray-800' :
+                                    'bg-orange-100 text-orange-800'
+                                }`}>
+                                    {doctor.consultationType === 'online' && <CheckCircle className="w-3 h-3" />}
+                                    {doctor.consultationType === 'offline' && <XCircle className="w-3 h-3" />}
+                                    {doctor.consultationType === 'busy' && <AlertCircle className="w-3 h-3" />}
+                                    {doctor.consultationType ? doctor.consultationType.charAt(0).toUpperCase() + doctor.consultationType.slice(1) : 'Online'}
+                                </span>
+                            )}
+                        </div>
                     </div>
                     
                     <nav className="p-2 sm:p-3">
@@ -286,11 +320,37 @@ const DoctorProfile = () => {
                                         {isEditing ? (
                                             <input
                                                 type="text"
-                                                value={doctor.location}
+                                                value={formData.location || doctor.location}
+                                                onChange={(e) => handleInputChange('location', e.target.value)}
                                                 className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                                             />
                                         ) : (
                                             <p className="text-gray-900">{doctor.location}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Consultation Type</label>
+                                        {isEditing ? (
+                                            <select
+                                                value={formData.consultationType || doctor.consultationType || 'online'}
+                                                onChange={(e) => handleInputChange('consultationType', e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                            >
+                                                <option value="online">Online</option>
+                                                <option value="offline">Offline</option>
+                                                <option value="busy">Busy</option>
+                                            </select>
+                                        ) : (
+                                            <span className={`inline-flex items-center gap-1 px-3 py-1 text-sm font-semibold rounded-full ${
+                                                doctor.consultationType === 'online' ? 'bg-green-100 text-green-800' :
+                                                doctor.consultationType === 'offline' ? 'bg-gray-100 text-gray-800' :
+                                                'bg-orange-100 text-orange-800'
+                                            }`}>
+                                                {doctor.consultationType === 'online' && <CheckCircle className="w-4 h-4" />}
+                                                {doctor.consultationType === 'offline' && <XCircle className="w-4 h-4" />}
+                                                {doctor.consultationType === 'busy' && <AlertCircle className="w-4 h-4" />}
+                                                {doctor.consultationType ? doctor.consultationType.charAt(0).toUpperCase() + doctor.consultationType.slice(1) : 'Online'}
+                                            </span>
                                         )}
                                     </div>
                                 </div>

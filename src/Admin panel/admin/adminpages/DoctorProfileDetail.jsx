@@ -83,6 +83,7 @@ const DoctorProfileDetail = () => {
             licenseNumber: 'MD12345',
             licenseExpiry: '2025-12-31',
             status: 'Approved',
+            consultationType: 'online',
             rating: 4.9,
             totalPatients: 245,
             totalAppointments: 450,
@@ -465,10 +466,16 @@ const DoctorProfileDetail = () => {
                             <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500 fill-current" />
                             <span className="text-xs sm:text-sm font-medium text-gray-900">{doctor.rating}</span>
                         </div>
-                        <span className={`inline-flex items-center space-x-1 px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(doctor.status)}`}>
-                            {getStatusIcon(doctor.status)}
-                            <span className="truncate">{doctor.status}</span>
-                        </span>
+                        <div className="flex flex-col items-center gap-2">
+                            <span className={`inline-flex items-center space-x-1 px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(doctor.status)}`}>
+                                {getStatusIcon(doctor.status)}
+                                <span className="truncate">{doctor.status}</span>
+                            </span>
+                            <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${getConsultationTypeColor(doctor.consultationType || 'online')}`}>
+                                {getConsultationTypeIcon(doctor.consultationType || 'online')}
+                                {doctor.consultationType ? doctor.consultationType.charAt(0).toUpperCase() + doctor.consultationType.slice(1) : 'Online'}
+                            </span>
+                        </div>
                     </div>
                     
                     <nav className="p-2">
@@ -517,6 +524,13 @@ const DoctorProfileDetail = () => {
                                     <div>
                                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Location</label>
                                         <p className="text-sm sm:text-base text-gray-900 truncate">{doctor.location}</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Consultation Type</label>
+                                        <span className={`inline-flex items-center gap-1 px-3 py-1 text-sm font-semibold rounded-full ${getConsultationTypeColor(doctor.consultationType || 'online')}`}>
+                                            {getConsultationTypeIcon(doctor.consultationType || 'online')}
+                                            {doctor.consultationType ? doctor.consultationType.charAt(0).toUpperCase() + doctor.consultationType.slice(1) : 'Online'}
+                                        </span>
                                     </div>
                                 </div>
                             </Card>

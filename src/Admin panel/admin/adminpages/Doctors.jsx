@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Users, Award, X, Star, Calendar, Edit } from 'lucide-react';
+import { Users, Award, X, Star, Calendar, Edit, CheckCircle, AlertCircle } from 'lucide-react';
 import Card from '../admincomponents/Card';
 import Breadcrumbs from '../../../components/shared/Breadcrumbs';
 import MetaChips from '../../../components/shared/MetaChips';
@@ -15,9 +15,10 @@ const Doctors = () => {
 
     // Sample doctors data with new status system
     const [doctors, setDoctors] = useState(() => {
-        // Load pending doctors and rejected doctors from localStorage and merge with sample data
+        // Load pending doctors, rejected doctors, and suspended doctors from localStorage and merge with sample data
         const pendingDoctors = JSON.parse(localStorage.getItem('pendingDoctors') || '[]');
         const rejectedDoctors = JSON.parse(localStorage.getItem('rejectedDoctors') || '[]');
+        const suspendedDoctors = JSON.parse(localStorage.getItem('suspendedDoctors') || '[]');
         return [
         {
             id: 1,
@@ -30,7 +31,8 @@ const Doctors = () => {
             avatar: 'SJ',
             verificationStatus: 'Verified',
             documents: ['License', 'Certification'],
-            joinDate: '2023-01-15'
+            joinDate: '2023-01-15',
+            consultationType: 'online'
         },
         {
             id: 2,
@@ -56,7 +58,8 @@ const Doctors = () => {
             avatar: 'ER',
             verificationStatus: 'Verified',
             documents: ['License', 'Certification', 'Insurance'],
-            joinDate: '2023-03-20'
+            joinDate: '2023-03-20',
+            consultationType: 'offline'
         },
         {
             id: 4,
@@ -113,15 +116,16 @@ const Doctors = () => {
             documents: ['License', 'Certification'],
             joinDate: '2024-01-12'
         },
-        // Merge pending doctors and rejected doctors from localStorage
+        // Merge pending doctors, rejected doctors, and suspended doctors from localStorage
         ...pendingDoctors,
-        ...rejectedDoctors
+        ...rejectedDoctors,
+        ...suspendedDoctors
     ];
     });
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterSpecialty, setFilterSpecialty] = useState('');
-    const [activeTab, setActiveTab] = useState('approved'); // 'approved' or 'rejected'
+    const [activeTab, setActiveTab] = useState('approved'); // 'approved', 'rejected', or 'suspended'
     const [showEditFormInLayout, setShowEditFormInLayout] = useState(false);
     const [doctorToEdit, setDoctorToEdit] = useState(null);
     const [editFormData, setEditFormData] = useState({});
@@ -142,14 +146,19 @@ const Doctors = () => {
         const handleStorageChange = () => {
             const pendingDoctors = JSON.parse(localStorage.getItem('pendingDoctors') || '[]');
             const rejectedDoctors = JSON.parse(localStorage.getItem('rejectedDoctors') || '[]');
+            const suspendedDoctors = JSON.parse(localStorage.getItem('suspendedDoctors') || '[]');
             setDoctors(prev => {
-                // Remove old pending and rejected doctors (those from localStorage) and add new ones
+                // Remove old pending, rejected, and suspended doctors (those from localStorage) and add new ones
                 const withoutPending = prev.filter(d => d.status !== 'Pending' || !d.createdAt);
                 const withoutRejected = withoutPending.filter(d => {
                     // Keep only hardcoded rejected doctors or those not from localStorage
                     return d.status !== 'Rejected' || !rejectedDoctors.find(rd => rd.id === d.id);
                 });
-                return [...withoutRejected, ...pendingDoctors, ...rejectedDoctors];
+                const withoutSuspended = withoutRejected.filter(d => {
+                    // Keep only hardcoded suspended doctors or those not from localStorage
+                    return d.status !== 'Suspended' || !suspendedDoctors.find(sd => sd.id === d.id);
+                });
+                return [...withoutSuspended, ...pendingDoctors, ...rejectedDoctors, ...suspendedDoctors];
             });
         };
 
@@ -198,6 +207,7 @@ const Doctors = () => {
     // Filter doctors by status
     const approvedDoctorsList = doctors.filter(doctor => doctor.status === 'Approved');
     const rejectedDoctorsList = doctors.filter(doctor => doctor.status === 'Rejected');
+    const suspendedDoctorsList = doctors.filter(doctor => doctor.status === 'Suspended');
     
     const filterDoctors = (doctorsList) => {
         return doctorsList.filter(doctor => {
@@ -226,10 +236,12 @@ const Doctors = () => {
 
     const filteredApprovedDoctors = filterDoctors(approvedDoctorsList);
     const filteredRejectedDoctors = filterDoctors(rejectedDoctorsList);
+    const filteredSuspendedDoctors = filterDoctors(suspendedDoctorsList);
 
     // Calculate statistics
     const approvedCount = approvedDoctorsList.length;
     const rejectedCount = rejectedDoctorsList.length;
+    const suspendedCount = suspendedDoctorsList.length;
     const totalDoctors = approvedCount;
 
     const handleApproveDoctor = (doctor) => {
@@ -259,6 +271,31 @@ const Doctors = () => {
         const pendingDoctors = JSON.parse(localStorage.getItem('pendingDoctors') || '[]');
         const updatedPendingDoctors = pendingDoctors.filter(d => d.id !== doctor.id);
         localStorage.setItem('pendingDoctors', JSON.stringify(updatedPendingDoctors));
+        
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
+    };
+
+    const handleSuspendDoctor = (doctor) => {
+        setDoctors(prev => prev.map(d => 
+            d.id === doctor.id 
+                ? { ...d, status: 'Suspended', verificationStatus: 'Suspended', suspendedDate: new Date().toISOString().split('T')[0] }
+                : d
+        ));
+        
+        // Update localStorage - store suspended doctors
+        const suspendedDoctors = JSON.parse(localStorage.getItem('suspendedDoctors') || '[]');
+        const suspendedDoctor = {
+            ...doctor,
+            status: 'Suspended',
+            verificationStatus: 'Suspended',
+            suspendedDate: new Date().toISOString().split('T')[0]
+        };
+        // Check if already exists, if not add it
+        if (!suspendedDoctors.find(d => d.id === doctor.id)) {
+            suspendedDoctors.push(suspendedDoctor);
+            localStorage.setItem('suspendedDoctors', JSON.stringify(suspendedDoctors));
+        }
         
         setShowSuccessMessage(true);
         setTimeout(() => setShowSuccessMessage(false), 3000);
@@ -325,6 +362,7 @@ const Doctors = () => {
                     experience: editFormData.experience,
                     patients: parseInt(editFormData.patients),
                     rating: parseFloat(editFormData.rating),
+                    consultationType: editFormData.consultationType || 'online',
                     status: editFormData.status,
                     joinDate: editFormData.joinDate
                 } : d
@@ -353,6 +391,7 @@ const Doctors = () => {
                     specialty: doctor.specialty,
                     experience: doctor.experience,
                     patients: doctor.patients,
+                    consultationType: doctor.consultationType || 'online',
                     rating: doctor.rating,
                     status: doctor.status,
                     joinDate: doctor.joinDate
@@ -368,7 +407,7 @@ const Doctors = () => {
     }, [location.pathname, doctors]);
 
     // Get unique specialties for filter dropdown - from all doctors
-    const allDoctorsForSpecialties = [...approvedDoctorsList, ...rejectedDoctorsList];
+    const allDoctorsForSpecialties = [...approvedDoctorsList, ...rejectedDoctorsList, ...suspendedDoctorsList];
     const specialties = [...new Set(allDoctorsForSpecialties.map(doctor => doctor.specialty))];
 
     return (
@@ -524,6 +563,24 @@ const Doctors = () => {
                                     <option value="Approved">Approved</option>
                                     <option value="Pending">Pending</option>
                                     <option value="Rejected">Rejected</option>
+                                    <option value="Suspended">Suspended</option>
+                                </select>
+                            </div>
+
+                            {/* Consultation Type Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Consultation Type
+                                </label>
+                                <select
+                                    name="consultationType"
+                                    value={editFormData.consultationType || 'online'}
+                                    onChange={handleEditInputChange}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                >
+                                    <option value="online">Online</option>
+                                    <option value="offline">Offline</option>
+                                    <option value="busy">Busy</option>
                                 </select>
                             </div>
 
@@ -686,6 +743,16 @@ const Doctors = () => {
                 >
                     Rejected Doctors ({rejectedCount})
                 </button>
+                <button
+                    onClick={() => setActiveTab('suspended')}
+                    className={`px-4 py-2 font-medium text-sm transition-colors ${
+                        activeTab === 'suspended'
+                            ? 'text-pink-600 border-b-2 border-pink-600'
+                            : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                >
+                    Suspended Doctors ({suspendedCount})
+                </button>
             </div>
 
             {/* Approved Doctors */}
@@ -755,16 +822,33 @@ const Doctors = () => {
                                                 </div>
                                             </div>
                                             
+                                            {/* Consultation Type */}
+                                            <div className="mb-4">
+                                                <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${getConsultationTypeColor(doctor.consultationType || 'online')}`}>
+                                                    {getConsultationTypeIcon(doctor.consultationType || 'online')}
+                                                    {doctor.consultationType ? doctor.consultationType.charAt(0).toUpperCase() + doctor.consultationType.slice(1) : 'Online'}
+                                                </span>
+                                            </div>
+                                            
                                             <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                                                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(doctor.status)}`}>
                                                     {doctor.status}
                                                 </span>
-                                                <button
-                                                    onClick={() => handleViewDoctorProfile(doctor)}
-                                                    className="text-pink-600 hover:text-pink-800 text-sm font-medium"
-                                                >
-                                                    View Profile
-                                                </button>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => handleSuspendDoctor(doctor)}
+                                                        className="px-2 py-1 bg-orange-500 text-white text-xs rounded-lg hover:bg-orange-600 transition-colors"
+                                                        title="Suspend Doctor"
+                                                    >
+                                                        Suspend
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleViewDoctorProfile(doctor)}
+                                                        className="text-pink-600 hover:text-pink-800 text-sm font-medium"
+                                                    >
+                                                        View Profile
+                                                    </button>
+                                                </div>
                                             </div>
                                         </Card>
                                     ))}
@@ -843,6 +927,120 @@ const Doctors = () => {
                                             <Calendar className="w-4 h-4 text-red-500" />
                                             <span>{doctor.rejectedDate || doctor.joinDate}</span>
                                         </div>
+                                    </div>
+                                    
+                                    {/* Consultation Type */}
+                                    <div className="mb-4">
+                                        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${getConsultationTypeColor(doctor.consultationType || 'online')}`}>
+                                            {getConsultationTypeIcon(doctor.consultationType || 'online')}
+                                            {doctor.consultationType ? doctor.consultationType.charAt(0).toUpperCase() + doctor.consultationType.slice(1) : 'Online'}
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(doctor.status)}`}>
+                                            {doctor.status}
+                                        </span>
+                                        <button
+                                            onClick={() => handleViewDoctorProfile(doctor)}
+                                            className="text-pink-600 hover:text-pink-800 text-sm font-medium"
+                                        >
+                                            View Profile
+                                        </button>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+            )}
+
+            {/* Suspended Doctors */}
+            {activeTab === 'suspended' && (
+            <div className="space-y-8">
+                {filteredSuspendedDoctors.length === 0 ? (
+                    <Card className="p-12 text-center">
+                        <div className="flex flex-col items-center space-y-4">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                <Users className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">No suspended doctors found</h3>
+                                <p className="text-gray-600">
+                                    {searchTerm || filterSpecialty 
+                                        ? 'No suspended doctors match your current filters.'
+                                        : 'No suspended doctors available.'
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </Card>
+                ) : (
+                    <div>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                            <X className="w-5 h-5 text-orange-600 mr-2" />
+                            Suspended Doctors ({filteredSuspendedDoctors.length})
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredSuspendedDoctors.map((doctor) => (
+                                <Card key={doctor.id} className="p-6 border-l-4 border-l-orange-500">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                                {doctor.avatar}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold text-gray-900">{doctor.name}</h3>
+                                                <p className="text-sm text-gray-600">{doctor.specialty}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleEditDoctor(doctor)}
+                                            className="text-purple-600 hover:text-purple-800 p-1 hover:bg-purple-50 rounded transition-colors"
+                                            title="Edit Doctor"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-4 mb-4">
+                                        {doctor.rating > 0 && (
+                                            <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                                <Star className="w-4 h-4 text-yellow-500" />
+                                                <span>{doctor.rating}</span>
+                                            </div>
+                                        )}
+                                        {doctor.patients > 0 && (
+                                            <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                                <Users className="w-4 h-4 text-blue-500" />
+                                                <span>{doctor.patients}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                            <Award className="w-4 h-4 text-purple-500" />
+                                            <span>{doctor.experience}</span>
+                                        </div>
+                                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                            <Calendar className="w-4 h-4 text-green-500" />
+                                            <span>{doctor.suspendedDate || doctor.joinDate}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Consultation Type */}
+                                    <div className="mb-4">
+                                        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${getConsultationTypeColor(doctor.consultationType || 'online')}`}>
+                                            {getConsultationTypeIcon(doctor.consultationType || 'online')}
+                                            {doctor.consultationType ? doctor.consultationType.charAt(0).toUpperCase() + doctor.consultationType.slice(1) : 'Online'}
+                                        </span>
+                                    </div>
+                                    
+                                    {/* Consultation Type */}
+                                    <div className="mb-4">
+                                        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${getConsultationTypeColor(doctor.consultationType || 'online')}`}>
+                                            {getConsultationTypeIcon(doctor.consultationType || 'online')}
+                                            {doctor.consultationType ? doctor.consultationType.charAt(0).toUpperCase() + doctor.consultationType.slice(1) : 'Online'}
+                                        </span>
                                     </div>
                                     
                                     <div className="flex items-center justify-between pt-4 border-t border-gray-100">

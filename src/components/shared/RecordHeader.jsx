@@ -115,8 +115,8 @@ const RecordHeader = ({
                     onClick={action.onClick}
                     disabled={action.disabled}
                     className={action.className}
+                    icon={action.icon ? <action.icon className="w-4 h-4" /> : null}
                   >
-                    {action.icon && <action.icon className="w-4 h-4 mr-2" />}
                     {action.label}
                   </Button>
                 ))}
@@ -134,8 +134,8 @@ const RecordHeader = ({
                     onClick={action.onClick}
                     disabled={action.disabled}
                     className="flex items-center space-x-1"
+                    icon={action.icon ? <action.icon className="w-4 h-4" /> : null}
                   >
-                    {action.icon && <action.icon className="w-4 h-4" />}
                     {action.label && <span className="hidden sm:inline">{action.label}</span>}
                   </Button>
                 ))}
@@ -149,9 +149,8 @@ const RecordHeader = ({
                 size="sm"
                 className="p-2"
                 onClick={() => {/* Handle more actions */}}
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </Button>
+                icon={<MoreHorizontal className="w-4 h-4" />}
+              />
             </div>
           </div>
         </div>

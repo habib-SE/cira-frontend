@@ -12,8 +12,7 @@ export default function Footer() {
   const iconHover = { scale: 1.2, transition: { duration: 0.2, ease: 'easeOut' } };
 
   return (
-    <motion.footer
-      className="py-8 px-4 md:py-16 md:px-6 border-t border-gray-100"
+    <motion.footer className="pt-3 pb-0 px-4 md:pt-4 md:pb-0 md:px-6 border-t border-gray-100"
       initial="hidden"
       whileInView="show"
       viewport={{ once: true }}
@@ -22,8 +21,8 @@ export default function Footer() {
       <div className="max-w-5xl mx-auto text-center">
 
         {/* Logo + Name */}
-        <motion.div className="flex items-center justify-center gap-2 md:gap-3 mb-6 md:mb-8" variants={container}>
-          <div className="flex-shrink-0 flex items-center gap-2">
+        <motion.div className="flex items-center justify-center gap-1 md:gap-2 " variants={container}>
+          <div className="flex-shrink-0 flex items-center gap-2 mb-2 md:mb-2">
             {/* <div
               className="w-10 h-10 rounded-full flex items-center justify-center mr-3 shadow-lg"
               style={{
@@ -34,12 +33,12 @@ export default function Footer() {
             </div> */}
              
            <img src={Stars} alt="stars logo" className="w-[20%] md:w-[25%]"/>           
-            <p className="text-lg md:text-xl font-semibold text-gray-900">Cira</p>
+            <p className="text-lg md:text-xl font-semibold text-gray-900 ">Cira</p>
           </div>
         </motion.div>
 
         {/* Social Icons */}
-        <motion.div className="flex justify-center gap-6 md:gap-8 mb-6 md:mb-10" variants={container}>
+        <motion.div className="flex justify-center gap-6 " variants={container}>
           {/* <motion.a
             href="#"
             className="text-gray-600 hover:text-purple-600 transition"
@@ -72,11 +71,11 @@ export default function Footer() {
 
         {/* Copyright */}
         <motion.p
-          className="text-xs md:text-sm text-gray-500"
-          variants={container}
-        >
-          © 2025 Cira. All rights reserved
-        </motion.p>
+  className="text-xs md:text-sm text-gray-500 m-0 leading-tight"
+  variants={container}
+>
+  © 2025 Cira. All rights reserved
+</motion.p>
       </div>
     </motion.footer>
   );

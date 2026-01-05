@@ -334,11 +334,11 @@ const UnifiedNavbar = ({
         {/* Right side */}
         <div className="flex items-center space-x-4">
           {/* Consent/Privacy Indicator */}
-          <ConsentIndicator />
+          {/* <ConsentIndicator /> */}
 
           {/* Notifications */}
           <div className="relative" ref={notificationRef}>
-            <button
+            <button  
               onClick={() => setIsNotificationOpen(!isNotificationOpen)}
               className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
             >

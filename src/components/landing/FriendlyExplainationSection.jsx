@@ -10,25 +10,27 @@ export default function FriendlyExplanationSection() {
   };
 
   return (
-    <section className="py-12 px-4 md:py-20 md:px-6">
+    <section className="pt-3 pb-12 px-4 md:pt-3 md:pb-20 md:px-6">
       <div className="max-w-5xl mx-auto text-center">
 
         {/* Headline */}
-        <motion.h2
-          className="text-2xl md:text-5xl lg:text-6xl font-serif font-normal text-gray-950 leading-tight"
+        <motion.h1
+          className="text-xl xs:text-2xl sm:text-2xl md:text-5xl font-serif font-normal text-gray-950 tracking-wide text-center flex flex-wrap items-center justify-center gap-1 sm:gap-2"
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
           variants={fadeUp}
           transition={{ duration: 0.8, ease: 'easeOut' }}
         >
-          Cira listens like a friend,<br />
+          <span className="text-pink-400 relative inline-flex items-center whitespace-nowrap">
+                Cira 
+              </span>listens like a friend,<br />
           <span className="text-gray-950">explains like a Nurse.</span>
-        </motion.h2>
+        </motion.h1>
 
         {/* Subtext */}
         <motion.p
-          className="mt-6 md:mt-8 text-sm md:text-md text-gray-500 max-w-xl mx-auto leading-relaxed px-2 md:px-0"
+      className="mt-6 md:mt-8 text-sm md:text-md text-gray-500 max-w-xl mx-auto leading-relaxed px-2 md:px-0"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

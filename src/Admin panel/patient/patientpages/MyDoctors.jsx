@@ -1,13 +1,15 @@
-import React from 'react';
-import { User, Star, Phone, Mail, Calendar, Clock, MessageCircle, Video, Search, Filter } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Star, Phone, Mail, Calendar, Clock, MessageCircle, Video, Search, Filter, MapPin } from 'lucide-react';
 import Card from '../../admin/admincomponents/Card';
 
 const MyDoctors = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  
   const doctors = [
-    { id: 1, name: 'Dr. Sarah Johnson', specialty: 'Cardiologist', hospital: 'City Medical Center', phone: '+1 234-567-8900', email: 'sarah.j@hospital.com', lastVisit: 'Sep 28, 2025', rating: 4.9, experience: '15 years', status: 'online' },
-    { id: 2, name: 'Dr. Michael Chen', specialty: 'General Physician', hospital: 'Health Plus Clinic', phone: '+1 234-567-8901', email: 'michael.c@hospital.com', lastVisit: 'Sep 15, 2025', rating: 4.8, experience: '12 years', status: 'busy' },
-    { id: 3, name: 'Dr. Emily Davis', specialty: 'Dermatologist', hospital: 'Skin Care Center', phone: '+1 234-567-8902', email: 'emily.d@hospital.com', lastVisit: 'Aug 25, 2025', rating: 4.7, experience: '8 years', status: 'offline' },
-    { id: 4, name: 'Dr. James Wilson', specialty: 'Orthopedic', hospital: 'Bone & Joint Hospital', phone: '+1 234-567-8903', email: 'james.w@hospital.com', lastVisit: 'Sep 20, 2025', rating: 4.6, experience: '20 years', status: 'online' },
+    { id: 1, name: 'Dr. Sarah Johnson', specialty: 'Cardiologist', hospital: 'City Medical Center', location: 'New York, NY', phone: '+1 234-567-8900', email: 'sarah.j@hospital.com', lastVisit: 'Sep 28, 2025', rating: 4.9, experience: '15 years', status: 'online' },
+    { id: 2, name: 'Dr. Michael Chen', specialty: 'General Physician', hospital: 'Health Plus Clinic', location: 'Los Angeles, CA', phone: '+1 234-567-8901', email: 'michael.c@hospital.com', lastVisit: 'Sep 15, 2025', rating: 4.8, experience: '12 years', status: 'busy' },
+    { id: 3, name: 'Dr. Emily Davis', specialty: 'Dermatologist', hospital: 'Skin Care Center', location: 'Chicago, IL', phone: '+1 234-567-8902', email: 'emily.d@hospital.com', lastVisit: 'Aug 25, 2025', rating: 4.7, experience: '8 years', status: 'offline' },
+    { id: 4, name: 'Dr. James Wilson', specialty: 'Orthopedic', hospital: 'Bone & Joint Hospital', location: 'Houston, TX', phone: '+1 234-567-8903', email: 'james.w@hospital.com', lastVisit: 'Sep 20, 2025', rating: 4.6, experience: '20 years', status: 'online' },
   ];
 
   const getStatusColor = (status) => {
@@ -18,6 +20,16 @@ const MyDoctors = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  // Filter doctors by name, specialty, or location
+  const filteredDoctors = doctors.filter((doctor) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      doctor.name.toLowerCase().includes(searchLower) ||
+      doctor.specialty.toLowerCase().includes(searchLower) ||
+      doctor.location.toLowerCase().includes(searchLower)
+    );
+  });
 
   return (
     <div className="min-h-screen bg-pink-50 p-6 space-y-6">
@@ -34,7 +46,9 @@ const MyDoctors = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search doctors by name or specialty..."
+              placeholder="Search doctors by name, specialty, or location..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
             />
           </div>
@@ -47,7 +61,25 @@ const MyDoctors = () => {
 
       {/* Doctors Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {doctors.map((doctor) => (
+        {filteredDoctors.length === 0 ? (
+          <div className="col-span-2">
+            <Card className="p-12 text-center">
+              <div className="flex flex-col items-center space-y-4">
+                <Search className="w-12 h-12 text-gray-400" />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No doctors found</h3>
+                  <p className="text-gray-600">
+                    {searchTerm 
+                      ? `No doctors match "${searchTerm}". Try searching by name, specialty, or location.`
+                      : 'No doctors available.'
+                    }
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        ) : (
+          filteredDoctors.map((doctor) => (
           <Card key={doctor.id} hover className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start space-x-4">
@@ -75,6 +107,10 @@ const MyDoctors = () => {
                 <span>{doctor.experience} experience</span>
               </div>
               <div className="flex items-center space-x-2 text-gray-600 text-sm">
+                <MapPin className="h-4 w-4" />
+                <span>{doctor.location}</span>
+              </div>
+              <div className="flex items-center space-x-2 text-gray-600 text-sm">
                 <Phone className="h-4 w-4" />
                 <span>{doctor.phone}</span>
               </div>
@@ -99,7 +135,8 @@ const MyDoctors = () => {
               </button>
             </div>
           </Card>
-        ))}
+          ))
+        )}
       </div>
 
       {/* Quick Actions */}
