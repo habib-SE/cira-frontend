@@ -326,6 +326,7 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
     { label: "Age/Gender", value: `${ageVal} / ${sexVal}` },
     { label: "Height", value: patient_identity_baseline?.height || "—" },
     // { label: "BMI (Calculated)", value: "N/A" },
+    { label: "BMI (Calculated)", value: patient_identity_baseline?.bmi || clinicalData?.bmi || "N/A" },
     { label: "Date", value: consultDate || "—" },
     { label: "Report Type", value: "AI Clinical Intake Summary" },
   ]);
@@ -370,14 +371,14 @@ gy += H_TOP + G;
   const b4 = drawCard(doc, LEFT_X, gy, COL_W, H_HPI, "HISTORY OF PRESENT ILLNESS (HPI)");
 
   // Values for HPI
-  const location = history_of_present_illness_hpi?.location_or_system || "—";
-  const chronicIllnesses = medical_background?.chronic_illnesses || "—";
-  const previousSurgeries = medical_background?.previous_surgeries || "—";
-  const currentMedications = medical_background?.current_medications || "—";
-  const drugAllergies = medical_background?.drug_allergies || "—";
-  const familyHistory = medical_background?.family_history || "—";
-  const relievingFactors = history_of_present_illness_hpi?.relieving_factors || "None reported";
-  const worseningFactors = history_of_present_illness_hpi?.worsening_factors || "None reported";
+  const location = history_of_present_illness_hpi?.location_or_system || "unknown";
+  const chronicIllnesses = medical_background?.chronic_illnesses || "unknown";
+  const previousSurgeries = medical_background?.previous_surgeries || "unknown";
+  const currentMedications = medical_background?.current_medications || "unknown";
+  const drugAllergies = medical_background?.drug_allergies || "unknown";
+  const familyHistory = medical_background?.family_history || "unknown";
+  const relievingFactors = history_of_present_illness_hpi?.relieving_factors || "unknown";
+  const worseningFactors = history_of_present_illness_hpi?.worsening_factors || "unknown";
   
   // FIX: Handle associated_symptoms whether it's an array or string
   let associatedSymptoms = "None";

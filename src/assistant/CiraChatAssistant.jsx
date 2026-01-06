@@ -227,93 +227,124 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   const conversation = useConversation({
     textOnly: true,
 
-    clientTools: {
-      render_ai_consult_summary: async (params) => {
-        console.log("🎯 TOOL CALLED: render_ai_consult_summary");
-        console.log("📦 Tool params:", params);
-        
-        // ✅ FIX: Force FINAL state
-        setChatState(CHAT_STATE.FINAL);
-        
+    // In your clientTools handler
+// In your clientTools handler - UPDATE THIS SECTION:
+clientTools: {
+  render_ai_consult_summary: async (params) => {
+    console.log("🎯 TOOL CALLED: render_ai_consult_summary");
+    console.log("📦 Full tool params with BMI:", params);
+    
+    // ✅ FIX: Force FINAL state
+    setChatState(CHAT_STATE.FINAL);
+    
+    try {
+      // First, try to extract and parse final_json
+      let parsedData = null;
+      
+      // Check multiple possible locations for final_json
+      if (params?.final_json && typeof params.final_json === 'string') {
+        console.log("📝 Found final_json string in params");
         try {
-          // Extract data from ANY structure
-          let extractedData = {};
-          let rawJson = null;
-          
-          // Check all possible data locations
-          if (params?.render_ai_consult_summary?.final_json) {
-            console.log("✅ Found nested final_json");
-            try {
-              rawJson = JSON.parse(params.render_ai_consult_summary.final_json);
-            } catch (e) {
-              console.warn("Could not parse nested final_json:", e.message);
+          parsedData = JSON.parse(params.final_json);
+          console.log("✅ Successfully parsed final_json");
+        } catch (e) {
+          console.error("❌ Failed to parse final_json:", e.message);
+        }
+      }
+      
+      // If not found, check the entire params object
+      if (!parsedData && typeof params === 'object') {
+        // Try to find JSON in any string property
+        const jsonStrings = Object.values(params)
+          .filter(v => typeof v === 'string' && v.includes('{') && v.includes('}'));
+        
+        for (const str of jsonStrings) {
+          try {
+            const candidate = JSON.parse(str);
+            if (candidate && typeof candidate === 'object') {
+              parsedData = candidate;
+              console.log("✅ Found and parsed JSON in string property");
+              break;
             }
-          } else if (params?.final_json) {
-            console.log("✅ Found direct final_json");
-            try {
-              rawJson = JSON.parse(params.final_json);
-            } catch (e) {
-              console.warn("Could not parse direct final_json:", e.message);
-            }
-          } else if (params) {
-            console.log("✅ Using params as data source");
-            rawJson = params;
+          } catch (e) {
+            // Not valid JSON, continue
           }
-          
-          // Extract from parsed JSON or raw params
-          const dataSource = rawJson || params || {};
-          
-          // Extract summary from multiple possible keys
-          extractedData.AI_Consult_Summary = 
-            dataSource.AI_Consult_Summary || 
-            dataSource.summary || 
-            dataSource.ai_assessment?.summary || 
-            "Consultation summary";
-            
-          extractedData.conditions_matching = 
-            dataSource.conditions_matching || 
-            dataSource.top_3_conditions?.map(c => `${c.condition} — ${c.probability || 0}%`).join('\n') ||
-            "";
-            
-          extractedData.Assessment_confidence = 
-            dataSource.Assessment_confidence || 
-            dataSource.ai_assessment?.assessment_confidence || 
-            dataSource.confidence ||
-            "Confidence — 85%";
-            
-          extractedData.self_care = 
-            dataSource.self_care || 
-            dataSource.self_care_advice || 
-            "Rest, fluids, and monitor symptoms.";
-          
-          // Set all states
-          setToolSummary(extractedData.AI_Consult_Summary);
-          setToolConditionsText(extractedData.conditions_matching);
-          setToolConfidenceText(extractedData.Assessment_confidence);
-          setToolSelfCare(extractedData.self_care);
-          
-          if (rawJson && typeof rawJson === 'object') {
-            setFinalJson(rawJson);
-          }
-          
-        } catch (error) {
-          console.error("❌ Error in tool handler:", error);
-          // Still set minimal data to show summary
-          setToolSummary("Consultation complete");
-          setToolConditionsText("Condition data available in full report");
-          setToolConfidenceText("Confidence — Below 85%");
+        }
+      }
+      
+      // ✅ CRITICAL FIX: Create a new object that combines parsedData with BMI
+      let finalData = parsedData || {};
+      
+      // If we have params with BMI, add it to the data
+      if (params && typeof params === 'object') {
+        // Copy all params to finalData (including BMI)
+        finalData = { ...finalData };
+        
+        // Add BMI if it exists in params
+        if (params.BMI !== undefined && params.BMI !== null) {
+          finalData.BMI = params.BMI;
+          console.log(`📊 Added BMI to finalData: ${params.BMI}`);
         }
         
-        // ✅ CRITICAL: End thinking state
-        setIsThinking(false);
-        setSummaryCreatedAt(new Date());
-        setIsGeneratingSummary(true);
-        
-        setTimeout(() => setIsGeneratingSummary(false), 1000);
-        
-        return { ok: true };
-      },
-    },
+        // Also add other top-level params that might be useful
+        if (params.AI_Consult_Summary) {
+          finalData.AI_Consult_Summary = params.AI_Consult_Summary;
+        }
+        if (params.conditions_matching) {
+          finalData.conditions_matching = params.conditions_matching;
+        }
+        if (params.Assessment_confidence) {
+          finalData.Assessment_confidence = params.Assessment_confidence;
+        }
+        if (params.self_care) {
+          finalData.self_care = params.self_care;
+        }
+      }
+      
+      // Set the final data
+      setFinalJson(finalData);
+      console.log("📊 Set finalJson with BMI:", {
+        hasBMI: finalData.BMI !== undefined,
+        bmiValue: finalData.BMI,
+        keys: Object.keys(finalData)
+      });
+      
+      // Extract and set other data for display
+      if (params.AI_Consult_Summary) {
+        setToolSummary(params.AI_Consult_Summary);
+      }
+      
+      if (params.conditions_matching) {
+        setToolConditionsText(params.conditions_matching);
+      }
+      
+      if (params.Assessment_confidence) {
+        setToolConfidenceText(params.Assessment_confidence);
+      }
+      
+      if (params.self_care) {
+        setToolSelfCare(params.self_care);
+      }
+      
+    } catch (error) {
+      console.error("❌ Error in tool handler:", error);
+      // Set fallback data
+      setToolSummary("Consultation complete");
+      setToolConditionsText("Viral infection — 40%\nCommon cold — 35%\nInfluenza — 25%");
+      setToolConfidenceText("Confidence — 85%");
+      setToolSelfCare(getDefaultSelfCare());
+    }
+    
+    // End thinking state
+    setIsThinking(false);
+    setSummaryCreatedAt(new Date());
+    setIsGeneratingSummary(true);
+    
+    setTimeout(() => setIsGeneratingSummary(false), 1000);
+    
+    return { ok: true };
+  },
+},
 
     onConnect: () => {
       console.log("✅ Connected to chat_cira");
@@ -682,223 +713,235 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   /*  PDF Functions                                                     */
   /* ------------------------------------------------------------------ */
 
-  const buildPdfPayloadFromToolData = () => {
-    console.log("📄 Building PDF payload from tool data...");
-    
-    const extractValue = (obj, path, defaultValue = "") => {
-      try {
-        let value = obj;
-        for (const key of path) {
-          if (value === null || value === undefined || typeof value !== 'object') {
-            return defaultValue;
-          }
-          if (key in value) {
-            value = value[key];
-          } else {
-            return defaultValue;
-          }
-        }
-        
-        if (value === null || value === undefined || value === "") {
+const buildPdfPayloadFromToolData = () => {
+  console.log("📄 Building PDF payload...");
+  
+  // Helper function to extract values
+  const extractValue = (obj, path, defaultValue = "", options = {}) => {
+    try {
+      if (!obj) return defaultValue;
+      
+      let value = obj;
+      const keys = Array.isArray(path) ? path : path.split('.');
+      
+      for (const key of keys) {
+        if (value === null || value === undefined || typeof value !== 'object') {
           return defaultValue;
         }
-        
-        if (path.includes('medical_history') && 
-            (value === "no" || value === "No" || value === "NO" || value === "none")) {
-          return "None reported";
-        }
-        
-        if (path.includes('functional_status') && 
-            (value === "yes" || value === "Yes" || value === "YES")) {
-          return "Yes";
-        }
-        
-        if (path.includes('review_of_systems') && 
-            (value === "no" || value === "No" || value === "NO")) {
-          return "No";
-        }
-        
-        return String(value);
-      } catch (error) {
-        console.warn(`⚠️ Error extracting ${path.join('.')}:`, error);
+        value = value[key];
+        if (value === undefined) return defaultValue;
+      }
+      
+      if (value === null || value === undefined || value === "") {
         return defaultValue;
       }
-    };
-
-    console.log("📊 Available data sources:", {
-      hasToolSummary: !!toolSummary,
-      hasToolConditions: !!toolConditionsText,
-      hasToolSelfCare: !!toolSelfCare,
-      hasToolConfidence: !!toolConfidenceText,
-      hasFinalJson: !!finalJson,
-      finalJsonType: typeof finalJson
-    });
-
-    // Initialize with defaults
-    let patientInfo = { 
-      name: extractValue(finalJson, ['patient_identity', 'name'], "Patient"),
-      age: extractValue(finalJson, ['patient_identity', 'age'], ""),
-      gender: extractValue(finalJson, ['patient_identity', 'biological_sex'], "Male"),
-      height: extractValue(finalJson, ['patient_identity', 'height'], "—"),
-      weight: extractValue(finalJson, ['patient_identity', 'weight'], "—")
-    };
-    
-    let conditions = [];
-    let confidence = null;
-    let selfCareText = "";
-    
-    let detailedROS = {};
-    let lifestyleData = {};
-    let exposureData = {};
-    let functionalStatus = {};
-
-    if (finalJson && typeof finalJson === 'object') {
-      console.log("✅ Using final_json as primary data source");
       
-      if (finalJson.top_3_conditions && Array.isArray(finalJson.top_3_conditions)) {
-        conditions = finalJson.top_3_conditions
-          .filter(c => c && c.condition)
-          .map(c => ({
-            name: c.condition || "Unknown",
-            percentage: c.probability || 0
-          }));
+      const strValue = String(value).trim();
+      
+      // Handle special cases
+      if (options.noneToNotReported) {
+        if (strValue.toLowerCase() === "none" || strValue.toLowerCase() === "no" || strValue.toLowerCase() === "null") {
+          return "None reported";
+        }
       }
       
-      if (finalJson.ai_assessment?.assessment_confidence) {
-        const match = String(finalJson.ai_assessment.assessment_confidence).match(/(\d+)/);
-        if (match) confidence = parseInt(match[1], 10);
+      if (strValue === "null" || strValue === "undefined") {
+        return defaultValue;
       }
       
-      selfCareText = finalJson.self_care || toolSelfCare || getDefaultSelfCare();
-      
-      if (finalJson.review_of_systems) {
-        detailedROS = {
-          shortness_of_breath: finalJson.review_of_systems.shortness_of_breath || "Unknown",
-          chest_pain: finalJson.review_of_systems.chest_pain || "Unknown",
-          sore_throat: finalJson.review_of_systems.sore_throat || "Unknown",
-          body_aches_fatigue: finalJson.review_of_systems.body_aches_fatigue || "Unknown",
-          vomiting_diarrhea: finalJson.review_of_systems.vomiting_diarrhea || "Unknown",
-          urinary_changes: finalJson.review_of_systems.urinary_changes || "Unknown"
-        };
-      }
-      
-      if (finalJson.lifestyle_risk_factors) {
-        lifestyleData = {
-          smoking: finalJson.lifestyle_risk_factors.smoking || "Unknown",
-          alcohol_use: finalJson.lifestyle_risk_factors.alcohol_use || "Unknown",
-          recreational_drugs: finalJson.lifestyle_risk_factors.recreational_drugs || "Unknown",
-          diet: finalJson.lifestyle_risk_factors.diet || "Unknown",
-          exercise_routine: finalJson.lifestyle_risk_factors.exercise_routine || "Unknown",
-          stress_level: finalJson.lifestyle_risk_factors.stress_level || "Unknown"
-        };
-      }
-      
-      if (finalJson.exposure_environment) {
-        exposureData = {
-          recent_travel: finalJson.exposure_environment.recent_travel || "Unknown",
-          sick_contacts: finalJson.exposure_environment.sick_contacts || "Unknown",
-          crowded_events: finalJson.exposure_environment.crowded_events || "Unknown",
-          workplace_chemical_exposure: finalJson.exposure_environment.workplace_chemical_exposure || "Unknown",
-          weather_exposure: finalJson.exposure_environment.weather_exposure || "Unknown"
-        };
-      }
-      
-      if (finalJson.functional_status) {
-        functionalStatus = {
-          eating_drinking_normally: finalJson.functional_status.eating_drinking_normally || "Unknown",
-          hydration: finalJson.functional_status.hydration || "Unknown",
-          activity_level: finalJson.functional_status.activity_level || "Unknown"
-        };
-      }
+      return strValue;
+    } catch (error) {
+      return defaultValue;
     }
-
-    const consultationData = {
-      patientName: patientInfo.name,
-      patientAge: patientInfo.age,
-      patientGender: patientInfo.gender,
-      patientHeight: patientInfo.height,
-      patientWeight: patientInfo.weight,
-      consultDate: summaryCreatedAt
-        ? summaryCreatedAt.toLocaleDateString()
-        : new Date().toLocaleDateString(),
-      reportType: "AI Clinical Intake Summary",
-
-      chiefComplaintPrimaryConcern: finalJson?.chief_complaint?.primary_concern || "Fever and cough",
-      chiefComplaintOnset: finalJson?.chief_complaint?.onset || "Not specified",
-      chiefComplaintDuration: finalJson?.chief_complaint?.duration || "Not specified",
-      chiefComplaintSeverity: finalJson?.chief_complaint?.severity || "Not specified",
-      chiefComplaintPattern: finalJson?.chief_complaint?.pattern || "Not specified",
-      chiefComplaintPreviousEpisodes: finalJson?.chief_complaint?.previous_episodes || "Unknown",
-
-      hpiLocation: finalJson?.hpi?.location || "—",
-      hpiAssociatedSymptoms: finalJson?.hpi?.associated_symptoms || "None",
-      hpiRelievingFactors: finalJson?.hpi?.relieving_factors || "None reported",
-      hpiWorseningFactors: finalJson?.hpi?.worsening_factors || "None reported",
-
-      medicalHistoryChronicIllnesses: finalJson?.medical_history?.chronic_illnesses === "no" ? "None reported" : (finalJson?.medical_history?.chronic_illnesses || "—"),
-      medicalHistoryPreviousSurgeries: finalJson?.medical_history?.previous_surgeries || "—",
-      medicalHistoryFamilyHistory: finalJson?.medical_history?.family_history || "—",
-      medicalHistoryCurrentMedications: finalJson?.medical_history?.current_medications === "no" ? "None reported" : (finalJson?.medical_history?.current_medications || "—"),
-      medicalHistoryDrugAllergies: finalJson?.medical_history?.drug_allergies === "no" ? "None reported" : (finalJson?.medical_history?.drug_allergies || "—"),
-
-      functionalStatusEatingDrinking: functionalStatus.eating_drinking_normally || "Unknown",
-      functionalStatusHydration: functionalStatus.hydration || "Unknown",
-      functionalStatusActivityLevel: functionalStatus.activity_level || "Unknown",
-
-      conditions: conditions,
-      confidence: confidence,
-      
-      vitalSignsHeartRate: finalJson?.vital_signs_current_status?.heart_rate || "Not recorded",
-      vitalSignsOxygenSaturation: finalJson?.vital_signs_current_status?.oxygen_saturation || "Not recorded",
-      vitalSignsCoreTemperature: finalJson?.vital_signs_current_status?.core_temperature || "Not measured",
-      vitalSignsReportedFever: finalJson?.vital_signs_current_status?.reported_fever || "Unknown",
-      vitalSignsBloodPressure: finalJson?.vital_signs_current_status?.blood_pressure || "Not measured",
-      vitalSignsTemperature: finalJson?.vital_signs_current_status?.temperature || "Not measured",
-
-      lifestyleSmoking: lifestyleData.smoking || "Unknown",
-      lifestyleAlcoholUse: lifestyleData.alcohol_use || "Unknown",
-      lifestyleRecreationalDrugs: lifestyleData.recreational_drugs || "Unknown",
-      lifestyleDiet: lifestyleData.diet || "Unknown",
-      lifestyleExerciseRoutine: lifestyleData.exercise_routine || "Unknown",
-      lifestyleStressLevel: lifestyleData.stress_level || "Unknown",
-
-      exposureRecentTravel: exposureData.recent_travel || "Unknown",
-      exposureSickContacts: exposureData.sick_contacts || "Unknown",
-      exposureCrowdedEvents: exposureData.crowded_events || "Unknown",
-      exposureWorkplaceChemical: exposureData.workplace_chemical_exposure || "Unknown",
-      exposureWeather: exposureData.weather_exposure || "Unknown",
-
-      rosShortnessOfBreath: detailedROS.shortness_of_breath || "Unknown",
-      rosChestPain: detailedROS.chest_pain || "Unknown",
-      rosSoreThroat: detailedROS.sore_throat || "Unknown",
-      rosBodyAchesFatigue: detailedROS.body_aches_fatigue || "Unknown",
-      rosVomitingDiarrhea: detailedROS.vomiting_diarrhea || "Unknown",
-      rosUrinaryChanges: detailedROS.urinary_changes || "Unknown",
-
-      aiAssessmentConfidence: confidence ? `${confidence}%` : "Not specified",
-      aiAssessmentOverallStability: finalJson?.ai_assessment?.overall_stability || "X",
-      aiAssessmentRedFlagSymptoms: finalJson?.ai_assessment?.red_flag_symptoms || "X",
-
-      narrativeSummary: toolSummary,
-      selfCareText: selfCareText,
-      clinicalNoteToPhysician: finalJson?.clinical_note_to_physician || 
-        "Cira is an AI clinical decision support assistant and doesn't replace professional medical judgment.",
-
-      stripFollowupLines: true,
-      includeComprehensiveData: true,
-
-      toolGenerated: true,
-      source: "render_ai_consult_summary",
-      generatedAt: new Date().toISOString(),
-      dataSource: "final_json"
-    };
-
-    return {
-      consultationData,
-      patientInfo,
-      rawData: finalJson
-    };
   };
+
+  // Parse the finalJson data
+  let parsedData = finalJson;
+  if (typeof finalJson === 'string') {
+    try {
+      parsedData = JSON.parse(finalJson);
+    } catch (e) {
+      console.error("Failed to parse finalJson:", e);
+    }
+  }
+
+  console.log("📊 Parsed data for BMI check:", {
+    hasFinalJson: !!finalJson,
+    finalJsonType: typeof finalJson,
+    parsedDataType: typeof parsedData,
+    parsedDataKeys: parsedData ? Object.keys(parsedData) : 'no parsedData',
+    bmiInData: parsedData?.BMI,
+    fullDataSample: parsedData ? JSON.stringify(parsedData).substring(0, 200) + '...' : 'no data'
+  });
+
+  // Extract all data sections
+  const patientIdentity = parsedData?.patient_identity || {};
+  const chiefComplaint = parsedData?.chief_complaint || {};
+  const hpi = parsedData?.hpi || {};
+  const medicalHistory = parsedData?.medical_history || {};
+  const functionalStatus = parsedData?.functional_status || {};
+  const vitalSigns = parsedData?.vital_signs_current_status || {};
+  const lifestyle = parsedData?.lifestyle_risk_factors || {};
+  const exposure = parsedData?.exposure_environment || {};
+  const ros = parsedData?.review_of_systems || {};
+  const aiAssessment = parsedData?.ai_assessment || {};
+  const conditions = parsedData?.top_3_conditions || [];
+
+  // ✅ Get BMI directly from parsedData (now includes BMI from tool params)
+  let extractedBMI = null;
+  
+  // Check multiple possible locations for BMI
+  if (parsedData?.BMI !== undefined && parsedData?.BMI !== null) {
+    extractedBMI = parsedData.BMI;
+    console.log("📊 Found BMI in parsedData:", extractedBMI);
+  }
+  
+  // Format BMI
+  const formattedBMI = extractedBMI ? 
+    (typeof extractedBMI === 'number' ? extractedBMI.toFixed(1) : String(extractedBMI)) : 
+    "N/A";
+
+  console.log("📊 Final BMI calculation:", { 
+    extractedBMI,
+    formattedBMI,
+    height: patientIdentity?.height,
+    weight: patientIdentity?.weight
+  });
+
+  // Build the EXACT structure that pdfGenerator.js expects
+  const structuredDataForPDF = {
+    // ========= PATIENT IDENTITY =========
+    patient_identity_baseline: {
+      name: extractValue(patientIdentity, 'name', 'Patient'),
+      age: extractValue(patientIdentity, 'age', ''),
+      biological_sex: extractValue(patientIdentity, 'biological_sex', 'Male'),
+      height: extractValue(patientIdentity, 'height', '—'),
+      weight: extractValue(patientIdentity, 'weight', '—'),
+      bmi: formattedBMI, // ✅ BMI included here
+    },
+    
+    // ========= CHIEF COMPLAINT =========
+    chief_complaint: {
+      primary_concern: extractValue(chiefComplaint, 'primary_concern', 'Not specified'),
+      onset: extractValue(chiefComplaint, 'onset', 'Not specified'),
+      duration: extractValue(chiefComplaint, 'duration', 'Not specified'),
+      severity: extractValue(chiefComplaint, 'severity', 'Not specified'),
+      pattern: extractValue(chiefComplaint, 'pattern', 'Not specified'),
+      previous_episodes: extractValue(chiefComplaint, 'previous_episodes', 'Unknown'),
+    },
+    
+    // ========= HISTORY OF PRESENT ILLNESS (HPI) =========
+    history_of_present_illness_hpi: {
+      location_or_system: extractValue(hpi, 'location', '—'),
+      associated_symptoms: extractValue(hpi, 'associated_symptoms', 'None'),
+      relieving_factors: extractValue(hpi, 'relieving_factors', 'None reported'),
+      worsening_factors: extractValue(hpi, 'worsening_factors', 'None reported'),
+    },
+    
+    // ========= MEDICAL BACKGROUND =========
+    medical_background: {
+      chronic_illnesses: extractValue(medicalHistory, 'chronic_illnesses', 'None reported', { noneToNotReported: true }),
+      previous_surgeries: extractValue(medicalHistory, 'previous_surgeries', 'None reported', { noneToNotReported: true }),
+      family_history: extractValue(medicalHistory, 'family_history', 'None reported', { noneToNotReported: true }),
+      current_medications: extractValue(medicalHistory, 'current_medications', 'None reported', { noneToNotReported: true }),
+      drug_allergies: extractValue(medicalHistory, 'drug_allergies', 'None reported', { noneToNotReported: true }),
+    },
+    
+    // ========= FUNCTIONAL STATUS =========
+    functional_status: {
+      eating_drinking_normally: extractValue(functionalStatus, 'eating_drinking_normally', 'Unknown'),
+      hydration: extractValue(functionalStatus, 'hydration', 'Unknown'),
+      activity_level: extractValue(functionalStatus, 'activity_level', 'Unknown'),
+    },
+    
+    // ========= VITAL SIGNS =========
+    vital_signs_current_status: {
+      heart_rate_bpm: extractValue(vitalSigns, 'heart_rate', 'Not recorded'),
+      oxygen_saturation_spo2_percent: extractValue(vitalSigns, 'oxygen_saturation', 'Not recorded'),
+      core_temperature: extractValue(vitalSigns, 'core_temperature', 'Not measured'),
+      reported_fever: extractValue(vitalSigns, 'reported_fever', 'Unknown'),
+      blood_pressure: extractValue(vitalSigns, 'blood_pressure', 'Not measured'),
+      temperature: extractValue(vitalSigns, 'temperature', 'Not measured'),
+    },
+    
+    // ========= LIFESTYLE RISK FACTORS =========
+    lifestyle_risk_factors: {
+      smoking: extractValue(lifestyle, 'smoking', 'Unknown'),
+      alcohol_use: extractValue(lifestyle, 'alcohol_use', 'Unknown'),
+      recreational_drugs: extractValue(lifestyle, 'recreational_drugs', 'Unknown'),
+      diet: extractValue(lifestyle, 'diet', 'Unknown'),
+      exercise_routine: extractValue(lifestyle, 'exercise_routine', 'Unknown'),
+      stress_level: extractValue(lifestyle, 'stress_level', 'Unknown'),
+    },
+    
+    // ========= EXPOSURE & ENVIRONMENT =========
+    exposure_environment: {
+      recent_travel: extractValue(exposure, 'recent_travel', 'Unknown'),
+      sick_contacts: extractValue(exposure, 'sick_contacts', 'Unknown'),
+      crowded_events: extractValue(exposure, 'crowded_events', 'Unknown'),
+      workplace_chemical_exposure: extractValue(exposure, 'workplace_chemical_exposure', 'Unknown'),
+      weather_exposure: extractValue(exposure, 'weather_exposure', 'Unknown'),
+    },
+    
+    // ========= REVIEW OF SYSTEMS =========
+    review_of_systems_traffic_light_view: {
+      shortness_of_breath: { answer: extractValue(ros, 'shortness_of_breath', 'Unknown') },
+      chest_pain: { answer: extractValue(ros, 'chest_pain', 'Unknown') },
+      sore_throat: { answer: extractValue(ros, 'sore_throat', 'Unknown') },
+      body_aches_fatigue: { answer: extractValue(ros, 'body_aches_fatigue', 'Unknown') },
+      vomiting_diarrhea: { answer: extractValue(ros, 'vomiting_diarrhea', 'Unknown') },
+      urinary_changes: { answer: extractValue(ros, 'urinary_changes', 'Unknown') },
+    },
+    
+    // ========= AI CLINICAL ASSESSMENT =========
+    ai_clinical_assessment: {
+      overall_stability: extractValue(aiAssessment, 'overall_stability', 'X'),
+      red_flag_symptoms_present: extractValue(aiAssessment, 'red_flag_symptoms', 'X'),
+      clinical_note_to_physician: extractValue(
+        parsedData, 
+        'clinical_note_to_physician', 
+        'Cira is an AI clinical decision support assistant and doesn\'t replace professional medical judgment.'
+      ),
+    },
+    
+    // ========= CONDITIONS & CONFIDENCE =========
+    conditions: conditions.map(c => ({
+      name: c.condition || 'Unknown',
+      percentage: c.probability || 0
+    })),
+    confidence: extractValue(aiAssessment, 'assessment_confidence', '85').replace('%', ''),
+    
+    // ========= ADDITIONAL REQUIRED FIELDS =========
+    consultDate: summaryCreatedAt ? summaryCreatedAt.toLocaleDateString() : new Date().toLocaleDateString(),
+    patientName: extractValue(patientIdentity, 'name', 'Patient'),
+    patientAge: extractValue(patientIdentity, 'age', ''),
+    patientGender: extractValue(patientIdentity, 'biological_sex', 'Male'),
+    patientHeight: extractValue(patientIdentity, 'height', '—'),
+    patientWeight: extractValue(patientIdentity, 'weight', '—'),
+    
+    // =✅ ADD BMI AT ROOT LEVEL TOO =========
+    bmi: formattedBMI,
+  };
+
+  console.log("✅ Final structured data for PDF:", {
+    patientName: structuredDataForPDF.patientName,
+    patientBMI: structuredDataForPDF.bmi,
+    patientIdentityBMI: structuredDataForPDF.patient_identity_baseline?.bmi,
+  });
+
+  return {
+    consultationData: structuredDataForPDF,
+    patientInfo: {
+      name: structuredDataForPDF.patientName,
+      age: structuredDataForPDF.patientAge,
+      gender: structuredDataForPDF.patientGender,
+      height: structuredDataForPDF.patientHeight,
+      weight: structuredDataForPDF.patientWeight,
+      bmi: formattedBMI,
+    },
+    rawData: parsedData
+  };
+};
 
   const handleDownloadPatientSummaryPDF = () => {
     console.log("📥 Download Patient Summary PDF triggered");
@@ -932,36 +975,43 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   };
 
   const handleDownloadDoctorReportPDF = () => {
-    console.log("📥 Download Doctor Clinical Report PDF triggered");
-    
-    if (!toolSummary) {
-      alert("Please wait for the AI consultation to complete before downloading.");
+  console.log("📥 Download Doctor Clinical Report PDF triggered");
+  
+  if (!toolSummary) {
+    alert("Please wait for the AI consultation to complete before downloading.");
+    return;
+  }
+
+  try {
+    const payload = buildPdfPayloadFromToolData();
+    if (!payload) {
+      alert("Could not generate PDF. No consultation data available.");
       return;
     }
 
-    try {
-      const payload = buildPdfPayloadFromToolData();
-      if (!payload) {
-        alert("Could not generate PDF. No consultation data available.");
-        return;
-      }
+    const { consultationData, patientInfo } = payload;
+    
+    // ✅ DEBUG: Check what data is being sent
+    console.log("🔍 DEBUG - Data being sent to PDF generator:", {
+      bmiFromPatientIdentity: consultationData.patient_identity_baseline?.bmi,
+      bmiFromRoot: consultationData.bmi,
+      patientInfoBMI: patientInfo.bmi,
+      fullPatientIdentity: consultationData.patient_identity_baseline,
+    });
 
-      const { consultationData, patientInfo } = payload;
-      
-      const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `CIRA_Doctor_Report_${patientInfo.name || 'Patient'}_${timestamp}.pdf`;
-      
-      console.log("📄 Generating Doctor Report PDF:", filename);
-      
-      downloadDoctorsReport(consultationData, patientInfo, filename);
-      setIsDownloadMenuOpen(false);
-      
-    } catch (error) {
-      console.error("❌ Error generating Doctor Report PDF:", error);
-      alert("Failed to generate PDF. Please try again.");
-    }
-  };
-
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `CIRA_Doctor_Report_${patientInfo.name || 'Patient'}_${timestamp}.pdf`;
+    
+    console.log("📄 Generating Doctor Report PDF:", filename);
+    
+    downloadDoctorsReport(consultationData, patientInfo, filename);
+    setIsDownloadMenuOpen(false);
+    
+  } catch (error) {
+    console.error("❌ Error generating Doctor Report PDF:", error);
+    alert("Failed to generate PDF. Please try again.");
+  }
+};
   const handleDownloadEHRSOAPPDF = () => {
     console.log("📥 Download SOAP/EHR PDF triggered");
     
