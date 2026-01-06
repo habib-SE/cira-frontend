@@ -33,6 +33,9 @@ export default function DemoAccessModal({
 
   const isValid = Object.keys(errors).length === 0;
 
+  const API_BASE =
+  import.meta.env.VITE_API_BASE_URL || "";
+
  const handleSubmit = async (e) => {
   e.preventDefault();
   setTouched({ email: true, phone: true });
@@ -47,11 +50,12 @@ export default function DemoAccessModal({
     };
 
     // ✅ send to backend (backend sends email to jm@asksteller.com)
-    const res = await fetch("http://localhost:5000/api/demo-access", {
+const res = await fetch(`${API_BASE}/api/demo-access`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(payload),
 });
+
 
 // ✅ read response safely (works even if response is empty or HTML)
 const text = await res.text();
