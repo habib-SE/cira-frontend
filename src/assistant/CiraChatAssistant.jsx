@@ -1375,7 +1375,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
           // When SUMMARY IS AVAILABLE - Show normal content WITH PRO LOCK OVERLAY
           <>
             {/* ================= PRO LOCK OVERLAY FOR SUMMARY CONTENT ================= */}
-            {isProLocked && (
+            {/* {isProLocked && (
               <div className="absolute inset-0 z-10 flex items-center justify-center">
                 <div className="absolute inset-0 bg-white/60" />
                 <div className="relative z-20 w-full max-w-sm mx-6 rounded-2xl border border-gray-200 bg-white shadow-xl p-5 text-center">
@@ -1417,10 +1417,10 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* ================= BLURRED SUMMARY CONTENT ================= */}
-            <div className={isProLocked ? "filter blur-sm select-none pointer-events-none" : ""}>
+            <div className={isProLocked ? "filter select-none pointer-events-none" : ""}>
               <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-4">
                 {displaySummary}
               </p>
