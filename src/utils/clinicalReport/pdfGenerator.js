@@ -305,7 +305,7 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
   let gy = 17;
 
   // Tuned heights (no overlap)
-  const H_TOP = 32;
+  const H_TOP = 35;
   const H_MID = 44;
   const H_POSS = 30;
   const H_VITAL = 40;
@@ -318,105 +318,111 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
   const sexVal = patient_identity_baseline?.biological_sex || patientGender || "—";
 
 
-// ---------- Row 1 ----------
-{
-  const b1 = drawCard(doc, LEFT_X, gy, COL_W, H_TOP, "PATIENT IDENTITY & BASELINE");
-  drawKV(doc, b1, [
-    { label: "Name", value: nameVal },
-    { label: "Age/Gender", value: `${ageVal} / ${sexVal}` },
-    { label: "Height", value: patient_identity_baseline?.height || "—" },
-    // { label: "BMI (Calculated)", value: "N/A" },
-    { label: "BMI (Calculated)", value: patient_identity_baseline?.bmi || clinicalData?.bmi || "N/A" },
-    { label: "Date", value: consultDate || "—" },
-    { label: "Report Type", value: "AI Clinical Intake Summary" },
-  ]);
+  // ---------- Row 1 ----------
+  {
+    const b1 = drawCard(doc, LEFT_X, gy, COL_W, H_TOP, "PATIENT IDENTITY & BASELINE");
+    drawKV(doc, b1, [
+      { label: "Name", value: nameVal },
+      { label: "Age/Gender", value: `${ageVal} / ${sexVal}` },
+      { label: "Height", value: patient_identity_baseline?.height || "—" },
+      // { label: "Weight", value: patient_identity_baseline?.Weight || "—" },
+      {
+        label: "Weight",
+        value: patient_identity_baseline?.weight ?? clinicalData?.patientWeight ?? "—"
+      },
 
-  const b2 = drawCard(doc, RIGHT_X, gy, COL_W, H_TOP, "CHIEF COMPLAINT");
-  
-  // Get values from multiple sources
-  const primaryConcern = chief_complaint?.primary_concern || 
-                        currentIssueData?.primarySymptom || 
-                        chiefComplaint || 
-                        "—";
-  const onset = chief_complaint?.onset || 
-                currentIssueData?.onset || 
-                "—";
-  const pattern = chief_complaint?.pattern || 
-                  currentIssueData?.pattern || 
-                  history_of_present_illness_hpi?.progression_pattern || 
-                  "—";
-  const severity = currentIssueData?.severity || 
-                   (chief_complaint?.severity ? `${chief_complaint.severity}/10` : "—");
-  const recentInjury = currentIssueData?.recentInjury || "No";
-  const previousEpisodes = chief_complaint?.previous_episodes || "Unknown";
-  
-  drawKV(doc, b2, [
-    { label: "Primary Concern:", value: primaryConcern },
-    { label: "Onset:", value: onset },
-    { label: "Duration:", value: chief_complaint?.duration || "—" },
-    { label: "Severity (Pain):", value: severity },
-    { label: "Pattern:", value: pattern },
-    { label: "Previous Episodes:", value: previousEpisodes },
-    { label: "Recent Injury:", value: recentInjury },
-  ]);
-}
-gy += H_TOP + G;
+      // { label: "BMI (Calculated)", value: "N/A" },
+      { label: "BMI (Calculated)", value: patient_identity_baseline?.bmi || clinicalData?.bmi || "N/A" },
+      { label: "Date", value: consultDate || "—" },
+      { label: "Report Type", value: "AI Clinical Intake Summary" },
+    ]);
 
-// In the generateDoctorReportPDF function, find the HPI section and fix it:
+    const b2 = drawCard(doc, RIGHT_X, gy, COL_W, H_TOP, "CHIEF COMPLAINT");
 
-// ---------- Row 2 ----------
-{
-  // ---------------- HPI Card ----------------
-  const H_HPI = H_MID + 5; // HPI card is taller
-  const b4 = drawCard(doc, LEFT_X, gy, COL_W, H_HPI, "HISTORY OF PRESENT ILLNESS (HPI)");
+    // Get values from multiple sources
+    const primaryConcern = chief_complaint?.primary_concern ||
+      currentIssueData?.primarySymptom ||
+      chiefComplaint ||
+      "—";
+    const onset = chief_complaint?.onset ||
+      currentIssueData?.onset ||
+      "—";
+    const pattern = chief_complaint?.pattern ||
+      currentIssueData?.pattern ||
+      history_of_present_illness_hpi?.progression_pattern ||
+      "—";
+    const severity = currentIssueData?.severity ||
+      (chief_complaint?.severity ? `${chief_complaint.severity}/10` : "—");
+    const recentInjury = currentIssueData?.recentInjury || "No";
+    const previousEpisodes = chief_complaint?.previous_episodes || "Unknown";
 
-  // Values for HPI
-  const location = history_of_present_illness_hpi?.location_or_system || "unknown";
-  const chronicIllnesses = medical_background?.chronic_illnesses || "unknown";
-  const previousSurgeries = medical_background?.previous_surgeries || "unknown";
-  const currentMedications = medical_background?.current_medications || "unknown";
-  const drugAllergies = medical_background?.drug_allergies || "unknown";
-  const familyHistory = medical_background?.family_history || "unknown";
-  const relievingFactors = history_of_present_illness_hpi?.relieving_factors || "unknown";
-  const worseningFactors = history_of_present_illness_hpi?.worsening_factors || "unknown";
-  
-  // FIX: Handle associated_symptoms whether it's an array or string
-  let associatedSymptoms = "None";
-  const associatedSymptomsValue = history_of_present_illness_hpi?.associated_symptoms;
-  if (associatedSymptomsValue) {
-    if (Array.isArray(associatedSymptomsValue)) {
-      associatedSymptoms = associatedSymptomsValue.join(", ");
-    } else if (typeof associatedSymptomsValue === 'string') {
-      associatedSymptoms = associatedSymptomsValue;
-    }
+    drawKV(doc, b2, [
+      { label: "Primary Concern:", value: primaryConcern },
+      { label: "Onset:", value: onset },
+      { label: "Duration:", value: chief_complaint?.duration || "—" },
+      { label: "Severity (Pain):", value: severity },
+      { label: "Pattern:", value: pattern },
+      { label: "Previous Episodes:", value: previousEpisodes },
+      { label: "Recent Injury:", value: recentInjury },
+    ]);
   }
+  gy += H_TOP + G;
 
-  // Draw HPI fields
-  drawKV(doc, b4, [
-    { label: "Location:", value: location },
-    { label: "Chronic Illnesses:", value: chronicIllnesses },
-    { label: "Previous Surgeries:", value: previousSurgeries },
-    { label: "Current Medications:", value: currentMedications },
-    { label: "Drug Allergies:", value: drugAllergies },
-    { label: "Family History:", value: familyHistory },
-    { label: "Associated Symptoms:", value: associatedSymptoms },
-    { label: "Relieving Factors:", value: relievingFactors },
-    { label: "Worsening Factors:", value: worseningFactors },
-  ]);
-  // ---------------- Functional Status Card ----------------
-  const H_FUNC = H_BOTTOM; // Functional Status is shorter
-  const b3 = drawCard(doc, RIGHT_X, gy, COL_W, H_FUNC, "FUNCTIONAL STATUS");
+  // In the generateDoctorReportPDF function, find the HPI section and fix it:
 
-  // Draw Functional Status fields
-  drawKV(doc, b3, [
-    { label: "Eating/drinking normally", value: normalizeYesNoUnknown(functional_status?.eating_drinking_normally) },
-    { label: "Hydration", value: normalizeYesNoUnknown(functional_status?.hydration) },
-    { label: "Activity level", value: normalizeYesNoUnknown(functional_status?.activity_level) },
-  ]);
-  
-  // Move to next row based on the TALLER card to avoid extra space
-  gy += Math.max(H_HPI, H_FUNC) + G;
-}
+  // ---------- Row 2 ----------
+  {
+    // ---------------- HPI Card ----------------
+    const H_HPI = H_MID + 5; // HPI card is taller
+    const b4 = drawCard(doc, LEFT_X, gy, COL_W, H_HPI, "HISTORY OF PRESENT ILLNESS (HPI)");
+
+    // Values for HPI
+    const location = history_of_present_illness_hpi?.location_or_system || "unknown";
+    const chronicIllnesses = medical_background?.chronic_illnesses || "unknown";
+    const previousSurgeries = medical_background?.previous_surgeries || "unknown";
+    const currentMedications = medical_background?.current_medications || "unknown";
+    const drugAllergies = medical_background?.drug_allergies || "unknown";
+    const familyHistory = medical_background?.family_history || "unknown";
+    const relievingFactors = history_of_present_illness_hpi?.relieving_factors || "unknown";
+    const worseningFactors = history_of_present_illness_hpi?.worsening_factors || "unknown";
+
+    // FIX: Handle associated_symptoms whether it's an array or string
+    let associatedSymptoms = "None";
+    const associatedSymptomsValue = history_of_present_illness_hpi?.associated_symptoms;
+    if (associatedSymptomsValue) {
+      if (Array.isArray(associatedSymptomsValue)) {
+        associatedSymptoms = associatedSymptomsValue.join(", ");
+      } else if (typeof associatedSymptomsValue === 'string') {
+        associatedSymptoms = associatedSymptomsValue;
+      }
+    }
+
+    // Draw HPI fields
+    drawKV(doc, b4, [
+      { label: "Location:", value: location },
+      { label: "Chronic Illnesses:", value: chronicIllnesses },
+      { label: "Previous Surgeries:", value: previousSurgeries },
+      { label: "Current Medications:", value: currentMedications },
+      { label: "Drug Allergies:", value: drugAllergies },
+      { label: "Family History:", value: familyHistory },
+      { label: "Associated Symptoms:", value: associatedSymptoms },
+      { label: "Relieving Factors:", value: relievingFactors },
+      { label: "Worsening Factors:", value: worseningFactors },
+    ]);
+    // ---------------- Functional Status Card ----------------
+    const H_FUNC = H_BOTTOM; // Functional Status is shorter
+    const b3 = drawCard(doc, RIGHT_X, gy, COL_W, H_FUNC, "FUNCTIONAL STATUS");
+
+    // Draw Functional Status fields
+    drawKV(doc, b3, [
+      { label: "Eating/drinking normally", value: normalizeYesNoUnknown(functional_status?.eating_drinking_normally) },
+      { label: "Hydration", value: normalizeYesNoUnknown(functional_status?.hydration) },
+      { label: "Activity level", value: normalizeYesNoUnknown(functional_status?.activity_level) },
+    ]);
+
+    // Move to next row based on the TALLER card to avoid extra space
+    gy += Math.max(H_HPI, H_FUNC) + G;
+  }
 
   // ---------- Row 3 (full width): Clinical Possibilities ----------
   {
@@ -473,15 +479,15 @@ gy += H_TOP + G;
       doc.text(lbl, b6.innerX, y);
 
       const pillText = normalizeYesNoUnknown(val);
-   drawPill(
-  doc,
-  b6.innerX + b6.innerW * 0.62, // push slightly right
-  y,
-  b6.innerW * 0.18,            // 🔽 narrower
-  3.8,                         // 🔽 shorter
-  pillText,
-  pillColorFor(pillText)
-);
+      drawPill(
+        doc,
+        b6.innerX + b6.innerW * 0.62, // push slightly right
+        y,
+        b6.innerW * 0.18,            // 🔽 narrower
+        3.8,                         // 🔽 shorter
+        pillText,
+        pillColorFor(pillText)
+      );
     });
   }
   gy += H_VITAL + G;
@@ -500,26 +506,26 @@ gy += H_TOP + G;
     const startY = b7.innerY;
     const rowH = 5.2;
 
-   exp.forEach(([lbl, val], i) => {
-  const y = startY + i * rowH;
-  if (y > b7.innerY + b7.innerH) return;
+    exp.forEach(([lbl, val], i) => {
+      const y = startY + i * rowH;
+      if (y > b7.innerY + b7.innerH) return;
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  setTextHex(doc, COLORS.grayText);
-  doc.text(lbl, b7.innerX, y);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      setTextHex(doc, COLORS.grayText);
+      doc.text(lbl, b7.innerX, y);
 
-  const pillText = normalizeYesNoUnknown(val);
-  drawPill(
-    doc,
-    b7.innerX + b7.innerW * 0.62, // push slightly right like b6
-    y,
-    b7.innerW * 0.18,             // narrower pill
-    3.8,                           // shorter height
-    pillText,
-    pillColorFor(pillText)
-  );
-});
+      const pillText = normalizeYesNoUnknown(val);
+      drawPill(
+        doc,
+        b7.innerX + b7.innerW * 0.62, // push slightly right like b6
+        y,
+        b7.innerW * 0.18,             // narrower pill
+        3.8,                           // shorter height
+        pillText,
+        pillColorFor(pillText)
+      );
+    });
 
     const b8 = drawCard(doc, RIGHT_X, gy, COL_W, H_EXP, "REVIEW OF SYSTEMS (ROS) – TRAFFIC LIGHT VIEW");
     const ros = [
@@ -536,71 +542,71 @@ gy += H_TOP + G;
     const rStartY = b8.innerY;
 
     ros.forEach(([lbl, val], i) => {
-  const y = rStartY + i * rowH;
-  if (y > b8.innerY + b8.innerH) return;
+      const y = rStartY + i * rowH;
+      if (y > b8.innerY + b8.innerH) return;
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  setTextHex(doc, COLORS.grayText);
-  doc.text(lbl, b8.innerX, y);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      setTextHex(doc, COLORS.grayText);
+      doc.text(lbl, b8.innerX, y);
 
-  const pillText = normalizeYesNoUnknown(val);
-  drawPill(
-    doc,
-    b8.innerX + b8.innerW * 0.62, // push slightly right like b6
-    y,
-    b8.innerW * 0.18,             // narrower pill
-    3.8,                           // shorter height
-    pillText,
-    pillColorFor(pillText)
-  );
-});
+      const pillText = normalizeYesNoUnknown(val);
+      drawPill(
+        doc,
+        b8.innerX + b8.innerW * 0.62, // push slightly right like b6
+        y,
+        b8.innerW * 0.18,             // narrower pill
+        3.8,                           // shorter height
+        pillText,
+        pillColorFor(pillText)
+      );
+    });
   }
   gy += H_EXP + G;
 
-// ---------------- AI CLINICAL ASSESSMENT ----------------
-const b9 = drawCard(doc, LEFT_X, gy, COL_W, H_MID - 16, "AI CLINICAL ASSESSMENT"); // reduced height
+  // ---------------- AI CLINICAL ASSESSMENT ----------------
+  const b9 = drawCard(doc, LEFT_X, gy, COL_W, H_MID - 16, "AI CLINICAL ASSESSMENT"); // reduced height
 
-// values (from your JSON)
-const overall = ai_clinical_assessment?.overall_stability || "Unknown";
-const redFlags = normalizeYesNoUnknown(ai_clinical_assessment?.red_flag_symptoms_present);
+  // values (from your JSON)
+  const overall = ai_clinical_assessment?.overall_stability || "Unknown";
+  const redFlags = normalizeYesNoUnknown(ai_clinical_assessment?.red_flag_symptoms_present);
 
-// decide mark color
-const overallOk = String(overall).toLowerCase().includes("stable");
-const redFlagOk = String(redFlags).toLowerCase().startsWith("no");
+  // decide mark color
+  const overallOk = String(overall).toLowerCase().includes("stable");
+  const redFlagOk = String(redFlags).toLowerCase().startsWith("no");
 
-// vertical positions for text/marks
-const r1y = b9.innerY + 2; // Overall Stability
-const r2y = r1y + 6;       // Red-Flag Symptoms (keep close for reduced height)
+  // vertical positions for text/marks
+  const r1y = b9.innerY + 2; // Overall Stability
+  const r2y = r1y + 6;       // Red-Flag Symptoms (keep close for reduced height)
 
-doc.setFont("helvetica", "normal");
-doc.setFontSize(8);
-setTextHex(doc, "#111827");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  setTextHex(doc, "#111827");
 
-// labels (optional, or can remove if only marks are needed)
-doc.text("Overall Stability:", b9.innerX, r1y);
-doc.text("Red-Flag Symptoms:", b9.innerX, r2y);
+  // labels (optional, or can remove if only marks are needed)
+  doc.text("Overall Stability:", b9.innerX, r1y);
+  doc.text("Red-Flag Symptoms:", b9.innerX, r2y);
 
-// right-side marks only
-const rightX = b9.innerX + b9.innerW - 4;
-addStatusMark(doc, rightX, r1y, overallOk);
-addStatusMark(doc, rightX, r2y, redFlagOk);
+  // right-side marks only
+  const rightX = b9.innerX + b9.innerW - 4;
+  addStatusMark(doc, rightX, r1y, overallOk);
+  addStatusMark(doc, rightX, r2y, redFlagOk);
 
-// ---------------- CLINICAL NOTE ----------------
-const b10 = drawCard(doc, RIGHT_X, gy, COL_W, H_BOTTOM, "CLINICAL NOTE TO PHYSICIAN");
-doc.setFont("helvetica", "normal");
-doc.setFontSize(7);
-setTextHex(doc, COLORS.grayText);
+  // ---------------- CLINICAL NOTE ----------------
+  const b10 = drawCard(doc, RIGHT_X, gy, COL_W, H_BOTTOM, "CLINICAL NOTE TO PHYSICIAN");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  setTextHex(doc, COLORS.grayText);
 
-textInBox(
-  doc,
-  ai_clinical_assessment?.clinical_note_to_physician || "—",
-  b10.innerX,
-  b10.innerY,
-  b10.innerW,
-  b10.innerH,
-  3.2
-);
+  textInBox(
+    doc,
+    ai_clinical_assessment?.clinical_note_to_physician || "—",
+    b10.innerX,
+    b10.innerY,
+    b10.innerW,
+    b10.innerH,
+    3.2
+  );
 
 
   // Footer disclaimer (no overlap)
@@ -725,7 +731,7 @@ export const downloadDoctorReportPDF = async (
     // Narrative
     narrativeSummary: clinicalData?.narrativeSummary || clinicalData?.toolSummary || "",
     selfCareText: clinicalData?.selfCareText || "",
-    clinicalNoteToPhysician: clinicalData?.clinicalNoteToPhysician || 
+    clinicalNoteToPhysician: clinicalData?.clinicalNoteToPhysician ||
       "Cira is an AI clinical decision support assistant and doesn't replace professional medical judgment.",
   };
 
@@ -748,17 +754,17 @@ export const downloadDoctorReportPDF = async (
         break;
       }
     }
-    
+
     // If nested path failed, try flat key (e.g., data.primaryConcern)
     if (value === undefined && flatKey && data && data[flatKey] !== undefined) {
       value = data[flatKey];
     }
-    
+
     // If still undefined, use default
     if (value === undefined || value === null) {
       return defaultValue;
     }
-    
+
     // Convert objects to string to avoid [object Object]
     if (typeof value === 'object') {
       console.warn(`⚠️ Object detected for ${flatKey}:`, value);
@@ -768,115 +774,115 @@ export const downloadDoctorReportPDF = async (
       if (value.value !== undefined) return String(value.value);
       return JSON.stringify(value).substring(0, 100); // Truncate long JSON
     }
-    
+
     return String(value);
   }
 
   // CONVERT flattened data to the structured format that generateDoctorReportPDF expects
   const structuredData = {
-  // Patient identity (matching what generateDoctorReportPDF expects)
-  patient_identity_baseline: {
-    name: flattenedData.patientName,
-    age: flattenedData.patientAge === "Not specified" ? "" : flattenedData.patientAge, // Fix for empty age
-    biological_sex: flattenedData.patientGender,
-    height: flattenedData.patientHeight === "—" ? "—" : (flattenedData.patientHeight || "—"),
-    weight: flattenedData.patientWeight === "—" ? "—" : (flattenedData.patientWeight || "—"),
-  },
-  
-  // Chief complaint (matching the expected structure)
-  chief_complaint: {
-    primary_concern: flattenedData.chiefComplaintPrimaryConcern || "—",
-    onset: flattenedData.chiefComplaintOnset || "Not specified",
-    duration: flattenedData.chiefComplaintDuration || "Not specified",
-    severity: flattenedData.chiefComplaintSeverity || "Not specified",
-    pattern: flattenedData.chiefComplaintPattern || "Not specified",
-    previous_episodes: flattenedData.chiefComplaintPreviousEpisodes || "Unknown",
-  },
-  
-  // HPI (History of Present Illness)
-  history_of_present_illness_hpi: {
-    location_or_system: flattenedData.hpiLocation || "—",
-    associated_symptoms: flattenedData.hpiAssociatedSymptoms || "None",
-    relieving_factors: flattenedData.hpiRelievingFactors || "None reported",
-    worsening_factors: flattenedData.hpiWorseningFactors || "None reported",
-  },
-  
-  // Medical background - IMPORTANT: Check if this data exists in the original clinicalData
-  medical_background: {
-    chronic_illnesses: flattenedData.medicalHistoryChronicIllnesses || clinicalData?.medicalHistory?.chronicIllnesses || "—",
-    previous_surgeries: flattenedData.medicalHistoryPreviousSurgeries || clinicalData?.medicalHistory?.previousSurgeries || "—",
-    family_history: flattenedData.medicalHistoryFamilyHistory || clinicalData?.medicalHistory?.familyHistory || "—",
-    current_medications: flattenedData.medicalHistoryCurrentMedications || clinicalData?.medicalHistory?.currentMedications || "—",
-    drug_allergies: flattenedData.medicalHistoryDrugAllergies || clinicalData?.medicalHistory?.drugAllergies || "—",
-  },
-  
-  // Functional status
-  functional_status: {
-    eating_drinking_normally: flattenedData.functionalStatusEatingDrinking || "Unknown",
-    hydration: flattenedData.functionalStatusHydration || "Unknown",
-    activity_level: flattenedData.functionalStatusActivityLevel || "Unknown",
-  },
-  
-  // Vital signs - Clean up the values
-  vital_signs_current_status: {
-    heart_rate_bpm: (flattenedData.vitalSignsHeartRate === "Not recorded" || !flattenedData.vitalSignsHeartRate) 
-      ? "Not recorded" 
-      : flattenedData.vitalSignsHeartRate,
-    oxygen_saturation_spo2_percent: (flattenedData.vitalSignsOxygenSaturation === "Not recorded" || !flattenedData.vitalSignsOxygenSaturation)
-      ? "Not recorded"
-      : flattenedData.vitalSignsOxygenSaturation,
-    core_temperature: flattenedData.vitalSignsCoreTemperature || "Not measured",
-    reported_fever: flattenedData.vitalSignsReportedFever || "Unknown",
-    blood_pressure: flattenedData.vitalSignsBloodPressure || "Not measured",
-  },
-  
-  // Lifestyle risk factors
-  lifestyle_risk_factors: {
-    smoking: flattenedData.lifestyleSmoking || "Unknown",
-    alcohol_use: flattenedData.lifestyleAlcoholUse || "Unknown",
-    recreational_drugs: flattenedData.lifestyleRecreationalDrugs || "Unknown",
-    diet: flattenedData.lifestyleDiet || "Unknown",
-    exercise_routine: flattenedData.lifestyleExerciseRoutine || "Unknown",
-    stress_level: flattenedData.lifestyleStressLevel || "Unknown",
-  },
-  
-  // Exposure & environment
-  exposure_environment: {
-    recent_travel: flattenedData.exposureRecentTravel || "Unknown",
-    sick_contacts: flattenedData.exposureSickContacts || "Unknown",
-    crowded_events: flattenedData.exposureCrowdedEvents || "Unknown",
-    workplace_chemical_exposure: flattenedData.exposureWorkplaceChemical || "Unknown",
-    weather_exposure: flattenedData.exposureWeather || "Unknown",
-  },
-  
-  // Review of systems
-  review_of_systems_traffic_light_view: {
-    shortness_of_breath: { answer: flattenedData.rosShortnessOfBreath || "Unknown" },
-    chest_pain: { answer: flattenedData.rosChestPain || "Unknown" },
-    sore_throat: { answer: flattenedData.rosSoreThroat || "Unknown" },
-    body_aches_fatigue: { answer: flattenedData.rosBodyAchesFatigue || "Unknown" },
-    vomiting_diarrhea: { answer: flattenedData.rosVomitingDiarrhea || "Unknown" },
-    urinary_changes: { answer: flattenedData.rosUrinaryChanges || "Unknown" },
-  },
-  
-  // AI clinical assessment
-  ai_clinical_assessment: {
-    overall_stability: flattenedData.aiAssessmentOverallStability || "X",
-    red_flag_symptoms_present: flattenedData.aiAssessmentRedFlagSymptoms || "X",
-    clinical_note_to_physician: flattenedData.clinicalNoteToPhysician || 
-      "Cira is an AI clinical decision support assistant and doesn't replace professional medical judgment.",
-  },
-  
-  // Other required fields
-  conditions: Array.isArray(flattenedData.conditions) ? flattenedData.conditions : [],
-  confidence: flattenedData.confidence || 0,
-  consultDate: flattenedData.consultDate,
-  patientName: flattenedData.patientName,
-  patientAge: flattenedData.patientAge,
-  patientGender: flattenedData.patientGender,
-  patientHeight: flattenedData.patientHeight,
-  patientWeight: flattenedData.patientWeight,
-  
+    // Patient identity (matching what generateDoctorReportPDF expects)
+    patient_identity_baseline: {
+      name: flattenedData.patientName,
+      age: flattenedData.patientAge === "Not specified" ? "" : flattenedData.patientAge, // Fix for empty age
+      biological_sex: flattenedData.patientGender,
+      height: flattenedData.patientHeight === "—" ? "—" : (flattenedData.patientHeight || "—"),
+      weight: flattenedData.patientWeight === "—" ? "—" : (flattenedData.patientWeight || "—"),
+    },
+
+    // Chief complaint (matching the expected structure)
+    chief_complaint: {
+      primary_concern: flattenedData.chiefComplaintPrimaryConcern || "—",
+      onset: flattenedData.chiefComplaintOnset || "Not specified",
+      duration: flattenedData.chiefComplaintDuration || "Not specified",
+      severity: flattenedData.chiefComplaintSeverity || "Not specified",
+      pattern: flattenedData.chiefComplaintPattern || "Not specified",
+      previous_episodes: flattenedData.chiefComplaintPreviousEpisodes || "Unknown",
+    },
+
+    // HPI (History of Present Illness)
+    history_of_present_illness_hpi: {
+      location_or_system: flattenedData.hpiLocation || "—",
+      associated_symptoms: flattenedData.hpiAssociatedSymptoms || "None",
+      relieving_factors: flattenedData.hpiRelievingFactors || "None reported",
+      worsening_factors: flattenedData.hpiWorseningFactors || "None reported",
+    },
+
+    // Medical background - IMPORTANT: Check if this data exists in the original clinicalData
+    medical_background: {
+      chronic_illnesses: flattenedData.medicalHistoryChronicIllnesses || clinicalData?.medicalHistory?.chronicIllnesses || "—",
+      previous_surgeries: flattenedData.medicalHistoryPreviousSurgeries || clinicalData?.medicalHistory?.previousSurgeries || "—",
+      family_history: flattenedData.medicalHistoryFamilyHistory || clinicalData?.medicalHistory?.familyHistory || "—",
+      current_medications: flattenedData.medicalHistoryCurrentMedications || clinicalData?.medicalHistory?.currentMedications || "—",
+      drug_allergies: flattenedData.medicalHistoryDrugAllergies || clinicalData?.medicalHistory?.drugAllergies || "—",
+    },
+
+    // Functional status
+    functional_status: {
+      eating_drinking_normally: flattenedData.functionalStatusEatingDrinking || "Unknown",
+      hydration: flattenedData.functionalStatusHydration || "Unknown",
+      activity_level: flattenedData.functionalStatusActivityLevel || "Unknown",
+    },
+
+    // Vital signs - Clean up the values
+    vital_signs_current_status: {
+      heart_rate_bpm: (flattenedData.vitalSignsHeartRate === "Not recorded" || !flattenedData.vitalSignsHeartRate)
+        ? "Not recorded"
+        : flattenedData.vitalSignsHeartRate,
+      oxygen_saturation_spo2_percent: (flattenedData.vitalSignsOxygenSaturation === "Not recorded" || !flattenedData.vitalSignsOxygenSaturation)
+        ? "Not recorded"
+        : flattenedData.vitalSignsOxygenSaturation,
+      core_temperature: flattenedData.vitalSignsCoreTemperature || "Not measured",
+      reported_fever: flattenedData.vitalSignsReportedFever || "Unknown",
+      blood_pressure: flattenedData.vitalSignsBloodPressure || "Not measured",
+    },
+
+    // Lifestyle risk factors
+    lifestyle_risk_factors: {
+      smoking: flattenedData.lifestyleSmoking || "Unknown",
+      alcohol_use: flattenedData.lifestyleAlcoholUse || "Unknown",
+      recreational_drugs: flattenedData.lifestyleRecreationalDrugs || "Unknown",
+      diet: flattenedData.lifestyleDiet || "Unknown",
+      exercise_routine: flattenedData.lifestyleExerciseRoutine || "Unknown",
+      stress_level: flattenedData.lifestyleStressLevel || "Unknown",
+    },
+
+    // Exposure & environment
+    exposure_environment: {
+      recent_travel: flattenedData.exposureRecentTravel || "Unknown",
+      sick_contacts: flattenedData.exposureSickContacts || "Unknown",
+      crowded_events: flattenedData.exposureCrowdedEvents || "Unknown",
+      workplace_chemical_exposure: flattenedData.exposureWorkplaceChemical || "Unknown",
+      weather_exposure: flattenedData.exposureWeather || "Unknown",
+    },
+
+    // Review of systems
+    review_of_systems_traffic_light_view: {
+      shortness_of_breath: { answer: flattenedData.rosShortnessOfBreath || "Unknown" },
+      chest_pain: { answer: flattenedData.rosChestPain || "Unknown" },
+      sore_throat: { answer: flattenedData.rosSoreThroat || "Unknown" },
+      body_aches_fatigue: { answer: flattenedData.rosBodyAchesFatigue || "Unknown" },
+      vomiting_diarrhea: { answer: flattenedData.rosVomitingDiarrhea || "Unknown" },
+      urinary_changes: { answer: flattenedData.rosUrinaryChanges || "Unknown" },
+    },
+
+    // AI clinical assessment
+    ai_clinical_assessment: {
+      overall_stability: flattenedData.aiAssessmentOverallStability || "X",
+      red_flag_symptoms_present: flattenedData.aiAssessmentRedFlagSymptoms || "X",
+      clinical_note_to_physician: flattenedData.clinicalNoteToPhysician ||
+        "Cira is an AI clinical decision support assistant and doesn't replace professional medical judgment.",
+    },
+
+    // Other required fields
+    conditions: Array.isArray(flattenedData.conditions) ? flattenedData.conditions : [],
+    confidence: flattenedData.confidence || 0,
+    consultDate: flattenedData.consultDate,
+    patientName: flattenedData.patientName,
+    patientAge: flattenedData.patientAge,
+    patientGender: flattenedData.patientGender,
+    patientHeight: flattenedData.patientHeight,
+    patientWeight: flattenedData.patientWeight,
+
     // Keep the original data for backward compatibility
     ...clinicalData,
   };
@@ -893,7 +899,7 @@ export const downloadDoctorReportPDF = async (
   try {
     const logoImage = await loadStarsLogo();
     const doc = generateDoctorReportPDF(structuredData, { logoImage });
-    
+
     // Download logic
     const pdfBlob = doc.output('blob');
     const url = URL.createObjectURL(pdfBlob);
@@ -901,23 +907,23 @@ export const downloadDoctorReportPDF = async (
     link.href = url;
     link.download = filename;
     link.style.display = 'none';
-    
+
     document.body.appendChild(link);
     link.click();
-    
+
     setTimeout(() => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     }, 100);
-    
+
     console.log("✅ PDF generated successfully:", filename);
     return doc;
   } catch (e) {
     console.warn("Logo load failed, generating without logo:", e);
-    
+
     try {
       const doc = generateDoctorReportPDF(structuredData);
-      
+
       const pdfBlob = doc.output('blob');
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
@@ -926,12 +932,12 @@ export const downloadDoctorReportPDF = async (
       link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
-      
+
       setTimeout(() => {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       }, 100);
-      
+
       return doc;
     } catch (innerError) {
       console.error("❌ PDF generation failed:", innerError);
@@ -1682,14 +1688,14 @@ export const generateEHRSOAPNotePDF = (
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.text("CLINICAL SOAP NOTE", pageW / 2, y, { align: "center" });
-  
+
   // Optional logo
   if (options.logoImage) {
     try {
       doc.addImage(options.logoImage, "PNG", marginX, y - 3, 15, 15);
     } catch (_) { }
   }
-  
+
   y += 7;
 
   // -------------------- Header: Patient Info --------------------
@@ -1701,17 +1707,17 @@ export const generateEHRSOAPNotePDF = (
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.text("PATIENT INFORMATION", marginX, y);
-  
+
   doc.setFont("helvetica", "normal");
   doc.text(`Date: ${consultDate || new Date().toLocaleDateString("en-US")}`, pageW - marginX, y, { align: "right" });
-  
+
   y += 8;
 
   const patientDetails = [];
   if (patientName) patientDetails.push(`Name: ${patientName}`);
   if (patientAge) patientDetails.push(`Age: ${patientAge}`);
   if (patientGender) patientDetails.push(`Gender: ${patientGender}`);
-  
+
   if (patientDetails.length > 0) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -1723,7 +1729,7 @@ export const generateEHRSOAPNotePDF = (
   // Extract measurements from the data
   const extractMeasurementsFromData = () => {
     const measurements = [];
-    
+
     // Try to extract from JSON data first
     if (chatData.patient_identity_baseline) {
       if (chatData.patient_identity_baseline.weight) {
@@ -1733,10 +1739,10 @@ export const generateEHRSOAPNotePDF = (
         measurements.push(`• height ${chatData.patient_identity_baseline.height}`);
       }
     }
-    
+
     if (chatData.vital_signs_current_status) {
-      if (chatData.vital_signs_current_status.blood_pressure && 
-          chatData.vital_signs_current_status.blood_pressure.toLowerCase() !== "not measured") {
+      if (chatData.vital_signs_current_status.blood_pressure &&
+        chatData.vital_signs_current_status.blood_pressure.toLowerCase() !== "not measured") {
         measurements.push(`• blood pressure ${chatData.vital_signs_current_status.blood_pressure}`);
       } else {
         measurements.push(`• blood pressure not measured`);
@@ -1745,7 +1751,7 @@ export const generateEHRSOAPNotePDF = (
         measurements.push(`• temperature ${chatData.vital_signs_current_status.core_temperature}`);
       }
     }
-    
+
     // Fallback to text extraction if JSON not available
     if (measurements.length === 0 && objective) {
       const measurementsMatch = objective.match(/Measurements:[\s\S]*?(?=\n\n|\n[A-Z]|$)/i);
@@ -1756,14 +1762,14 @@ export const generateEHRSOAPNotePDF = (
           .split(/,\s*/)
           .map(m => `• ${m.trim()}`)
           .filter(m => m !== "•");
-        
+
         measurements.push(...parsedMeasurements);
       }
     }
-    
+
     return measurements.length > 0 ? measurements : [
       "• weight 73 kg",
-      "• height 6 feet", 
+      "• height 6 feet",
       "• blood pressure not measured",
       "• temperature 100 °F"
     ];
@@ -1776,34 +1782,34 @@ export const generateEHRSOAPNotePDF = (
     doc.setFontSize(12);
     doc.text("MEASUREMENTS:", marginX, y);
     y += 8;
-    
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
-    
+
     // Display measurements in a 2-column format
     const measurementCols = 2;
     const colWidth = (contentW - 10) / measurementCols;
-    
+
     measurements.forEach((measurement, idx) => {
       const col = idx % measurementCols;
       const row = Math.floor(idx / measurementCols);
       const x = marginX + 5 + (col * colWidth);
       const measurementY = y + (row * 7);
-      
+
       doc.text(measurement, x, measurementY);
     });
-    
+
     y += (Math.ceil(measurements.length / measurementCols) * 7) + 12;
   }
 
   // -------------------- Enhanced Helper: Extract answers from clinical summary --------------------
   const extractConciseAnswers = (text, chatData) => {
     if (!text && !chatData) return {};
-    
+
     const answers = {};
     const textString = text ? String(text) : ""; // Convert to string to avoid type errors
     const textLower = textString.toLowerCase();
-    
+
     // Define question patterns with enhanced extraction
     const questionPatterns = {
       "What's wrong?": [
@@ -1919,46 +1925,46 @@ export const generateEHRSOAPNotePDF = (
         () => textString.match(/(?:accompanying|associated|related)[:\s]+([^\.]+)/i)?.[1]
       ]
     };
-    
+
     // Try to extract answer for each question
     Object.keys(questionPatterns).forEach(question => {
       let answer = "Not specified";
-      
+
       // Try each extraction method
       for (const extractor of questionPatterns[question]) {
         let extracted = null;
-        
+
         try {
           extracted = extractor(); // All extractors are now functions without parameters
         } catch (error) {
           console.warn(`Error extracting answer for "${question}":`, error);
           continue;
         }
-        
+
         if (extracted && extracted !== "null" && extracted !== "undefined") {
           answer = String(extracted).trim();
-          
+
           // Clean up the answer
           answer = answer.replace(/^[:\-\s]+/, '').replace(/[\.\s]+$/, '');
-          
+
           // Format the answer
           if (answer.length > 80) {
             const words = answer.split(' ');
             answer = words.slice(0, 12).join(' ') + '...';
           }
-          
+
           // Capitalize first letter
           if (answer.length > 0) {
             answer = answer.charAt(0).toUpperCase() + answer.slice(1);
           }
-          
+
           break;
         }
       }
-      
+
       answers[question] = answer;
     });
-    
+
     // Special handling for fever-specific information
     if (textString && textString.includes("fever") && answers["What's wrong?"] === "Not specified") {
       const feverMatch = textString.match(/(?:fever of|temperature of|low-grade fever)\s+([^\.]+)/i);
@@ -1968,12 +1974,12 @@ export const generateEHRSOAPNotePDF = (
         answers["What's wrong?"] = "Fever";
       }
     }
-    
+
     // Extract body aches information
     if (textString && textString.includes("body aches") && answers["Where does it hurt?"] === "Not specified") {
       answers["Where does it hurt?"] = "Generalized body aches";
     }
-    
+
     // Extract denial information for specific questions
     if (textString) {
       const denials = [
@@ -1984,89 +1990,89 @@ export const generateEHRSOAPNotePDF = (
         { pattern: /denies\s+(?:sick contacts)/i, question: "Any new symptom recently?", answer: "No sick contacts" },
         { pattern: /no\s+(?:sick contacts)/i, question: "Any new symptom recently?", answer: "No sick contacts" }
       ];
-      
+
       denials.forEach(denial => {
         if (textString.match(denial.pattern) && answers[denial.question] === "Not specified") {
           answers[denial.question] = denial.answer;
         }
       });
     }
-    
+
     return answers;
   };
 
   // -------------------- Helper: Format bullet points --------------------
   const formatBulletPoints = (text, indent = 0) => {
     if (!text) return [];
-    
+
     const textString = String(text); // Convert to string
     const lines = [];
     const sentences = textString.split(/(?<=[.!?])\s+/);
-    
+
     sentences.forEach((sentence, index) => {
       const trimmed = sentence.trim();
       if (!trimmed) return;
-      
+
       if (index === 0 && trimmed.includes(":") && trimmed.split(":")[0].length < 20) {
         lines.push({ text: trimmed, isBullet: false, isHeader: true });
       } else {
-        lines.push({ 
+        lines.push({
           text: trimmed.replace(/^[•\-]\s*/, ""),
           isBullet: true,
-          isHeader: false 
+          isHeader: false
         });
       }
     });
-    
+
     return lines;
   };
 
   // -------------------- Helper: Add measurements section --------------------
   const addMeasurementsSection = (text) => {
     if (!text) return text;
-    
+
     const textString = String(text); // Convert to string
-    
+
     // Extract measurements section
     const measurementsMatch = textString.match(/Measurements:[\s\S]*/i);
     if (!measurementsMatch) return textString;
-    
+
     const measurementsText = measurementsMatch[0];
     const remainingText = textString.replace(measurementsText, "").trim();
-    
+
     // Parse measurements
     const measurements = measurementsText
       .replace(/^Measurements:\s*/i, "")
       .split(/,\s*/)
       .map(m => m.trim())
       .filter(m => m);
-    
+
     if (measurements.length === 0) return textString;
-    
+
     // Draw measurements in a table format
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text("MEASUREMENTS:", marginX, y);
     y += 7;
-    
+
     doc.setFont("helvetica", "normal");
     const measurementCols = 2;
     const colWidth = (contentW - 10) / measurementCols;
-    
+
     measurements.forEach((measurement, idx) => {
       const col = idx % measurementCols;
       const row = Math.floor(idx / measurementCols);
       const x = marginX + 5 + (col * colWidth);
       const measurementY = y + (row * 6);
-      
+
       // Format measurement nicely
       const formatted = measurement
         .replace(/(\d+(\.\d+)?)\s*(°?[CF]|kg|feet|cm|in)/, "$1 $3")
         .replace(/\s+/g, " ")
         .trim();
-      
+
       doc.text(`• ${formatted}`, x, measurementY);
-      
+
       // Update y position if this is the last item in column
       if (idx === measurements.length - 1 && col === measurementCols - 1) {
         y += (row + 1) * 6;
@@ -2074,7 +2080,7 @@ export const generateEHRSOAPNotePDF = (
         y += (row + 1) * 6;
       }
     });
-    
+
     y += 5;
     return remainingText;
   };
@@ -2093,7 +2099,7 @@ export const generateEHRSOAPNotePDF = (
     // doc.setDrawColor(150, 150, 150);
     // doc.setLineWidth(0.3);
     // doc.line(marginX, y + 1, marginX + 40, y + 1);
-    
+
     y += 10;
 
     doc.setFont("helvetica", "normal");
@@ -2110,7 +2116,7 @@ export const generateEHRSOAPNotePDF = (
     if (title.toLowerCase() === "subjective") {
       // Extract concise answers using both text and JSON data
       const answers = extractConciseAnswers(raw, chatData);
-      
+
       // Define the questions in order
       const questions = [
         "What's wrong?",
@@ -2124,7 +2130,7 @@ export const generateEHRSOAPNotePDF = (
         "Any recent injury?",
         "Any new symptom recently?"
       ];
-      
+
       // Display each question with its concise answer
       questions.forEach((question, index) => {
         if (y > 280) {
@@ -2136,36 +2142,36 @@ export const generateEHRSOAPNotePDF = (
           doc.text("Current Issue (continued):", marginX, y);
           y += 8;
         }
-        
+
         const answer = answers[question] || "Not specified";
-        
+
         // Question in bold
         doc.setFont("helvetica", "bold");
         doc.setFontSize(10);
-       doc.text(question, marginX + 5, y);
-        
+        doc.text(question, marginX + 5, y);
+
         // Answer in normal text, indented
         doc.setFont("helvetica", "normal");
         const answerLines = doc.splitTextToSize(answer, contentW - 15);
         answerLines.forEach((line, lineIndex) => {
           doc.text(line, marginX + 5, y + (lineIndex + 1) * 5);
         });
-        
+
         y += (answerLines.length * 5) + 8;
       });
-      
+
       y += 5;
       return;
     }
 
     // Handle measurements section first (for Objective section)
-    const textWithoutMeasurements = title.toLowerCase() === "objective" 
+    const textWithoutMeasurements = title.toLowerCase() === "objective"
       ? addMeasurementsSection(raw)
       : raw;
-    
+
     // Process remaining text as bullet points
     const bulletLines = formatBulletPoints(textWithoutMeasurements);
-    
+
     bulletLines.forEach((line) => {
       if (y > 280) {
         doc.addPage();
@@ -2182,17 +2188,17 @@ export const generateEHRSOAPNotePDF = (
         // Bullet point
         doc.setFont("helvetica", "normal");
         doc.setFontSize(11);
-        
+
         // Draw bullet character
         doc.text("•", marginX, y);
-        
+
         // Split text into multiple lines if needed
         const textLines = doc.splitTextToSize(line.text, contentW - 8);
         textLines.forEach((textLine, lineIndex) => {
           const indent = lineIndex === 0 ? marginX + 4 : marginX + 8;
           doc.text(textLine, indent, y + (lineIndex * 6));
         });
-        
+
         y += (textLines.length * 4.8) + 1.5;
       } else {
         // Regular text
@@ -2222,7 +2228,7 @@ export const generateEHRSOAPNotePDF = (
   doc.setLineWidth(0.2);
   doc.line(marginX, y, pageW - marginX, y);
   y += 5;
-  
+
   const footerText = "Generated by Cira AI Clinical Assistant. This SOAP note is for informational purposes only and should be reviewed by a qualified healthcare professional.";
   doc.text(footerText, pageW / 2, y, { align: "center" });
 
