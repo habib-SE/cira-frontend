@@ -1146,6 +1146,12 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
     typeof parsedSummary?.confidence === "number" &&
     parsedSummary.confidence >= CONFIDENCE_THRESHOLD;
 
+    const hasRealSummary =
+  !!displaySummary &&
+  displaySummary !== "Consultation summary not available" &&
+  !toolSummary?.toLowerCase().includes("summary is not available");
+
+
   return (
     <>
       <style>{`
@@ -1534,7 +1540,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
 
             {isDownloadMenuOpen && (
               <div className="absolute z-[50] mt-2 w-full rounded-xl border border-gray-200 bg-white shadow-xl text-sm overflow-hidden divide-y divide-gray-100">
-                <button
+                {/* <button
                   type="button"
                   className="w-full px-4 py-2.5 text-left hover:bg-purple-50 hover:text-purple-700 transition-colors"
                   onClick={() => {
@@ -1543,7 +1549,7 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
                   }}
                 >
                   Patient Summary (PDF)
-                </button>
+                </button> */}
 
                 <button
                   type="button"
