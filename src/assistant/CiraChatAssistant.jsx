@@ -122,6 +122,13 @@ export default function CiraChatAssistant({ initialMessage: initialMessageProp }
   const [finalJson, setFinalJson] = useState(null);
   const downloadMenuRef = useRef(null);
 
+  // ✅ One stable timestamp for the whole consult
+const consultStartedAtRef = useRef(null);
+if (!consultStartedAtRef.current) {
+  consultStartedAtRef.current = new Date();
+}
+
+
   // ✅ ADDED: Chat state machine
   const [chatState, setChatState] = useState(CHAT_STATE.TRIAGE);
 
@@ -495,7 +502,7 @@ clientTools: {
 
       // Do NOT force summary if confidence is insufficient
       if (!hasFinalResult) {
-        console.log("🚫 Summary not generated — confidence below 85%");
+        
 
         setToolSummary(
           "Summary is not available because the assistant could not reach sufficient clinical confidence."
@@ -508,7 +515,7 @@ clientTools: {
       }
 
       setIsThinking(false);
-    }, 45000); // 45 seconds max
+    }, 120000); // 2 minutes max
 
     return () => clearTimeout(timeout);
   }, [isThinking, hasFinalResult]);
@@ -1062,7 +1069,8 @@ const buildPdfPayloadFromToolData = () => {
 
   const handleFindSpecialistDoctorClick = () => {
     setShowDoctorRecommendationPopUp(false);
-    setShowFacialScanPopUp(true);
+    setShowDoctorRecommendation(true);
+   
   };
 
   const handleSkipDoctorRecommendation = () => {
@@ -1328,14 +1336,7 @@ const buildPdfPayloadFromToolData = () => {
         </div>
       </div>
 
-      <div className="mb-3">
-        <h2 className="text-xl font-semibold text-gray-900 mb-1">
-          AI Consult Summary
-        </h2>
-        {summaryDateLabel && (
-          <p className="text-xs text-gray-400">{summaryDateLabel}</p>
-        )}
-      </div>
+      
 
       {/* ================= DETERMINE WHAT TO SHOW ================= */}
       {(() => {
@@ -1355,11 +1356,14 @@ const buildPdfPayloadFromToolData = () => {
             {/* Main message box */}
             <div className="space-y-4">
               <div className="text-center space-y-3">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {toolSummary || "Summary is not available because the assistant could not reach sufficient clinical confidence."}
+                <p className="text-sm font-bold text-pink-400 leading-relaxed">
+                  😕 Oops — looks like we paused for too long.
                 </p>
                 <p className="text-sm text-gray-600">
-                  More symptom details or clinical information are required for an accurate assessment.
+                
+This conversation took a little longer than expected.
+To ensure accuracy and safety, please restart the chat and we’ll begin fresh.  <br />
+<strong className="">Thanks for your patience 💙</strong>
                 </p>
               </div>
               
@@ -1413,13 +1417,6 @@ const buildPdfPayloadFromToolData = () => {
 </div>
             </div>
             
-            {/* Next Steps section */}
-            <div className="mt-6">
-              <h3 className="text-sm font-medium text-gray-900 mb-2">Next Steps</h3>
-              <p className="text-xs text-gray-600">
-                For personalized medical advice, please consult with a qualified healthcare professional who can provide a proper diagnosis based on physical examination and additional tests.
-              </p>
-            </div>
           </div>
         ) : (
           // When SUMMARY IS AVAILABLE - Show normal content WITH PRO LOCK OVERLAY
@@ -1471,6 +1468,15 @@ const buildPdfPayloadFromToolData = () => {
 
             {/* ================= BLURRED SUMMARY CONTENT ================= */}
             <div className={isProLocked ? "filter select-none pointer-events-none" : ""}>
+              <div className="mb-3">
+           <h2 className="text-xl font-semibold text-gray-900 mb-1">
+             AI Consult Summary
+           </h2>
+           {summaryDateLabel && (
+             <p className="text-xs text-gray-400">{summaryDateLabel}</p>
+           )}
+         </div>
+
               <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-4">
                 {displaySummary}
               </p>
@@ -1561,7 +1567,7 @@ const buildPdfPayloadFromToolData = () => {
       })()}
 
       {/* ================= Actions (SHOW FOR ALL CASES) ================= */}
-      <div className="relative mt-6 flex flex-col sm:flex-row gap-3">
+      <div className="relative mt-6 flex flex-row gap-3">
         {/* Download dropdown - Only show when we have a real summary AND not Pro locked */}
         {isConfidenceSufficient && displaySummary && !displaySummary.toLowerCase().includes("summary is not available") && (
   <div className="relative flex-1" ref={downloadMenuRef}>
@@ -1590,16 +1596,6 @@ const buildPdfPayloadFromToolData = () => {
 
             {isDownloadMenuOpen && (
               <div className="absolute z-[50] mt-2 w-full rounded-xl border border-gray-200 bg-white shadow-xl text-sm overflow-hidden divide-y divide-gray-100">
-                {/* <button
-                  type="button"
-                  className="w-full px-4 py-2.5 text-left hover:bg-purple-50 hover:text-purple-700 transition-colors"
-                  onClick={() => {
-                    setIsDownloadMenuOpen(false);
-                    handleDownloadPatientSummaryPDF();
-                  }}
-                >
-                  Patient Summary (PDF)
-                </button> */}
 
                 <button
                   type="button"
@@ -1622,27 +1618,24 @@ const buildPdfPayloadFromToolData = () => {
                 >
                   SOAP / EHR Note (PDF)
                 </button>
+                
               </div>
+              
             )}
+            
           </div>
+          
         )}
-
-        {/* Always show the Find Doctor button */}
-        <button
-          type="button"
-          onClick={handleFindDoctorSpecialistClick}
-          className={`flex-1 ${
-            isConfidenceSufficient && displaySummary && !displaySummary.toLowerCase().includes("summary is not available")
-              ? "bg-[#E4ECFF] text-[#2F4EBB] hover:bg-[#D8E4FF]"
-              : "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700"
-          } rounded-lg text-sm py-2.5 transition-colors`}
-          disabled={!hasFinalResult}
-        >
-          {isConfidenceSufficient && displaySummary && !displaySummary.toLowerCase().includes("summary is not available")
-            ? "Find Doctor Specialist"
-            : "Book Appointment with Doctor"}
-        </button>
+                                                 {/* Find doctor stays as a separate button */}
+                         <button
+                           type="button"
+                           onClick={handleFindDoctorSpecialistClick}
+                           className="flex-1 bg-[#E4ECFF] text-[#2F4EBB] rounded-lg text-sm py-2.5"
+                         >
+                           Find Doctor Specialist
+                         </button>
       </div>
+
     </div>
   </section>
 )}
@@ -1716,7 +1709,7 @@ const buildPdfPayloadFromToolData = () => {
               />
             )}
 
-            {showFacialScanPopUp && (
+            {/* {showFacialScanPopUp && (
               <FacialScanModal
                 onStartScan={handleStartFacialScan}
                 onSkipScan={handleSkipFacialScan}
@@ -1730,7 +1723,7 @@ const buildPdfPayloadFromToolData = () => {
                 onClose={handleContinueFromVitals}
                 onStartConversation={handleContinueFromVitals}
               />
-            )}
+            )} */}
 
             {showDoctorRecommendation && doctorRecommendationData && (
               <DoctorRecommendationModal
