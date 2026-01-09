@@ -742,7 +742,7 @@ import Nurse from "../../assets/nurse.png";
 import mic from "../../assets/mice.svg";
 
 // import DemoAccessModal from "./DemoAccessModal";  // ✅ commented for now
-import CiraChatAssistant from "../../assistant/CiraChatAssistant";
+import CiraChatAssistant from "../../assistant/CiraChatAssistant1";
 
 const HeroSection = ({ onStartChat }) => {
   const [message, setMessage] = useState("");

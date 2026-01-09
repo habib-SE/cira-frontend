@@ -332,7 +332,7 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
       },
 
       // { label: "BMI (Calculated)", value: "N/A" },
-      { label: "BMI (Calculated)", value: patient_identity_baseline?.bmi || clinicalData?.bmi || "N/A" },
+      { label: "BMI (kg/m²)", value: patient_identity_baseline?.bmi || clinicalData?.bmi || "N/A" },
       { label: "Date", value: consultDate || "—" },
       { label: "Report Type", value: "AI Clinical Intake Summary" },
     ]);
@@ -352,7 +352,7 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
       history_of_present_illness_hpi?.progression_pattern ||
       "—";
     const severity = currentIssueData?.severity ||
-      (chief_complaint?.severity ? `${chief_complaint.severity}/10` : "—");
+      (chief_complaint?.severity ? `${chief_complaint.severity}` : "—");
     const recentInjury = currentIssueData?.recentInjury || "No";
     const previousEpisodes = chief_complaint?.previous_episodes || "Unknown";
 
@@ -360,7 +360,7 @@ export const generateDoctorReportPDF = (clinicalData = {}, options = {}) => {
       { label: "Primary Concern:", value: primaryConcern },
       { label: "Onset:", value: onset },
       { label: "Duration:", value: chief_complaint?.duration || "—" },
-      { label: "Severity (Pain):", value: severity },
+      { label: "Severity(out of 10):", value: severity },
       { label: "Pattern:", value: pattern },
       { label: "Previous Episodes:", value: previousEpisodes },
       { label: "Recent Injury:", value: recentInjury },
@@ -1334,6 +1334,7 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
 
   return doc;
 };
+
 
 /* ----------------- Download helper for SOAP Note ----------------- */
 export const downloadSOAPNotePDF = async (

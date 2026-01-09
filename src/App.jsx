@@ -66,7 +66,7 @@ import CiraAssistant from "./assistant/CiraAssistant";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import CiraRealtimeAssistant from "./agent/realtime/CiraRealtimeAssistant";
 import { AuthProvider } from "./context/AuthContext";
-import CiraChatAssistant from "./assistant/CiraChatAssistant";
+import CiraChatAssistant from "./assistant/CiraChatAssistant1";
 
 // ✅ Layout with fixed header
 const FixedHeaderLayout = ({ children }) => {
