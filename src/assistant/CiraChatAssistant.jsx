@@ -515,7 +515,7 @@ clientTools: {
       }
 
       setIsThinking(false);
-    }, 120000); // 2 minutes max
+    }, 240000); // 2 minutes max
 
     return () => clearTimeout(timeout);
   }, [isThinking, hasFinalResult]);
