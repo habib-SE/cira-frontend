@@ -16,10 +16,10 @@ import BookingConfirmationModal from "./modal/BookingConfirmationModal";
 import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
 import FacialScanModal from "./modal/FacialScanModal";
 import {
-  downloadPatientSummaryFromChatData,
+ 
   downloadEHRSOAPFromChatData,
   downloadDoctorsReport,
-} from "../utils/clinicalReport/pdfGenerator";
+} from "../utils/clinicalReport/pdfGenerator1";
 
 const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
 
@@ -515,7 +515,7 @@ clientTools: {
       }
 
       setIsThinking(false);
-    }, 240000); // 2 minutes max
+    }, 180000); // 4 minutes max
 
     return () => clearTimeout(timeout);
   }, [isThinking, hasFinalResult]);
@@ -950,36 +950,7 @@ const buildPdfPayloadFromToolData = () => {
   };
 };
 
-  const handleDownloadPatientSummaryPDF = () => {
-    console.log("📥 Download Patient Summary PDF triggered");
-    
-    if (!toolSummary) {
-      alert("Please wait for the AI consultation to complete before downloading.");
-      return;
-    }
 
-    try {
-      const payload = buildPdfPayloadFromToolData();
-      if (!payload) {
-        alert("Could not generate PDF. No consultation data available.");
-        return;
-      }
-
-      const { consultationData, patientInfo } = payload;
-      
-      const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `CIRA_Patient_Summary_${patientInfo.name || 'Patient'}_${timestamp}.pdf`;
-      
-      console.log("📄 Generating Patient Summary PDF:", filename);
-      
-      downloadPatientSummaryFromChatData(consultationData, patientInfo, filename);
-      setIsDownloadMenuOpen(false);
-      
-    } catch (error) {
-      console.error("❌ Error generating Patient Summary PDF:", error);
-      alert("Failed to generate PDF. Please try again.");
-    }
-  };
 
   const handleDownloadDoctorReportPDF = () => {
   console.log("📥 Download Doctor Clinical Report PDF triggered");
@@ -1629,7 +1600,10 @@ To ensure accuracy and safety, please restart the chat and we’ll begin fresh. 
                                                  {/* Find doctor stays as a separate button */}
                          <button
                            type="button"
-                           onClick={handleFindDoctorSpecialistClick}
+                           onClick={() => {
+                    setIsDownloadMenuOpen(false);
+                    handleDownloadEHRSOAPPDF();
+                  }}
                            className="flex-1 bg-[#E4ECFF] text-[#2F4EBB] rounded-lg text-sm py-2.5"
                          >
                            Find Doctor Specialist
