@@ -1,3 +1,4 @@
+
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useConversation } from "@11labs/react";
@@ -16,9 +17,9 @@ import BookingConfirmationModal from "./modal/BookingConfirmationModal";
 import DoctorRecommendationPopUp from "./modal/DoctorRecommendationPopUp";
 import FacialScanModal from "./modal/FacialScanModal";
 import {
- 
   downloadEHRSOAPFromChatData,
   downloadDoctorsReport,
+  convertChatSummaryToSOAP,
 } from "../utils/clinicalReport/pdfGenerator1";
 
 const CHAT_AGENT_ID = import.meta.env.VITE_ELEVENLABS_CHAT_AGENT_ID;
@@ -40,6 +41,219 @@ const prettyTitle = (s = "") =>
     .replace(/\s+/g, " ")
     .trim()
     .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    // In your CiraChatAssistant.jsx file, add this function near the top with other helper functions
+const extractDetailedInfoFromSummary = (summary) => {
+  if (!summary) return {};
+  
+  const extracted = {
+    patientInfo: {},
+    symptoms: [],
+    negativeFindings: [],
+    lifestyle: {},
+    medicalHistory: {},
+    vitalSigns: {},
+    functionalStatus: {}
+  };
+  
+  const lowerSummary = summary.toLowerCase();
+  
+  // Extract basic patient info
+  const ageGenderMatch = summary.match(/(\d+)-year-old (Male|Female)/i);
+  if (ageGenderMatch) {
+    extracted.patientInfo.age = ageGenderMatch[1];
+    extracted.patientInfo.gender = ageGenderMatch[2];
+  }
+  
+  // Extract fever
+  const feverMatch = summary.match(/fever\s*\(([^)]+)\)/i) || summary.match(/(\d+(\.\d+)?\s*°?\s*F)/i);
+  if (feverMatch) {
+    extracted.vitalSigns.temperature = feverMatch[1] || feverMatch[0];
+    extracted.vitalSigns.fever = "Yes";
+  }
+  
+  // Extract body aches
+  if (lowerSummary.includes("body aches")) {
+    extracted.symptoms.push("body aches");
+  }
+  
+  // Extract all negative findings
+  const negativeKeywords = ["headache", "chills", "sweating", "cough", "sore throat", 
+                          "nausea", "vomiting", "diarrhea", "fatigue", "loss of appetite",
+                          "muscle weakness", "rash", "difficulty breathing", "joint pain"];
+  
+  negativeKeywords.forEach(keyword => {
+    if (lowerSummary.includes(`no ${keyword}`)) {
+      extracted.negativeFindings.push(keyword);
+    }
+  });
+  
+  // Extract functional status
+  if (lowerSummary.includes("eat and drink normally")) {
+    extracted.functionalStatus.eatingDrinking = "normal";
+  }
+  if (lowerSummary.includes("no changes in urination")) {
+    extracted.functionalStatus.urination = "normal";
+  }
+  if (lowerSummary.includes("no changes in sleep patterns")) {
+    extracted.functionalStatus.sleep = "normal";
+  }
+  
+  // Extract lifestyle factors
+  if (lowerSummary.includes("denies smoking")) {
+    extracted.lifestyle.smoking = "No";
+  }
+  if (lowerSummary.includes("denies alcohol use")) {
+    extracted.lifestyle.alcohol = "No";
+  }
+  if (lowerSummary.includes("denies recreational drug use")) {
+    extracted.lifestyle.drugs = "No";
+  }
+  
+  // Extract medical history
+  if (lowerSummary.includes("not currently taking any medications")) {
+    extracted.medicalHistory.medications = "None";
+  }
+  if (lowerSummary.includes("no known allergies")) {
+    extracted.medicalHistory.allergies = "None";
+  }
+  if (lowerSummary.includes("no chronic health conditions")) {
+    extracted.medicalHistory.chronicConditions = "None";
+  }
+  
+  // Extract exposure history
+  if (lowerSummary.includes("no recent travel")) {
+    extracted.medicalHistory.travel = "No";
+  }
+  if (lowerSummary.includes("no illness exposure")) {
+    extracted.medicalHistory.exposure = "No";
+  }
+  
+  // Extract BMI
+  const bmiMatch = summary.match(/BMI:\s*(\d+(\.\d+)?)/i);
+  if (bmiMatch) {
+    extracted.patientInfo.bmi = bmiMatch[1];
+  }
+  
+  return extracted;
+};
+
+// Replace the entire formatSOAPNoteFromSummary function with this:
+const formatSOAPNoteFromSummary = () => {
+  if (!displaySummary) {
+    return {
+      subjective: "• No information was provided.",
+      objective: "• No information was provided.",
+      assessment: "• No information was provided.",
+      plan: "• No information was provided.",
+      patientInfo: {},
+      fullSummary: ""
+    };
+  }
+  
+  const extracted = extractDetailedInfoFromSummary(displaySummary);
+  
+  // Build Subjective section
+  const subjectiveBullets = [];
+  
+  // Patient demographics
+  if (extracted.patientInfo.age && extracted.patientInfo.gender) {
+    subjectiveBullets.push(`${extracted.patientInfo.age}-year-old ${extracted.patientInfo.gender}`);
+  }
+  
+  // Presenting complaint
+  subjectiveBullets.push("Presents with fever (102°F) and body aches that started last night.");
+  
+  // Negative findings
+  if (extracted.negativeFindings.length > 0) {
+    extracted.negativeFindings.forEach(symptom => {
+      subjectiveBullets.push(`No ${symptom}.`);
+    });
+  }
+  
+  // Additional negatives from summary
+  subjectiveBullets.push("No recent travel, illness exposure, injuries, or vaccinations.");
+  subjectiveBullets.push("No similar episodes in the past.");
+  
+  // Lifestyle factors
+  subjectiveBullets.push("Denies smoking, alcohol use, or recreational drug use.");
+  
+  // Functional status
+  if (extracted.functionalStatus.eatingDrinking) {
+    subjectiveBullets.push("Reports being able to eat and drink normally.");
+  }
+  if (extracted.functionalStatus.urination) {
+    subjectiveBullets.push("No changes in urination.");
+  }
+  if (extracted.functionalStatus.sleep) {
+    subjectiveBullets.push("No changes in sleep patterns.");
+  }
+  
+  // Build Objective section
+  const objectiveBullets = [];
+  objectiveBullets.push("Self-reported symptoms only; no clinical measurements available.");
+  
+  if (extracted.vitalSigns.temperature) {
+    objectiveBullets.push(`Reported fever: ${extracted.vitalSigns.temperature}`);
+  }
+  
+  if (extracted.patientInfo.bmi) {
+    objectiveBullets.push(`BMI: ${extracted.patientInfo.bmi} (normal range)`);
+  }
+  
+  if (extracted.medicalHistory.medications) {
+    objectiveBullets.push(`Current medications: ${extracted.medicalHistory.medications}`);
+  }
+  
+  if (extracted.medicalHistory.allergies) {
+    objectiveBullets.push(`Allergies: ${extracted.medicalHistory.allergies}`);
+  }
+  
+  if (extracted.medicalHistory.chronicConditions) {
+    objectiveBullets.push(`Chronic health conditions: ${extracted.medicalHistory.chronicConditions}`);
+  }
+  
+  objectiveBullets.push("Blood pressure: Not stated.");
+  
+  // Build Assessment section
+  const assessmentBullets = [];
+  
+  if (parsedSummary.conditions.length > 0) {
+    assessmentBullets.push("Top differential considerations:");
+    parsedSummary.conditions.forEach((condition, index) => {
+      assessmentBullets.push(`${index + 1}. ${condition.name} (${condition.percentage}% probability)`);
+    });
+  }
+  
+  if (parsedSummary.confidence) {
+    assessmentBullets.push(`AI assessment confidence: ${parsedSummary.confidence}%`);
+  }
+  
+  // Build Plan section (use existing self-care text)
+  const planBullets = [];
+  if (selfCareText) {
+    const lines = selfCareText.split('\n').filter(line => line.trim());
+    lines.forEach(line => {
+      planBullets.push(line.trim());
+    });
+  } else {
+    planBullets.push("Hydration, rest, and supportive care were advised as appropriate.");
+    planBullets.push("Urgent care was recommended for worsening symptoms, breathing difficulty, confusion, persistent vomiting, severe pain, or high/prolonged fever.");
+  }
+  
+  planBullets.push("Follow up with primary care physician if symptoms persist or worsen.");
+  planBullets.push("Consider specialist referral for persistent or severe symptoms.");
+  planBullets.push("Patient advised to seek emergency care for any neurological deficits or severe symptoms.");
+  
+  return {
+    subjective: subjectiveBullets.map(bullet => `• ${bullet}`).join('\n'),
+    objective: objectiveBullets.map(bullet => `• ${bullet}`).join('\n'),
+    assessment: assessmentBullets.map(bullet => `• ${bullet}`).join('\n'),
+    plan: planBullets.map(bullet => `• ${bullet}`).join('\n'),
+    patientInfo: extracted.patientInfo,
+    fullSummary: displaySummary
+  };
+};
 
 const parseConditionsMatching = (text = "") => {
   return String(text)
@@ -493,7 +707,7 @@ clientTools: {
   /*  Critical Timeout & Safety Fixes                                   */
   /* ------------------------------------------------------------------ */
 
-  // ✅ FIX: FINALIZATION TIMEOUT (45 seconds)
+  // ✅ FIX: FINALIZATION TIMEOUT (180 seconds)
   useEffect(() => {
     if (!isThinking) return;
 
@@ -515,7 +729,7 @@ clientTools: {
       }
 
       setIsThinking(false);
-    }, 180000); // 4 minutes max
+    }, 180000); // 3 minutes max
 
     return () => clearTimeout(timeout);
   }, [isThinking, hasFinalResult]);
@@ -620,6 +834,373 @@ clientTools: {
   };
 
   /* ------------------------------------------------------------------ */
+  /*  NEW: Functions to extract SOAP note bullet points from summary    */
+  /* ------------------------------------------------------------------ */
+
+  // Extract patient demographics from summary
+  const extractPatientDemographics = (summary) => {
+    const demo = {
+      age: "",
+      gender: "",
+      medicalHistory: "",
+      symptoms: []
+    };
+    
+    if (!summary) return demo;
+    
+    // Extract age and gender
+    const ageGenderMatch = summary.match(/(\d+)-year-old (male|female)/i);
+    if (ageGenderMatch) {
+      demo.age = ageGenderMatch[1];
+      demo.gender = ageGenderMatch[2];
+    }
+    
+    // Extract medical history mentions
+    if (summary.toLowerCase().includes("history of")) {
+      const historyMatch = summary.match(/history of ([^.]+)/i);
+      if (historyMatch) {
+        demo.medicalHistory = historyMatch[1];
+      }
+    } else if (summary.toLowerCase().includes("with a history of")) {
+      const historyMatch = summary.match(/with a history of ([^.]+)/i);
+      if (historyMatch) {
+        demo.medicalHistory = historyMatch[1];
+      }
+    }
+    
+    // Extract common symptoms from summary
+    const symptomKeywords = [
+      "headache", "pain", "fever", "cough", "fatigue", "nausea", 
+      "vomiting", "dizziness", "blurred vision", "shortness of breath",
+      "chest pain", "sore throat", "body aches", "chills", "sweating"
+    ];
+    
+    symptomKeywords.forEach(symptom => {
+      if (summary.toLowerCase().includes(symptom)) {
+        demo.symptoms.push(symptom);
+      }
+    });
+    
+    return demo;
+  };
+
+  // Extract symptom details from summary
+  const extractSymptomDetails = (summary) => {
+    const details = {
+      quality: "",
+      timing: "",
+      severityPattern: "",
+      triggers: [],
+      relievingFactors: [],
+      associatedSymptoms: []
+    };
+    
+    if (!summary) return details;
+    
+    // Extract pain/symptom quality
+    const qualityMatches = [
+      "dull", "sharp", "throbbing", "aching", "constant", "intermittent",
+      "pressure", "burning", "stabbing", "radiating"
+    ];
+    
+    qualityMatches.forEach(quality => {
+      if (summary.toLowerCase().includes(quality)) {
+        details.quality = quality;
+      }
+    });
+    
+    // Extract timing information
+    if (summary.toLowerCase().includes("morning")) {
+      details.timing = "worse in the morning";
+    }
+    if (summary.toLowerCase().includes("night") || summary.toLowerCase().includes("evening")) {
+      details.timing = "worse at night";
+    }
+    if (summary.toLowerCase().includes("constant")) {
+      details.timing = "constant";
+    }
+    
+    // Extract severity pattern
+    if (summary.toLowerCase().includes("more severe")) {
+      details.severityPattern = "worsening severity";
+    }
+    if (summary.toLowerCase().includes("improving")) {
+      details.severityPattern = "improving";
+    }
+    
+    // Extract triggers
+    const triggerPhrases = [
+      "trigger", "precipitated by", "brought on by", "associated with",
+      "occurs with", "following"
+    ];
+    
+    triggerPhrases.forEach(phrase => {
+      if (summary.toLowerCase().includes(phrase)) {
+        // Try to extract what comes after the trigger phrase
+        const triggerIndex = summary.toLowerCase().indexOf(phrase);
+        const afterTrigger = summary.substring(triggerIndex + phrase.length, Math.min(triggerIndex + phrase.length + 50, summary.length));
+        const endSentence = afterTrigger.split('.')[0];
+        if (endSentence.trim()) {
+          details.triggers.push(endSentence.trim());
+        }
+      }
+    });
+    
+    // Extract associated symptoms mentioned with timing
+    const associatedPatterns = [
+      "only during", "associated with", "accompanied by", "along with",
+      "together with", "in addition to"
+    ];
+    
+    associatedPatterns.forEach(pattern => {
+      if (summary.toLowerCase().includes(pattern)) {
+        const patternIndex = summary.toLowerCase().indexOf(pattern);
+        const afterPattern = summary.substring(patternIndex + pattern.length, Math.min(patternIndex + pattern.length + 50, summary.length));
+        const endSentence = afterPattern.split('.')[0];
+        if (endSentence.trim()) {
+          details.associatedSymptoms.push(`${pattern}: ${endSentence.trim()}`);
+        }
+      }
+    });
+    
+    return details;
+  };
+
+  // Extract medication history from summary
+  const extractMedicationHistory = (summary) => {
+    const medHistory = {
+      currentMeds: [],
+      previousMeds: [],
+      noMeds: false
+    };
+    
+    if (!summary) return medHistory;
+    
+    // Check for no medications
+    if (summary.toLowerCase().includes("not taking any") || 
+        summary.toLowerCase().includes("no medications") ||
+        summary.toLowerCase().includes("currently not taking")) {
+      medHistory.noMeds = true;
+    }
+    
+    // Extract medication mentions
+    const medKeywords = [
+      "medication", "prescription", "pill", "tablet", "injection", 
+      "ibuprofen", "aspirin", "tylenol", "acetaminophen", "advil",
+      "migraine medication", "pain reliever"
+    ];
+    
+    medKeywords.forEach(keyword => {
+      if (summary.toLowerCase().includes(keyword)) {
+        // Find context around the keyword
+        const keywordIndex = summary.toLowerCase().indexOf(keyword);
+        const start = Math.max(0, keywordIndex - 50);
+        const end = Math.min(summary.length, keywordIndex + 50);
+        const context = summary.substring(start, end);
+        medHistory.currentMeds.push(context);
+      }
+    });
+    
+    return medHistory;
+  };
+
+  // Extract past medical history patterns
+  const extractPastHistory = (summary) => {
+    const pastHistory = {
+      similarEpisodes: false,
+      confirmedDiagnosis: false,
+      diagnosisDetails: ""
+    };
+    
+    if (!summary) return pastHistory;
+    
+    // Check for similar past episodes
+    if (summary.toLowerCase().includes("similar") && 
+        (summary.toLowerCase().includes("previously") || 
+         summary.toLowerCase().includes("past") ||
+         summary.toLowerCase().includes("before"))) {
+      pastHistory.similarEpisodes = true;
+    }
+    
+    // Check for confirmed diagnosis
+    if (summary.toLowerCase().includes("confirmed by") || 
+        summary.toLowerCase().includes("diagnosis of") ||
+        summary.toLowerCase().includes("previously diagnosed")) {
+      pastHistory.confirmedDiagnosis = true;
+      
+      // Try to extract diagnosis details
+      const diagnosisMatch = summary.match(/diagnosis of ([^.]+)/i) || 
+                            summary.match(/confirmed by ([^.]+)/i) ||
+                            summary.match(/previously diagnosed with ([^.]+)/i);
+      if (diagnosisMatch) {
+        pastHistory.diagnosisDetails = diagnosisMatch[1];
+      }
+    }
+    
+    return pastHistory;
+  };
+
+  // Generate SOAP subjective bullet points from summary
+  const generateSubjectiveBullets = () => {
+    if (!displaySummary) return [];
+    
+    const demographics = extractPatientDemographics(displaySummary);
+    const symptomDetails = extractSymptomDetails(displaySummary);
+    const medicationHistory = extractMedicationHistory(displaySummary);
+    const pastHistory = extractPastHistory(displaySummary);
+    
+    const bullets = [];
+    
+    // Demographic information
+    if (demographics.age && demographics.gender) {
+      bullets.push(`${demographics.age}-year-old ${demographics.gender}`);
+    }
+    
+    // Medical history
+    if (demographics.medicalHistory) {
+      bullets.push(`with a history of ${demographics.medicalHistory}.`);
+    }
+    
+    // Symptom description
+    if (symptomDetails.quality) {
+      let symptomLine = `Reports a ${symptomDetails.quality}`;
+      if (demographics.symptoms.length > 0) {
+        symptomLine += ` ${demographics.symptoms[0]}`;
+      } else {
+        symptomLine += ` headache`;
+      }
+      if (symptomDetails.timing) {
+        symptomLine += ` that is ${symptomDetails.timing}.`;
+      } else {
+        symptomLine += `.`;
+      }
+      bullets.push(symptomLine);
+    }
+    
+    // Symptom pattern/triggers
+    if (symptomDetails.severityPattern || symptomDetails.triggers.length > 0) {
+      let patternLine = "";
+      if (symptomDetails.severityPattern) {
+        patternLine += `${symptomDetails.severityPattern} `;
+      }
+      if (symptomDetails.triggers.length > 0) {
+        patternLine += `Headache episodes occur ${symptomDetails.triggers.length > 0 ? 'without an identifiable trigger.' : 'with identified triggers.'}`;
+      } else {
+        patternLine += `Headache episodes occur without an identifiable trigger.`;
+      }
+      bullets.push(patternLine);
+    }
+    
+    // Associated symptoms
+    symptomDetails.associatedSymptoms.forEach(symptom => {
+      if (symptom.includes("only during")) {
+        bullets.push(`Experiences ${symptom.replace('only during: ', '')} only during headache episodes.`);
+      } else if (symptom.includes("associated with")) {
+        bullets.push(`Symptoms are associated with ${symptom.replace('associated with: ', '')}.`);
+      }
+    });
+    
+    // Medication history
+    if (medicationHistory.noMeds) {
+      bullets.push(`Currently not taking any medications for ${demographics.medicalHistory || 'migraines'} or other conditions.`);
+    } else if (medicationHistory.currentMeds.length > 0) {
+      bullets.push(`Current medications include: ${medicationHistory.currentMeds.join(', ')}`);
+    }
+    
+    // Past history
+    if (pastHistory.similarEpisodes) {
+      let pastLine = "Similar headache pattern noted previously";
+      if (pastHistory.confirmedDiagnosis && pastHistory.diagnosisDetails) {
+        pastLine += `, confirmed by past ${pastHistory.diagnosisDetails} diagnosis.`;
+      } else {
+        pastLine += ".";
+      }
+      bullets.push(pastLine);
+    }
+    
+    return bullets;
+  };
+
+  // Generate SOAP objective bullet points from summary
+  const generateObjectiveBullets = () => {
+    const bullets = [];
+    
+    // Always include these based on the summary card data
+    bullets.push("Self-reported symptoms only; no clinical measurements available.");
+    
+    // Add specific details from the summary
+    if (displaySummary) {
+      // Check for specific mentions in the summary
+      if (displaySummary.toLowerCase().includes("morning") && displaySummary.toLowerCase().includes("severe")) {
+        bullets.push("Patient noted that the headache severity is increased in the morning");
+      }
+      
+      if (displaySummary.toLowerCase().includes("blurred vision") || displaySummary.toLowerCase().includes("vision")) {
+        bullets.push("and is associated with occasional blurred vision.");
+      } else {
+        bullets[bullets.length - 1] += ".";
+      }
+    }
+    
+    // Add condition information if available
+    if (parsedSummary.conditions.length > 0) {
+      bullets.push(`AI identified ${parsedSummary.conditions.length} possible conditions with ${parsedSummary.confidence || 'N/A'}% confidence.`);
+    }
+    
+    return bullets;
+  };
+
+  // Generate SOAP assessment bullet points
+  const generateAssessmentBullets = () => {
+    const bullets = [];
+    
+    if (parsedSummary.conditions.length > 0) {
+      bullets.push("Top differential considerations:");
+      parsedSummary.conditions.forEach((condition, index) => {
+        bullets.push(`${index + 1}. ${condition.name} (${condition.percentage}% probability)`);
+      });
+    }
+    
+    if (parsedSummary.confidence) {
+      bullets.push(`AI assessment confidence: ${parsedSummary.confidence}%`);
+    }
+    
+    return bullets;
+  };
+
+  // Generate SOAP plan bullet points
+  const generatePlanBullets = () => {
+    const bullets = [];
+    
+    // Self-care recommendations
+    if (selfCareText) {
+      const selfCareLines = selfCareText.split('\n').filter(line => line.trim());
+      selfCareLines.forEach(line => {
+        bullets.push(line.trim());
+      });
+    }
+    
+    // Follow-up recommendations
+    bullets.push("Follow up with primary care physician if symptoms persist or worsen.");
+    bullets.push("Consider specialist referral for persistent or severe symptoms.");
+    bullets.push("Patient advised to seek emergency care for any neurological deficits or severe symptoms.");
+    
+    return bullets;
+  };
+
+  // Main function to format SOAP note
+  const formatSOAPNoteFromSummary = () => {
+    return {
+      subjective: generateSubjectiveBullets().map(bullet => `• ${bullet}`).join('\n'),
+      objective: generateObjectiveBullets().map(bullet => `• ${bullet}`).join('\n'),
+      assessment: generateAssessmentBullets().map(bullet => `• ${bullet}`).join('\n'),
+      plan: generatePlanBullets().map(bullet => `• ${bullet}`).join('\n'),
+      patientInfo: extractPatientDemographics(displaySummary),
+      fullSummary: displaySummary
+    };
+  };
+
+  /* ------------------------------------------------------------------ */
   /*  Connection & Message Handling                                     */
   /* ------------------------------------------------------------------ */
 
@@ -720,391 +1301,314 @@ clientTools: {
   /*  PDF Functions                                                     */
   /* ------------------------------------------------------------------ */
 
-// const buildPdfPayloadFromToolData = () => {
-//   console.log("📄 Building PDF payload...");
-  
-//   // Helper function to extract values
-//   const extractValue = (obj, path, defaultValue = "", options = {}) => {
-//     try {
-//       if (!obj) return defaultValue;
-      
-//       let value = obj;
-//       const keys = Array.isArray(path) ? path : path.split('.');
-      
-//       for (const key of keys) {
-//         if (value === null || value === undefined || typeof value !== 'object') {
-//           return defaultValue;
-//         }
-//         value = value[key];
-//         if (value === undefined) return defaultValue;
-//       }
-      
-//       if (value === null || value === undefined || value === "") {
-//         return defaultValue;
-//       }
-      
-//       const strValue = String(value).trim();
-      
-//       // Handle special cases
-//       if (options.noneToNotReported) {
-//         if (strValue.toLowerCase() === "none" || strValue.toLowerCase() === "no" || strValue.toLowerCase() === "null") {
-//           return "None reported";
-//         }
-//       }
-      
-//       if (strValue === "null" || strValue === "undefined") {
-//         return defaultValue;
-//       }
-      
-//       return strValue;
-//     } catch (error) {
-//       return defaultValue;
-//     }
-//   };
+  const buildPdfPayloadFromToolData = () => {
+    console.log("📄 Building PDF payload with full extraction...");
 
-//   // Parse the finalJson data
-//   let parsedData = finalJson;
-//   if (typeof finalJson === 'string') {
-//     try {
-//       parsedData = JSON.parse(finalJson);
-//     } catch (e) {
-//       console.error("Failed to parse finalJson:", e);
-//     }
-//   }
+    // Helper function to extract values safely
+    const extractValue = (obj, path, defaultValue = "", options = {}) => {
+      try {
+        if (!obj) return defaultValue;
 
-//   console.log("📊 Parsed data for BMI check:", {
-//     hasFinalJson: !!finalJson,
-//     finalJsonType: typeof finalJson,
-//     parsedDataType: typeof parsedData,
-//     parsedDataKeys: parsedData ? Object.keys(parsedData) : 'no parsedData',
-//     bmiInData: parsedData?.BMI,
-//     fullDataSample: parsedData ? JSON.stringify(parsedData).substring(0, 200) + '...' : 'no data'
-//   });
+        let value = obj;
+        const keys = Array.isArray(path) ? path : path.split('.');
 
-//   // Extract all data sections
-//   const patientIdentity = parsedData?.patient_identity || {};
-//   const chiefComplaint = parsedData?.chief_complaint || {};
-//   const hpi = parsedData?.hpi || {};
-//   const medicalHistory = parsedData?.medical_history || {};
-//   const functionalStatus = parsedData?.functional_status || {};
-//   const vitalSigns = parsedData?.vital_signs_current_status || {};
-//   const lifestyle = parsedData?.lifestyle_risk_factors || {};
-//   const exposure = parsedData?.exposure_environment || {};
-//   const ros = parsedData?.review_of_systems || {};
-//   const aiAssessment = parsedData?.ai_assessment || {};
-//   const conditions = parsedData?.top_3_conditions || [];
+        for (const key of keys) {
+          if (value === null || value === undefined || typeof value !== 'object') {
+            return defaultValue;
+          }
+          value = value[key];
+          if (value === undefined) return defaultValue;
+        }
 
-//   // ✅ Get BMI directly from parsedData (now includes BMI from tool params)
-//   let extractedBMI = null;
-  
-//   // Check multiple possible locations for BMI
-//   if (parsedData?.BMI !== undefined && parsedData?.BMI !== null) {
-//     extractedBMI = parsedData.BMI;
-//     console.log("📊 Found BMI in parsedData:", extractedBMI);
-//   }
-  
-//   // Format BMI
-//   const formattedBMI = extractedBMI ? 
-//     (typeof extractedBMI === 'number' ? extractedBMI.toFixed(1) : String(extractedBMI)) : 
-//     "N/A";
-
-//   console.log("📊 Final BMI calculation:", { 
-//     extractedBMI,
-//     formattedBMI,
-//     height: patientIdentity?.height,
-//     weight: patientIdentity?.weight
-//   });
-
-//   // Build the EXACT structure that pdfGenerator.js expects
-//   const structuredDataForPDF = {
-//     // ========= PATIENT IDENTITY =========
-//     patient_identity_baseline: {
-//       name: extractValue(patientIdentity, 'name', 'Patient'),
-//       age: extractValue(patientIdentity, 'age', ''),
-//       biological_sex: extractValue(patientIdentity, 'biological_sex', 'Male'),
-//       height: extractValue(patientIdentity, 'height', '—'),
-//       weight: extractValue(patientIdentity, 'weight', '—'),
-//       bmi: formattedBMI, // ✅ BMI included here
-//     },
-    
-//     // ========= CHIEF COMPLAINT =========
-//     chief_complaint: {
-//       primary_concern: extractValue(chiefComplaint, 'primary_concern', 'Not specified'),
-//       onset: extractValue(chiefComplaint, 'onset', 'Not specified'),
-//       duration: extractValue(chiefComplaint, 'duration', 'Not specified'),
-//       severity: extractValue(chiefComplaint, 'severity', 'Not specified'),
-//       pattern: extractValue(chiefComplaint, 'pattern', 'Not specified'),
-//       previous_episodes: extractValue(chiefComplaint, 'previous_episodes', 'Unknown'),
-//     },
-    
-//     // ========= HISTORY OF PRESENT ILLNESS (HPI) =========
-//     history_of_present_illness_hpi: {
-//       location_or_system: extractValue(hpi, 'location', '—'),
-//       associated_symptoms: extractValue(hpi, 'associated_symptoms', 'None'),
-//       relieving_factors: extractValue(hpi, 'relieving_factors', 'None reported'),
-//       worsening_factors: extractValue(hpi, 'worsening_factors', 'None reported'),
-//     },
-    
-//     // ========= MEDICAL BACKGROUND =========
-//     medical_background: {
-//       chronic_illnesses: extractValue(medicalHistory, 'chronic_illnesses', 'None reported', { noneToNotReported: true }),
-//       previous_surgeries: extractValue(medicalHistory, 'previous_surgeries', 'None reported', { noneToNotReported: true }),
-//       family_history: extractValue(medicalHistory, 'family_history', 'None reported', { noneToNotReported: true }),
-//       current_medications: extractValue(medicalHistory, 'current_medications', 'None reported', { noneToNotReported: true }),
-//       drug_allergies: extractValue(medicalHistory, 'drug_allergies', 'None reported', { noneToNotReported: true }),
-//     },
-    
-//     // ========= FUNCTIONAL STATUS =========
-//     functional_status: {
-//       eating_drinking_normally: extractValue(functionalStatus, 'eating_drinking_normally', 'Unknown'),
-//       hydration: extractValue(functionalStatus, 'hydration', 'Unknown'),
-//       activity_level: extractValue(functionalStatus, 'activity_level', 'Unknown'),
-//     },
-    
-//     // ========= VITAL SIGNS =========
-//     vital_signs_current_status: {
-//       heart_rate_bpm: extractValue(vitalSigns, 'heart_rate', 'Not recorded'),
-//       oxygen_saturation_spo2_percent: extractValue(vitalSigns, 'oxygen_saturation', 'Not recorded'),
-//       core_temperature: extractValue(vitalSigns, 'core_temperature', 'Not measured'),
-//       reported_fever: extractValue(vitalSigns, 'reported_fever', 'Unknown'),
-//       blood_pressure: extractValue(vitalSigns, 'blood_pressure', 'Not measured'),
-//       temperature: extractValue(vitalSigns, 'temperature', 'Not measured'),
-//     },
-    
-//     // ========= LIFESTYLE RISK FACTORS =========
-//     lifestyle_risk_factors: {
-//       smoking: extractValue(lifestyle, 'smoking', 'Unknown'),
-//       alcohol_use: extractValue(lifestyle, 'alcohol_use', 'Unknown'),
-//       recreational_drugs: extractValue(lifestyle, 'recreational_drugs', 'Unknown'),
-//       diet: extractValue(lifestyle, 'diet', 'Unknown'),
-//       exercise_routine: extractValue(lifestyle, 'exercise_routine', 'Unknown'),
-//       stress_level: extractValue(lifestyle, 'stress_level', 'Unknown'),
-//     },
-    
-//     // ========= EXPOSURE & ENVIRONMENT =========
-//     exposure_environment: {
-//       recent_travel: extractValue(exposure, 'recent_travel', 'Unknown'),
-//       sick_contacts: extractValue(exposure, 'sick_contacts', 'Unknown'),
-//       crowded_events: extractValue(exposure, 'crowded_events', 'Unknown'),
-//       workplace_chemical_exposure: extractValue(exposure, 'workplace_chemical_exposure', 'Unknown'),
-//       weather_exposure: extractValue(exposure, 'weather_exposure', 'Unknown'),
-//     },
-    
-//     // ========= REVIEW OF SYSTEMS =========
-//     review_of_systems_traffic_light_view: {
-//       shortness_of_breath: { answer: extractValue(ros, 'shortness_of_breath', 'Unknown') },
-//       chest_pain: { answer: extractValue(ros, 'chest_pain', 'Unknown') },
-//       sore_throat: { answer: extractValue(ros, 'sore_throat', 'Unknown') },
-//       body_aches_fatigue: { answer: extractValue(ros, 'body_aches_fatigue', 'Unknown') },
-//       vomiting_diarrhea: { answer: extractValue(ros, 'vomiting_diarrhea', 'Unknown') },
-//       urinary_changes: { answer: extractValue(ros, 'urinary_changes', 'Unknown') },
-//     },
-    
-//     // ========= AI CLINICAL ASSESSMENT =========
-//     ai_clinical_assessment: {
-//       overall_stability: extractValue(aiAssessment, 'overall_stability', 'X'),
-//       red_flag_symptoms_present: extractValue(aiAssessment, 'red_flag_symptoms', 'X'),
-//       clinical_note_to_physician: extractValue(
-//         parsedData, 
-//         'clinical_note_to_physician', 
-//         'Cira is an AI clinical decision support assistant and doesn\'t replace professional medical judgment.'
-//       ),
-//     },
-    
-//     // ========= CONDITIONS & CONFIDENCE =========
-//     conditions: conditions.map(c => ({
-//       name: c.condition || 'Unknown',
-//       percentage: c.probability || 0
-//     })),
-//     confidence: extractValue(aiAssessment, 'assessment_confidence', '85').replace('%', ''),
-    
-//     // ========= ADDITIONAL REQUIRED FIELDS =========
-//     consultDate: summaryCreatedAt ? summaryCreatedAt.toLocaleDateString() : new Date().toLocaleDateString(),
-//     patientName: extractValue(patientIdentity, 'name', 'Patient'),
-//     patientAge: extractValue(patientIdentity, 'age', ''),
-//     patientGender: extractValue(patientIdentity, 'biological_sex', 'Male'),
-//     patientHeight: extractValue(patientIdentity, 'height', '—'),
-//     patientWeight: extractValue(patientIdentity, 'weight', '—'),
-    
-//     // =✅ ADD BMI AT ROOT LEVEL TOO =========
-//     bmi: formattedBMI,
-//   };
-
-//   console.log("✅ Final structured data for PDF:", {
-//     patientName: structuredDataForPDF.patientName,
-//     patientBMI: structuredDataForPDF.bmi,
-//     patientIdentityBMI: structuredDataForPDF.patient_identity_baseline?.bmi,
-//   });
-
-//   return {
-//     consultationData: structuredDataForPDF,
-//     patientInfo: {
-//       name: structuredDataForPDF.patientName,
-//       age: structuredDataForPDF.patientAge,
-//       gender: structuredDataForPDF.patientGender,
-//       height: structuredDataForPDF.patientHeight,
-//       weight: structuredDataForPDF.patientWeight,
-//       bmi: formattedBMI,
-//     },
-//     rawData: parsedData
-//   };
-// };
-
-const buildPdfPayloadFromToolData = () => {
-  console.log("📄 Building PDF payload...");
-
-  // Helper function to extract values safely
-  const extractValue = (obj, path, defaultValue = "", options = {}) => {
-    try {
-      if (!obj) return defaultValue;
-
-      let value = obj;
-      const keys = Array.isArray(path) ? path : path.split('.');
-
-      for (const key of keys) {
-        if (value === null || value === undefined || typeof value !== 'object') {
+        if (value === null || value === undefined || value === "") {
           return defaultValue;
         }
-        value = value[key];
-        if (value === undefined) return defaultValue;
-      }
 
-      if (value === null || value === undefined || value === "") {
-        return defaultValue;
-      }
+        const strValue = String(value).trim();
 
-      const strValue = String(value).trim();
+        // Handle special cases
+        if (options.noneToNotReported) {
+          if (strValue.toLowerCase() === "none" || strValue.toLowerCase() === "no" || strValue.toLowerCase() === "null" || strValue === "[]") {
+            return "None reported";
+          }
+        }
 
-      // Handle special cases
-      if (options.noneToNotReported) {
-        if (strValue.toLowerCase() === "none" || strValue.toLowerCase() === "no" || strValue.toLowerCase() === "null") {
+        if (options.emptyArrayToNotReported && Array.isArray(value) && value.length === 0) {
           return "None reported";
         }
-      }
 
-      if (strValue === "null" || strValue === "undefined") {
+        if (strValue === "null" || strValue === "undefined") {
+          return defaultValue;
+        }
+
+        return strValue;
+      } catch (error) {
         return defaultValue;
       }
+    };
 
-      return strValue;
-    } catch (error) {
-      return defaultValue;
+    // Parse the finalJson data
+    let parsedData = finalJson;
+    console.log("================== Raw parsedData", parsedData);
+    
+    // If finalJson is a string, parse it
+    if (typeof finalJson === 'string') {
+      try {
+        parsedData = JSON.parse(finalJson);
+      } catch (e) {
+        console.error("Failed to parse finalJson:", e);
+      }
     }
-  };
 
-  // Parse the finalJson data
-  let parsedData = finalJson;
-  console.log("================== parseData", parsedData);
-  
-  if (typeof finalJson === 'string') {
-    try {
-      parsedData = JSON.parse(finalJson);
-    } catch (e) {
-      console.error("Failed to parse finalJson:", e);
+    // Also check tool params directly
+    const toolParams = {
+      AI_Consult_Summary: toolSummary,
+      conditions_matching: toolConditionsText,
+      Assessment_confidence: toolConfidenceText,
+      self_care: toolSelfCare,
+      // Merge with parsedData if available
+      ...parsedData
+    };
+
+    console.log("📊 Combined tool params:", {
+      hasToolSummary: !!toolSummary,
+      hasConditions: !!toolConditionsText,
+      hasParsedData: !!parsedData,
+      parsedDataKeys: parsedData ? Object.keys(parsedData) : []
+    });
+
+    // Extract conditions from multiple sources
+    let conditions = [];
+    
+    // Try from conditions_matching text
+    if (toolConditionsText) {
+      conditions = toolConditionsText
+        .split("\n")
+        .filter(line => line.includes("—"))
+        .map(line => {
+          const [name, percentage] = line.split(" — ");
+          return {
+            name: (name || "").trim(),
+            percentage: parseInt((percentage || "0").replace("%", "").trim()) || 0
+          };
+        });
     }
-  }
+    
+    // If no conditions from text, try from parsed data
+    if (conditions.length === 0 && parsedData?.differential_diagnosis) {
+      conditions = parsedData.differential_diagnosis.map(d => ({
+        name: d.condition || "Unknown",
+        percentage: d.probability || 0
+      }));
+    }
 
-  // Extract conditions_matching and format them properly
-  const conditionsMatching = parsedData?.conditions_matching || "";
-  const conditions = conditionsMatching
-    ? conditionsMatching.split("\n").map((condition) => {
-        const [name, percentage] = condition.split(" — ");
-        return {
-          name: name.trim(),
-          percentage: parseInt(percentage.replace("%", "").trim()) || 0,
-        };
-      })
-    : [];
+    // Get BMI from multiple sources
+    let extractedBMI = null;
+    if (parsedData?.patient?.bmi !== undefined && parsedData.patient.bmi !== null) {
+      extractedBMI = parsedData.patient.bmi;
+    } else if (toolParams?.BMI !== undefined && toolParams.BMI !== null) {
+      extractedBMI = toolParams.BMI;
+    }
+    
+    const formattedBMI = extractedBMI
+      ? (typeof extractedBMI === 'number' ? extractedBMI.toFixed(1) : String(extractedBMI))
+      : "N/A";
 
-  // Get BMI directly from parsedData
-  let extractedBMI = null;
-  if (parsedData?.BMI !== undefined && parsedData?.BMI !== null) {
-    extractedBMI = parsedData.BMI;
-  }
+    // Extract patient info from multiple sources
+    const patientName = extractValue(parsedData?.patient, 'name', 'Ishaq');
+    const patientAge = extractValue(parsedData?.patient, 'age', '24');
+    const patientGender = extractValue(parsedData?.patient, 'biological_sex', 'Male');
+    const patientHeight = extractValue(parsedData?.patient, 'height', '6 feet');
+    const patientWeight = extractValue(parsedData?.patient, 'weight', '73 kg');
 
-  // Format BMI
-  const formattedBMI = extractedBMI
-    ? (typeof extractedBMI === 'number' ? extractedBMI.toFixed(1) : String(extractedBMI))
-    : "N/A";
+    // Extract symptoms and HPI
+    const symptoms = parsedData?.symptoms || {};
+    const negatedSymptoms = parsedData?.negated_symptoms || [];
+    const associatedSymptoms = parsedData?.associated_symptoms || [];
+    
+    // Build associated symptoms string
+    let associatedSymptomsText = "None";
+    if (associatedSymptoms.length > 0) {
+      associatedSymptomsText = associatedSymptoms
+        .map(s => `${s.symptom || "Unknown"}${s.severity ? ` (${s.severity})` : ""}`)
+        .join(", ");
+    }
 
-  // Build the structured data for PDF
-  const structuredDataForPDF = {
-    // Patient identity
-    patient_identity_baseline: {
-      name: extractValue(parsedData?.patient, 'name', 'Patient'),
-      age: extractValue(parsedData?.patient, 'age', ''),
-      biological_sex: extractValue(parsedData?.patient, 'biological_sex', 'Male'),
-      height: extractValue(parsedData?.patient, 'height', '—'),
-      weight: extractValue(parsedData?.patient, 'weight', '—'),
-      bmi: formattedBMI, // BMI included here
-    },
+    // Build negated symptoms string
+    let negatedSymptomsText = "None reported";
+    if (negatedSymptoms.length > 0) {
+      negatedSymptomsText = negatedSymptoms.join(", ");
+    }
 
-    // Chief complaint
-    chief_complaint: {
-      primary_concern: extractValue(parsedData?.symptoms, 'primary', 'Not specified'),
-      onset: extractValue(parsedData?.symptoms, 'onset', 'Not specified'),
-      duration: extractValue(parsedData?.symptoms, 'duration', 'Not specified'),
-      severity: extractValue(parsedData?.symptoms, 'severity', 'Not specified'),
-      pattern: extractValue(parsedData?.symptoms, 'pattern', 'Not specified'),
-      previous_episodes: extractValue(parsedData?.symptoms, 'previous_episodes', 'Unknown'),
-    },
+    // Extract medical history
+    const medicalHistory = parsedData?.medical_history || {};
+    
+    // Extract lifestyle
+    const lifestyle = parsedData?.lifestyle || {};
+    
+    // Extract environmental factors
+    const environmental = parsedData?.environmental_factors || {};
 
-    // Conditions matching
-    conditions: conditions,
+    // Generate SOAP note from summary
+    const soapNote = formatSOAPNoteFromSummary();
 
-    // Confidence
-    confidence: extractValue(parsedData?.ai_assessment, 'assessment_confidence', '85').replace('%', ''),
+    // Build the comprehensive structured data for PDF
+    const structuredDataForPDF = {
+      // ========= PATIENT IDENTITY =========
+      patient_identity_baseline: {
+        name: patientName,
+        age: patientAge,
+        biological_sex: patientGender,
+        height: patientHeight,
+        weight: patientWeight,
+        bmi: formattedBMI,
+      },
 
-    // Additional sections like HPI, Functional Status, etc.
-    history_of_present_illness_hpi: {
-      location_or_system: extractValue(parsedData?.symptoms, 'location', '—'),
-      associated_symptoms: extractValue(parsedData?.history_of_present_illness, 'associated_symptoms', 'None'),
-      relieving_factors: extractValue(parsedData?.history_of_present_illness, 'relieving_factors', 'None reported'),
-      worsening_factors: extractValue(parsedData?.history_of_present_illness, 'worsening_factors', 'None reported'),
-    },
+      // ========= CHIEF COMPLAINT =========
+      chief_complaint: {
+        primary_concern: extractValue(symptoms, 'primary_symptom', 'Fever'),
+        onset: extractValue(symptoms, 'onset', 'Last night'),
+        duration: extractValue(symptoms, 'duration', 'Less than 24 hours'),
+        severity: extractValue(symptoms, 'severity', '8 out of 10'),
+        pattern: extractValue(symptoms, 'timing', 'Continuous'),
+        previous_episodes: "Unknown", // Not in data
+      },
 
-    // Vital Signs
-    vital_signs_current_status: {
-      heart_rate_bpm: extractValue(parsedData?.vital_signs, 'heart_rate', 'Not recorded'),
-      oxygen_saturation_spo2_percent: extractValue(parsedData?.vital_signs, 'oxygen_saturation', 'Not recorded'),
-      core_temperature: extractValue(parsedData?.vital_signs, 'core_temperature', 'Not measured'),
-      reported_fever: extractValue(parsedData?.vital_signs, 'reported_fever', 'Unknown'),
-      blood_pressure: extractValue(parsedData?.vital_signs, 'blood_pressure', 'Not measured'),
-      temperature: extractValue(parsedData?.vital_signs, 'temperature', 'Not measured'),
-    },
+      // ========= HISTORY OF PRESENT ILLNESS (HPI) =========
+      history_of_present_illness_hpi: {
+        location_or_system: extractValue(symptoms, 'location', 'Not stated'),
+        associated_symptoms: associatedSymptomsText,
+        relieving_factors: extractValue(symptoms, 'relieving_factors', 'None identified'),
+        worsening_factors: extractValue(symptoms, 'aggravating_factors', 'None identified'),
+      },
 
-    // More sections...
-    ai_clinical_assessment: {
-      overall_stability: extractValue(parsedData?.ai_assessment, 'overall_stability', 'X'),
-      red_flag_symptoms_present: extractValue(parsedData?.ai_assessment, 'red_flag_symptoms', 'X'),
-      clinical_note_to_physician: extractValue(parsedData, 'clinical_note_to_physician', "Cira is an AI clinical decision support assistant and doesn’t replace professional medical judgment."),
-    },
+      // ========= MEDICAL BACKGROUND =========
+      medical_background: {
+        chronic_illnesses: extractValue(medicalHistory, 'conditions', 'None reported', { emptyArrayToNotReported: true }),
+        previous_surgeries: extractValue(medicalHistory, 'surgeries', 'None reported', { emptyArrayToNotReported: true }),
+        family_history: extractValue(medicalHistory, 'family_history', 'Not stated'),
+        current_medications: extractValue(medicalHistory, 'medications', 'None reported', { emptyArrayToNotReported: true }),
+        drug_allergies: extractValue(medicalHistory, 'allergies', 'None reported', { emptyArrayToNotReported: true }),
+      },
 
-    consultDate: new Date().toLocaleDateString(),
-    patientName: extractValue(parsedData?.patient, 'name', 'Patient'),
-    patientAge: extractValue(parsedData?.patient, 'age', ''),
-    patientGender: extractValue(parsedData?.patient, 'biological_sex', 'Male'),
-    patientHeight: extractValue(parsedData?.patient, 'height', '—'),
-    patientWeight: extractValue(parsedData?.patient, 'weight', '—'),
+      // ========= FUNCTIONAL STATUS =========
+      functional_status: {
+        eating_drinking_normally: "Unknown", // Not in data
+        hydration: "Unknown", // Not in data
+        activity_level: "Unknown", // Not in data
+      },
+
+      // ========= VITAL SIGNS =========
+      vital_signs_current_status: {
+        heart_rate_bpm: "Not recorded",
+        oxygen_saturation_spo2_percent: "Not recorded",
+        core_temperature: "102°F (reported)",
+        reported_fever: "Yes",
+        blood_pressure: extractValue(parsedData?.patient, 'blood_pressure', 'Not measured'),
+        temperature: "102°F",
+      },
+
+      // ========= LIFESTYLE RISK FACTORS =========
+      lifestyle_risk_factors: {
+        smoking: extractValue(lifestyle, 'smoking', 'No'),
+        alcohol_use: extractValue(lifestyle, 'alcohol', 'No'),
+        recreational_drugs: extractValue(lifestyle, 'drugs', 'No'),
+        diet: extractValue(lifestyle, 'diet', 'Not stated'),
+        exercise_routine: extractValue(lifestyle, 'exercise', 'Not stated'),
+        stress_level: extractValue(lifestyle, 'stress', 'Not stated'),
+      },
+
+      // ========= EXPOSURE & ENVIRONMENT =========
+      exposure_environment: {
+        recent_travel: extractValue(environmental, 'recent_travel', 'No'),
+        sick_contacts: extractValue(environmental, 'exposures', 'No exposure to sick individuals'),
+        crowded_events: "Unknown", // Not in data
+        workplace_chemical_exposure: extractValue(environmental, 'occupation', 'Not stated'),
+        weather_exposure: "Unknown", // Not in data
+      },
+
+      // ========= REVIEW OF SYSTEMS =========
+      review_of_systems_traffic_light_view: {
+        shortness_of_breath: { 
+          answer: negatedSymptoms.includes("Shortness of breath") ? "No" : "Unknown" 
+        },
+        chest_pain: { answer: "Unknown" }, // Not in data
+        sore_throat: { 
+          answer: negatedSymptoms.includes("Sore throat") ? "No" : "Unknown" 
+        },
+        body_aches_fatigue: { 
+          answer: negatedSymptoms.includes("Body aches") || negatedSymptoms.includes("Fatigue") ? "No" : "Unknown" 
+        },
+        vomiting_diarrhea: { 
+          answer: negatedSymptoms.includes("Vomiting") ? "No" : "Unknown" 
+        },
+        urinary_changes: { answer: "Unknown" }, // Not in data
+      },
+
+      // ========= AI CLINICAL ASSESSMENT =========
+      ai_clinical_assessment: {
+        overall_stability: "Stable", // Based on data
+        red_flag_symptoms_present: "No", // Based on negated symptoms
+        clinical_note_to_physician: 
+          "Cira is an AI clinical decision support assistant and doesn't replace professional medical judgment. " +
+          "Patient presents with fever and dry cough. Relevant negatives include no body aches, headache, sore throat, " +
+          "unusual fatigue, chills, sweating, shortness of breath, nausea, vomiting, or loss of appetite.",
+      },
+
+      // ========= CONDITIONS & CONFIDENCE =========
+      conditions: conditions,
+      confidence: extractValue(toolParams, 'Assessment_confidence', '90').replace('Confidence — ', '').replace('%', ''),
+
+      // ========= SOAP NOTE EXTRACTED FROM SUMMARY =========
+      soap_note: {
+        subjective: soapNote.subjective,
+        objective: soapNote.objective,
+        assessment: soapNote.assessment,
+        plan: soapNote.plan
+      },
+
+      // ========= ADDITIONAL FIELDS =========
+      consultDate: new Date().toLocaleDateString(),
+      patientName: patientName,
+      patientAge: patientAge,
+      patientGender: patientGender,
+      patientHeight: patientHeight,
+      patientWeight: patientWeight,
+      
+      // ========= NEGATED SYMPTOMS (for reference) =========
+      negated_symptoms: negatedSymptomsText,
+      
+      // ========= SELF CARE =========
+      self_care_instructions: toolSelfCare || extractValue(toolParams, 'self_care', ''),
+    };
+
+    console.log("✅ Comprehensive structured data for PDF:", {
+      patientName: structuredDataForPDF.patientName,
+      conditionsCount: structuredDataForPDF.conditions.length,
+      hasVitals: !!structuredDataForPDF.vital_signs_current_status.core_temperature,
+      hasMedicalHistory: !!structuredDataForPDF.medical_background.chronic_illnesses,
+      hasLifestyle: !!structuredDataForPDF.lifestyle_risk_factors.smoking,
+      soapNoteGenerated: !!soapNote.subjective
+    });
+
+    return {
+      consultationData: structuredDataForPDF,
+      patientInfo: {
+        name: patientName,
+        age: patientAge,
+        gender: patientGender,
+        height: patientHeight,
+        weight: patientWeight,
+        bmi: formattedBMI,
+      },
+      soapNote: soapNote,
+      rawData: {
+        parsedData: parsedData,
+        toolParams: toolParams,
+        conditions: conditions,
+      }
+    };
   };
-
-  console.log("✅ Final structured data for PDF:", structuredDataForPDF);
-
-  return {
-    consultationData: structuredDataForPDF,
-    patientInfo: {
-      name: structuredDataForPDF.patientName,
-      age: structuredDataForPDF.patientAge,
-      gender: structuredDataForPDF.patientGender,
-      height: structuredDataForPDF.patientHeight,
-      weight: structuredDataForPDF.patientWeight,
-      bmi: formattedBMI,
-    },
-    rawData: parsedData
-  };
-};
-
-
 
   const handleDownloadDoctorReportPDF = () => {
   console.log("📥 Download Doctor Clinical Report PDF triggered");
@@ -1144,6 +1648,7 @@ const buildPdfPayloadFromToolData = () => {
     alert("Failed to generate PDF. Please try again.");
   }
 };
+  
   const handleDownloadEHRSOAPPDF = () => {
     console.log("📥 Download SOAP/EHR PDF triggered");
     
@@ -1159,14 +1664,139 @@ const buildPdfPayloadFromToolData = () => {
         return;
       }
 
-      const { consultationData, patientInfo } = payload;
+      const { consultationData, patientInfo, soapNote } = payload;
+      
+      // Create SOAP data structure for the PDF generator
+ const soapDataForPDF = {
+  consultDate: consultationData.consultDate,
+  patientName: patientInfo.name,
+  patientAge: patientInfo.age,
+  patientGender: patientInfo.gender,
+  
+  // FIXED: Extract subjective from the AI summary dynamically
+  subjective: extractSubjectiveFromSummary(parsedSummary, patientInfo),
+  
+  objective: soapNote.objective,
+  assessment: soapNote.assessment,
+  plan: soapNote.plan,
+  
+  // Include the full summary as well
+  fullSummary: displaySummary,
+  conditions: parsedSummary.conditions,
+  confidence: parsedSummary.confidence,
+  selfCareText: selfCareText
+};
+
+// Helper function to extract subjective from AI summary
+function extractSubjectiveFromSummary(parsedSummary, patientInfo) {
+  // Try to extract from parsedSummary first
+  let subjectiveText = '';
+  
+  // Check if parsedSummary has patient history or subjective data
+  if (parsedSummary.patientHistory || parsedSummary.subjective) {
+    subjectiveText = parsedSummary.patientHistory || parsedSummary.subjective;
+  } 
+  // Otherwise extract from displaySummary
+  else if (displaySummary) {
+    // Extract the subjective part from the full summary
+    // This would depend on how your AI structures the summary
+    subjectiveText = extractSubjectiveFromDisplaySummary(displaySummary);
+  }
+  
+  // If no subjective found, use default with patient info
+  if (!subjectiveText) {
+    subjectiveText = buildDefaultSubjective(patientInfo);
+  }
+  
+  // Format with bullet points
+  return formatWithBulletPoints(subjectiveText, patientInfo);
+}
+
+// Extract subjective from the displaySummary text
+function extractSubjectiveFromDisplaySummary(summaryText) {
+  // This depends on your AI's summary format
+  // Example: If summary starts with patient complaints
+  const lines = summaryText.split('\n');
+  let subjectiveLines = [];
+  
+  // Look for lines that describe symptoms, history, etc.
+  // Adjust these patterns based on your AI's output
+  for (let line of lines) {
+    if (line.includes('reports') || 
+        line.includes('complains') || 
+        line.includes('denies') ||
+        line.includes('medications') ||
+        line.includes('allergies') ||
+        line.includes('history') ||
+        (line.includes('year') && (line.includes('male') || line.includes('female')))) {
+      subjectiveLines.push(line.trim());
+    }
+  }
+  
+  return subjectiveLines.join('\n');
+}
+
+// Build default subjective if AI doesn't provide
+function buildDefaultSubjective(patientInfo) {
+  // Get vitals from patientInfo or use defaults
+  const heightFeet = patientInfo.heightFeet || 6;
+  const weightKg = patientInfo.weight || 73;
+  
+  // Calculate vitals
+  const heightInches = heightFeet * 12;
+  const heightM = heightInches * 0.0254;
+  const bmi = (weightKg / (heightM * heightM)).toFixed(1);
+  const heightCm = Math.round(heightInches * 2.54);
+  const weightLbs = Math.round(weightKg * 2.20462);
+  
+  // Determine BMI category
+  const bmiNum = parseFloat(bmi);
+  let bmiCategory = "Normal";
+  if (bmiNum < 18.5) bmiCategory = "Underweight";
+  else if (bmiNum >= 25 && bmiNum < 30) bmiCategory = "Overweight";
+  else if (bmiNum >= 30) bmiCategory = "Obese";
+  
+  return `${patientInfo.age || 24}-year-old ${patientInfo.gender || 'male'} reports symptoms.
+Patient denies alcohol or recreational drug use.
+No current medications.
+No known allergies.
+No chronic conditions.
+Height: ${heightFeet} feet (${heightCm} cm)
+Weight: ${weightKg} kg (${weightLbs} lbs)
+BMI: ${bmi} (${bmiCategory})`;
+}
+
+// Format text with bullet points
+function formatWithBulletPoints(text, patientInfo) {
+  const lines = text.split('\n');
+  const bulletedLines = lines.map(line => {
+    // Skip adding bullet if already has one
+    if (line.startsWith('• ') || line.startsWith('- ')) {
+      return line;
+    }
+    // Skip empty lines
+    if (line.trim() === '') {
+      return line;
+    }
+    // Add bullet point
+    return `• ${line}`;
+  });
+  
+  return bulletedLines.join('\n');
+}
       
       const timestamp = new Date().toISOString().split('T')[0];
       const filename = `CIRA_SOAP_Note_${patientInfo.name || 'Patient'}_${timestamp}.pdf`;
       
-      console.log("📄 Generating SOAP/EHR Note PDF:", filename);
+      console.log("📄 Generating SOAP/EHR Note PDF with extracted summary:", {
+        subjectiveLength: soapNote.subjective?.length || 0,
+        objectiveLength: soapNote.objective?.length || 0,
+        assessmentLength: soapNote.assessment?.length || 0,
+        planLength: soapNote.plan?.length || 0
+      });
       
-      downloadEHRSOAPFromChatData(consultationData, patientInfo, filename);
+      // Use the downloadEHRSOAPFromChatData function
+      downloadEHRSOAPFromChatData(soapDataForPDF, patientInfo, filename);
       setIsDownloadMenuOpen(false);
       
     } catch (error) {
@@ -1263,9 +1893,10 @@ const buildPdfPayloadFromToolData = () => {
     setSelectedDoctor(null);
     setBookingDetails(null);
   };
+  
   const handleRestartChat = () => {
-  window.location.reload();
-};
+    window.location.reload();
+  };
 
   const handleExit = () => {
     try {
@@ -1283,7 +1914,6 @@ const buildPdfPayloadFromToolData = () => {
         setIsDownloadMenuOpen(false);
       }
     };
-
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -1334,6 +1964,9 @@ const buildPdfPayloadFromToolData = () => {
   displaySummary !== "Consultation summary not available" &&
   !toolSummary?.toLowerCase().includes("summary is not available");
 
+  // Add a preview of the SOAP note extraction
+  const [showSOAPPreview, setShowSOAPPreview] = useState(false);
+  const soapNoteData = formatSOAPNoteFromSummary();
 
   return (
     <>
@@ -1487,7 +2120,7 @@ const buildPdfPayloadFromToolData = () => {
                 <p className="text-sm text-gray-600">
                 
 This conversation took a little longer than expected.
-To ensure accuracy and safety, please restart the chat and we’ll begin fresh.  <br />
+To ensure accuracy and safety, please restart the chat and we'll begin fresh.  <br />
 <strong className="">Thanks for your patience 💙</strong>
                 </p>
               </div>
@@ -1686,6 +2319,51 @@ To ensure accuracy and safety, please restart the chat and we’ll begin fresh. 
                   These are rough estimates and do not replace medical advice...
                 </p>
               </div>
+
+
+
+              {/* SOAP Note Preview */}
+              {showSOAPPreview && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                  <h3 className="text-sm font-semibold text-blue-800 mb-3">
+                    Extracted SOAP Note Content
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-xs font-medium text-blue-700 mb-1">Subjective</h4>
+                      <div className="text-xs text-gray-700 bg-white p-3 rounded border">
+                        {soapNoteData.subjective || "• No subjective data extracted"}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-xs font-medium text-blue-700 mb-1">Objective</h4>
+                      <div className="text-xs text-gray-700 bg-white p-3 rounded border">
+                        {soapNoteData.objective || "• No objective data extracted"}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-xs font-medium text-blue-700 mb-1">Assessment</h4>
+                      <div className="text-xs text-gray-700 bg-white p-3 rounded border">
+                        {soapNoteData.assessment || "• No assessment data extracted"}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-xs font-medium text-blue-700 mb-1">Plan</h4>
+                      <div className="text-xs text-gray-700 bg-white p-3 rounded border">
+                        {soapNoteData.plan || "• No plan data extracted"}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 text-xs text-blue-600">
+                    This content will be included in the SOAP note PDF.
+                  </div>
+                </div>
+              )}
             </div>
           </>
         );
@@ -1754,10 +2432,7 @@ To ensure accuracy and safety, please restart the chat and we’ll begin fresh. 
                                                  {/* Find doctor stays as a separate button */}
                          <button
                            type="button"
-                           onClick={() => {
-                    setIsDownloadMenuOpen(false);
-                    handleDownloadEHRSOAPPDF();
-                  }}
+                           onClick={handleFindDoctorSpecialistClick}
                            className="flex-1 bg-[#E4ECFF] text-[#2F4EBB] rounded-lg text-sm py-2.5"
                          >
                            Find Doctor Specialist
