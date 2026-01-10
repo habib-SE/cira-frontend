@@ -38,7 +38,6 @@ function App() {
               path="/home"
               element={
                 <>
-                  <Header />
                   <LandingPage />
                 </>
               }
@@ -56,7 +55,7 @@ function App() {
 }
 
 export default App;
-App.jsx
+
 // import React from "react";
 // import MainRouter from "./routes/MainRouter";
 // import Header from "./components/Header";
