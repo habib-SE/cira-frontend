@@ -62,7 +62,7 @@ import FriendlyExplanationSection from "../components/landing/FriendlyExplainati
 import DoctorConnectionSection from "../components/landing/DoctorConnectionSection";
 import PrivacySection from "../components/landing/PrivacySection";
 import Footer from "../components/landing/Footer";
-import CiraChatAssistant from "../assistant/CiraChatAssistant1";
+import CiraChatAssistant from "../assistant/CiraChatAssistant";
 import Header from "../components/Header";
 import GlobalVoiceSection from "../components/landing/GlobalVoiceSection";
 import BigFeaturesSection from "../components/landing/BigFeaturesSection";
