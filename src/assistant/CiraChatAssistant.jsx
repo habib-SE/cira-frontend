@@ -1324,6 +1324,19 @@ const buildPdfPayloadFromToolData = () => {
         return defaultValue;
       }
 
+      // Handle boolean values
+      if (typeof value === 'boolean') {
+        return value ? "Yes" : "No";
+      }
+
+      // Handle array values
+      if (Array.isArray(value)) {
+        if (value.length === 0) {
+          return options.emptyArrayText || "None reported";
+        }
+        return value.map(v => String(v).trim()).filter(v => v).join(", ");
+      }
+
       const strValue = String(value).trim();
 
       // Handle special cases
@@ -1370,15 +1383,38 @@ const buildPdfPayloadFromToolData = () => {
   console.log("📊 Parsed data structure:", parsedData);
   console.log("📊 Available data keys:", Object.keys(parsedData || {}));
 
+  // Extract patient data
+  const patientObj = parsedData?.patient || parsedData?.patient_info || {};
+  const symptomsObj = parsedData?.symptoms || parsedData?.symptom_details || {};
+  const riskFactorsObj = parsedData?.risk_factors || {};
+  const assessmentObj = parsedData?.assessment || {};
+  const medicalHistoryObj = patientObj?.medical_history || parsedData?.medical_history || {};
+
   // Extract BMI - calculate from height and weight if available
   let extractedBMI = null;
   let heightCm = null;
   let weightKg = null;
+  let heightFeet = null;
   
   // Get height and weight for BMI calculation
-  if (parsedData?.patient?.height?.value && parsedData?.patient?.weight?.value) {
-    heightCm = parsedData.patient.height.value;
-    weightKg = parsedData.patient.weight.value;
+  if (patientObj?.height?.value && patientObj?.weight?.value) {
+    // Handle feet to cm conversion if needed
+    if (patientObj.height.unit === 'feet' || patientObj.height.unit === 'ft') {
+      const feet = parseFloat(patientObj.height.value);
+      heightCm = Math.round(feet * 30.48);
+      heightFeet = feet;
+      console.log(`📊 Converted height: ${feet} feet to ${heightCm} cm`);
+    } else if (patientObj.height.unit === 'cm') {
+      heightCm = parseFloat(patientObj.height.value);
+      heightFeet = Math.floor(heightCm / 30.48);
+    } else {
+      // Default to feet if unit not specified
+      const feet = parseFloat(patientObj.height.value);
+      heightCm = Math.round(feet * 30.48);
+      heightFeet = feet;
+    }
+    
+    weightKg = parseFloat(patientObj.weight.value);
     
     // Convert height from cm to meters
     const heightM = heightCm / 100;
@@ -1386,9 +1422,9 @@ const buildPdfPayloadFromToolData = () => {
       extractedBMI = weightKg / (heightM * heightM);
       console.log(`📊 Calculated BMI from height(${heightCm}cm) and weight(${weightKg}kg): ${extractedBMI.toFixed(1)}`);
     }
-  } else if (parsedData?.patient_info?.bmi) {
-    extractedBMI = parsedData.patient_info.bmi;
-    console.log(`📊 BMI from patient_info.bmi: ${extractedBMI}`);
+  } else if (patientObj?.bmi !== null && patientObj?.bmi !== undefined) {
+    extractedBMI = patientObj.bmi;
+    console.log(`📊 BMI from patient.bmi: ${extractedBMI}`);
   } else if (finalJson?.BMI) {
     extractedBMI = finalJson.BMI;
     console.log(`📊 BMI from finalJson.BMI: ${extractedBMI}`);
@@ -1400,8 +1436,7 @@ const buildPdfPayloadFromToolData = () => {
 
   console.log(`✅ Final BMI value: ${formattedBMI}`);
 
-  // Extract patient info - handle both patient and patient_info structures
-  const patientObj = parsedData?.patient || parsedData?.patient_info || {};
+  // Extract patient info
   const patientName = extractValue(patientObj, 'name') || '--';
   const patientAge = extractValue(patientObj, 'age') || '--';
   const patientGender = extractValue(patientObj, 'biological_sex') || '--';
@@ -1410,10 +1445,13 @@ const buildPdfPayloadFromToolData = () => {
   let patientHeight = '';
   if (patientObj?.height?.value && patientObj?.height?.unit) {
     patientHeight = `${patientObj.height.value} ${patientObj.height.unit}`;
-    // Also show in feet if cm
-    if (patientObj.height.unit === 'cm' && !isNaN(patientObj.height.value)) {
-      const feet = Math.floor(patientObj.height.value / 30.48);
-      const inches = Math.round((patientObj.height.value % 30.48) / 2.54);
+    // Also show in alternative units
+    if (patientObj.height.unit === 'feet' || patientObj.height.unit === 'ft') {
+      const cm = Math.round(parseFloat(patientObj.height.value) * 30.48);
+      patientHeight += ` (${cm} cm)`;
+    } else if (patientObj.height.unit === 'cm') {
+      const feet = Math.floor(parseFloat(patientObj.height.value) / 30.48);
+      const inches = Math.round((parseFloat(patientObj.height.value) % 30.48) / 2.54);
       patientHeight += ` (${feet}'${inches}")`;
     }
   } else {
@@ -1423,10 +1461,13 @@ const buildPdfPayloadFromToolData = () => {
   let patientWeight = '';
   if (patientObj?.weight?.value && patientObj?.weight?.unit) {
     patientWeight = `${patientObj.weight.value} ${patientObj.weight.unit}`;
-    // Also show in lbs if kg
-    if (patientObj.weight.unit === 'kg' && !isNaN(patientObj.weight.value)) {
-      const lbs = Math.round(patientObj.weight.value * 2.20462);
+    // Also show in alternative units
+    if (patientObj.weight.unit === 'kg') {
+      const lbs = Math.round(parseFloat(patientObj.weight.value) * 2.20462);
       patientWeight += ` (${lbs} lbs)`;
+    } else if (patientObj.weight.unit === 'lbs') {
+      const kg = Math.round(parseFloat(patientObj.weight.value) / 2.20462);
+      patientWeight += ` (${kg} kg)`;
     }
   } else {
     patientWeight = 'Not measured';
@@ -1439,9 +1480,9 @@ const buildPdfPayloadFromToolData = () => {
   let conditions = [];
   
   // Try from assessment.differential_diagnosis
-  if (parsedData?.assessment?.differential_diagnosis && Array.isArray(parsedData.assessment.differential_diagnosis)) {
+  if (assessmentObj?.differential_diagnosis && Array.isArray(assessmentObj.differential_diagnosis)) {
     console.log("📊 Found differential_diagnosis in assessment");
-    conditions = parsedData.assessment.differential_diagnosis.map(d => ({
+    conditions = assessmentObj.differential_diagnosis.map(d => ({
       name: d.condition || "Unknown",
       percentage: d.probability || 0
     }));
@@ -1472,70 +1513,60 @@ const buildPdfPayloadFromToolData = () => {
   console.log("📊 Final conditions:", conditions);
 
   // Extract confidence
-  let confidenceValue = 90; // default from your data
+  let confidenceValue = assessmentObj?.confidence || 90; // default from your data
   
   // Get confidence from tool or parsed data
-  if (toolConfidenceText) {
-    const match = toolConfidenceText.match(/Confidence — (\d+)%/);
-    if (match) {
-      confidenceValue = parseInt(match[1]);
-    }
-  } else if (finalJson?.Assessment_confidence) {
-    const match = finalJson.Assessment_confidence.match(/Confidence — (\d+)%/);
-    if (match) {
-      confidenceValue = parseInt(match[1]);
+  if (confidenceValue === 90) {
+    if (toolConfidenceText) {
+      const match = toolConfidenceText.match(/Confidence — (\d+)%/);
+      if (match) {
+        confidenceValue = parseInt(match[1]);
+      }
+    } else if (finalJson?.Assessment_confidence) {
+      const match = finalJson.Assessment_confidence.match(/Confidence — (\d+)%/);
+      if (match) {
+        confidenceValue = parseInt(match[1]);
+      }
     }
   }
 
   // Extract symptom details
-  const symptomsObj = parsedData?.symptoms || parsedData?.symptom_details || {};
-  const medicalHistoryObj = parsedData?.medical_history || {};
-  const assessmentObj = parsedData?.assessment || {};
-
-  // Extract lifestyle/risk factors
-  const riskFactors = {
-    smoking: patientObj?.smoking === false ? "No" : "Unknown",
-    alcohol: patientObj?.alcohol === false ? "No" : "Unknown",
-    recreational_drugs: patientObj?.recreational_drugs === false ? "No" : "Unknown",
-    recent_travel: patientObj?.recent_travel === false ? "No" : "Unknown"
-  };
-
-  // Build associated symptoms - check if there are any additional symptoms
-  let associatedSymptoms = "None";
-  const symptomsText = toolSummary || displaySummary || "";
-  if (symptomsText) {
-    // Extract symptoms mentioned in the summary
-    const symptomKeywords = ['nausea', 'vomiting', 'fever', 'chills', 'diarrhea', 'constipation', 'bloating', 'gas'];
-    const foundSymptoms = symptomKeywords.filter(keyword => 
-      symptomsText.toLowerCase().includes(keyword)
-    );
-    if (foundSymptoms.length > 0) {
-      associatedSymptoms = foundSymptoms.join(', ');
-    }
-  }
-
-  // Extract onset and duration
-  const onset = extractValue(symptomsObj, 'onset', '--');
-  const duration = extractValue(symptomsObj, 'duration', '--');
-  const severity = extractValue(symptomsObj, 'severity', '--');
-  const location = extractValue(symptomsObj, 'location', '--');
-  const pattern = extractValue(symptomsObj, 'pattern', '--');
-  const primarySymptom = extractValue(symptomsObj, 'primary', '--');
+  const onset = extractValue(symptomsObj, 'onset', 'Not specified');
+  const duration = extractValue(symptomsObj, 'duration', 'Not specified');
+  const severity = extractValue(symptomsObj, 'severity', 'Not specified');
+  const location = extractValue(symptomsObj, 'location', 'Not specified');
+  const pattern = extractValue(symptomsObj, 'pattern', 'Not specified');
+  const primarySymptom = extractValue(symptomsObj, 'primary', 'Not specified');
 
   // Extract aggravating and relieving factors
-  let aggravatingFactors = "None identified";
-  if (symptomsObj?.triggers && Array.isArray(symptomsObj.triggers) && symptomsObj.triggers.length > 0) {
-    aggravatingFactors = symptomsObj.triggers.join(', ');
-  }
-  
-  let relievingFactors = "None identified";
-  if (symptomsObj?.relieving_factors) {
-    relievingFactors = String(symptomsObj.relieving_factors);
-  }
+  const aggravatingFactors = extractValue(symptomsObj, 'aggravating_factors', 'None identified', { emptyArrayText: 'None identified' });
+  const relievingFactors = extractValue(symptomsObj, 'relieving_factors', 'None identified', { emptyArrayText: 'None identified' });
+  const associatedSymptoms = extractValue(symptomsObj, 'associated_symptoms', 'None', { emptyArrayText: 'None' });
+
+  // Extract risk factors
+  const smoking = extractValue(riskFactorsObj, 'smoking', 'Unknown');
+  const alcoholUse = extractValue(riskFactorsObj, 'alcohol_use', 'Unknown');
+  const drugUse = extractValue(riskFactorsObj, 'drug_use', 'Unknown');
+  const recentTravel = extractValue(riskFactorsObj, 'recent_travel', 'Unknown');
+  const familyHistory = extractValue(riskFactorsObj, 'family_history', 'Not stated');
+
+  // Extract medical history
+  const chronicIllnesses = extractValue(medicalHistoryObj, 'conditions', 'None reported', { emptyArrayText: 'None reported' });
+  const currentMedications = extractValue(medicalHistoryObj, 'current_medications', 'None reported', { emptyArrayText: 'None reported' });
+  const allergies = extractValue(medicalHistoryObj, 'allergies', 'None reported', { emptyArrayText: 'None reported' });
 
   // Check for red flags
   const redFlags = assessmentObj?.red_flags || [];
   const hasRedFlags = redFlags.length > 0;
+
+  // Generate SOAP note from summary
+  const soapNote = formatSOAPNoteFromSummary();
+  console.log("📊 Generated SOAP note:", {
+    subjectiveLength: soapNote.subjective?.length || 0,
+    objectiveLength: soapNote.objective?.length || 0,
+    assessmentLength: soapNote.assessment?.length || 0,
+    planLength: soapNote.plan?.length || 0
+  });
 
   // Build the comprehensive structured data for PDF
   const structuredDataForPDF = {
@@ -1570,11 +1601,11 @@ const buildPdfPayloadFromToolData = () => {
 
     // ========= MEDICAL BACKGROUND =========
     medical_background: {
-      chronic_illnesses: extractValue(medicalHistoryObj, 'conditions', 'None reported', { emptyArrayToNotReported: true }),
-      previous_surgeries: extractValue(medicalHistoryObj, 'surgeries', 'None reported', { emptyArrayToNotReported: true }),
-      family_history: extractValue(medicalHistoryObj, 'family_history', 'Not stated'),
-      current_medications: extractValue(medicalHistoryObj, 'medications', 'None reported', { emptyArrayToNotReported: true }),
-      drug_allergies: extractValue(medicalHistoryObj, 'allergies', 'None reported', { emptyArrayToNotReported: true }),
+      chronic_illnesses: chronicIllnesses,
+      previous_surgeries: extractValue(medicalHistoryObj, 'surgeries', 'None reported', { emptyArrayText: 'None reported' }),
+      family_history: familyHistory,
+      current_medications: currentMedications,
+      drug_allergies: allergies,
     },
 
     // ========= FUNCTIONAL STATUS =========
@@ -1596,9 +1627,9 @@ const buildPdfPayloadFromToolData = () => {
 
     // ========= LIFESTYLE RISK FACTORS =========
     lifestyle_risk_factors: {
-      smoking: riskFactors.smoking,
-      alcohol_use: riskFactors.alcohol,
-      recreational_drugs: riskFactors.recreational_drugs,
+      smoking: smoking,
+      alcohol_use: alcoholUse,
+      recreational_drugs: drugUse,
       diet: "Not stated",
       exercise_routine: "Not stated",
       stress_level: "Not stated",
@@ -1606,7 +1637,7 @@ const buildPdfPayloadFromToolData = () => {
 
     // ========= EXPOSURE & ENVIRONMENT =========
     exposure_environment: {
-      recent_travel: riskFactors.recent_travel,
+      recent_travel: recentTravel,
       sick_contacts: "Unknown",
       crowded_events: "Unknown",
       workplace_chemical_exposure: "Not stated",
@@ -1637,6 +1668,14 @@ const buildPdfPayloadFromToolData = () => {
     conditions: conditions,
     confidence: confidenceValue,
 
+    // ========= SOAP NOTE EXTRACTED FROM SUMMARY =========
+    soap_note: {
+      subjective: soapNote.subjective,
+      objective: soapNote.objective,
+      assessment: soapNote.assessment,
+      plan: soapNote.plan
+    },
+
     // ========= ADDITIONAL FIELDS =========
     consultDate: new Date().toLocaleDateString(),
     patientName: patientName,
@@ -1646,7 +1685,7 @@ const buildPdfPayloadFromToolData = () => {
     patientWeight: patientWeight,
     
     // ========= SELF CARE =========
-    self_care: finalJson?.self_care || toolSelfCare || "",
+    self_care_instructions: finalJson?.self_care || toolSelfCare || "",
     
     // ========= SUMMARY =========
     AI_Consult_Summary: toolSummary,
@@ -1659,14 +1698,6 @@ const buildPdfPayloadFromToolData = () => {
       pattern: pattern,
       recentInjury: "No",
     },
-
-    // Add raw data fields for debugging
-    _debug: {
-      parsedDataKeys: Object.keys(parsedData || {}),
-      symptomsKeys: Object.keys(symptomsObj),
-      medicalHistoryKeys: Object.keys(medicalHistoryObj),
-      assessmentKeys: Object.keys(assessmentObj)
-    }
   };
 
   console.log("✅ Comprehensive structured data for PDF:", {
@@ -1680,7 +1711,17 @@ const buildPdfPayloadFromToolData = () => {
     confidence: structuredDataForPDF.confidence,
     chiefComplaint: structuredDataForPDF.chief_complaint.primary_concern,
     onset: structuredDataForPDF.chief_complaint.onset,
-    severity: structuredDataForPDF.chief_complaint.severity
+    severity: structuredDataForPDF.chief_complaint.severity,
+    location: structuredDataForPDF.history_of_present_illness_hpi.location_or_system,
+    aggravatingFactors: structuredDataForPDF.history_of_present_illness_hpi.worsening_factors,
+    relievingFactors: structuredDataForPDF.history_of_present_illness_hpi.relieving_factors,
+    associatedSymptoms: structuredDataForPDF.history_of_present_illness_hpi.associated_symptoms,
+    smoking: structuredDataForPDF.lifestyle_risk_factors.smoking,
+    alcohol: structuredDataForPDF.lifestyle_risk_factors.alcohol_use,
+    drugs: structuredDataForPDF.lifestyle_risk_factors.recreational_drugs,
+    travel: structuredDataForPDF.exposure_environment.recent_travel,
+    familyHistory: structuredDataForPDF.medical_background.family_history,
+    hasSOAPNote: !!soapNote.subjective
   });
 
   return {
@@ -1692,9 +1733,10 @@ const buildPdfPayloadFromToolData = () => {
       height: patientHeight,
       weight: patientWeight,
       bmi: formattedBMI,
-      heightFeet: heightCm ? Math.floor(heightCm / 30.48) : 6,
-      weightKg: weightKg || 73
+      heightFeet: heightFeet || 6,
+      weightKg: weightKg || 59
     },
+    soapNote: soapNote,
     rawData: {
       parsedData: parsedData,
       finalJson: finalJson,
