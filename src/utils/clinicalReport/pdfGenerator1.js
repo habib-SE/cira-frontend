@@ -1284,113 +1284,202 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
     return y + 12;
   };
 
-  const drawSection = (title, text, y) => {
-    if (y > bottomY - 20) {
+ const drawSection = (title, text, y) => {
+  if (y > bottomY - 20) {
+    doc.addPage();
+    setFillHex(doc, COLORS.white);
+    doc.rect(0, 0, pageW, pageH, "F");
+    y = drawHeader();
+  }
+
+  doc.setFont("serif", "bold");
+  doc.setFontSize(20);
+  setTextHex(doc, COLORS.soapHeading);
+  doc.text(title, marginX, y);
+  y += 7;
+
+  doc.setFont("serif", "normal");
+  doc.setFontSize(13.5);
+  setTextHex(doc, COLORS.soapBody);
+
+  // Clean and format the text for bullet points
+  let formattedText = text;
+  
+  // Debug: Log the original text to see what we're working with
+  console.log("Original text:", text);
+  
+  // FIRST: Clean up ALL bullet and dash patterns at the character level
+  // Replace "• -" patterns first (bullet dash)
+  formattedText = formattedText.replace(/•\s*-\s*/g, '• ');
+  
+  // Then clean up multiple bullet patterns
+  // Handle cases like "• •" with or without spaces
+  formattedText = formattedText.replace(/•\s*•/g, '•');
+  
+  // Also handle any lines starting with just dash
+  formattedText = formattedText.replace(/^\s*-\s*/gm, '• ');
+
+  // Remove bullet before numbered lists: "• 1. Text" → "1. Text"
+formattedText = formattedText.replace(/•\s*(\d+\.)/g, '$1');
+  
+  // Process each line individually
+  const lines = formattedText.split('\n');
+  const cleanedLines = [];
+  
+  for (let line of lines) {
+    // Trim the line first
+    let cleanedLine = line.trim();
+    
+    // Check if line starts with "• " followed by another "•"
+    // This handles "• • Ali" specifically
+    if (cleanedLine.startsWith('• ') && cleanedLine.substring(2, 4) === '• ') {
+      // Remove the second bullet
+      cleanedLine = '• ' + cleanedLine.substring(4);
+    }
+    // Handle "••" (no space between bullets)
+    else if (cleanedLine.startsWith('••')) {
+      cleanedLine = '•' + cleanedLine.substring(2);
+    }
+    // Handle "• •" with exactly one space
+    else if (cleanedLine.startsWith('• •')) {
+      cleanedLine = '• ' + cleanedLine.substring(3);
+    }
+    // Handle "•  •" with two spaces
+    else if (cleanedLine.startsWith('•  •')) {
+      cleanedLine = '• ' + cleanedLine.substring(4);
+    }
+    // Handle "• - " pattern
+    else if (cleanedLine.startsWith('• - ')) {
+      cleanedLine = '• ' + cleanedLine.substring(4);
+    }
+    // Handle "- " at start
+    else if (cleanedLine.startsWith('- ')) {
+      cleanedLine = '• ' + cleanedLine.substring(2);
+    }
+    
+    // Debug log for problematic lines
+    if (line.includes('•') && line !== cleanedLine) {
+      console.log(`Cleaned line: "${line}" -> "${cleanedLine}"`);
+    }
+    
+    cleanedLines.push(cleanedLine);
+  }
+  
+  formattedText = cleanedLines.join('\n');
+  
+  // For subjective section, we also want to ensure proper sentence formatting
+  if (title.toLowerCase() === "subjective") {
+    // Split into sentences for better bullet formatting
+    const sentences = formattedText
+      .replace(/\n/g, ' ') // Replace newlines with spaces temporarily
+      .split(/(?<=[.!?])\s+(?=[A-Z])/) // Split on punctuation followed by space and capital letter
+      .filter(sentence => sentence.trim().length > 0)
+      .map(sentence => {
+        let cleaned = sentence.trim();
+        // Remove any leading bullet characters that might remain
+        cleaned = cleaned.replace(/^[•\-]\s*/, '');
+        // Add period if missing
+        if (!cleaned.endsWith('.') && !cleaned.endsWith('?') && !cleaned.endsWith('!')) {
+          cleaned += '.';
+        }
+        return cleaned;
+      });
+    
+    // Convert each sentence to a bullet point
+    formattedText = sentences.map(sentence => `• ${sentence}`).join('\n');
+  }
+  
+  // ONE MORE PASS to catch any remaining issues
+  const finalLines = formattedText.split('\n');
+  const finalCleanedLines = [];
+  
+  for (let line of finalLines) {
+    let finalLine = line.trim();
+    
+    // Final cleanup for any remaining bullet issues
+    if (finalLine.startsWith('• ') && finalLine.includes('• ', 2)) {
+      // Find and remove second bullet
+      const secondBulletIndex = finalLine.indexOf('• ', 2);
+      if (secondBulletIndex !== -1) {
+        finalLine = '• ' + finalLine.substring(secondBulletIndex + 2);
+      }
+    }
+    
+    // Remove any " - " in the middle of the line
+    finalLine = finalLine.replace(/\s+-\s+/g, ' ');
+    
+    finalCleanedLines.push(finalLine);
+  }
+  
+  formattedText = finalCleanedLines.join('\n');
+  
+  // Debug: Log the final cleaned text
+  console.log("Final cleaned text:", formattedText);
+  
+  let currentY = y;
+  const finalTextLines = formattedText.split('\n');
+  
+  for (let line of finalTextLines) {
+    if (currentY > bottomY - 20) {
       doc.addPage();
       setFillHex(doc, COLORS.white);
       doc.rect(0, 0, pageW, pageH, "F");
-      y = drawHeader();
+      currentY = drawHeader();
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10.5);
+      setTextHex(doc, COLORS.soapBody);
     }
-
-    doc.setFont("serif", "bold");
-    doc.setFontSize(20);
-    setTextHex(doc, COLORS.soapHeading);
-    doc.text(title, marginX, y);
-    y += 7;
-
-    doc.setFont("serif", "normal");
-    doc.setFontSize(13.5);
-    setTextHex(doc, COLORS.soapBody);
-
-    // Clean and format the text for bullet points
-    let formattedText = text;
     
-    // For subjective section, ensure each sentence is a bullet point
-    if (title.toLowerCase() === "subjective") {
-      // First, break the text into sentences
-      const sentences = text
-        .replace(/\n/g, ' ') // Replace newlines with spaces
-        .split(/(?<=[.!?])\s+(?=[A-Z])/) // Split on punctuation followed by space and capital letter
-        .filter(sentence => sentence.trim().length > 0)
-        .map(sentence => {
-          // Add period if missing
-          let cleaned = sentence.trim();
-          if (!cleaned.endsWith('.') && !cleaned.endsWith('?') && !cleaned.endsWith('!')) {
-            cleaned += '.';
-          }
-          return cleaned;
-        });
+    // Handle bold markers
+    if (line.startsWith("**") && line.endsWith("**")) {
+      doc.setFont("helvetica", "bold");
+      const boldText = line.replace(/\*\*/g, '');
+      doc.text(boldText, marginX, currentY);
+      doc.setFont("helvetica", "normal");
+      currentY += 5.2;
+    }
+    // Handle bullet points starting with "•"
+    else if (line.startsWith("• ")) {
+      const content = line.substring(2);
       
-      // Convert each sentence to a bullet point
-      formattedText = sentences.map(sentence => `- ${sentence}`).join('\n');
+      // Use ASCII bullet character that works in PDF
+      const bullet = String.fromCharCode(149); // • character that works in PDF
       
-      // Special handling for "He denies" sentences
-      if (formattedText.includes("He denies")) {
-        // Find all "He denies" lines
-        const lines = formattedText.split('\n');
-        const newLines = [];
-        let denyLines = [];
+      // Check if this is a numbered bullet like "1 Viral fever (60% probability)"
+      const numberedMatch = content.match(/^(\d+)\s+(.*)/);
+      
+      if (numberedMatch) {
+        // This is a numbered bullet without dot: "1 Viral fever..."
+        const number = numberedMatch[1];
+        const restOfContent = numberedMatch[2];
         
-        for (const line of lines) {
-          if (line.toLowerCase().includes("he denies")) {
-            // Extract the denied items (remove "He denies" part)
-            const deniedItems = line
-              .replace(/^-\s*he denies\s*/i, '')
-              .replace(/[.,]$/, '')
-              .trim();
-            
-            if (deniedItems) {
-              denyLines.push(deniedItems);
+        // Draw the bullet and number
+        doc.text(`${bullet} ${number}`, marginX, currentY);
+        
+        // Split the rest of content into lines
+        const textLines = doc.splitTextToSize(restOfContent, contentW - 12);
+        
+        if (textLines.length > 0) {
+          // Draw first line of content
+          doc.text(textLines[0], marginX + 8, currentY);
+          
+          // Draw additional lines with indentation
+          for (let i = 1; i < textLines.length; i++) {
+            currentY += 5.2;
+            if (currentY > bottomY - 20) {
+              doc.addPage();
+              setFillHex(doc, COLORS.white);
+              doc.rect(0, 0, pageW, pageH, "F");
+              currentY = drawHeader();
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(10.5);
+              setTextHex(doc, COLORS.soapBody);
             }
-          } else {
-            // If we have collected deny lines, add them as a single bullet
-            if (denyLines.length > 0) {
-              newLines.push(`- He denies ${denyLines.join(", ")}.`);
-              denyLines = [];
-            }
-            newLines.push(line);
+            doc.text(textLines[i], marginX + 12, currentY);
           }
         }
-        
-        // Add any remaining deny lines
-        if (denyLines.length > 0) {
-          newLines.push(`- He denies ${denyLines.join(", ")}.`);
-        }
-        
-        formattedText = newLines.join('\n');
-      }
-    }
-
-    const lines = formattedText.split('\n');
-    let currentY = y;
-    
-    for (let line of lines) {
-      if (currentY > bottomY - 20) {
-        doc.addPage();
-        setFillHex(doc, COLORS.white);
-        doc.rect(0, 0, pageW, pageH, "F");
-        currentY = drawHeader();
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10.5);
-        setTextHex(doc, COLORS.soapBody);
-      }
-      
-      // Handle bold markers
-      if (line.startsWith("**") && line.endsWith("**")) {
-        doc.setFont("helvetica", "bold");
-        const boldText = line.replace(/\*\*/g, '');
-        doc.text(boldText, marginX, currentY);
-        doc.setFont("helvetica", "normal");
-        currentY += 5.2;
-      }
-      // Handle bullet points starting with "-"
-      else if (line.startsWith("- ")) {
-        const content = line.substring(2);
-        
-        // Use ASCII bullet character that works in PDF
-        const bullet = String.fromCharCode(149); // • character that works in PDF
-        
-        // Draw bullet
+      } else {
+        // Regular bullet point
         doc.text(bullet, marginX, currentY);
         
         // Split content into lines
@@ -1412,79 +1501,32 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
               doc.setFontSize(10.5);
               setTextHex(doc, COLORS.soapBody);
             }
-            doc.text(textLines[i], marginX + 8, currentY);
+            doc.text(textLines[i], marginX + 4, currentY);
           }
         }
-        currentY += 5.2;
       }
-      // Handle bullet points starting with "•" (if any)
-      else if (line.startsWith("• ")) {
-        const content = line.substring(2);
+      currentY += 5.2;
+    }
+    // Handle bullet points starting with "-" (fallback)
+    else if (line.startsWith("- ")) {
+      const content = line.substring(2);
+      
+      // Use ASCII bullet character that works in PDF
+      const bullet = String.fromCharCode(149); // • character that works in PDF
+      
+      // Draw bullet
+      doc.text(bullet, marginX, currentY);
+      
+      // Split content into lines
+      const textLines = doc.splitTextToSize(content, contentW - 8);
+      
+      if (textLines.length > 0) {
+        // Draw first line
+        doc.text(textLines[0], marginX + 4, currentY);
         
-        // Use ASCII bullet character that works in PDF
-        const bullet = String.fromCharCode(149); // • character that works in PDF
-        
-        // Draw bullet
-        doc.text(bullet, marginX, currentY);
-        
-        // Split content into lines
-        const textLines = doc.splitTextToSize(content, contentW - 8);
-        
-        if (textLines.length > 0) {
-          // Draw first line
-          doc.text(textLines[0], marginX + 4, currentY);
-          
-          // Draw additional lines with indentation
-          for (let i = 1; i < textLines.length; i++) {
-            currentY += 5.2;
-            if (currentY > bottomY - 20) {
-              doc.addPage();
-              setFillHex(doc, COLORS.white);
-              doc.rect(0, 0, pageW, pageH, "F");
-              currentY = drawHeader();
-              doc.setFont("helvetica", "normal");
-              doc.setFontSize(10.5);
-              setTextHex(doc, COLORS.soapBody);
-            }
-            doc.text(textLines[i], marginX + 8, currentY);
-          }
-        }
-        currentY += 5.2;
-      }
-      // Handle numbered lists
-      else if (line.trim().match(/^\d+\./)) {
-        const numberMatch = line.match(/^(\d+\.\s*)/);
-        if (numberMatch) {
-          const number = numberMatch[1];
-          const restOfText = line.substring(numberMatch[0].length);
-          
-          doc.text(number, marginX, currentY);
-          const textLines = doc.splitTextToSize(restOfText, contentW - 8);
-          
-          if (textLines.length > 0) {
-            doc.text(textLines[0], marginX + 8, currentY);
-            
-            for (let i = 1; i < textLines.length; i++) {
-              currentY += 5.2;
-              if (currentY > bottomY - 20) {
-                doc.addPage();
-                setFillHex(doc, COLORS.white);
-                doc.rect(0, 0, pageW, pageH, "F");
-                currentY = drawHeader();
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(10.5);
-                setTextHex(doc, COLORS.soapBody);
-              }
-              doc.text(textLines[i], marginX + 8, currentY);
-            }
-          }
+        // Draw additional lines with indentation
+        for (let i = 1; i < textLines.length; i++) {
           currentY += 5.2;
-        }
-      }
-      // Regular text line
-      else {
-        const textLines = doc.splitTextToSize(line, contentW);
-        for (let textLine of textLines) {
           if (currentY > bottomY - 20) {
             doc.addPage();
             setFillHex(doc, COLORS.white);
@@ -1494,14 +1536,62 @@ export const generateSOAPNotePDF = (soapData = {}, options = {}) => {
             doc.setFontSize(10.5);
             setTextHex(doc, COLORS.soapBody);
           }
-          doc.text(textLine, marginX, currentY);
-          currentY += 5.2;
+          doc.text(textLines[i], marginX + 8, currentY);
         }
       }
+      currentY += 5.2;
     }
+    // Handle numbered lists
+    else if (line.trim().match(/^\d+\./)) {
+      const numberMatch = line.match(/^(\d+\.\s*)/);
+      if (numberMatch) {
+        const number = numberMatch[1];
+        const restOfText = line.substring(numberMatch[0].length);
+        
+        doc.text(number, marginX, currentY);
+        const textLines = doc.splitTextToSize(restOfText, contentW - 8);
+        
+        if (textLines.length > 0) {
+          doc.text(textLines[0], marginX + 8, currentY);
+          
+          for (let i = 1; i < textLines.length; i++) {
+            currentY += 5.2;
+            if (currentY > bottomY - 20) {
+              doc.addPage();
+              setFillHex(doc, COLORS.white);
+              doc.rect(0, 0, pageW, pageH, "F");
+              currentY = drawHeader();
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(10.5);
+              setTextHex(doc, COLORS.soapBody);
+            }
+            doc.text(textLines[i], marginX + 8, currentY);
+          }
+        }
+        currentY += 5.2;
+      }
+    }
+    // Regular text line (no bullet)
+    else {
+      const textLines = doc.splitTextToSize(line, contentW);
+      for (let textLine of textLines) {
+        if (currentY > bottomY - 20) {
+          doc.addPage();
+          setFillHex(doc, COLORS.white);
+          doc.rect(0, 0, pageW, pageH, "F");
+          currentY = drawHeader();
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(10.5);
+          setTextHex(doc, COLORS.soapBody);
+        }
+        doc.text(textLine, marginX, currentY);
+        currentY += 5.2;
+      }
+    }
+  }
 
-    return currentY + 6;
-  };
+  return currentY + 6;
+};
 
   let y = drawHeader();
   y = drawSection("Subjective", subjective, y);
@@ -2006,43 +2096,61 @@ export const convertChatSummaryToSOAP = (chatSummary = {}, patientInfo = {}) => 
 
   const objective = objectiveParts.filter(Boolean).join("\n\n");
 
-  /* ----------------- ASSESSMENT (sentences) ----------------- */
-  const assessmentParts = [];
+ /* ----------------- ASSESSMENT (sentences) ----------------- */
+const assessmentParts = [];
 
-  if (conditions && conditions.length) {
-    // Use bold markers for headers that the drawSection function will recognize
-    assessmentParts.push("**Top differential considerations:**");
-    
-    const conditionLines = conditions.slice(0, 3).map((c, idx) => {
-      const pct = Math.round(Number(c.percentage || 0));
-      return `${idx + 1}. ${c.name} (${pct}% probability)`;
-    }).join("\n");
-    
-    assessmentParts.push(conditionLines);
-  } else if (chatSummary?.conditions_matching) {
-    assessmentParts.push("**Clinical considerations:**");
-    assessmentParts.push(String(chatSummary.conditions_matching).split("\n").filter(Boolean).join("\n"));
-  } else {
-    assessmentParts.push("**Clinical considerations:** were not available.");
-  }
+if (conditions && conditions.length) {
+  // Start with the top differential considerations
+  assessmentParts.push("**Top differential considerations:**");
+  
+  const conditionLines = conditions.slice(0, 3).map((c, idx) => {
+    const pct = Math.round(Number(c.percentage || 0));
+    return `${idx + 1}. ${c.name} (${pct}% probability)`;
+  });
+  
+  assessmentParts.push(...conditionLines);
+  
+  // Add a blank line
+  assessmentParts.push("");
+} else if (chatSummary?.conditions_matching) {
+  assessmentParts.push("**Clinical considerations:**");
+  const matchingLines = String(chatSummary.conditions_matching).split("\n").filter(Boolean);
+  assessmentParts.push(...matchingLines);
+  assessmentParts.push("");
+} else {
+  assessmentParts.push("**Clinical considerations:** were not available.");
+  assessmentParts.push("");
+}
 
-  if (confidence != null) {
-    assessmentParts.push(`AI assessment confidence: ${confidence}%`);
-  }
+if (confidence != null) {
+  assessmentParts.push(`AI assessment confidence: ${confidence}%`);
+  assessmentParts.push("");
+}
 
-  const stability = toolAI?.overall_stability || toolFinal?.ai_assessment?.overall_stability || "Unknown";
-  const redFlags = toolAI?.red_flag_symptoms || toolAI?.red_flag_symptoms_present || "Unknown";
+// ✅ ADDED: Overall Stability and Red-Flag Symptoms
+const stability = toolAI?.overall_stability || toolFinal?.ai_assessment?.overall_stability || "Unknown";
+const redFlags = normalizeYesNoUnknown(toolAI?.red_flag_symptoms || toolAI?.red_flag_symptoms_present || "Unknown");
 
-  assessmentParts.push("**Clinical status flags:**");
+assessmentParts.push("**Overall Stability:**");
+assessmentParts.push(`• ${sentenceCap(stability)}`);
+assessmentParts.push(""); // Add a blank line
 
-  const statusFlags = [
-    makeSentence({ subject: "Overall stability", verb: "was", value: stability, missingText: "was not specified" }),
-    makeSentence({ subject: "Red-flag symptoms status", verb: "was", value: redFlags, missingText: "was not specified" })
-  ].join("\n");
+assessmentParts.push("**Red-Flag Symptoms:**");
 
-  assessmentParts.push(statusFlags);
+let redFlagText = "";
+const redFlagLower = String(redFlags).toLowerCase();
 
-  const assessment = assessmentParts.filter(Boolean).join("\n\n");
+if (redFlagLower.startsWith("yes")) {
+  redFlagText = "• Red-flag symptoms were reported and require urgent evaluation.";
+} else if (redFlagLower.startsWith("no")) {
+  redFlagText = "• No red-flag symptoms were reported.";
+} else {
+  redFlagText = "• Red-flag symptom assessment was not available.";
+}
+
+assessmentParts.push(redFlagText);
+
+const assessment = assessmentParts.filter(line => line !== "").join("\n");
 
   /* ----------------- PLAN (sentences) ----------------- */
   const planParts = [];
